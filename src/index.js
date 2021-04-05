@@ -85,14 +85,14 @@ class App extends Component {
       {
         keys: ["poj_norm_prepped", "eng_prepped", "poj_unicode"],
         allowTypo: false,
-        limit: 20,
-        //threshold: -10000,
+        limit: 50,
+        threshold: -10000,
       },
     );
     this.searching = false;
 
     this.output = search_results
-      .slice(0, 20)
+      .slice(0, 50)
       .map((x, i) => {
         const poj_norm_pre_paren = fuzzysort.highlight(x[0],
           "<span class=\"poj-normalized-matched-text\" class=hlsearch>", "</span>")
