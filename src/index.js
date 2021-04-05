@@ -1,39 +1,37 @@
 import React, {Component} from "react";
 import ReactDOM from "react-dom";
 import fuzzysort from "fuzzysort";
-//import diacritics from "diacritics";
+
+import "./cha_taigi.css";
+
+// TODO(high): Copy to clipboard on click or tab-enter
 
 const poj = [];
 
-const rem_url = "maryknoll_smaller.json";
+//const rem_url = "maryknoll_smaller.json";
+const rem_url = "maryknoll_normalized_minified.json"
 
-// TODO: go ahead and generate latinized version of poj in maryknoll_smaller, for searching
 
-const Taigi = ({taigi}) => {
-  const {poj_unicode, english} = taigi;
+const Taigi = ({poj_unicode, english, poj_normalized}) => {
 
+  // FIXME(https://github.com/farzher/fuzzysort/issues/66)
+  const html_poj_unicode = {__html: poj_unicode};
+  const html_poj_normalized = {__html: poj_normalized};
+  const html_english = {__html: english};
+  const poju = <span className="poj-unicode" dangerouslySetInnerHTML={html_poj_unicode}></span>;
+  const pojn = <span className="poj-normalized" dangerouslySetInnerHTML={html_poj_normalized}></span>;
+  const engl = <span className="english-definition" dangerouslySetInnerHTML={html_english}></span>;
   return (
-    <div style={{margin: "1rem", padding: "1rem", border: "1px solid"}}>
-      <div>
-        <b>{poj_unicode}</b>
+    <div className="entry-container">
+      <div className="poj">
+        {poju} ({pojn})
       </div>
-      <div>
-        <i>{english}</i>
+      <div className="english">
+        {engl}
       </div>
     </div>
   );
 };
-
-const pre_load_placeholder = {poj_unicode: "Please wait, loading...", english: ""};
-const post_load_placeholder = {poj_unicode: "Type to search!", english: ""};
-
-//const MyLoader = <Loader
-//  type="Bars"
-//  color="#00BFFF"
-//  height={100}
-//  width={100}
-//  timeout={300} //3 secs
-///>;
 
 class App extends Component {
   constructor(props) {
@@ -45,21 +43,19 @@ class App extends Component {
     this.fuzzysort = fuzzysort;
     this.timeout = 0;
     this.searching = false;
-    // TODO: Don't use taigi elem
-    this.placeholder = <Taigi key={0} taigi={pre_load_placeholder} />;
-    this.output = this.placeholder;
+    this.placeholder = <div className="placeholder">Loading...</div>;
+    this.output = null;
 
     fetch(rem_url)
       .then((response) => {
         return response.json();
       })
       .then((data) => {
-        this.placeholder = <Taigi key={0} taigi={post_load_placeholder} />;
-        this.output = this.placeholder;
-
+        this.placeholder = <div className="placeholder">Type to search!</div>;
         data.forEach(
           t => {
             t.poj_prepped = fuzzysort.prepare(t.poj_unicode);
+            t.poj_norm_prepped = fuzzysort.prepare(t.poj_normalized);
             t.eng_prepped = fuzzysort.prepare(t.english);
           }
         )
@@ -77,14 +73,6 @@ class App extends Component {
 
     this.query = value;
     this.update_query();
-
-//    if (this.timeout) {
-//      clearTimeout(this.timeout);
-//    }
-//
-//    this.timeout = setTimeout(() => {
-//      this.update_query();
-//    }, 10);
   }
 
   update_query() {
@@ -95,17 +83,29 @@ class App extends Component {
       this.query,
       this.local_poj,
       {
-        keys: ["poj_prepped", "eng_prepped"],
+        keys: ["poj_norm_prepped", "eng_prepped", "poj_unicode"],
         allowTypo: false,
         limit: 20,
-        threshold: -10000,
+        //threshold: -10000,
       },
     );
     this.searching = false;
 
     this.output = search_results
       .slice(0, 20)
-      .map((x, i) => <Taigi key={i} taigi={x.obj} />);
+      .map((x, i) => {
+        const poj_norm_high = fuzzysort.highlight(x[0],
+          "<span class=\"poj-normalized-matched-text\" class=hlsearch>", "</span>")
+          || x.obj.poj_normalized;
+        const eng_high = fuzzysort.highlight(x[1],
+          "<span class=\"english-definition-matched-text\" class=hlsearch>", "</span>")
+          || x.obj.english;
+        const poj_unicode = fuzzysort.highlight(x[2],
+          "<span class=\"poj-unicode-matched-text\" class=hlsearch>", "</span>")
+          || x.obj.poj_unicode;
+        return <Taigi key={i} poj_unicode={poj_unicode} english={eng_high} poj_normalized={poj_norm_high} />;
+
+      })
 
     this.setState(this.state);
   }
@@ -115,11 +115,16 @@ class App extends Component {
 
     return (
       <div className="App">
-        <div>
-          <input placeholder="query" onChange={onChange} />
+        <div className="search-bar">
+          <input autoFocus={true} placeholder="Search..." onChange={onChange} />
+          <svg aria-hidden="true" className="mag-glass" ><path d="M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z"></path></svg>
         </div>
-        {this.searching ? null : 
-            this.query ? this.output : this.placeholder}
+        <div className="placeholder-container">
+          {this.query ? null : this.placeholder}
+        </div>
+        <div className="results-container">
+          {this.output}
+        </div>
       </div>
     );
   }
