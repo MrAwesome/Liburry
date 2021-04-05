@@ -33,7 +33,13 @@ body {
     font-weight: bold;
 }
 
+.poj-normalized {
+    float: right;
+}
+
 .poj-normalized, .poj-normalized-matched-text {
+    font-size: 7px;
+    color: grey;
 }
 
 .english-definition {

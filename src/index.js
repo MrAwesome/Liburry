@@ -24,7 +24,7 @@ const Taigi = ({poj_unicode, english, poj_normalized}) => {
   return (
     <div className="entry-container">
       <div className="poj">
-        {poju} ({pojn})
+        {poju} {pojn}
       </div>
       <div className="english">
         {engl}
@@ -94,9 +94,10 @@ class App extends Component {
     this.output = search_results
       .slice(0, 20)
       .map((x, i) => {
-        const poj_norm_high = fuzzysort.highlight(x[0],
+        const poj_norm_pre_paren = fuzzysort.highlight(x[0],
           "<span class=\"poj-normalized-matched-text\" class=hlsearch>", "</span>")
           || x.obj.poj_normalized;
+        const poj_norm_high = "(" + poj_norm_pre_paren + ")";
         const eng_high = fuzzysort.highlight(x[1],
           "<span class=\"english-definition-matched-text\" class=hlsearch>", "</span>")
           || x.obj.english;
