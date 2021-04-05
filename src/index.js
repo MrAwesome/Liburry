@@ -2,9 +2,6 @@ import React, {Component} from "react";
 import ReactDOM from "react-dom";
 import fuzzysort from "fuzzysort";
 //import diacritics from "diacritics";
-//import Loader from "react-loader-spinner";
-
-import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 
 const poj = [];
 
@@ -48,7 +45,6 @@ class App extends Component {
     this.fuzzysort = fuzzysort;
     this.timeout = 0;
     this.searching = false;
-    this.spinner = "SEARCHING...";
     // TODO: Don't use taigi elem
     this.placeholder = <Taigi key={0} taigi={pre_load_placeholder} />;
     this.output = this.placeholder;
@@ -92,10 +88,6 @@ class App extends Component {
   }
 
   update_query() {
-
-    // TODO: Stop the freezing spinner?
-    // TODO: Only remove diacritics if necessary? how?
-
     this.searching = true;
     this.setState(this.state);
 
@@ -126,7 +118,6 @@ class App extends Component {
         <div>
           <input placeholder="query" onChange={onChange} />
         </div>
-        {(this.query && this.searching) ? this.spinner : null}
         {this.searching ? null : 
             this.query ? this.output : this.placeholder}
       </div>
