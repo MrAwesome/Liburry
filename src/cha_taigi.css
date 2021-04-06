@@ -1,69 +1,121 @@
 * {
-    font-family: arial,sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-family: "Noto Sans";
+
+}
+input {
 }
 
 body {
-    background: lightgray;
+    background: #d7eed7;
+}
+
+.App {
+    display: grid;
+    grid-template-areas:
+        "header"
+        "searchbar"
+        "options" /* will go with bar? */
+        "placeholder"
+        "results";
 }
 
 .hlsearch {
     color: green;
 }
 
-.entry-container, .placeholder {
+.results-container {
     margin-left: 5px;
-    margin-right: 5px;
-    background: white;
-    display: grid;
-    border-radius: 10px;
+    margin-right: 0px;
     margin-top: 3px;
-    padding: 3px;
+    grid-area: results;
+    display: grid;
+    grid-template-areas:
+        "result result";
+    row-gap: 3px;
+    column-gap: 3px;
+}
+
+.entry-container, .placeholder {
+    background: white;
+    border-radius: 15px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 5px;
+    padding-right: 3px;
     border: 1px solid grey;
-    box-shadow: 2px 3px 20px 1px rgba(0, 0, 0, 0.1);
+    box-shadow: 1px 3px 3px 1px rgba(0, 0, 0, 0.1);
+}
+
+.entry-container {
+}
+
+.entry-container:hover {
+    box-shadow: 0px 0px 3px 1px rgba(0, 0, 200, 0.4);
+/*    background: #f3f3ff;*/
+}
+
+.placeholder-container {
+    grid-area: placeholder;
+    justify-self: center;
 }
 
 .placeholder {
     text-align: center;
-    font-weight: bold;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
+.poj-unicode-container {
+    padding-left: 3px;
+    line-height: 1.2;
+}
 
 .poj-unicode, .poj-unicode-matched-text {
-    font: 1em/1.5 Georgia, serif;
-    font-weight: bold;
+}
+
+.poj-unicode-matched-text {
+}
+
+.poj-normalized-container {
+    padding-right: 1px;
+    padding-top: 1px;
 }
 
 .poj-normalized {
+    position: relative;
     float: right;
 }
 
 .poj-normalized, .poj-normalized-matched-text {
-    font-size: 7px;
+    font-size: 10px;
     color: grey;
 }
 
+.english-container {
+}
+
 .english-definition {
-    white-space: pre-wrap;
-    padding-left: 1.5em;
+    font-size: 14px;
+    color: #345;
+    position: relative;
+    float: left;
+    padding-left: 10px;
     font-style: italic;
 }
 
 .english-definition-matched-text {
-    font-weight: italic;
 }
 
 
 .poj-normalized-matched-text, .poj-unicode-matched-text, .english-definition-matched-text {
     color: darkred;
-}
-
-
-.poj {
-    padding-left: 3px;
+    text-decoration: underline;
 }
 
 .search-bar {
-    display: grid;
+    grid-area: searchbar;
     width: 100%;
     position: relative;
 }
@@ -73,33 +125,34 @@ body {
 }
 
 .search-bar input {
+    position: relative;
+/*    z-index: -1;*/
     background: white;
 
     padding-left: 32px;
     padding-bottom: 2px;
 
-    box-shadow: 2px 3px 20px 1px rgba(0, 0, 0, 0.1);
-    border: 2px grey solid;
+/*    box-shadow: 2px 3px 5px 5px rgba(0, 0, 0, 0.2);*/
+    border: 1px grey solid;
     border-radius: 15px;
 
     height: 30px;
     font-size: 20px;
     color: #333333;
 
-    transition: all .2s ease;
+/*    transition: all .2s ease;*/
 }
 
 .search-bar input:focus {
-    box-shadow: 4px 6px 40px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 0px 2px 2px rgba(0, 0, 200, 0.2);
     outline: none;
-    border: 2px lightblue solid;
+/*    border: 1px lightblue solid;*/
 }
 
 .mag-glass {
     position: absolute;
     top: 9px;
     left: 10px;
-    margin: 0px;
     width: 18px; 
     height: 18px; 
     color: grey;

@@ -4,7 +4,14 @@ import fuzzysort from "fuzzysort";
 
 import "./cha_taigi.css";
 
+// TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): Copy to clipboard on click or tab-enter
+// TODO(high): use <mark></mark> instead of individual spans
+// TODO(low): have GET param for search (and options?)
+// TODO(low): store options between sessions
+// TODO(low): radio buttons of which text to search
+// TODO(wishlist): dark mode support
+// TODO(wishlist): non-javascript support?
 
 const poj = [];
 
@@ -23,15 +30,25 @@ const Taigi = ({poj_unicode, english, poj_normalized}) => {
   const engl = <span className="english-definition" dangerouslySetInnerHTML={html_english}></span>;
   return (
     <div className="entry-container">
-      <div className="poj">
-        {poju} {pojn}
-      </div>
-      <div className="english">
+      <div className="poj-normalized-container">
+        {pojn}
+      </div> 
+      <div className="poj-unicode-container">
+        {poju}
+      </div> 
+      <div className="english-container">
         {engl}
       </div>
     </div>
   );
 };
+
+const searchBar = (onChange) => {
+    return <div className="search-bar">
+      <input autoFocus={true} placeholder="Search..." onChange={onChange} />
+      <svg aria-hidden="true" className="mag-glass" ><path d="M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z"></path></svg>
+    </div>
+}
 
 class App extends Component {
   constructor(props) {
@@ -116,10 +133,7 @@ class App extends Component {
 
     return (
       <div className="App">
-        <div className="search-bar">
-          <input autoFocus={true} placeholder="Search..." onChange={onChange} />
-          <svg aria-hidden="true" className="mag-glass" ><path d="M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z"></path></svg>
-        </div>
+        {searchBar(onChange)}
         <div className="placeholder-container">
           {this.query ? null : this.placeholder}
         </div>
