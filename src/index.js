@@ -6,6 +6,7 @@ import "./cha_taigi.css";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): Copy to clipboard on click or tab-enter
+// TODO(high): have search updates appear asynchronously from typing
 // TODO(high): use <mark></mark> instead of individual spans
 // TODO(low): have GET param for search (and options?)
 // TODO(low): store options between sessions

@@ -21,10 +21,6 @@ body {
         "results";
 }
 
-.hlsearch {
-    color: green;
-}
-
 .results-container {
     margin-left: 5px;
     margin-right: 0px;
@@ -70,7 +66,13 @@ body {
 
 .poj-unicode-container {
     padding-left: 3px;
-    line-height: 1.2;
+    line-height: 1;
+}
+
+.poj-unicode {
+    border-radius: 5px;
+    padding-left: 2px;
+    padding-right: 2px;
 }
 
 .poj-unicode, .poj-unicode-matched-text {
@@ -111,7 +113,6 @@ body {
 
 
 .poj-normalized-matched-text, .poj-unicode-matched-text, .english-definition-matched-text {
-    color: darkred;
     text-decoration: underline;
 }
 
