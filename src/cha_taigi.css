@@ -31,8 +31,9 @@ body {
     margin-top: 3px;
     grid-area: results;
     display: grid;
+    /* TODO: split into two on wide/desktop screen*/
     grid-template-areas:
-        "result result";
+        "result";
     row-gap: 3px;
     column-gap: 3px;
 }
@@ -79,11 +80,11 @@ body {
 }
 
 .poj-normalized-container {
-    padding-right: 1px;
-    padding-top: 1px;
+    padding-right: 2px;
 }
 
 .poj-normalized {
+    text-align: right;
     position: relative;
     float: right;
 }
