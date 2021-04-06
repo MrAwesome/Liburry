@@ -44,6 +44,9 @@ const Taigi = ({poj_unicode, english, poj_normalized}) => {
   );
 };
 
+const loaded_placeholder = <div className="placeholder">Type to search!</div>;
+const loading_placeholder = <div className="placeholder">Loading...</div>;
+
 const searchBar = (onChange) => {
     return <div className="search-bar">
       <input autoFocus={true} placeholder="Search..." onChange={onChange} />
@@ -56,20 +59,24 @@ class App extends Component {
     super(props);
     this.state = {
       query: "",
+      searching: false,
+      results: null,
     };
     this.local_poj = poj;
     this.fuzzysort = fuzzysort;
     this.timeout = 0;
-    this.searching = false;
-    this.placeholder = <div className="placeholder">Loading...</div>;
+    this.placeholder = loading_placeholder;
     this.output = null;
+    this.onChange = this.onChange.bind(this);
+  }
 
+  componentDidMount() {
     fetch(rem_url)
       .then((response) => {
         return response.json();
       })
       .then((data) => {
-        this.placeholder = <div className="placeholder">Type to search!</div>;
+        this.placeholder = loaded_placeholder;
         data.forEach(
           t => {
             t.poj_prepped = fuzzysort.prepare(t.poj_unicode);
@@ -82,23 +89,20 @@ class App extends Component {
         this.setState(this.state);
       });
 
-    this.onChange = this.onChange.bind(this);
   }
 
   onChange(e) {
     const {target = {}} = e;
     const {value = ""} = target;
 
-    this.query = value;
-    this.update_query();
+    this.update_query(value);
   }
 
-  update_query() {
-    this.searching = true;
-    this.setState(this.state);
+  update_query(query) {
+    this.setState({query, searching: true});
 
     const search_results = fuzzysort.go(
-      this.query,
+      query,
       this.local_poj,
       {
         keys: ["poj_norm_prepped", "eng_prepped", "poj_unicode"],
@@ -107,9 +111,9 @@ class App extends Component {
         threshold: -10000,
       },
     );
-    this.searching = false;
+    this.setState({searching: false});
 
-    this.output = search_results
+    const results = search_results
       .slice(0, 50)
       .map((x, i) => {
         const poj_norm_pre_paren = fuzzysort.highlight(x[0],
@@ -126,20 +130,22 @@ class App extends Component {
 
       })
 
-    this.setState(this.state);
+    this.setState({results});
   }
 
   render() {
     const {onChange} = this;
-
+    const {results, query} = this.state;
+    
+    // TODO: store boolean state of loading placeholder
     return (
       <div className="App">
         {searchBar(onChange)}
         <div className="placeholder-container">
-          {this.query ? null : this.placeholder}
+          {query ? null : this.placeholder}
         </div>
         <div className="results-container">
-          {this.output}
+          {results}
         </div>
       </div>
     );

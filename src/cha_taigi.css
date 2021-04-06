@@ -21,10 +21,13 @@ body {
         "results";
 }
 
+.results-container, .placeholder-container {
+    margin-top: 3px;
+}
+
 .results-container {
     margin-left: 5px;
     margin-right: 0px;
-    margin-top: 3px;
     grid-area: results;
     display: grid;
     /* TODO: split into two on wide/desktop screen*/
