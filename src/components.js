@@ -69,10 +69,11 @@ export class PlaceholderArea extends PureComponent {
 
 
 export class ResultsArea extends Component {
-  shouldComponentUpdate() {
-    const {searching} = this.props;
-    return !searching;
-  }
+// TODO: Doesn't seem to work as intended
+//  shouldComponentUpdate() {
+//    const {searching} = this.props;
+//    return !searching;
+//  }
 
   render() {
     const {query, results} = this.props;
