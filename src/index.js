@@ -2,24 +2,31 @@ import React, {Component} from "react";
 import ReactDOM from "react-dom";
 import fuzzysort from "fuzzysort";
 
-import {Taigi, SearchBar, PlaceholderArea, ResultsArea} from "./components.js";
+import {EntryContainer, SearchBar, PlaceholderArea, ResultsArea} from "./components.js";
 
 import "./cha_taigi.css";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
-// TODO(high): Copy to clipboard on click or tab-enter
+// TODO(high): Copy to clipboard on click or tab-enter (allow for tab/hover enter/click focus equivalency?)
 // TODO(high): have search updates appear asynchronously from typing
 // TODO(high): use react-window or react-virtualized to only need to render X results at a time
 // TODO(high): figure out why first search is slow, and if it can be sped up
 // TODO(high): use <mark></mark> instead of individual spans
+// TODO(high): create an index of all 3 categories combined, and search that as text?
+// TODO(high): remove parentheses from unicode entries, treat as separate results
+// TODO(high): let spaces match hyphens
+// TODO(script the process of CSV -> processed JSON): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): keybinding for search (/)
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
 // TODO(low): have GET param for search (and options?)
+// TODO(low): prettier search/load indicators
 // TODO(low): store options between sessions
 // TODO(low): radio buttons of which text to search
 // TODO(wishlist): dark mode support
+// TODO(wishlist): convert to typescript
 // TODO(wishlist): non-javascript support?
+// TODO(later): generalize for non-english definition
 
 const SEARCH_RESULTS_LIMIT = 20;
 const DISPLAY_RESULTS_LIMIT = 20;
@@ -28,9 +35,11 @@ const poj = [];
 //const rem_url = "maryknoll_smaller.json";
 const rem_url = "maryknoll_normalized_minified.json"
 
+const SEARCH_KEYS = ["poj_norm_prepped", "eng_prepped", "poj_unicode"];
+
 const fuzzyopts = {
-  keys: ["poj_norm_prepped", "eng_prepped", "poj_unicode"],
-  allowTypo: false,
+  keys: SEARCH_KEYS,
+  allowTypo: true,
   limit: SEARCH_RESULTS_LIMIT,
   threshold: -10000,
 };
@@ -104,17 +113,30 @@ class App extends Component {
     const results = raw_results
       .slice(0, DISPLAY_RESULTS_LIMIT)
       .map((x, i) => {
-        const poj_norm_pre_paren = fuzzysort.highlight(x[0],
+        const poj_normalized_pre_highlight = x[0];
+        const english_pre_highlight = x[1];
+        const poj_unicode_pre_highlight = x[2];
+
+        const poj_norm_pre_paren = fuzzysort.highlight(poj_normalized_pre_highlight,
           "<span class=\"poj-normalized-matched-text\" class=hlsearch>", "</span>")
           || x.obj.poj_normalized;
-        const poj_norm_high = "(" + poj_norm_pre_paren + ")";
-        const eng_high = fuzzysort.highlight(x[1],
+        const poj_normalized = "(" + poj_norm_pre_paren + ")";
+        const english = fuzzysort.highlight(english_pre_highlight,
           "<span class=\"english-definition-matched-text\" class=hlsearch>", "</span>")
           || x.obj.english;
-        const poj_unicode = fuzzysort.highlight(x[2],
+        const poj_unicode = fuzzysort.highlight(poj_unicode_pre_highlight,
           "<span class=\"poj-unicode-matched-text\" class=hlsearch>", "</span>")
           || x.obj.poj_unicode;
-        return <Taigi key={i} poj_unicode={poj_unicode} english={eng_high} poj_normalized={poj_norm_high} />;
+
+        const loc_props = {
+          key: i, // NOTE: still unused
+          poj_unicode_text: x.obj.poj_unicode,
+          poj_unicode,
+          poj_normalized,
+          english,
+        }
+
+        return <EntryContainer {...loc_props} />;
       })
 
     this.setState({results, query, searching: false});

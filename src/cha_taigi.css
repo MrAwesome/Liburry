@@ -8,7 +8,8 @@ input {
 }
 
 body {
-    background: #d7eed7;
+/*    background: #d7eed7;*/
+    background: #ADD8E6;
 }
 
 .App {
@@ -33,29 +34,65 @@ body {
     /* TODO: split into two on wide/desktop screen*/
     grid-template-areas:
         "result";
-    row-gap: 3px;
+    row-gap: 4px;
     column-gap: 3px;
 }
 
-.entry-container, .placeholder {
-    background: white;
+.entry-container, .placeholder, .entry-container-clicked {
+    position: relative;
     border-radius: 15px;
+    border: 1px solid lightgrey;
     padding-top: 3px;
     padding-bottom: 3px;
     padding-left: 5px;
     padding-right: 3px;
-    border: 1px solid grey;
-    box-shadow: 1px 3px 3px 1px rgba(0, 0, 0, 0.15);
-}
-
-.entry-container {
 }
 
 .entry-container:hover {
-    box-shadow: 0px 0px 3px 1px rgba(0, 0, 200, 0.4);
-/*    background: #f3f3ff;*/
+    border: 1px solid grey;
+    box-shadow: 1px 2px 3px 1px rgba(0, 0, 0, 0.3);
 }
 
+.entry-container, .placeholder {
+    background: white;
+    box-shadow: 1px 2px 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+.entry-container {
+    transition: background 1s ease-out;
+}
+
+.entry-container-clicked {
+    background: #FFD586;
+    border: 1px solid lightgrey;
+    box-shadow: 1px 1px 4px 2px rgba(0, 0, 0, 0.2);
+}
+
+.fading-notif, .clicked-notif {
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    line-height: 1;
+    opacity: 50%;
+    cursor: default;
+    color: black;
+    background: #eee;
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px grey solid;
+}
+
+.clicked-notif {
+}
+
+
+.fading-notif {
+    opacity: 0;
+/*    transition: all .5s ease;*/
+}
+/*TODO: make loading container grey*/
 .placeholder-container {
     grid-area: placeholder;
     justify-self: center;
@@ -126,33 +163,27 @@ body {
     position: relative;
 }
 
-::placeholder {
-    color: #bbbbbb;
-}
-
 .search-bar input {
     position: relative;
-/*    z-index: -1;*/
     background: white;
 
     padding-left: 32px;
     padding-bottom: 2px;
 
-/*    box-shadow: 2px 3px 5px 5px rgba(0, 0, 0, 0.2);*/
-    border: 1px grey solid;
+    border: 0px white solid;
     border-radius: 15px;
 
     height: 30px;
     font-size: 20px;
     color: #333333;
-
-/*    transition: all .2s ease;*/
+    box-shadow: 1px 2px 2px 1px rgba(0, 0, 0, 0.2);
+    transition: all .3s ease;
 }
 
 .search-bar input:focus {
-    box-shadow: 0px 0px 2px 2px rgba(0, 0, 200, 0.2);
+    box-shadow: 1px 2px 3px 2px rgba(0, 0, 0, 0.2);
     outline: none;
-/*    border: 1px lightblue solid;*/
+    transition: all .3s ease;
 }
 
 .mag-glass {

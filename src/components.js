@@ -1,8 +1,33 @@
 import React, {Component, PureComponent} from "react";
 
-export class Taigi extends PureComponent {
+export class EntryContainer extends PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      clicked: false,
+    }
+    this.myOnClick = this.myOnClick.bind(this);
+    this.resetClicked = this.resetClicked.bind(this);
+    this.clickedNotif = this.clickedNotif.bind(this);
+  }
+
+  myOnClick(_) {
+    navigator.clipboard.writeText(this.props.poj_unicode_text)
+    this.setState({clicked: true});
+    setTimeout(() => this.resetClicked(), 500);
+  }
+
+  resetClicked() {
+    this.setState({clicked: false});
+  }
+
+  clickedNotif() {
+    return <div className="clicked-notif">Copied to clipboard!</div>;
+  }
+
   render() {
     const {poj_unicode, poj_normalized, english} = this.props;
+    const {clicked} = this.state;
     // FIXME(https://github.com/farzher/fuzzysort/issues/66)
     const html_poj_unicode = {__html: poj_unicode};
     const html_poj_normalized = {__html: poj_normalized};
@@ -11,16 +36,17 @@ export class Taigi extends PureComponent {
     const pojn = <span className="poj-normalized" dangerouslySetInnerHTML={html_poj_normalized}></span>;
     const engl = <span className="english-definition" dangerouslySetInnerHTML={html_english}></span>;
     return (
-      <div className="entry-container">
+      <div className={clicked ? "entry-container-clicked" : "entry-container"} onClick={this.myOnClick}>
         <div className="poj-normalized-container">
           {pojn}
         </div>
-        <div className="poj-unicode-container">
+        <span className="poj-unicode-container">
           {poju}
-        </div>
+        </span>
         <div className="english-container">
           {engl}
         </div>
+        {clicked ? this.clickedNotif() : null}
       </div>
     );
   };
@@ -69,11 +95,11 @@ export class PlaceholderArea extends PureComponent {
 
 
 export class ResultsArea extends Component {
-// TODO: Doesn't seem to work as intended
-//  shouldComponentUpdate() {
-//    const {searching} = this.props;
-//    return !searching;
-//  }
+  // TODO: Doesn't seem to work as intended
+  //  shouldComponentUpdate() {
+  //    const {searching} = this.props;
+  //    return !searching;
+  //  }
 
   render() {
     const {query, results} = this.props;
