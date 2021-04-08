@@ -23,7 +23,11 @@ import "./cha_taigi.css";
 // TODO(low): prettier search/load indicators
 // TODO(low): store options between sessions
 // TODO(low): radio buttons of which text to search
+// TODO(low): title
+// TODO(low): copyright, links, etc
+// TODO(low): fix the default/preview text
 // TODO(wishlist): dark mode support
+// TODO(wishlist): "add to desktop" shortcut
 // TODO(wishlist): convert to typescript
 // TODO(wishlist): non-javascript support?
 // TODO(later): generalize for non-english definition
