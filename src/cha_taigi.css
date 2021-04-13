@@ -1,7 +1,7 @@
 * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-family: "Noto Sans";
+    font-family: 'Noto Sans TC', 'Noto Sans', sans-serif;
 
 }
 input {
@@ -107,6 +107,7 @@ body {
 .poj-unicode-container {
     padding-left: 3px;
     line-height: 1;
+    display: inline-block;
 }
 
 .poj-unicode {
@@ -114,13 +115,20 @@ body {
     padding-left: 2px;
     padding-right: 2px;
     font-weight: normal;
+    user-select: text;
 }
 
-.poj-unicode, .poj-unicode-matched-text {
+.hoabun-container {
+    font-size: 14px;
+    color: #345;
+    display: inline-block;
+    user-select: none;
 }
 
-.poj-unicode-matched-text {
+.hoabun { 
+    user-select: text;
 }
+
 
 .poj-normalized-container {
     padding-right: 2px;
@@ -152,8 +160,7 @@ body {
 .english-definition-matched-text {
 }
 
-
-.poj-normalized-matched-text, .poj-unicode-matched-text, .english-definition-matched-text {
+.poj-normalized-matched-text, .poj-unicode-matched-text, .english-definition-matched-text, .hoabun-matched-text {
     text-decoration: underline;
 }
 

@@ -7,6 +7,9 @@ import {EntryContainer, SearchBar, PlaceholderArea, ResultsArea} from "./compone
 import "./cha_taigi.css";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
+// TODO(high): Migrate to TypeScript
+// TODO(high): Fix clipboard notif not working on most browsers
+// TODO(high): Fix typing before load not searching
 // TODO(high): Copy to clipboard on click or tab-enter (allow for tab/hover enter/click focus equivalency?)
 // TODO(high): have search updates appear asynchronously from typing
 // TODO(high): use react-window or react-virtualized to only need to render X results at a time
@@ -23,12 +26,12 @@ import "./cha_taigi.css";
 // TODO(low): prettier search/load indicators
 // TODO(low): store options between sessions
 // TODO(low): radio buttons of which text to search
+// TODO(low): hoabun text click should copy hoabun?
 // TODO(low): title
 // TODO(low): copyright, links, etc
 // TODO(low): fix the default/preview text
 // TODO(wishlist): dark mode support
 // TODO(wishlist): "add to desktop" shortcut
-// TODO(wishlist): convert to typescript
 // TODO(wishlist): non-javascript support?
 // TODO(later): generalize for non-english definition
 
@@ -36,16 +39,15 @@ const SEARCH_RESULTS_LIMIT = 20;
 const DISPLAY_RESULTS_LIMIT = 20;
 const poj = [];
 
-//const rem_url = "maryknoll_smaller.json";
-const rem_url = "maryknoll_normalized_minified.json"
+const rem_url = "maryknoll.json"
 
-const SEARCH_KEYS = ["poj_norm_prepped", "eng_prepped", "poj_unicode"];
+const SEARCH_KEYS = ["poj_norm_prepped", "eng_prepped", "poj_unicode", "hoa_prepped"];
 
 const fuzzyopts = {
   keys: SEARCH_KEYS,
   allowTypo: true,
   limit: SEARCH_RESULTS_LIMIT,
-  threshold: -10000,
+  threshold: -1000,
 };
 
 class App extends Component {
@@ -73,9 +75,10 @@ class App extends Component {
       .then((data) => {
         data.forEach(
           t => {
-            t.poj_prepped = fuzzysort.prepareSlow(t.poj_unicode);
-            t.poj_norm_prepped = fuzzysort.prepareSlow(t.poj_normalized);
-            t.eng_prepped = fuzzysort.prepareSlow(t.english);
+            t.poj_prepped = fuzzysort.prepareSlow(t.p);
+            t.poj_norm_prepped = fuzzysort.prepareSlow(t.n);
+            t.eng_prepped = fuzzysort.prepareSlow(t.e);
+            t.hoa_prepped = fuzzysort.prepareSlow(t.h);
           }
         )
         this.local_poj = data;
@@ -120,22 +123,28 @@ class App extends Component {
         const poj_normalized_pre_highlight = x[0];
         const english_pre_highlight = x[1];
         const poj_unicode_pre_highlight = x[2];
+        const hoabun_pre_highlight = x[3];
 
         const poj_norm_pre_paren = fuzzysort.highlight(poj_normalized_pre_highlight,
           "<span class=\"poj-normalized-matched-text\" class=hlsearch>", "</span>")
-          || x.obj.poj_normalized;
+          || x.obj.n;
         const poj_normalized = "(" + poj_norm_pre_paren + ")";
         const english = fuzzysort.highlight(english_pre_highlight,
           "<span class=\"english-definition-matched-text\" class=hlsearch>", "</span>")
-          || x.obj.english;
+          || x.obj.e;
         const poj_unicode = fuzzysort.highlight(poj_unicode_pre_highlight,
           "<span class=\"poj-unicode-matched-text\" class=hlsearch>", "</span>")
-          || x.obj.poj_unicode;
+          || x.obj.p;
+
+        const hoabun = fuzzysort.highlight(hoabun_pre_highlight,
+          "<span class=\"hoabun-matched-text\" class=hlsearch>", "</span>")
+          || x.obj.h;
 
         const loc_props = {
           key: i, // NOTE: still unused
-          poj_unicode_text: x.obj.poj_unicode,
+          poj_unicode_text: x.obj.p,
           poj_unicode,
+          hoabun,
           poj_normalized,
           english,
         }

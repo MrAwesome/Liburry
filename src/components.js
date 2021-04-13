@@ -22,19 +22,23 @@ export class EntryContainer extends PureComponent {
   }
 
   clickedNotif() {
-    return <div className="clicked-notif">Copied to clipboard!</div>;
+    return <div className="clicked-notif">Copied POJ to clipboard!</div>;
   }
 
   render() {
-    const {poj_unicode, poj_normalized, english} = this.props;
+    const {poj_unicode, poj_normalized, english, hoabun} = this.props;
     const {clicked} = this.state;
     // FIXME(https://github.com/farzher/fuzzysort/issues/66)
     const html_poj_unicode = {__html: poj_unicode};
     const html_poj_normalized = {__html: poj_normalized};
     const html_english = {__html: english};
+    const html_hoabun = {__html: hoabun};
     const poju = <span className="poj-unicode" dangerouslySetInnerHTML={html_poj_unicode}></span>;
     const pojn = <span className="poj-normalized" dangerouslySetInnerHTML={html_poj_normalized}></span>;
     const engl = <span className="english-definition" dangerouslySetInnerHTML={html_english}></span>;
+    const hoab = <span className="hoabun" dangerouslySetInnerHTML={html_hoabun}></span>;
+
+    // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
     return (
       <div className={clicked ? "entry-container-clicked" : "entry-container"} onClick={this.myOnClick}>
         <div className="poj-normalized-container">
@@ -43,6 +47,10 @@ export class EntryContainer extends PureComponent {
         <span className="poj-unicode-container">
           {poju}
         </span>
+        &nbsp;
+        <div className="hoabun-container">
+          ({hoab})
+        </div>
         <div className="english-container">
           {engl}
         </div>
