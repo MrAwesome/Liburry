@@ -41,13 +41,13 @@ const poj = [];
 
 const rem_url = "maryknoll.json"
 
-const SEARCH_KEYS = ["poj_norm_prepped", "eng_prepped", "poj_unicode", "hoa_prepped"];
+const SEARCH_KEYS = ["poj_norm_prepped", "eng_prepped", "poj_prepped", "hoa_prepped"];
 
 const fuzzyopts = {
   keys: SEARCH_KEYS,
   allowTypo: true,
   limit: SEARCH_RESULTS_LIMIT,
-  threshold: -1000,
+  threshold: -10000,
 };
 
 class App extends Component {
@@ -117,9 +117,11 @@ class App extends Component {
   }
 
   createResultsForRender(raw_results, query) {
+    console.log(raw_results[0]);
     const results = raw_results
       .slice(0, DISPLAY_RESULTS_LIMIT)
       .map((x, i) => {
+        // NOTE: See SEARCH_KEYS for order if confused.
         const poj_normalized_pre_highlight = x[0];
         const english_pre_highlight = x[1];
         const poj_unicode_pre_highlight = x[2];
