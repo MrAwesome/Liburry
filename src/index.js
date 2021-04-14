@@ -117,7 +117,6 @@ class App extends Component {
   }
 
   createResultsForRender(raw_results, query) {
-    console.log(raw_results[0]);
     const results = raw_results
       .slice(0, DISPLAY_RESULTS_LIMIT)
       .map((x, i) => {
