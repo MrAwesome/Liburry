@@ -69,19 +69,24 @@ body {
 }
 
 .fading-notif, .clicked-notif {
-    position: absolute;
+    position: fixed;
     text-align: center;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+/*    top: 50%;*/
+/*    left: 50%;*/
+/*    text-align: right;*/
+    bottom: 0px;
+    right: 0px;
+/*    transform: translate(-50%, -50%);*/
     line-height: 1;
     opacity: 50%;
     cursor: default;
     color: black;
-    background: #eee;
+    background: #FFD586;
     padding: 4px;
+    padding-bottom: 6px;
     border-radius: 10px;
     border: 1px grey solid;
+    z-index: 2;
 }
 
 .clicked-notif {
