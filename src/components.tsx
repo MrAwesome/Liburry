@@ -1,7 +1,7 @@
-import React, {Component, PureComponent} from "react";
+import * as React from "react";
 
-export class EntryContainer extends PureComponent {
-  constructor(props) {
+export class EntryContainer extends React.PureComponent<any, any> {
+  constructor(props: any) {
     super(props);
     this.state = {
       clicked: false,
@@ -11,7 +11,7 @@ export class EntryContainer extends PureComponent {
     this.clickedNotif = this.clickedNotif.bind(this);
   }
 
-  myOnClick(_) {
+  myOnClick(_: any) {
     navigator.clipboard.writeText(this.props.poj_unicode_text)
     this.setState({clicked: true});
     setTimeout(() => this.resetClicked(), 500);
@@ -61,7 +61,7 @@ export class EntryContainer extends PureComponent {
 }
 
 
-export class Placeholder extends PureComponent {
+export class Placeholder extends React.PureComponent<any, any> {
   render() {
     const {text} = this.props;
     return <div className="placeholder">{text}</div>;
@@ -72,7 +72,7 @@ const loaded_placeholder = <Placeholder text="Type to search!" />;
 const searching_placeholder = <Placeholder text="Searching..." />;
 const no_results_placeholder = <Placeholder text="No results found!" />;
 
-export class PlaceholderArea extends PureComponent {
+export class PlaceholderArea extends React.PureComponent<any, any> {
   render() {
     const {query, loaded, searching, num_results} = this.props;
 
@@ -102,7 +102,7 @@ export class PlaceholderArea extends PureComponent {
 }
 
 
-export class ResultsArea extends Component {
+export class ResultsArea extends React.Component<any, any> {
   // TODO: Doesn't seem to work as intended
   //  shouldComponentUpdate() {
   //    const {searching} = this.props;
@@ -117,7 +117,7 @@ export class ResultsArea extends Component {
   }
 }
 
-export class SearchBar extends PureComponent {
+export class SearchBar extends React.PureComponent<any, any> {
   render() {
     const {onChange} = this.props;
     return <div className="search-bar">

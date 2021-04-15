@@ -1,4 +1,3 @@
-//import React, {Component} from "react";
 import * as React from "react";
 import ReactDOM from "react-dom";
 import fuzzysort from "fuzzysort";
@@ -38,137 +37,186 @@ import "./cha_taigi.css";
 
 const SEARCH_RESULTS_LIMIT = 20;
 const DISPLAY_RESULTS_LIMIT = 20;
-const poj = [];
+const EMPTY_SEARCH = {query: "", promise: null};
 
 const rem_url = "maryknoll.json"
 
-const SEARCH_KEYS = ["poj_norm_prepped", "eng_prepped", "poj_prepped", "hoa_prepped"];
+const SEARCH_KEYS = ["poj_normalized_prepped", "eng_prepped", "poj_prepped", "hoa_prepped"];
+interface Prepared {
+    // Original target string
+    readonly target: string
+}
+
+interface SearchableEntry extends Object {
+    readonly e: string,
+    eng_prepped: Prepared,
+    readonly p: string,
+    poj_prepped: Prepared,
+    readonly n: string,
+    poj_normalized_prepped: Prepared,
+    readonly h: string,
+    hoa_prepped: Prepared,
+}
+
+interface Result {
+    readonly score: number,
+    readonly target: string,
+    readonly indexes: number[],
+}
+
+interface KeyResult extends Result {
+    readonly obj: SearchableEntry,
+}
+
+interface KeyResults extends ReadonlyArray<KeyResult> {
+    readonly score: number
+    readonly obj: SearchableEntry
+}
+
+
 
 const fuzzyopts = {
-  keys: SEARCH_KEYS,
-  allowTypo: true,
-  limit: SEARCH_RESULTS_LIMIT,
-  threshold: -10000,
+    keys: SEARCH_KEYS,
+    allowTypo: true,
+    limit: SEARCH_RESULTS_LIMIT,
+    threshold: -10000,
 };
 
 class App extends React.Component<any, any> {
-  constructor(props) {
-    super(props);
-    this.state = {
-      raw_results: [],
-      results: [],
-      loaded: false,
-    };
-    this.current_search = {query: "", promise: null};
-    this.query = "";
-    this.local_poj = poj;
-    this.output = null;
-    this.onChange = this.onChange.bind(this);
-    this.createResultsForRender = this.createResultsForRender.bind(this);
-  }
-
-  componentDidMount() {
-    fetch(rem_url)
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        data.forEach(
-          t => {
-            t.poj_prepped = fuzzysort.prepareSlow(t.p);
-            t.poj_norm_prepped = fuzzysort.prepareSlow(t.n);
-            t.eng_prepped = fuzzysort.prepareSlow(t.e);
-            t.hoa_prepped = fuzzysort.prepareSlow(t.h);
-          }
-        )
-        this.local_poj = data;
-        this.setState({loaded: true});
-      });
-
-  }
-
-  onChange(e) {
-    const {target = {}} = e;
-    const {value = ""} = target;
-    const query = value;
-
-    const current_search = this.current_search;
-
-    if (query === "") {
-      if (current_search.promise != null) {current_search.promise.cancel();}
-      this.setState({query, searching: false});
-      return;
+    constructor(props: any) {
+        super(props);
+        this.state = {
+            raw_results: [],
+            results: [],
+            dictionary_db: [],
+            ongoing_search: EMPTY_SEARCH,
+        };
+        this.onChange = this.onChange.bind(this);
+        this.createResultsForRender = this.createResultsForRender.bind(this);
     }
 
-    const new_search_promise = fuzzysort.goAsync(
-      query,
-      this.local_poj,
-      fuzzyopts,
-    );
-    const new_search = {query, promise: new_search_promise};
+    componentDidMount() {
+        fetch(rem_url)
+            .then((response) => {
+                return response.json();
+            })
+            .then((data: SearchableEntry[]) => {
+                data.forEach(
+                    t => {
+                        // NOTE: prepareSlow does exist.
+                        // @ts-ignore
+                        t.poj_prepped = fuzzysort.prepareSlow(t.p);
+                        // @ts-ignore
+                        t.poj_normalized_prepped = fuzzysort.prepareSlow(t.n);
+                        // @ts-ignore
+                        t.eng_prepped = fuzzysort.prepareSlow(t.e);
+                        // @ts-ignore
+                        t.hoa_prepped = fuzzysort.prepareSlow(t.h);
+                    }
+                )
+                this.setState({
+                    dictionary_db: data,
+                });
+            });
 
-    if (current_search.promise != null) {current_search.promise.cancel();}
-    new_search.promise.cancel = new_search.promise.cancel.bind(new_search);
+    }
 
-    new_search.promise.then(raw_results => this.createResultsForRender(raw_results, query)).catch(console.log);
+    onChange(e: any) {
+        const {dictionary_db, ongoing_search} = this.state;
+        const {target = {}} = e;
+        const {value = ""} = target;
+        const query = value;
 
-    this.current_search = new_search;
-    this.setState({query, searching: true});
-  }
-
-  createResultsForRender(raw_results, query) {
-    const results = raw_results
-      .slice(0, DISPLAY_RESULTS_LIMIT)
-      .map((x, i) => {
-        // NOTE: See SEARCH_KEYS for order if confused.
-        const poj_normalized_pre_highlight = x[0];
-        const english_pre_highlight = x[1];
-        const poj_unicode_pre_highlight = x[2];
-        const hoabun_pre_highlight = x[3];
-
-        const poj_norm_pre_paren = fuzzysort.highlight(poj_normalized_pre_highlight,
-          "<span class=\"poj-normalized-matched-text\" class=hlsearch>", "</span>")
-          || x.obj.n;
-        const poj_normalized = "(" + poj_norm_pre_paren + ")";
-        const english = fuzzysort.highlight(english_pre_highlight,
-          "<span class=\"english-definition-matched-text\" class=hlsearch>", "</span>")
-          || x.obj.e;
-        const poj_unicode = fuzzysort.highlight(poj_unicode_pre_highlight,
-          "<span class=\"poj-unicode-matched-text\" class=hlsearch>", "</span>")
-          || x.obj.p;
-
-        const hoabun = fuzzysort.highlight(hoabun_pre_highlight,
-          "<span class=\"hoabun-matched-text\" class=hlsearch>", "</span>")
-          || x.obj.h;
-
-        const loc_props = {
-          key: i, // NOTE: still unused
-          poj_unicode_text: x.obj.p,
-          poj_unicode,
-          hoabun,
-          poj_normalized,
-          english,
+        if (query === "") {
+            if (ongoing_search.promise != null) {
+                ongoing_search.promise.cancel();
+            }
+            this.setState({query, searching: false, ongoing_search: EMPTY_SEARCH});
+            return;
         }
 
-        return <EntryContainer {...loc_props} />;
-      })
+        const new_search_promise = fuzzysort.goAsync(
+            query,
+            dictionary_db,
+            fuzzyopts,
+        );
+        const new_search = {query, promise: new_search_promise};
 
-    this.setState({results, query, searching: false});
-  }
+        if (ongoing_search.promise != null) {
+            ongoing_search.promise.cancel();
+        }
+        new_search.promise.cancel = new_search.promise.cancel.bind(new_search);
 
-  render() {
-    const {onChange} = this;
-    const {results, query, loaded, searching} = this.state;
+        new_search.promise.then(
+            raw_results =>
+                this.createResultsForRender(
+                    // Deal with lack of fuzzysort interfaces
+                    // @ts-ignore
+                    raw_results,
+                    query
+                )).catch(console.log);
 
-    // TODO: store boolean state of loading placeholder
-    return (
-      <div className="App">
-        <SearchBar onChange={onChange} />
-        <PlaceholderArea query={query} num_results={results.length} loaded={loaded} searching={searching} />
-        <ResultsArea results={results} query={query} searching={searching} />
-      </div>
-    );
-  }
+        this.setState({
+            query,
+            searching: true,
+            ongoing_search: new_search
+        });
+    }
+
+    createResultsForRender(raw_results: KeyResults[], query: string) {
+        console.log("res", raw_results[0]);
+        const results = raw_results
+            .slice(0, DISPLAY_RESULTS_LIMIT)
+            .map((fuzzysort_result: KeyResults, i: number) => {
+                // NOTE: See SEARCH_KEYS for order if confused.
+                const poj_normalized_pre_highlight = fuzzysort_result[0];
+                const english_pre_highlight = fuzzysort_result[1];
+                const poj_unicode_pre_highlight = fuzzysort_result[2];
+                const hoabun_pre_highlight = fuzzysort_result[3];
+
+                const poj_norm_pre_paren = fuzzysort.highlight(poj_normalized_pre_highlight,
+                    "<span class=\"poj-normalized-matched-text\" class=hlsearch>", "</span>")
+                    || fuzzysort_result.obj.n;
+                const poj_normalized = "(" + poj_norm_pre_paren + ")";
+                const english = fuzzysort.highlight(english_pre_highlight,
+                    "<span class=\"english-definition-matched-text\" class=hlsearch>", "</span>")
+                    || fuzzysort_result.obj.e;
+                const poj_unicode = fuzzysort.highlight(poj_unicode_pre_highlight,
+                    "<span class=\"poj-unicode-matched-text\" class=hlsearch>", "</span>")
+                    || fuzzysort_result.obj.p;
+
+                const hoabun = fuzzysort.highlight(hoabun_pre_highlight,
+                    "<span class=\"hoabun-matched-text\" class=hlsearch>", "</span>")
+                    || fuzzysort_result.obj.h;
+
+                const loc_props = {
+                    key: i, // NOTE: still unused
+                    poj_unicode_text: fuzzysort_result.obj.p,
+                    poj_unicode,
+                    hoabun,
+                    poj_normalized,
+                    english,
+                }
+
+                return <EntryContainer {...loc_props} />;
+            })
+
+        this.setState({results, query, searching: false});
+    }
+
+    render() {
+        const {onChange} = this;
+        const {results, query, dictionary_db, searching} = this.state;
+
+        // TODO: store boolean state of loading placeholder
+        return (
+            <div className="App">
+                <SearchBar onChange={onChange} />
+                <PlaceholderArea query={query} num_results={results.length} loaded={!!dictionary_db} searching={searching} />
+                <ResultsArea results={results} query={query} searching={searching} />
+            </div>
+        );
+    }
 }
 
 const rootElement = document.getElementById("root");

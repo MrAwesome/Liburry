@@ -14,6 +14,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -35,7 +46,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SearchBar = exports.ResultsArea = exports.PlaceholderArea = exports.Placeholder = exports.EntryContainer = void 0;
-var react_1 = __importStar(require("react"));
+var jsx_runtime_1 = require("react/jsx-runtime");
+var React = __importStar(require("react"));
 var EntryContainer = /** @class */ (function (_super) {
     __extends(EntryContainer, _super);
     function EntryContainer(props) {
@@ -58,7 +70,7 @@ var EntryContainer = /** @class */ (function (_super) {
         this.setState({ clicked: false });
     };
     EntryContainer.prototype.clickedNotif = function () {
-        return react_1.default.createElement("div", { className: "clicked-notif" }, "Copied POJ to clipboard!");
+        return jsx_runtime_1.jsx("div", __assign({ className: "clicked-notif" }, { children: "Copied POJ to clipboard!" }), void 0);
     };
     EntryContainer.prototype.render = function () {
         var _a = this.props, poj_unicode = _a.poj_unicode, poj_normalized = _a.poj_normalized, english = _a.english, hoabun = _a.hoabun;
@@ -68,25 +80,18 @@ var EntryContainer = /** @class */ (function (_super) {
         var html_poj_normalized = { __html: poj_normalized };
         var html_english = { __html: english };
         var html_hoabun = { __html: hoabun };
-        var poju = react_1.default.createElement("span", { className: "poj-unicode", dangerouslySetInnerHTML: html_poj_unicode });
-        var pojn = react_1.default.createElement("span", { className: "poj-normalized", dangerouslySetInnerHTML: html_poj_normalized });
-        var engl = react_1.default.createElement("span", { className: "english-definition", dangerouslySetInnerHTML: html_english });
-        var hoab = react_1.default.createElement("span", { className: "hoabun", dangerouslySetInnerHTML: html_hoabun });
+        var poju = jsx_runtime_1.jsx("span", { className: "poj-unicode", dangerouslySetInnerHTML: html_poj_unicode }, void 0);
+        var pojn = jsx_runtime_1.jsx("span", { className: "poj-normalized", dangerouslySetInnerHTML: html_poj_normalized }, void 0);
+        var engl = jsx_runtime_1.jsx("span", { className: "english-definition", dangerouslySetInnerHTML: html_english }, void 0);
+        var hoab = jsx_runtime_1.jsx("span", { className: "hoabun", dangerouslySetInnerHTML: html_hoabun }, void 0);
         // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
-        return (react_1.default.createElement("div", { className: clicked ? "entry-container-clicked" : "entry-container", onClick: this.myOnClick },
-            react_1.default.createElement("div", { className: "poj-normalized-container" }, pojn),
-            react_1.default.createElement("span", { className: "poj-unicode-container" }, poju),
-            "\u00A0",
-            react_1.default.createElement("div", { className: "hoabun-container" },
-                "(",
-                hoab,
-                ")"),
-            react_1.default.createElement("div", { className: "english-container" }, engl),
-            clicked ? this.clickedNotif() : null));
+        return (jsx_runtime_1.jsxs("div", __assign({ className: clicked ? "entry-container-clicked" : "entry-container", onClick: this.myOnClick }, { children: [jsx_runtime_1.jsx("div", __assign({ className: "poj-normalized-container" }, { children: pojn }), void 0),
+                jsx_runtime_1.jsx("span", __assign({ className: "poj-unicode-container" }, { children: poju }), void 0), "\u00A0", jsx_runtime_1.jsxs("div", __assign({ className: "hoabun-container" }, { children: ["(", hoab, ")"] }), void 0),
+                jsx_runtime_1.jsx("div", __assign({ className: "english-container" }, { children: engl }), void 0), clicked ? this.clickedNotif() : null] }), void 0));
     };
     ;
     return EntryContainer;
-}(react_1.PureComponent));
+}(React.PureComponent));
 exports.EntryContainer = EntryContainer;
 var Placeholder = /** @class */ (function (_super) {
     __extends(Placeholder, _super);
@@ -95,15 +100,15 @@ var Placeholder = /** @class */ (function (_super) {
     }
     Placeholder.prototype.render = function () {
         var text = this.props.text;
-        return react_1.default.createElement("div", { className: "placeholder" }, text);
+        return jsx_runtime_1.jsx("div", __assign({ className: "placeholder" }, { children: text }), void 0);
     };
     return Placeholder;
-}(react_1.PureComponent));
+}(React.PureComponent));
 exports.Placeholder = Placeholder;
-var loading_paceholder = react_1.default.createElement(Placeholder, { text: "Loading..." });
-var loaded_placeholder = react_1.default.createElement(Placeholder, { text: "Type to search!" });
-var searching_placeholder = react_1.default.createElement(Placeholder, { text: "Searching..." });
-var no_results_placeholder = react_1.default.createElement(Placeholder, { text: "No results found!" });
+var loading_paceholder = jsx_runtime_1.jsx(Placeholder, { text: "Loading..." }, void 0);
+var loaded_placeholder = jsx_runtime_1.jsx(Placeholder, { text: "Type to search!" }, void 0);
+var searching_placeholder = jsx_runtime_1.jsx(Placeholder, { text: "Searching..." }, void 0);
+var no_results_placeholder = jsx_runtime_1.jsx(Placeholder, { text: "No results found!" }, void 0);
 var PlaceholderArea = /** @class */ (function (_super) {
     __extends(PlaceholderArea, _super);
     function PlaceholderArea() {
@@ -133,10 +138,10 @@ var PlaceholderArea = /** @class */ (function (_super) {
                 placeholder = loading_paceholder;
             }
         }
-        return react_1.default.createElement("div", { className: "placeholder-container" }, query ? null : placeholder);
+        return jsx_runtime_1.jsx("div", __assign({ className: "placeholder-container" }, { children: query ? null : placeholder }), void 0);
     };
     return PlaceholderArea;
-}(react_1.PureComponent));
+}(React.PureComponent));
 exports.PlaceholderArea = PlaceholderArea;
 var ResultsArea = /** @class */ (function (_super) {
     __extends(ResultsArea, _super);
@@ -150,10 +155,10 @@ var ResultsArea = /** @class */ (function (_super) {
     //  }
     ResultsArea.prototype.render = function () {
         var _a = this.props, query = _a.query, results = _a.results;
-        return react_1.default.createElement("div", { className: "results-container" }, query ? results : null);
+        return jsx_runtime_1.jsx("div", __assign({ className: "results-container" }, { children: query ? results : null }), void 0);
     };
     return ResultsArea;
-}(react_1.Component));
+}(React.Component));
 exports.ResultsArea = ResultsArea;
 var SearchBar = /** @class */ (function (_super) {
     __extends(SearchBar, _super);
@@ -162,11 +167,9 @@ var SearchBar = /** @class */ (function (_super) {
     }
     SearchBar.prototype.render = function () {
         var onChange = this.props.onChange;
-        return react_1.default.createElement("div", { className: "search-bar" },
-            react_1.default.createElement("input", { autoFocus: true, placeholder: "Search...", onChange: onChange }),
-            react_1.default.createElement("svg", { "aria-hidden": "true", className: "mag-glass" },
-                react_1.default.createElement("path", { d: "M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z" })));
+        return jsx_runtime_1.jsxs("div", __assign({ className: "search-bar" }, { children: [jsx_runtime_1.jsx("input", { autoFocus: true, placeholder: "Search...", onChange: onChange }, void 0),
+                jsx_runtime_1.jsx("svg", __assign({ "aria-hidden": "true", className: "mag-glass" }, { children: jsx_runtime_1.jsx("path", { d: "M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z" }, void 0) }), void 0)] }), void 0);
     };
     return SearchBar;
-}(react_1.PureComponent));
+}(React.PureComponent));
 exports.SearchBar = SearchBar;

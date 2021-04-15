@@ -48,13 +48,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-//import React, {Component} from "react";
+var jsx_runtime_1 = require("react/jsx-runtime");
 var React = __importStar(require("react"));
 var react_dom_1 = __importDefault(require("react-dom"));
 var fuzzysort_1 = __importDefault(require("fuzzysort"));
 var components_1 = require("./components");
 require("./cha_taigi.css");
-// YEET TEST
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): Migrate to TypeScript
 // TODO(high): Fix clipboard notif not working on most browsers
@@ -85,9 +84,9 @@ require("./cha_taigi.css");
 // TODO(later): generalize for non-english definition
 var SEARCH_RESULTS_LIMIT = 20;
 var DISPLAY_RESULTS_LIMIT = 20;
-var poj = [];
+var EMPTY_SEARCH = { query: "", promise: null };
 var rem_url = "maryknoll.json";
-var SEARCH_KEYS = ["poj_norm_prepped", "eng_prepped", "poj_prepped", "hoa_prepped"];
+var SEARCH_KEYS = ["poj_normalized_prepped", "eng_prepped", "poj_prepped", "hoa_prepped"];
 var fuzzyopts = {
     keys: SEARCH_KEYS,
     allowTypo: true,
@@ -101,12 +100,9 @@ var App = /** @class */ (function (_super) {
         _this.state = {
             raw_results: [],
             results: [],
-            loaded: false,
+            dictionary_db: [],
+            ongoing_search: EMPTY_SEARCH,
         };
-        _this.current_search = { query: "", promise: null };
-        _this.query = "";
-        _this.local_poj = poj;
-        _this.output = null;
         _this.onChange = _this.onChange.bind(_this);
         _this.createResultsForRender = _this.createResultsForRender.bind(_this);
         return _this;
@@ -119,78 +115,91 @@ var App = /** @class */ (function (_super) {
         })
             .then(function (data) {
             data.forEach(function (t) {
+                // NOTE: prepareSlow does exist.
+                // @ts-ignore
                 t.poj_prepped = fuzzysort_1.default.prepareSlow(t.p);
-                t.poj_norm_prepped = fuzzysort_1.default.prepareSlow(t.n);
+                // @ts-ignore
+                t.poj_normalized_prepped = fuzzysort_1.default.prepareSlow(t.n);
+                // @ts-ignore
                 t.eng_prepped = fuzzysort_1.default.prepareSlow(t.e);
+                // @ts-ignore
                 t.hoa_prepped = fuzzysort_1.default.prepareSlow(t.h);
             });
-            _this.local_poj = data;
-            _this.setState({ loaded: true });
+            _this.setState({
+                dictionary_db: data,
+            });
         });
     };
     App.prototype.onChange = function (e) {
         var _this = this;
-        var _a = e.target, target = _a === void 0 ? {} : _a;
-        var _b = target.value, value = _b === void 0 ? "" : _b;
+        var _a = this.state, dictionary_db = _a.dictionary_db, ongoing_search = _a.ongoing_search;
+        var _b = e.target, target = _b === void 0 ? {} : _b;
+        var _c = target.value, value = _c === void 0 ? "" : _c;
         var query = value;
-        var current_search = this.current_search;
         if (query === "") {
-            if (current_search.promise != null) {
-                current_search.promise.cancel();
+            if (ongoing_search.promise != null) {
+                ongoing_search.promise.cancel();
             }
-            this.setState({ query: query, searching: false });
+            this.setState({ query: query, searching: false, ongoing_search: EMPTY_SEARCH });
             return;
         }
-        var new_search_promise = fuzzysort_1.default.goAsync(query, this.local_poj, fuzzyopts);
+        var new_search_promise = fuzzysort_1.default.goAsync(query, dictionary_db, fuzzyopts);
         var new_search = { query: query, promise: new_search_promise };
-        if (current_search.promise != null) {
-            current_search.promise.cancel();
+        if (ongoing_search.promise != null) {
+            ongoing_search.promise.cancel();
         }
         new_search.promise.cancel = new_search.promise.cancel.bind(new_search);
-        new_search.promise.then(function (raw_results) { return _this.createResultsForRender(raw_results, query); }).catch(console.log);
-        this.current_search = new_search;
-        this.setState({ query: query, searching: true });
+        new_search.promise.then(function (raw_results) {
+            return _this.createResultsForRender(
+            // @ts-ignore
+            raw_results, query);
+        }).catch(console.log);
+        this.setState({
+            query: query,
+            searching: true,
+            ongoing_search: new_search
+        });
     };
     App.prototype.createResultsForRender = function (raw_results, query) {
+        console.log("res", raw_results[0]);
         var results = raw_results
             .slice(0, DISPLAY_RESULTS_LIMIT)
-            .map(function (x, i) {
+            .map(function (fuzzysort_result, i) {
             // NOTE: See SEARCH_KEYS for order if confused.
-            var poj_normalized_pre_highlight = x[0];
-            var english_pre_highlight = x[1];
-            var poj_unicode_pre_highlight = x[2];
-            var hoabun_pre_highlight = x[3];
+            var poj_normalized_pre_highlight = fuzzysort_result[0];
+            var english_pre_highlight = fuzzysort_result[1];
+            var poj_unicode_pre_highlight = fuzzysort_result[2];
+            var hoabun_pre_highlight = fuzzysort_result[3];
             var poj_norm_pre_paren = fuzzysort_1.default.highlight(poj_normalized_pre_highlight, "<span class=\"poj-normalized-matched-text\" class=hlsearch>", "</span>")
-                || x.obj.n;
+                || fuzzysort_result.obj.n;
             var poj_normalized = "(" + poj_norm_pre_paren + ")";
             var english = fuzzysort_1.default.highlight(english_pre_highlight, "<span class=\"english-definition-matched-text\" class=hlsearch>", "</span>")
-                || x.obj.e;
+                || fuzzysort_result.obj.e;
             var poj_unicode = fuzzysort_1.default.highlight(poj_unicode_pre_highlight, "<span class=\"poj-unicode-matched-text\" class=hlsearch>", "</span>")
-                || x.obj.p;
+                || fuzzysort_result.obj.p;
             var hoabun = fuzzysort_1.default.highlight(hoabun_pre_highlight, "<span class=\"hoabun-matched-text\" class=hlsearch>", "</span>")
-                || x.obj.h;
+                || fuzzysort_result.obj.h;
             var loc_props = {
                 key: i,
-                poj_unicode_text: x.obj.p,
+                poj_unicode_text: fuzzysort_result.obj.p,
                 poj_unicode: poj_unicode,
                 hoabun: hoabun,
                 poj_normalized: poj_normalized,
                 english: english,
             };
-            return React.createElement(components_1.EntryContainer, __assign({}, loc_props));
+            return jsx_runtime_1.jsx(components_1.EntryContainer, __assign({}, loc_props), void 0);
         });
         this.setState({ results: results, query: query, searching: false });
     };
     App.prototype.render = function () {
         var onChange = this.onChange;
-        var _a = this.state, results = _a.results, query = _a.query, loaded = _a.loaded, searching = _a.searching;
+        var _a = this.state, results = _a.results, query = _a.query, dictionary_db = _a.dictionary_db, searching = _a.searching;
         // TODO: store boolean state of loading placeholder
-        return (React.createElement("div", { className: "App" },
-            React.createElement(components_1.SearchBar, { onChange: onChange }),
-            React.createElement(components_1.PlaceholderArea, { query: query, num_results: results.length, loaded: loaded, searching: searching }),
-            React.createElement(components_1.ResultsArea, { results: results, query: query, searching: searching })));
+        return (jsx_runtime_1.jsxs("div", __assign({ className: "App" }, { children: [jsx_runtime_1.jsx(components_1.SearchBar, { onChange: onChange }, void 0),
+                jsx_runtime_1.jsx(components_1.PlaceholderArea, { query: query, num_results: results.length, loaded: !!dictionary_db, searching: searching }, void 0),
+                jsx_runtime_1.jsx(components_1.ResultsArea, { results: results, query: query, searching: searching }, void 0)] }), void 0));
     };
     return App;
 }(React.Component));
 var rootElement = document.getElementById("root");
-react_dom_1.default.render(React.createElement(App, null), rootElement);
+react_dom_1.default.render(jsx_runtime_1.jsx(App, {}, void 0), rootElement);
