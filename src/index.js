@@ -55,22 +55,26 @@ var fuzzysort_1 = __importDefault(require("fuzzysort"));
 var components_1 = require("./components");
 require("./cha_taigi.css");
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
-// TODO(high): Migrate to TypeScript
+// TODO(high): add other databases from ChhoeTaigi
+// TODO(high): add copyright/about page/info
 // TODO(high): Fix clipboard notif not working on most browsers
 // TODO(high): Fix typing before load not searching
 // TODO(high): Copy to clipboard on click or tab-enter (allow for tab/hover enter/click focus equivalency?)
 // TODO(high): have search updates appear asynchronously from typing
 // TODO(high): use react-window or react-virtualized to only need to render X results at a time
-// TODO(high): figure out why first search is slow, and if it can be sped up
 // TODO(high): use <mark></mark> instead of individual spans
 // TODO(high): create an index of all 3 categories combined, and search that as text?
 // TODO(high): remove parentheses from unicode entries, treat as separate results
-// TODO(high): let spaces match hyphens
-// TODO(script the process of CSV -> processed JSON): remove parentheses from unicode, treat as separate results, chomp each result
+// TODO(high): let spaces match hyphens and vice-versa
+// TODO(high): investigate more performant search solutions
+// TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
+// TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): keybinding for search (/)
+// TODO(mid): instead of placeholder, use search box text, and possibly a spinner (for initial loading and search wait)
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
 // TODO(low): have GET param for search (and options?)
+// TODO(low): move to camelCase
 // TODO(low): prettier search/load indicators
 // TODO(low): store options between sessions
 // TODO(low): radio buttons of which text to search
@@ -84,36 +88,96 @@ require("./cha_taigi.css");
 // TODO(later): generalize for non-english definition
 var SEARCH_RESULTS_LIMIT = 20;
 var DISPLAY_RESULTS_LIMIT = 20;
-var EMPTY_SEARCH = { query: "", promise: null };
 var rem_url = "maryknoll.json";
-var SEARCH_KEYS = ["poj_normalized_prepped", "eng_prepped", "poj_prepped", "hoa_prepped"];
+// NOTE(@MrAwesome): mapping of db -> keys -> displaycard element
+var POJ_UNICODE_PREPPED_KEY = "poj_prepped";
+var POJ_NORMALIZED_PREPPED_KEY = "poj_normalized_prepped";
+var ENGLISH_PREPPED_KEY = "eng_prepped";
+var HOABUN_PREPPED_KEY = "hoa_prepped";
+var MARYKNOLL_SEARCH_KEYS = [POJ_UNICODE_PREPPED_KEY, POJ_NORMALIZED_PREPPED_KEY, ENGLISH_PREPPED_KEY, HOABUN_PREPPED_KEY];
+var POJ_NORMALIZED_INDEX = MARYKNOLL_SEARCH_KEYS.indexOf(POJ_NORMALIZED_PREPPED_KEY);
+var ENGLISH_INDEX = MARYKNOLL_SEARCH_KEYS.indexOf(ENGLISH_PREPPED_KEY);
+var POJ_UNICODE_INDEX = MARYKNOLL_SEARCH_KEYS.indexOf(POJ_UNICODE_PREPPED_KEY);
+var HOABUN_INDEX = MARYKNOLL_SEARCH_KEYS.indexOf(HOABUN_PREPPED_KEY);
+var OngoingSearch = /** @class */ (function () {
+    function OngoingSearch(query, promise) {
+        if (query === void 0) { query = ""; }
+        this.query = query;
+        if (query === "") {
+            this.completed = true;
+        }
+        else {
+            this.completed = false;
+            this.promise = promise;
+        }
+    }
+    OngoingSearch.prototype.getQuery = function () {
+        return this.query;
+    };
+    OngoingSearch.prototype.isCompleted = function () {
+        return this.completed;
+    };
+    OngoingSearch.prototype.markCompleted = function () {
+        this.completed = true;
+        debugConsole.timeEnd("asyncSearch");
+    };
+    OngoingSearch.prototype.cancel = function () {
+        if (this.promise && !this.isCompleted()) {
+            this.promise.cancel();
+            this.markCompleted();
+        }
+    };
+    return OngoingSearch;
+}());
 var fuzzyopts = {
-    keys: SEARCH_KEYS,
-    allowTypo: true,
+    keys: MARYKNOLL_SEARCH_KEYS,
+    allowTypo: false,
     limit: SEARCH_RESULTS_LIMIT,
     threshold: -10000,
 };
+var FakeConsole = /** @class */ (function () {
+    function FakeConsole() {
+    }
+    FakeConsole.prototype.time = function (_) { };
+    FakeConsole.prototype.timeEnd = function (_) { };
+    FakeConsole.prototype.log = function () {
+        var _ = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            _[_i] = arguments[_i];
+        }
+    };
+    return FakeConsole;
+}());
+// TODO: make this use a GET flag
+var DEBUG_MODE = false;
+var debugConsole = DEBUG_MODE ? console : new FakeConsole();
 var App = /** @class */ (function (_super) {
     __extends(App, _super);
     function App(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
-            raw_results: [],
             results: [],
-            dictionary_db: [],
-            ongoing_search: EMPTY_SEARCH,
+            dictionaryDB: [],
+            ongoingSearch: new OngoingSearch(),
         };
         _this.onChange = _this.onChange.bind(_this);
+        _this.doSearch = _this.doSearch.bind(_this);
+        _this.resetSearch = _this.resetSearch.bind(_this);
         _this.createResultsForRender = _this.createResultsForRender.bind(_this);
         return _this;
     }
     App.prototype.componentDidMount = function () {
         var _this = this;
+        debugConsole.time("fetch");
         fetch(rem_url)
             .then(function (response) {
+            debugConsole.timeEnd("fetch");
+            debugConsole.time("jsonConvert");
             return response.json();
         })
             .then(function (data) {
+            debugConsole.timeEnd("jsonConvert");
+            debugConsole.time("prepareSlow");
             data.forEach(function (t) {
                 // NOTE: prepareSlow does exist.
                 // @ts-ignore
@@ -125,51 +189,56 @@ var App = /** @class */ (function (_super) {
                 // @ts-ignore
                 t.hoa_prepped = fuzzysort_1.default.prepareSlow(t.h);
             });
-            _this.setState({
-                dictionary_db: data,
-            });
+            debugConsole.timeEnd("prepareSlow");
+            debugConsole.time("setLoaded");
+            _this.setState({ dictionaryDB: data });
+            debugConsole.timeEnd("setLoaded");
         });
     };
     App.prototype.onChange = function (e) {
-        var _this = this;
-        var _a = this.state, dictionary_db = _a.dictionary_db, ongoing_search = _a.ongoing_search;
+        var _a = this.state, dictionaryDB = _a.dictionaryDB, ongoingSearch = _a.ongoingSearch;
         var _b = e.target, target = _b === void 0 ? {} : _b;
         var _c = target.value, value = _c === void 0 ? "" : _c;
         var query = value;
+        ongoingSearch.cancel();
         if (query === "") {
-            if (ongoing_search.promise != null) {
-                ongoing_search.promise.cancel();
-            }
-            this.setState({ query: query, searching: false, ongoing_search: EMPTY_SEARCH });
-            return;
+            this.resetSearch();
         }
-        var new_search_promise = fuzzysort_1.default.goAsync(query, dictionary_db, fuzzyopts);
-        var new_search = { query: query, promise: new_search_promise };
-        if (ongoing_search.promise != null) {
-            ongoing_search.promise.cancel();
+        else {
+            this.doSearch(query, dictionaryDB);
         }
-        new_search.promise.cancel = new_search.promise.cancel.bind(new_search);
-        new_search.promise.then(function (raw_results) {
-            return _this.createResultsForRender(
-            // @ts-ignore
-            raw_results, query);
-        }).catch(console.log);
+    };
+    App.prototype.resetSearch = function () {
         this.setState({
-            query: query,
-            searching: true,
-            ongoing_search: new_search
+            query: "",
+            ongoingSearch: new OngoingSearch(),
+            results: []
         });
     };
-    App.prototype.createResultsForRender = function (raw_results, query) {
-        console.log("res", raw_results[0]);
+    App.prototype.doSearch = function (query, dictionaryDB) {
+        var _this = this;
+        debugConsole.time("asyncSearch");
+        var newSearchPromise = fuzzysort_1.default.goAsync(query, dictionaryDB, fuzzyopts);
+        var newSearch = new OngoingSearch(query, newSearchPromise);
+        newSearchPromise.then(function (raw_results) {
+            newSearch.markCompleted();
+            return _this.createResultsForRender(
+            // @ts-ignore Deal with lack of fuzzysort interfaces
+            raw_results);
+        }).catch(debugConsole.log);
+        this.setState({
+            ongoingSearch: newSearch
+        });
+    };
+    App.prototype.createResultsForRender = function (raw_results) {
+        debugConsole.time("createResultsForRender");
         var results = raw_results
             .slice(0, DISPLAY_RESULTS_LIMIT)
             .map(function (fuzzysort_result, i) {
-            // NOTE: See SEARCH_KEYS for order if confused.
-            var poj_normalized_pre_highlight = fuzzysort_result[0];
-            var english_pre_highlight = fuzzysort_result[1];
-            var poj_unicode_pre_highlight = fuzzysort_result[2];
-            var hoabun_pre_highlight = fuzzysort_result[3];
+            var poj_normalized_pre_highlight = fuzzysort_result[POJ_NORMALIZED_INDEX];
+            var english_pre_highlight = fuzzysort_result[ENGLISH_INDEX];
+            var poj_unicode_pre_highlight = fuzzysort_result[POJ_UNICODE_INDEX];
+            var hoabun_pre_highlight = fuzzysort_result[HOABUN_INDEX];
             var poj_norm_pre_paren = fuzzysort_1.default.highlight(poj_normalized_pre_highlight, "<span class=\"poj-normalized-matched-text\" class=hlsearch>", "</span>")
                 || fuzzysort_result.obj.n;
             var poj_normalized = "(" + poj_norm_pre_paren + ")";
@@ -189,15 +258,19 @@ var App = /** @class */ (function (_super) {
             };
             return jsx_runtime_1.jsx(components_1.EntryContainer, __assign({}, loc_props), void 0);
         });
-        this.setState({ results: results, query: query, searching: false });
+        debugConsole.timeEnd("createResultsForRender");
+        debugConsole.time("createResultsForRender-setState");
+        this.setState({ results: results });
+        debugConsole.timeEnd("createResultsForRender-setState");
     };
     App.prototype.render = function () {
         var onChange = this.onChange;
-        var _a = this.state, results = _a.results, query = _a.query, dictionary_db = _a.dictionary_db, searching = _a.searching;
-        // TODO: store boolean state of loading placeholder
+        var _a = this.state, results = _a.results, dictionaryDB = _a.dictionaryDB, ongoingSearch = _a.ongoingSearch;
+        var searching = !ongoingSearch.isCompleted();
+        var query = ongoingSearch.getQuery();
         return (jsx_runtime_1.jsxs("div", __assign({ className: "App" }, { children: [jsx_runtime_1.jsx(components_1.SearchBar, { onChange: onChange }, void 0),
-                jsx_runtime_1.jsx(components_1.PlaceholderArea, { query: query, num_results: results.length, loaded: !!dictionary_db, searching: searching }, void 0),
-                jsx_runtime_1.jsx(components_1.ResultsArea, { results: results, query: query, searching: searching }, void 0)] }), void 0));
+                jsx_runtime_1.jsx(components_1.PlaceholderArea, { query: query, num_results: results.length, loaded: !!dictionaryDB, searching: searching }, void 0),
+                jsx_runtime_1.jsx(components_1.ResultsArea, { results: results }, void 0)] }), void 0));
     };
     return App;
 }(React.Component));

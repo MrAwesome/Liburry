@@ -7,22 +7,26 @@ import {EntryContainer, SearchBar, PlaceholderArea, ResultsArea} from "./compone
 import "./cha_taigi.css";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
-// TODO(high): Migrate to TypeScript
+// TODO(high): add other databases from ChhoeTaigi
+// TODO(high): add copyright/about page/info
 // TODO(high): Fix clipboard notif not working on most browsers
 // TODO(high): Fix typing before load not searching
 // TODO(high): Copy to clipboard on click or tab-enter (allow for tab/hover enter/click focus equivalency?)
 // TODO(high): have search updates appear asynchronously from typing
 // TODO(high): use react-window or react-virtualized to only need to render X results at a time
-// TODO(high): figure out why first search is slow, and if it can be sped up
 // TODO(high): use <mark></mark> instead of individual spans
 // TODO(high): create an index of all 3 categories combined, and search that as text?
 // TODO(high): remove parentheses from unicode entries, treat as separate results
-// TODO(high): let spaces match hyphens
-// TODO(script the process of CSV -> processed JSON): remove parentheses from unicode, treat as separate results, chomp each result
+// TODO(high): let spaces match hyphens and vice-versa
+// TODO(high): investigate more performant search solutions
+// TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
+// TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): keybinding for search (/)
+// TODO(mid): instead of placeholder, use search box text, and possibly a spinner (for initial loading and search wait)
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
 // TODO(low): have GET param for search (and options?)
+// TODO(low): move to camelCase
 // TODO(low): prettier search/load indicators
 // TODO(low): store options between sessions
 // TODO(low): radio buttons of which text to search
@@ -37,17 +41,28 @@ import "./cha_taigi.css";
 
 const SEARCH_RESULTS_LIMIT = 20;
 const DISPLAY_RESULTS_LIMIT = 20;
-const EMPTY_SEARCH = {query: "", promise: null};
 
 const rem_url = "maryknoll.json"
 
-const SEARCH_KEYS = ["poj_normalized_prepped", "eng_prepped", "poj_prepped", "hoa_prepped"];
+// NOTE(@MrAwesome): mapping of db -> keys -> displaycard element
+const POJ_UNICODE_PREPPED_KEY = "poj_prepped";
+const POJ_NORMALIZED_PREPPED_KEY = "poj_normalized_prepped";
+const ENGLISH_PREPPED_KEY = "eng_prepped";
+const HOABUN_PREPPED_KEY = "hoa_prepped";
+const MARYKNOLL_SEARCH_KEYS = [POJ_UNICODE_PREPPED_KEY, POJ_NORMALIZED_PREPPED_KEY, ENGLISH_PREPPED_KEY, HOABUN_PREPPED_KEY];
+const POJ_NORMALIZED_INDEX = MARYKNOLL_SEARCH_KEYS.indexOf(POJ_NORMALIZED_PREPPED_KEY);
+const ENGLISH_INDEX = MARYKNOLL_SEARCH_KEYS.indexOf(ENGLISH_PREPPED_KEY);
+const POJ_UNICODE_INDEX = MARYKNOLL_SEARCH_KEYS.indexOf(POJ_UNICODE_PREPPED_KEY);
+const HOABUN_INDEX = MARYKNOLL_SEARCH_KEYS.indexOf(HOABUN_PREPPED_KEY);
+
 interface Prepared {
     // Original target string
     readonly target: string
 }
 
-interface SearchableEntry extends Object {
+// NOTE: The keys for searchable text are so small to reduce the
+//       JSON file size (full length keys add >2MB to the filesize)
+interface MaryKnollSearchableEntry extends Object {
     readonly e: string,
     eng_prepped: Prepared,
     readonly p: string,
@@ -65,42 +80,104 @@ interface Result {
 }
 
 interface KeyResult extends Result {
-    readonly obj: SearchableEntry,
+    readonly obj: MaryKnollSearchableEntry,
 }
 
 interface KeyResults extends ReadonlyArray<KeyResult> {
     readonly score: number
-    readonly obj: SearchableEntry
+    readonly obj: MaryKnollSearchableEntry
 }
 
+interface CancelablePromise<T> extends Promise<T> {
+    cancel(): void
+}
 
+class OngoingSearch {
+    query: string;
+    promise?: CancelablePromise<any>;
+    completed: boolean;
+
+    constructor(query: string = "", promise?: CancelablePromise<any>) {
+        this.query = query;
+
+        if (query === "") {
+            this.completed = true;
+        } else {
+            this.completed = false;
+            this.promise = promise;
+        }
+    }
+
+    getQuery(): string {
+        return this.query;
+    }
+
+    isCompleted(): boolean {
+        return this.completed;
+    }
+
+    markCompleted(): void {
+        this.completed = true;
+        debugConsole.timeEnd("asyncSearch");
+    }
+
+    cancel(): void {
+        if (this.promise && !this.isCompleted()) {
+            this.promise.cancel();
+            this.markCompleted();
+        }
+    }
+}
 
 const fuzzyopts = {
-    keys: SEARCH_KEYS,
-    allowTypo: true,
+    keys: MARYKNOLL_SEARCH_KEYS,
+    allowTypo: false,
     limit: SEARCH_RESULTS_LIMIT,
     threshold: -10000,
 };
+
+// TODO: Move into a utils file
+interface StubConsole {
+    time(label?: string): void;
+    timeEnd(label?: string): void;
+    log(...data: any[]): void;
+}
+
+class FakeConsole implements StubConsole {
+    time(_: string) {}
+    timeEnd(_: string) {}
+    log(..._: any[]) {}
+}
+
+// TODO: make this use a GET flag
+const DEBUG_MODE = false;
+const debugConsole: any = DEBUG_MODE ? console : new FakeConsole();
 
 class App extends React.Component<any, any> {
     constructor(props: any) {
         super(props);
         this.state = {
-            raw_results: [],
             results: [],
-            dictionary_db: [],
-            ongoing_search: EMPTY_SEARCH,
+            dictionaryDB: [],
+            ongoingSearch: new OngoingSearch(),
         };
         this.onChange = this.onChange.bind(this);
+        this.doSearch = this.doSearch.bind(this);
+        this.resetSearch = this.resetSearch.bind(this);
         this.createResultsForRender = this.createResultsForRender.bind(this);
     }
 
     componentDidMount() {
+        debugConsole.time("fetch");
         fetch(rem_url)
             .then((response) => {
+                debugConsole.timeEnd("fetch");
+                debugConsole.time("jsonConvert");
                 return response.json();
             })
-            .then((data: SearchableEntry[]) => {
+            .then((data: MaryKnollSearchableEntry[]) => {
+                debugConsole.timeEnd("jsonConvert");
+                debugConsole.time("prepareSlow");
                 data.forEach(
                     t => {
                         // NOTE: prepareSlow does exist.
@@ -114,65 +191,70 @@ class App extends React.Component<any, any> {
                         t.hoa_prepped = fuzzysort.prepareSlow(t.h);
                     }
                 )
-                this.setState({
-                    dictionary_db: data,
-                });
+                debugConsole.timeEnd("prepareSlow");
+                debugConsole.time("setLoaded");
+                this.setState({dictionaryDB: data});
+                debugConsole.timeEnd("setLoaded");
             });
 
     }
 
     onChange(e: any) {
-        const {dictionary_db, ongoing_search} = this.state;
+        const {dictionaryDB, ongoingSearch} = this.state;
         const {target = {}} = e;
         const {value = ""} = target;
         const query = value;
 
+        ongoingSearch.cancel();
+
         if (query === "") {
-            if (ongoing_search.promise != null) {
-                ongoing_search.promise.cancel();
-            }
-            this.setState({query, searching: false, ongoing_search: EMPTY_SEARCH});
-            return;
+            this.resetSearch();
+        } else {
+            this.doSearch(query, dictionaryDB);
         }
+    }
 
-        const new_search_promise = fuzzysort.goAsync(
-            query,
-            dictionary_db,
-            fuzzyopts,
-        );
-        const new_search = {query, promise: new_search_promise};
-
-        if (ongoing_search.promise != null) {
-            ongoing_search.promise.cancel();
-        }
-        new_search.promise.cancel = new_search.promise.cancel.bind(new_search);
-
-        new_search.promise.then(
-            raw_results =>
-                this.createResultsForRender(
-                    // Deal with lack of fuzzysort interfaces
-                    // @ts-ignore
-                    raw_results,
-                    query
-                )).catch(console.log);
-
+    resetSearch() {
         this.setState({
-            query,
-            searching: true,
-            ongoing_search: new_search
+            query: "",
+            ongoingSearch: new OngoingSearch(),
+            results: []
         });
     }
 
-    createResultsForRender(raw_results: KeyResults[], query: string) {
-        console.log("res", raw_results[0]);
+    doSearch(query: string, dictionaryDB: MaryKnollSearchableEntry[]) {
+        debugConsole.time("asyncSearch");
+        const newSearchPromise = fuzzysort.goAsync(
+            query,
+            dictionaryDB,
+            fuzzyopts,
+        );
+
+        const newSearch = new OngoingSearch(query, newSearchPromise);
+        newSearchPromise.then(
+            raw_results => {
+                newSearch.markCompleted();
+                return this.createResultsForRender(
+                    // @ts-ignore Deal with lack of fuzzysort interfaces
+                    raw_results,
+                )
+            }
+        ).catch(debugConsole.log);
+
+        this.setState({
+            ongoingSearch: newSearch
+        });
+    }
+
+    createResultsForRender(raw_results: KeyResults[]) {
+        debugConsole.time("createResultsForRender");
         const results = raw_results
             .slice(0, DISPLAY_RESULTS_LIMIT)
             .map((fuzzysort_result: KeyResults, i: number) => {
-                // NOTE: See SEARCH_KEYS for order if confused.
-                const poj_normalized_pre_highlight = fuzzysort_result[0];
-                const english_pre_highlight = fuzzysort_result[1];
-                const poj_unicode_pre_highlight = fuzzysort_result[2];
-                const hoabun_pre_highlight = fuzzysort_result[3];
+                const poj_normalized_pre_highlight = fuzzysort_result[POJ_NORMALIZED_INDEX];
+                const english_pre_highlight = fuzzysort_result[ENGLISH_INDEX];
+                const poj_unicode_pre_highlight = fuzzysort_result[POJ_UNICODE_INDEX];
+                const hoabun_pre_highlight = fuzzysort_result[HOABUN_INDEX];
 
                 const poj_norm_pre_paren = fuzzysort.highlight(poj_normalized_pre_highlight,
                     "<span class=\"poj-normalized-matched-text\" class=hlsearch>", "</span>")
@@ -201,19 +283,25 @@ class App extends React.Component<any, any> {
                 return <EntryContainer {...loc_props} />;
             })
 
-        this.setState({results, query, searching: false});
+        debugConsole.timeEnd("createResultsForRender");
+
+        debugConsole.time("createResultsForRender-setState");
+        this.setState({results});
+        debugConsole.timeEnd("createResultsForRender-setState");
     }
 
     render() {
         const {onChange} = this;
-        const {results, query, dictionary_db, searching} = this.state;
+        const {results, dictionaryDB, ongoingSearch} = this.state;
 
-        // TODO: store boolean state of loading placeholder
+        const searching = !ongoingSearch.isCompleted();
+        const query = ongoingSearch.getQuery();
+
         return (
             <div className="App">
                 <SearchBar onChange={onChange} />
-                <PlaceholderArea query={query} num_results={results.length} loaded={!!dictionary_db} searching={searching} />
-                <ResultsArea results={results} query={query} searching={searching} />
+                <PlaceholderArea query={query} num_results={results.length} loaded={!!dictionaryDB} searching={searching} />
+                <ResultsArea results={results} />
             </div>
         );
     }

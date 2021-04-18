@@ -117,28 +117,20 @@ var PlaceholderArea = /** @class */ (function (_super) {
     PlaceholderArea.prototype.render = function () {
         var _a = this.props, query = _a.query, loaded = _a.loaded, searching = _a.searching, num_results = _a.num_results;
         var placeholder = null;
-        if (query) {
+        if (!num_results) {
             if (searching) {
                 placeholder = searching_placeholder;
             }
             else {
-                if (!num_results) {
+                if (query) {
                     placeholder = no_results_placeholder;
                 }
                 else {
-                    placeholder = null;
+                    placeholder = loaded ? loaded_placeholder : loading_paceholder;
                 }
             }
         }
-        else {
-            if (loaded) {
-                placeholder = loaded_placeholder;
-            }
-            else {
-                placeholder = loading_paceholder;
-            }
-        }
-        return jsx_runtime_1.jsx("div", __assign({ className: "placeholder-container" }, { children: query ? null : placeholder }), void 0);
+        return jsx_runtime_1.jsx("div", __assign({ className: "placeholder-container" }, { children: placeholder }), void 0);
     };
     return PlaceholderArea;
 }(React.PureComponent));
@@ -148,17 +140,12 @@ var ResultsArea = /** @class */ (function (_super) {
     function ResultsArea() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    // TODO: Doesn't seem to work as intended
-    //  shouldComponentUpdate() {
-    //    const {searching} = this.props;
-    //    return !searching;
-    //  }
     ResultsArea.prototype.render = function () {
-        var _a = this.props, query = _a.query, results = _a.results;
-        return jsx_runtime_1.jsx("div", __assign({ className: "results-container" }, { children: query ? results : null }), void 0);
+        var results = this.props.results;
+        return jsx_runtime_1.jsx("div", __assign({ className: "results-container" }, { children: results }), void 0);
     };
     return ResultsArea;
-}(React.Component));
+}(React.PureComponent));
 exports.ResultsArea = ResultsArea;
 var SearchBar = /** @class */ (function (_super) {
     __extends(SearchBar, _super);
