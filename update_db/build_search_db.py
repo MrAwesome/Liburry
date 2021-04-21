@@ -15,6 +15,9 @@ from pathlib import Path
 from unidecode import unidecode
 
 DB_CSV_FILENAME: str = "ChhoeTaigi_MaryknollTaiengSutian.csv"
+# TODO: add: ChhoeTaigi_TaioanPehoeKichhooGiku.csv
+# TODO: add: ChhoeTaigi_EmbreeTaiengSutian.csv
+
 DB_CSV_URL: str = "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/raw/master/ChhoeTaigiDatabase/" + DB_CSV_FILENAME
 OUTPUT_JSON_FILENAME: str = "maryknoll.json"
 
@@ -46,17 +49,22 @@ def parse_csv(decoded: str) -> list[dict[str, str]]:
 
     header = next(reader)
 
+    # TODO: this header is only maryknoll, do this for each db
     if header != ["id","poj_unicode","poj_input","kip_unicode","kip_input","hoabun","english","page_number"]:
         raise ValueError("Headers have changed!")
 
     obj_list = []
 
     i = 0
-    for _muh_id,poj_unicode,_poj_input,_kip_unicode,_kip_input,hoabun,english,_page_number in reader:
-        poj_normalized = unidecode(poj_unicode)
+    for _muh_id,poj_unicode,poj_input,_kip_unicode,_kip_input,hoabun,english,_page_number in reader:
+
+        # Normalize text (remove diacritics)
+        poj_normalized = unidecode(poj_unicode.replace("ⁿ", ""))
+
         muh_obj = {
             "p": poj_unicode,
             "n": poj_normalized,
+            "i": poj_input,
             "h": hoabun,
             "e": english
         }

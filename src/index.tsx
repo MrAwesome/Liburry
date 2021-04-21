@@ -8,6 +8,9 @@ import "./cha_taigi.css";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): add other databases from ChhoeTaigi
+//               * write out schema
+//               * update conversion scripts
+//               * decide on display changes for multiple DBs
 // TODO(high): add copyright/about page/info
 // TODO(high): Fix clipboard notif not working on most browsers
 // TODO(high): Fix typing before load not searching
@@ -22,6 +25,7 @@ import "./cha_taigi.css";
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): keybinding for search (/)
+// TODO(mid): long press for copy on mobile
 // TODO(mid): instead of placeholder, use search box text, and possibly a spinner (for initial loading and search wait)
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
