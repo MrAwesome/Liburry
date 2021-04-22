@@ -21,10 +21,11 @@ import "./cha_taigi.css";
 // TODO(high): create an index of all 3 categories combined, and search that as text?
 // TODO(high): remove parentheses from unicode entries, treat as separate results
 // TODO(high): let spaces match hyphens and vice-versa
-// TODO(high): investigate more performant search solutions
+// TODO(high): investigate more performant search solutions (lunr, jssearch, etc)
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): keybinding for search (/)
+// TODO(mid): unit/integration tests
 // TODO(mid): long press for copy on mobile
 // TODO(mid): instead of placeholder, use search box text, and possibly a spinner (for initial loading and search wait)
 // TODO(mid): button for "get all results", default to 10-20
@@ -46,7 +47,7 @@ import "./cha_taigi.css";
 const SEARCH_RESULTS_LIMIT = 20;
 const DISPLAY_RESULTS_LIMIT = 20;
 
-const rem_url = "maryknoll.json"
+const rem_url = "db/maryknoll.json"
 
 // NOTE(@MrAwesome): mapping of db -> keys -> displaycard element
 const POJ_UNICODE_PREPPED_KEY = "poj_prepped";

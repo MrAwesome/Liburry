@@ -56,6 +56,9 @@ var components_1 = require("./components");
 require("./cha_taigi.css");
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): add other databases from ChhoeTaigi
+//               * write out schema
+//               * update conversion scripts
+//               * decide on display changes for multiple DBs
 // TODO(high): add copyright/about page/info
 // TODO(high): Fix clipboard notif not working on most browsers
 // TODO(high): Fix typing before load not searching
@@ -66,10 +69,12 @@ require("./cha_taigi.css");
 // TODO(high): create an index of all 3 categories combined, and search that as text?
 // TODO(high): remove parentheses from unicode entries, treat as separate results
 // TODO(high): let spaces match hyphens and vice-versa
-// TODO(high): investigate more performant search solutions
+// TODO(high): investigate more performant search solutions (lunr, jssearch, etc)
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): keybinding for search (/)
+// TODO(mid): unit/integration tests
+// TODO(mid): long press for copy on mobile
 // TODO(mid): instead of placeholder, use search box text, and possibly a spinner (for initial loading and search wait)
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
@@ -88,7 +93,7 @@ require("./cha_taigi.css");
 // TODO(later): generalize for non-english definition
 var SEARCH_RESULTS_LIMIT = 20;
 var DISPLAY_RESULTS_LIMIT = 20;
-var rem_url = "maryknoll.json";
+var rem_url = "db/maryknoll.json";
 // NOTE(@MrAwesome): mapping of db -> keys -> displaycard element
 var POJ_UNICODE_PREPPED_KEY = "poj_prepped";
 var POJ_NORMALIZED_PREPPED_KEY = "poj_normalized_prepped";
