@@ -1,5 +1,6 @@
 // TODO: make this use a GET flag
-const DEBUG_MODE = document.location.hostname === 'localhost';
+//const DEBUG_MODE = document.location.hostname === 'localhost';
+const DEBUG_MODE = true;
 
 interface StubConsole {
     time(label?: string): void;
