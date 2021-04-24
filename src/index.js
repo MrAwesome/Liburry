@@ -61,6 +61,7 @@ var components_1 = require("./components");
 var debug_console_1 = __importDefault(require("./debug_console"));
 require("./cha_taigi.css");
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
+// TODO(urgent): have python handle the double-"" in the CSVs
 // TODO(high): add other databases from ChhoeTaigi
 //               * write out schema
 //               * update conversion scripts
@@ -367,9 +368,7 @@ var ChaTaigi = /** @class */ (function (_super) {
     ChaTaigi.prototype.render = function () {
         var onChange = this.onChange;
         var _a = this.getStateTyped(), currentResultsElements = _a.currentResultsElements, searchableDicts = _a.searchableDicts, ongoingSearches = _a.ongoingSearches, query = _a.query;
-        // TODO: check for any ongoing search?
         var searching = ongoingSearches.some(function (s) { return !s.isCompleted(); });
-        console.log("searching: ", searching);
         return (jsx_runtime_1.jsxs("div", __assign({ className: "ChaTaigi" }, { children: [jsx_runtime_1.jsx(components_1.SearchBar, { onChange: onChange }, void 0),
                 jsx_runtime_1.jsx(components_1.PlaceholderArea, { query: query, num_results: currentResultsElements.length, loaded: !!searchableDicts, searching: searching }, void 0),
                 jsx_runtime_1.jsx(components_1.ResultsArea, { results: currentResultsElements }, void 0)] }), void 0));

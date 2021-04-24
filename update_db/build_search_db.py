@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-# XXX
-import pprint
+import re
 
 import csv
 import json
@@ -64,7 +63,8 @@ def get_db_data_from_local_copy(csv_filename_path: Path) -> str:
 
 def parse_csv(csv_filename: str, csv_text: str, expected_fields: list[str]) -> list[dict[str, str]]:
     print("Parsing CSV...")
-    csv_lines = csv_text.splitlines()
+    csv_text_fixed_doublequotes = re.sub(r'(?<!,)""(?![,$])', '❞', csv_text)
+    csv_lines = csv_text_fixed_doublequotes.splitlines()
     header_reader = csv.DictReader(csv_lines[:2])
     reader = csv.DictReader(csv_lines)
 

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // TODO: make this use a GET flag
-var DEBUG_MODE = true;
+var DEBUG_MODE = document.location.hostname === 'localhost';
 var FakeConsole = /** @class */ (function () {
     function FakeConsole() {
     }

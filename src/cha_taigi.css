@@ -13,13 +13,13 @@ body {
 }
 
 .App {
-    display: grid;
-    grid-template-areas:
-        "header"
-        "searchbar"
-        "options" /* will go with bar? */
-        "placeholder"
-        "results";
+/*    display: grid;*/
+/*    grid-template-areas:*/
+/*        "header"*/
+/*        "searchbar"*/
+/*        "options" */
+/*        "placeholder"*/
+/*        "results";*/
 }
 
 .results-container, .placeholder-container {
@@ -28,7 +28,15 @@ body {
 
 .results-container {
     margin-right: 0px;
-    grid-area: results;
+/*    grid-area: results;*/
+}
+
+.TODO-intermediate-results {
+    margin-bottom: 10px;
+}
+
+.TODO-intermediate-results, .placeholder-container {
+    margin-top: 5px;
 }
 
 .TODO-db-header {
@@ -43,9 +51,9 @@ body {
     padding-bottom: 7px;
     text-align: center;
     text-transform: capitalize;
-    padding-right: 3px;
-    margin-bottom: 2px;
-    margin-top: 8px;
+}
+
+.TODO-intermediate-results {
 }
 
 .entry-container, .placeholder, .entry-container-clicked {
@@ -57,6 +65,7 @@ body {
     padding-bottom: 3px;
     padding-left: 5px;
     padding-right: 3px;
+    margin-bottom: 2px;
 }
 
 .entry-container:hover {
@@ -110,7 +119,7 @@ body {
 }
 /*TODO: make loading container grey*/
 .placeholder-container {
-    grid-area: placeholder;
+/*    grid-area: placeholder;*/
     justify-self: center;
 }
 
@@ -179,7 +188,7 @@ body {
 }
 
 .search-bar {
-    grid-area: searchbar;
+/*    grid-area: searchbar;*/
     width: 100%;
     position: relative;
 }
