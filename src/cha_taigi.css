@@ -27,21 +27,32 @@ body {
 }
 
 .results-container {
-    margin-left: 5px;
     margin-right: 0px;
     grid-area: results;
-    display: grid;
-    /* TODO: split into two on wide/desktop screen*/
-    grid-template-areas:
-        "result";
-    row-gap: 4px;
-    column-gap: 3px;
+}
+
+.TODO-db-header {
+    line-height: 1;
+    border-radius: 15px;
+    font-size: 26px;
+    font-style: italic;
+    border: 1px solid grey;
+    color: white;
+    background: #ea3c53;
+    padding-top: 3px;
+    padding-bottom: 7px;
+    text-align: center;
+    text-transform: capitalize;
+    padding-right: 3px;
+    margin-bottom: 2px;
+    margin-top: 8px;
 }
 
 .entry-container, .placeholder, .entry-container-clicked {
     position: relative;
     border-radius: 15px;
     border: 1px solid lightgrey;
+    margin-left: 5px;
     padding-top: 3px;
     padding-bottom: 3px;
     padding-left: 5px;
@@ -156,8 +167,6 @@ body {
 .english-definition {
     font-size: 14px;
     color: #345;
-    position: relative;
-    float: left;
     padding-left: 10px;
     font-style: italic;
 }

@@ -44,6 +44,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -53,12 +58,14 @@ var React = __importStar(require("react"));
 var react_dom_1 = __importDefault(require("react-dom"));
 var fuzzysort_1 = __importDefault(require("fuzzysort"));
 var components_1 = require("./components");
+var debug_console_1 = __importDefault(require("./debug_console"));
 require("./cha_taigi.css");
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): add other databases from ChhoeTaigi
 //               * write out schema
 //               * update conversion scripts
 //               * decide on display changes for multiple DBs
+// TODO(high): handle alternate spellings / parentheticals vs separate fields
 // TODO(high): add copyright/about page/info
 // TODO(high): Fix clipboard notif not working on most browsers
 // TODO(high): Fix typing before load not searching
@@ -73,12 +80,15 @@ require("./cha_taigi.css");
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): keybinding for search (/)
+// TODO(mid): "search only as fallback"
+// TODO(mid): link to pleco/wiktionary for chinese characters, poj, etc
 // TODO(mid): unit/integration tests
 // TODO(mid): long press for copy on mobile
 // TODO(mid): instead of placeholder, use search box text, and possibly a spinner (for initial loading and search wait)
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
 // TODO(low): have GET param for search (and options?)
+// TODO(low): hashtag load entry (for linking)
 // TODO(low): move to camelCase
 // TODO(low): prettier search/load indicators
 // TODO(low): store options between sessions
@@ -93,21 +103,70 @@ require("./cha_taigi.css");
 // TODO(later): generalize for non-english definition
 var SEARCH_RESULTS_LIMIT = 20;
 var DISPLAY_RESULTS_LIMIT = 20;
-var rem_url = "db/maryknoll.json";
-// NOTE(@MrAwesome): mapping of db -> keys -> displaycard element
 var POJ_UNICODE_PREPPED_KEY = "poj_prepped";
 var POJ_NORMALIZED_PREPPED_KEY = "poj_normalized_prepped";
 var ENGLISH_PREPPED_KEY = "eng_prepped";
 var HOABUN_PREPPED_KEY = "hoa_prepped";
-var MARYKNOLL_SEARCH_KEYS = [POJ_UNICODE_PREPPED_KEY, POJ_NORMALIZED_PREPPED_KEY, ENGLISH_PREPPED_KEY, HOABUN_PREPPED_KEY];
-var POJ_NORMALIZED_INDEX = MARYKNOLL_SEARCH_KEYS.indexOf(POJ_NORMALIZED_PREPPED_KEY);
-var ENGLISH_INDEX = MARYKNOLL_SEARCH_KEYS.indexOf(ENGLISH_PREPPED_KEY);
-var POJ_UNICODE_INDEX = MARYKNOLL_SEARCH_KEYS.indexOf(POJ_UNICODE_PREPPED_KEY);
-var HOABUN_INDEX = MARYKNOLL_SEARCH_KEYS.indexOf(HOABUN_PREPPED_KEY);
+var POJ_UNICODE_SHORTNAME = "p";
+var POJ_NORMALIZED_SHORTNAME = "n";
+var ENGLISH_SHORTNAME = "e";
+var HOABUN_SHORTNAME = "h";
+var DEFAULT_INDEXED_KEYS = [
+    [POJ_UNICODE_SHORTNAME, POJ_UNICODE_PREPPED_KEY],
+    [POJ_NORMALIZED_SHORTNAME, POJ_NORMALIZED_PREPPED_KEY],
+    [ENGLISH_SHORTNAME, ENGLISH_PREPPED_KEY],
+    [HOABUN_SHORTNAME, HOABUN_PREPPED_KEY],
+];
+var DEFAULT_SEARCH_KEYS = [POJ_UNICODE_PREPPED_KEY, POJ_NORMALIZED_PREPPED_KEY, ENGLISH_PREPPED_KEY, HOABUN_PREPPED_KEY];
+// NOTE(@MrAwesome): mapping of db -> keys -> displaycard element
+var DEFAULT_POJ_NORMALIZED_INDEX = DEFAULT_SEARCH_KEYS.indexOf(POJ_NORMALIZED_PREPPED_KEY);
+var DEFAULT_ENGLISH_INDEX = DEFAULT_SEARCH_KEYS.indexOf(ENGLISH_PREPPED_KEY);
+var DEFAULT_POJ_UNICODE_INDEX = DEFAULT_SEARCH_KEYS.indexOf(POJ_UNICODE_PREPPED_KEY);
+var DEFAULT_HOABUN_INDEX = DEFAULT_SEARCH_KEYS.indexOf(HOABUN_PREPPED_KEY);
+var fuzzyopts = {
+    keys: DEFAULT_SEARCH_KEYS,
+    allowTypo: false,
+    limit: SEARCH_RESULTS_LIMIT,
+    threshold: -10000,
+};
+function getFuzzyOpts(searchKeys) {
+    if (searchKeys === void 0) { searchKeys = DEFAULT_SEARCH_KEYS; }
+    return {
+        keys: searchKeys,
+        allowTypo: false,
+        limit: SEARCH_RESULTS_LIMIT,
+        threshold: -10000,
+    };
+}
+var DATABASES = [
+    {
+        "dbName": "maryknoll",
+        "db_filename": "db/maryknoll.json",
+        indexed_keys: DEFAULT_INDEXED_KEYS,
+        search_keys: DEFAULT_SEARCH_KEYS,
+        fuzzy_opts: getFuzzyOpts(),
+    },
+    {
+        "dbName": "embree",
+        "db_filename": "db/embree.json",
+        indexed_keys: DEFAULT_INDEXED_KEYS,
+        search_keys: DEFAULT_SEARCH_KEYS,
+        fuzzy_opts: getFuzzyOpts(),
+    },
+    {
+        "dbName": "giku",
+        "db_filename": "db/giku.json",
+        indexed_keys: DEFAULT_INDEXED_KEYS,
+        search_keys: DEFAULT_SEARCH_KEYS,
+        fuzzy_opts: getFuzzyOpts(),
+    },
+];
 var OngoingSearch = /** @class */ (function () {
-    function OngoingSearch(query, promise) {
+    function OngoingSearch(dbName, query, promise) {
         if (query === void 0) { query = ""; }
+        debug_console_1.default.time("asyncSearch-" + dbName);
         this.query = query;
+        this.dbName = dbName;
         if (query === "") {
             this.completed = true;
         }
@@ -124,7 +183,7 @@ var OngoingSearch = /** @class */ (function () {
     };
     OngoingSearch.prototype.markCompleted = function () {
         this.completed = true;
-        debugConsole.timeEnd("asyncSearch");
+        debug_console_1.default.timeEnd("asyncSearch-" + this.dbName);
     };
     OngoingSearch.prototype.cancel = function () {
         if (this.promise && !this.isCompleted()) {
@@ -134,55 +193,62 @@ var OngoingSearch = /** @class */ (function () {
     };
     return OngoingSearch;
 }());
-var fuzzyopts = {
-    keys: MARYKNOLL_SEARCH_KEYS,
-    allowTypo: false,
-    limit: SEARCH_RESULTS_LIMIT,
-    threshold: -10000,
-};
-var FakeConsole = /** @class */ (function () {
-    function FakeConsole() {
+var IntermediatePerDictResultsElements = /** @class */ (function (_super) {
+    __extends(IntermediatePerDictResultsElements, _super);
+    function IntermediatePerDictResultsElements() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
-    FakeConsole.prototype.time = function (_) { };
-    FakeConsole.prototype.timeEnd = function (_) { };
-    FakeConsole.prototype.log = function () {
-        var _ = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            _[_i] = arguments[_i];
-        }
+    IntermediatePerDictResultsElements.prototype.render = function () {
+        var perDictRes = this.props.perDictRes;
+        var dbName = perDictRes.dbName, results = perDictRes.results;
+        return jsx_runtime_1.jsxs("div", __assign({ className: "TODO-intermediate-results" }, { children: [jsx_runtime_1.jsx("div", __assign({ className: "TODO-db-header" }, { children: dbName }), void 0), results] }), void 0);
     };
-    return FakeConsole;
-}());
-// TODO: make this use a GET flag
-var DEBUG_MODE = false;
-var debugConsole = DEBUG_MODE ? console : new FakeConsole();
-var App = /** @class */ (function (_super) {
-    __extends(App, _super);
-    function App(props) {
+    return IntermediatePerDictResultsElements;
+}(React.Component));
+var ChaTaigi = /** @class */ (function (_super) {
+    __extends(ChaTaigi, _super);
+    function ChaTaigi(props) {
         var _this = _super.call(this, props) || this;
         _this.state = {
-            results: [],
-            dictionaryDB: [],
-            ongoingSearch: new OngoingSearch(),
+            currentResultsElements: [],
+            searchableDicts: [],
+            ongoingSearches: [],
         };
         _this.onChange = _this.onChange.bind(_this);
         _this.doSearch = _this.doSearch.bind(_this);
         _this.resetSearch = _this.resetSearch.bind(_this);
         _this.createResultsForRender = _this.createResultsForRender.bind(_this);
+        _this.fetchDB = _this.fetchDB.bind(_this);
+        _this.searchDB = _this.searchDB.bind(_this);
+        _this.setStateTyped = _this.setStateTyped.bind(_this);
+        _this.getStateTyped = _this.getStateTyped.bind(_this);
+        _this.appendSearch = _this.appendSearch.bind(_this);
+        _this.appendDict = _this.appendDict.bind(_this);
+        _this.appendResults = _this.appendResults.bind(_this);
         return _this;
     }
-    App.prototype.componentDidMount = function () {
+    ChaTaigi.prototype.setStateTyped = function (state) {
+        this.setState(state);
+    };
+    ChaTaigi.prototype.getStateTyped = function () {
+        return this.state;
+    };
+    ChaTaigi.prototype.componentDidMount = function () {
+        DATABASES.forEach(this.fetchDB);
+    };
+    ChaTaigi.prototype.fetchDB = function (_a) {
         var _this = this;
-        debugConsole.time("fetch");
-        fetch(rem_url)
+        var dbName = _a.dbName, db_filename = _a.db_filename;
+        debug_console_1.default.time("fetch-" + dbName);
+        fetch(db_filename)
             .then(function (response) {
-            debugConsole.timeEnd("fetch");
-            debugConsole.time("jsonConvert");
+            debug_console_1.default.timeEnd("fetch-" + dbName);
+            debug_console_1.default.time("jsonConvert-" + dbName);
             return response.json();
         })
             .then(function (data) {
-            debugConsole.timeEnd("jsonConvert");
-            debugConsole.time("prepareSlow");
+            debug_console_1.default.timeEnd("jsonConvert-" + dbName);
+            debug_console_1.default.time("prepareSlow-" + dbName);
             data.forEach(function (t) {
                 // NOTE: prepareSlow does exist.
                 // @ts-ignore
@@ -194,56 +260,88 @@ var App = /** @class */ (function (_super) {
                 // @ts-ignore
                 t.hoa_prepped = fuzzysort_1.default.prepareSlow(t.h);
             });
-            debugConsole.timeEnd("prepareSlow");
-            debugConsole.time("setLoaded");
-            _this.setState({ dictionaryDB: data });
-            debugConsole.timeEnd("setLoaded");
+            debug_console_1.default.timeEnd("prepareSlow-" + dbName);
+            debug_console_1.default.time("setLoaded-" + dbName);
+            _this.appendDict({
+                dbName: dbName,
+                searchableEntries: data
+            });
+            debug_console_1.default.timeEnd("setLoaded-" + dbName);
         });
     };
-    App.prototype.onChange = function (e) {
-        var _a = this.state, dictionaryDB = _a.dictionaryDB, ongoingSearch = _a.ongoingSearch;
+    ChaTaigi.prototype.appendDict = function (newDict) {
+        this.setStateTyped(function (state) { return ({ searchableDicts: __spreadArray(__spreadArray([], state.searchableDicts), [newDict]) }); });
+    };
+    ChaTaigi.prototype.appendSearch = function (newSearch) {
+        this.setStateTyped(function (state) { return ({ ongoingSearches: __spreadArray(__spreadArray([], state.ongoingSearches), [newSearch]) }); });
+    };
+    ChaTaigi.prototype.appendResults = function (results) {
+        debug_console_1.default.time("appendResults-setState");
+        var TODO_Intermediate = jsx_runtime_1.jsx(IntermediatePerDictResultsElements, { perDictRes: results }, void 0);
+        this.setStateTyped(function (state) { return ({ currentResultsElements: __spreadArray(__spreadArray([], state.currentResultsElements), [TODO_Intermediate]) }); });
+        debug_console_1.default.timeEnd("appendResults-setState");
+    };
+    ChaTaigi.prototype.onChange = function (e) {
+        var _a = this.getStateTyped(), searchableDicts = _a.searchableDicts, ongoingSearches = _a.ongoingSearches;
         var _b = e.target, target = _b === void 0 ? {} : _b;
         var _c = target.value, value = _c === void 0 ? "" : _c;
         var query = value;
-        ongoingSearch.cancel();
+        ongoingSearches.forEach(function (search) { return search.cancel(); });
         if (query === "") {
             this.resetSearch();
         }
         else {
-            this.doSearch(query, dictionaryDB);
+            // TODO: Correct place for this?
+            this.setStateTyped({ query: query, currentResultsElements: [] });
+            this.doSearch(query, searchableDicts);
         }
     };
-    App.prototype.resetSearch = function () {
-        this.setState({
+    ChaTaigi.prototype.resetSearch = function () {
+        this.setStateTyped({
             query: "",
-            ongoingSearch: new OngoingSearch(),
-            results: []
+            //
+            // TODO: force cancel all existing searches
+            ongoingSearches: [],
+            currentResultsElements: []
         });
     };
-    App.prototype.doSearch = function (query, dictionaryDB) {
+    ChaTaigi.prototype.doSearch = function (query, searchableDicts) {
         var _this = this;
-        debugConsole.time("asyncSearch");
-        var newSearchPromise = fuzzysort_1.default.goAsync(query, dictionaryDB, fuzzyopts);
-        var newSearch = new OngoingSearch(query, newSearchPromise);
+        searchableDicts.forEach(function (_a) {
+            var dbName = _a.dbName, searchableEntries = _a.searchableEntries;
+            _this.searchDB(dbName, query, searchableEntries);
+        });
+    };
+    // TODO: Make sure functional, move to file
+    ChaTaigi.prototype.searchDB = function (dbName, query, searchableEntries) {
+        var _this = this;
+        var newSearchPromise = fuzzysort_1.default.goAsync(query, searchableEntries, fuzzyopts);
+        var newSearch = new OngoingSearch(dbName, query, newSearchPromise);
         newSearchPromise.then(function (raw_results) {
             newSearch.markCompleted();
-            return _this.createResultsForRender(
+            var results = _this.createResultsForRender(
             // @ts-ignore Deal with lack of fuzzysort interfaces
             raw_results);
-        }).catch(debugConsole.log);
-        this.setState({
-            ongoingSearch: newSearch
-        });
+            _this.appendResults({
+                dbName: dbName,
+                results: results
+            });
+        }).catch(debug_console_1.default.log);
+        this.appendSearch(newSearch);
     };
-    App.prototype.createResultsForRender = function (raw_results) {
-        debugConsole.time("createResultsForRender");
-        var results = raw_results
+    // TODO: move into separate file
+    ChaTaigi.prototype.createResultsForRender = function (raw_results) {
+        debug_console_1.default.time("createResultsForRender");
+        var currentResultsElements = raw_results
             .slice(0, DISPLAY_RESULTS_LIMIT)
             .map(function (fuzzysort_result, i) {
-            var poj_normalized_pre_highlight = fuzzysort_result[POJ_NORMALIZED_INDEX];
-            var english_pre_highlight = fuzzysort_result[ENGLISH_INDEX];
-            var poj_unicode_pre_highlight = fuzzysort_result[POJ_UNICODE_INDEX];
-            var hoabun_pre_highlight = fuzzysort_result[HOABUN_INDEX];
+            // NOTE: This odd indexing is necessary because of how fuzzysort returns results. To see:
+            //       console.log(fuzzysort_result)
+            // TODO: per-db indexing
+            var poj_normalized_pre_highlight = fuzzysort_result[DEFAULT_POJ_NORMALIZED_INDEX];
+            var english_pre_highlight = fuzzysort_result[DEFAULT_ENGLISH_INDEX];
+            var poj_unicode_pre_highlight = fuzzysort_result[DEFAULT_POJ_UNICODE_INDEX];
+            var hoabun_pre_highlight = fuzzysort_result[DEFAULT_HOABUN_INDEX];
             var poj_norm_pre_paren = fuzzysort_1.default.highlight(poj_normalized_pre_highlight, "<span class=\"poj-normalized-matched-text\" class=hlsearch>", "</span>")
                 || fuzzysort_result.obj.n;
             var poj_normalized = "(" + poj_norm_pre_paren + ")";
@@ -263,21 +361,20 @@ var App = /** @class */ (function (_super) {
             };
             return jsx_runtime_1.jsx(components_1.EntryContainer, __assign({}, loc_props), void 0);
         });
-        debugConsole.timeEnd("createResultsForRender");
-        debugConsole.time("createResultsForRender-setState");
-        this.setState({ results: results });
-        debugConsole.timeEnd("createResultsForRender-setState");
+        debug_console_1.default.timeEnd("createResultsForRender");
+        return currentResultsElements;
     };
-    App.prototype.render = function () {
+    ChaTaigi.prototype.render = function () {
         var onChange = this.onChange;
-        var _a = this.state, results = _a.results, dictionaryDB = _a.dictionaryDB, ongoingSearch = _a.ongoingSearch;
-        var searching = !ongoingSearch.isCompleted();
-        var query = ongoingSearch.getQuery();
-        return (jsx_runtime_1.jsxs("div", __assign({ className: "App" }, { children: [jsx_runtime_1.jsx(components_1.SearchBar, { onChange: onChange }, void 0),
-                jsx_runtime_1.jsx(components_1.PlaceholderArea, { query: query, num_results: results.length, loaded: !!dictionaryDB, searching: searching }, void 0),
-                jsx_runtime_1.jsx(components_1.ResultsArea, { results: results }, void 0)] }), void 0));
+        var _a = this.getStateTyped(), currentResultsElements = _a.currentResultsElements, searchableDicts = _a.searchableDicts, ongoingSearches = _a.ongoingSearches, query = _a.query;
+        // TODO: check for any ongoing search?
+        var searching = ongoingSearches.some(function (s) { return !s.isCompleted(); });
+        console.log("searching: ", searching);
+        return (jsx_runtime_1.jsxs("div", __assign({ className: "ChaTaigi" }, { children: [jsx_runtime_1.jsx(components_1.SearchBar, { onChange: onChange }, void 0),
+                jsx_runtime_1.jsx(components_1.PlaceholderArea, { query: query, num_results: currentResultsElements.length, loaded: !!searchableDicts, searching: searching }, void 0),
+                jsx_runtime_1.jsx(components_1.ResultsArea, { results: currentResultsElements }, void 0)] }), void 0));
     };
-    return App;
+    return ChaTaigi;
 }(React.Component));
 var rootElement = document.getElementById("root");
-react_dom_1.default.render(jsx_runtime_1.jsx(App, {}, void 0), rootElement);
+react_dom_1.default.render(jsx_runtime_1.jsx(ChaTaigi, {}, void 0), rootElement);
