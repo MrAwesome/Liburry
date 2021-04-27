@@ -11,6 +11,9 @@ from pathlib import Path
 # TODO(high): gitignore csv / build dir
 # TODO(high): fetch csv if it doesn't exist in a build dir
 # TODO(high): create main()
+# TODO(high): known broken words:
+#             "le"
+#             /Reading/ - Embre<F7>
 
 # NOTE: You will need to install the unidecode library for this to work.
 from unidecode import unidecode
@@ -63,7 +66,7 @@ def get_db_data_from_local_copy(csv_filename_path: Path) -> str:
 
 def parse_csv(csv_filename: str, csv_text: str, expected_fields: list[str]) -> list[dict[str, str]]:
     print("Parsing CSV...")
-    csv_text_fixed_doublequotes = re.sub(r'(?<!,)""(?![,$])', '❞', csv_text)
+    csv_text_fixed_doublequotes = re.sub(r'(?<!,)""(?!(,"|$))', '\\"', csv_text)
     csv_lines = csv_text_fixed_doublequotes.splitlines()
     header_reader = csv.DictReader(csv_lines[:2])
     reader = csv.DictReader(csv_lines)
