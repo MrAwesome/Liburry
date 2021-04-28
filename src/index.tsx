@@ -11,12 +11,12 @@ import {OngoingSearch, searchDB} from "./search";
 import {DATABASES} from "./search_options";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
-// TODO(urgent): have python handle the double-"" in the CSVs
 // TODO(high): add other databases from ChhoeTaigi
 //               * write out schema
 //               * update conversion scripts
 //               * decide on display changes for multiple DBs
 // TODO(high): handle alternate spellings / parentheticals vs separate fields
+// TODO(high): handle explanation text (see "le" in Giku)
 // TODO(high): add copyright/about page/info
 // TODO(high): Fix clipboard notif not working on most browsers
 // TODO(high): Fix typing before load not searching
@@ -38,6 +38,7 @@ import {DATABASES} from "./search_options";
 // TODO(mid): instead of placeholder, use search box text, and possibly a spinner (for initial loading and search wait)
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
+// TODO(low): abstract away searching logic to avoid too much fuzzysort-specific code
 // TODO(low): have GET param for search (and options?)
 // TODO(low): configurable searches (exact search, slow but better search, etc)
 // TODO(low): hashtag load entry (for linking)
@@ -136,7 +137,6 @@ class ChaTaigi extends React.Component<any, any> {
     resetSearch() {
         this.setStateTyped({
             query: "",
-            // TODO: force cancel all existing searches
             ongoingSearches: [],
             currentResultsElements: []
         });
