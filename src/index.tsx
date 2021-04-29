@@ -6,9 +6,12 @@ import debugConsole from "./debug_console";
 import {fetchDB} from "./dictionary_handling";
 
 import "./cha_taigi.css";
+import "./menu.css";
 import {SearchableDict, ChaTaigiState, ChaTaigiStateArgs, PerDictResultsElements} from "./types";
 import {OngoingSearch, searchDB} from "./search";
 import {DATABASES} from "./search_options";
+
+import {ChaMenu} from "./cha_menu";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): add other databases from ChhoeTaigi
@@ -31,11 +34,13 @@ import {DATABASES} from "./search_options";
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): keybinding for search (/)
+// TODO(mid): Handle parentheses in poj_unicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll)
 // TODO(mid): "search only as fallback"
 // TODO(mid): link to pleco/wiktionary for chinese characters, poj, etc
 // TODO(mid): unit/integration tests
 // TODO(mid): long press for copy on mobile
-// TODO(mid): instead of placeholder, use search box text, and possibly a spinner (for initial loading and search wait)
+// TODO(mid): replace loading placeholder with *grid* of db loading updates
+// TODO(mid): move search bar to middle of page when no results and no search yet
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
 // TODO(low): abstract away searching logic to avoid too much fuzzysort-specific code
@@ -44,6 +49,7 @@ import {DATABASES} from "./search_options";
 // TODO(low): hashtag load entry (for linking)
 // TODO(low): move to camelCase
 // TODO(low): prettier search/load indicators
+// TODO(low): notify when DBs fail to load
 // TODO(low): store options between sessions
 // TODO(low): radio buttons of which text to search
 // TODO(low): hoabun text click should copy hoabun?
@@ -68,6 +74,7 @@ class IntermediatePerDictResultsElements extends React.Component<any, any> {
 
 }
 
+
 class ChaTaigi extends React.Component<any, any> {
     constructor(props: any) {
         super(props);
@@ -85,6 +92,7 @@ class ChaTaigi extends React.Component<any, any> {
         this.appendSearch = this.appendSearch.bind(this);
         this.appendDict = this.appendDict.bind(this);
         this.appendResults = this.appendResults.bind(this);
+        this.menu = this.menu.bind(this);
     }
 
     setStateTyped(state: ChaTaigiStateArgs<IntermediatePerDictResultsElements> | ((prevState: ChaTaigiState<IntermediatePerDictResultsElements>) => any)) {
@@ -111,7 +119,7 @@ class ChaTaigi extends React.Component<any, any> {
 
     appendResults(results: PerDictResultsElements) {
         debugConsole.time("appendResults-setState");
-        const TODO_Intermediate = <IntermediatePerDictResultsElements perDictRes={results} />
+        const TODO_Intermediate = <IntermediatePerDictResultsElements key={results.dbName} perDictRes={results} />
         this.setStateTyped((state: ChaTaigiState<IntermediatePerDictResultsElements>) => ({currentResultsElements: [...state.currentResultsElements, TODO_Intermediate]}));
         debugConsole.timeEnd("appendResults-setState");
     }
@@ -132,6 +140,10 @@ class ChaTaigi extends React.Component<any, any> {
             this.setStateTyped({query, currentResultsElements: []});
             this.doSearch(query, searchableDicts);
         }
+    }
+
+    menu() {
+        return <ChaMenu />;
     }
 
     resetSearch() {
@@ -156,9 +168,12 @@ class ChaTaigi extends React.Component<any, any> {
 
         return (
             <div className="ChaTaigi">
-                <SearchBar onChange={onChange} />
-                <PlaceholderArea query={query} num_results={currentResultsElements.length} loaded={!!searchableDicts} searching={searching} />
-                <ResultsArea results={currentResultsElements} />
+                {this.menu()}
+                <div className="non-menu">
+                    <SearchBar onChange={onChange} />
+                    <PlaceholderArea query={query} num_results={currentResultsElements.length} loaded={!!searchableDicts} searching={searching} />
+                    <ResultsArea results={currentResultsElements} />
+                </div>
             </div>
         );
     }

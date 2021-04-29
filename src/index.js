@@ -29,15 +29,17 @@ const components_1 = require("./components");
 const debug_console_1 = __importDefault(require("./debug_console"));
 const dictionary_handling_1 = require("./dictionary_handling");
 require("./cha_taigi.css");
+require("./menu.css");
 const search_1 = require("./search");
 const search_options_1 = require("./search_options");
+const cha_menu_1 = require("./cha_menu");
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
-// TODO(urgent): have python handle the double-"" in the CSVs
 // TODO(high): add other databases from ChhoeTaigi
 //               * write out schema
 //               * update conversion scripts
 //               * decide on display changes for multiple DBs
 // TODO(high): handle alternate spellings / parentheticals vs separate fields
+// TODO(high): handle explanation text (see "le" in Giku)
 // TODO(high): add copyright/about page/info
 // TODO(high): Fix clipboard notif not working on most browsers
 // TODO(high): Fix typing before load not searching
@@ -52,18 +54,22 @@ const search_options_1 = require("./search_options");
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): keybinding for search (/)
+// TODO(mid): Handle parentheses in poj_unicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll)
 // TODO(mid): "search only as fallback"
 // TODO(mid): link to pleco/wiktionary for chinese characters, poj, etc
 // TODO(mid): unit/integration tests
 // TODO(mid): long press for copy on mobile
-// TODO(mid): instead of placeholder, use search box text, and possibly a spinner (for initial loading and search wait)
+// TODO(mid): replace loading placeholder with *grid* of db loading updates
+// TODO(mid): move search bar to middle of page when no results and no search yet
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
+// TODO(low): abstract away searching logic to avoid too much fuzzysort-specific code
 // TODO(low): have GET param for search (and options?)
 // TODO(low): configurable searches (exact search, slow but better search, etc)
 // TODO(low): hashtag load entry (for linking)
 // TODO(low): move to camelCase
 // TODO(low): prettier search/load indicators
+// TODO(low): notify when DBs fail to load
 // TODO(low): store options between sessions
 // TODO(low): radio buttons of which text to search
 // TODO(low): hoabun text click should copy hoabun?
@@ -97,6 +103,7 @@ class ChaTaigi extends React.Component {
         this.appendSearch = this.appendSearch.bind(this);
         this.appendDict = this.appendDict.bind(this);
         this.appendResults = this.appendResults.bind(this);
+        this.menu = this.menu.bind(this);
     }
     setStateTyped(state) {
         this.setState(state);
@@ -117,7 +124,7 @@ class ChaTaigi extends React.Component {
     }
     appendResults(results) {
         debug_console_1.default.time("appendResults-setState");
-        const TODO_Intermediate = jsx_runtime_1.jsx(IntermediatePerDictResultsElements, { perDictRes: results }, void 0);
+        const TODO_Intermediate = jsx_runtime_1.jsx(IntermediatePerDictResultsElements, { perDictRes: results }, results.dbName);
         this.setStateTyped((state) => ({ currentResultsElements: [...state.currentResultsElements, TODO_Intermediate] }));
         debug_console_1.default.timeEnd("appendResults-setState");
     }
@@ -136,10 +143,13 @@ class ChaTaigi extends React.Component {
             this.doSearch(query, searchableDicts);
         }
     }
+    //jfkldsaj
+    menu() {
+        return jsx_runtime_1.jsx(cha_menu_1.ChaMenu, {}, void 0);
+    }
     resetSearch() {
         this.setStateTyped({
             query: "",
-            // TODO: force cancel all existing searches
             ongoingSearches: [],
             currentResultsElements: []
         });
@@ -153,9 +163,9 @@ class ChaTaigi extends React.Component {
         const { onChange } = this;
         const { currentResultsElements, searchableDicts, ongoingSearches, query } = this.getStateTyped();
         const searching = ongoingSearches.some((s) => !s.isCompleted());
-        return (jsx_runtime_1.jsxs("div", Object.assign({ className: "ChaTaigi" }, { children: [jsx_runtime_1.jsx(components_1.SearchBar, { onChange: onChange }, void 0),
-                jsx_runtime_1.jsx(components_1.PlaceholderArea, { query: query, num_results: currentResultsElements.length, loaded: !!searchableDicts, searching: searching }, void 0),
-                jsx_runtime_1.jsx(components_1.ResultsArea, { results: currentResultsElements }, void 0)] }), void 0));
+        return (jsx_runtime_1.jsxs("div", Object.assign({ className: "ChaTaigi" }, { children: [this.menu(), jsx_runtime_1.jsxs("div", Object.assign({ className: "non-menu" }, { children: [jsx_runtime_1.jsx(components_1.SearchBar, { onChange: onChange }, void 0),
+                        jsx_runtime_1.jsx(components_1.PlaceholderArea, { query: query, num_results: currentResultsElements.length, loaded: !!searchableDicts, searching: searching }, void 0),
+                        jsx_runtime_1.jsx(components_1.ResultsArea, { results: currentResultsElements }, void 0)] }), void 0)] }), void 0));
     }
 }
 const rootElement = document.getElementById("root");

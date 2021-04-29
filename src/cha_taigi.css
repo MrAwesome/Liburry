@@ -10,9 +10,11 @@ input {
 body {
 /*    background: #d7eed7;*/
     background: #ADD8E6;
+    margin: 0;
+    padding: 0;
 }
 
-.App {
+.ChaTaigi {
 /*    display: grid;*/
 /*    grid-template-areas:*/
 /*        "header"*/
@@ -20,6 +22,11 @@ body {
 /*        "options" */
 /*        "placeholder"*/
 /*        "results";*/
+}
+
+.non-menu {
+/*    margin: 8px;*/
+    padding: 8px;
 }
 
 .results-container, .placeholder-container {
