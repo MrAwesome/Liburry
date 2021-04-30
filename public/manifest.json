@@ -23,5 +23,6 @@
     }  
   ],  
   "display": "fullscreen",  
-  "orientation": "portrait"  
+  "orientation": "portrait",
+  "web_accessible_resources": ["/db/*.json"]
 }  
