@@ -22,8 +22,6 @@
       "type": "image/png"  
     }  
   ],  
-  //"theme_color": "#111111",  
-  //"background_color": "#DDDDDDD",  
   "display": "fullscreen",  
   "orientation": "portrait"  
 }  
