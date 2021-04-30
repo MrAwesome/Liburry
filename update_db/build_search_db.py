@@ -84,6 +84,7 @@ def parse_csv(csv_filename: str, csv_text: str, expected_fields: list[str]) -> l
     # TODO(high): print out values and make sure they match
 
     for row in reader:
+        row_id = int(row["id"])
         poj_unicode = row["poj_unicode"]
         poj_input = row["poj_input"]
         hoabun = row["hoabun"]
@@ -93,6 +94,7 @@ def parse_csv(csv_filename: str, csv_text: str, expected_fields: list[str]) -> l
         poj_normalized = unidecode(poj_unicode.replace("ⁿ", ""))
 
         muh_obj = {
+            "d": row_id,
             "p": poj_unicode,
             "n": poj_normalized,
             "i": poj_input,

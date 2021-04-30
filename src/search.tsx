@@ -1,5 +1,5 @@
 import debugConsole from "./debug_console";
-import {DBName, CancelablePromise, KeyResults, SearchableDict, PerDictResultsElements} from "./types";
+import {DBName, CancelablePromise, SearchableDict, PerDictResultsElements} from "./types";
 import fuzzysort from "fuzzysort";
 import {parseFuzzySortResultsForRender} from "./search_results_entities";
 import {DATABASES} from "./search_options";
@@ -67,11 +67,12 @@ export function searchDB(
 
     const newSearch = new OngoingSearch(dbName, query, newSearchPromise);
     newSearchPromise.then(
-        raw_results => {
+        rawResults => {
             newSearch.markCompleted();
             const results = parseFuzzySortResultsForRender(
+                dbName,
                 // @ts-ignore Deal with lack of fuzzysort interfaces
-                raw_results,
+                rawResults,
             );
             appendResultsFunc({
                 dbName,

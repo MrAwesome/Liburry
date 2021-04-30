@@ -47,13 +47,14 @@ export interface PrePreparedEntry extends Object {
 
 export interface SearchableEntry extends Object {
     readonly e: string,
-    eng_prepped: Prepared,
+    engPrepped: Prepared,
     readonly p: string,
-    poj_prepped: Prepared,
+    pojPrepped: Prepared,
     readonly n: string,
-    poj_normalized_prepped: Prepared,
+    pojNormalizedPrepped: Prepared,
     readonly h: string,
-    hoa_prepped: Prepared,
+    hoaPrepped: Prepared,
+    readonly d: number,
     //    readonly [POJ_UNICODE_SHORTNAME: string]: string,
     //    [POJ_UNICODE_PREPPED_KEY as string]: Prepared,
     //    readonly [POJ_NORMALIZED_SHORTNAME]: string,

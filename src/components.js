@@ -33,7 +33,8 @@ class EntryContainer extends React.PureComponent {
         this.clickedNotif = this.clickedNotif.bind(this);
     }
     myOnClick(_) {
-        navigator.clipboard.writeText(this.props.poj_unicode_text);
+        // TODO: handle the case of being in a Chrome/Firefox desktop/mobile app
+        navigator.clipboard.writeText(this.props.pojUnicodeText);
         this.setState({ clicked: true });
         setTimeout(() => this.resetClicked(), 500);
     }
@@ -44,19 +45,21 @@ class EntryContainer extends React.PureComponent {
         return jsx_runtime_1.jsx("div", Object.assign({ className: "clicked-notif" }, { children: "Copied POJ to clipboard!" }), void 0);
     }
     render() {
-        const { poj_unicode, poj_normalized, english, hoabun } = this.props;
+        const { pojUnicode, pojNormalized, english, hoabun } = this.props;
         const { clicked } = this.state;
         // FIXME(https://github.com/farzher/fuzzysort/issues/66)
-        const html_poj_unicode = { __html: poj_unicode };
-        const html_poj_normalized = { __html: poj_normalized };
-        const html_english = { __html: english };
-        const html_hoabun = { __html: hoabun };
-        const poju = jsx_runtime_1.jsx("span", { className: "poj-unicode", dangerouslySetInnerHTML: html_poj_unicode }, void 0);
-        const pojn = jsx_runtime_1.jsx("span", { className: "poj-normalized", dangerouslySetInnerHTML: html_poj_normalized }, void 0);
-        const engl = jsx_runtime_1.jsx("span", { className: "english-definition", dangerouslySetInnerHTML: html_english }, void 0);
-        const hoab = jsx_runtime_1.jsx("span", { className: "hoabun", dangerouslySetInnerHTML: html_hoabun }, void 0);
+        const htmlPojUnicode = { __html: pojUnicode };
+        const htmlPojNormalized = { __html: pojNormalized };
+        const htmlEnglish = { __html: english };
+        const htmlHoabun = { __html: hoabun };
+        const poju = jsx_runtime_1.jsx("span", { className: "poj-unicode", dangerouslySetInnerHTML: htmlPojUnicode }, void 0);
+        const pojn = jsx_runtime_1.jsx("span", { className: "poj-normalized", dangerouslySetInnerHTML: htmlPojNormalized }, void 0);
+        const engl = jsx_runtime_1.jsx("span", { className: "english-definition", dangerouslySetInnerHTML: htmlEnglish }, void 0);
+        const hoab = jsx_runtime_1.jsx("span", { className: "hoabun", dangerouslySetInnerHTML: htmlHoabun }, void 0);
         // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
-        return (jsx_runtime_1.jsxs("div", Object.assign({ className: clicked ? "entry-container-clicked" : "entry-container", onClick: this.myOnClick }, { children: [jsx_runtime_1.jsx("div", Object.assign({ className: "poj-normalized-container" }, { children: pojn }), void 0),
+        return (
+        // TODO: just change style, instead of changing className
+        jsx_runtime_1.jsxs("div", Object.assign({ className: clicked ? "entry-container-clicked" : "entry-container", onClick: this.myOnClick }, { children: [jsx_runtime_1.jsx("div", Object.assign({ className: "poj-normalized-container" }, { children: pojn }), void 0),
                 jsx_runtime_1.jsx("span", Object.assign({ className: "poj-unicode-container" }, { children: poju }), void 0), "\u00A0", jsx_runtime_1.jsxs("div", Object.assign({ className: "hoabun-container" }, { children: ["(", hoab, ")"] }), void 0),
                 jsx_runtime_1.jsx("div", Object.assign({ className: "english-container" }, { children: engl }), void 0), clicked ? this.clickedNotif() : null] }), void 0));
     }
@@ -70,24 +73,24 @@ class Placeholder extends React.PureComponent {
     }
 }
 exports.Placeholder = Placeholder;
-const loading_paceholder = jsx_runtime_1.jsx(Placeholder, { text: "Loading..." }, void 0);
-const loaded_placeholder = jsx_runtime_1.jsx(Placeholder, { text: "Type to search!" }, void 0);
-const searching_placeholder = jsx_runtime_1.jsx(Placeholder, { text: "Searching..." }, void 0);
-const no_results_placeholder = jsx_runtime_1.jsx(Placeholder, { text: "No results found!" }, void 0);
+const loadingPaceholder = jsx_runtime_1.jsx(Placeholder, { text: "Loading..." }, void 0);
+const loadedPlaceholder = jsx_runtime_1.jsx(Placeholder, { text: "Type to search!" }, void 0);
+const searchingPlaceholder = jsx_runtime_1.jsx(Placeholder, { text: "Searching..." }, void 0);
+const noResultsPlaceholder = jsx_runtime_1.jsx(Placeholder, { text: "No results found!" }, void 0);
 class PlaceholderArea extends React.PureComponent {
     render() {
-        const { query, loaded, searching, num_results } = this.props;
+        const { query, loaded, searching, numResults } = this.props;
         var placeholder = null;
-        if (!num_results) {
+        if (!numResults) {
             if (searching) {
-                placeholder = searching_placeholder;
+                placeholder = searchingPlaceholder;
             }
             else {
                 if (query) {
-                    placeholder = no_results_placeholder;
+                    placeholder = noResultsPlaceholder;
                 }
                 else {
-                    placeholder = loaded ? loaded_placeholder : loading_paceholder;
+                    placeholder = loaded ? loadedPlaceholder : loadingPaceholder;
                 }
             }
         }

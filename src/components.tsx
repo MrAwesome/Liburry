@@ -12,7 +12,8 @@ export class EntryContainer extends React.PureComponent<any, any> {
     }
 
     myOnClick(_: any) {
-        navigator.clipboard.writeText(this.props.poj_unicode_text)
+        // TODO: handle the case of being in a Chrome/Firefox desktop/mobile app
+        navigator.clipboard.writeText(this.props.pojUnicodeText);
         this.setState({clicked: true});
         setTimeout(() => this.resetClicked(), 500);
     }
@@ -26,20 +27,21 @@ export class EntryContainer extends React.PureComponent<any, any> {
     }
 
     render() {
-        const {poj_unicode, poj_normalized, english, hoabun} = this.props;
+        const {pojUnicode, pojNormalized, english, hoabun} = this.props;
         const {clicked} = this.state;
         // FIXME(https://github.com/farzher/fuzzysort/issues/66)
-        const html_poj_unicode = {__html: poj_unicode};
-        const html_poj_normalized = {__html: poj_normalized};
-        const html_english = {__html: english};
-        const html_hoabun = {__html: hoabun};
-        const poju = <span className="poj-unicode" dangerouslySetInnerHTML={html_poj_unicode}></span>;
-        const pojn = <span className="poj-normalized" dangerouslySetInnerHTML={html_poj_normalized}></span>;
-        const engl = <span className="english-definition" dangerouslySetInnerHTML={html_english}></span>;
-        const hoab = <span className="hoabun" dangerouslySetInnerHTML={html_hoabun}></span>;
+        const htmlPojUnicode = {__html: pojUnicode};
+        const htmlPojNormalized = {__html: pojNormalized};
+        const htmlEnglish = {__html: english};
+        const htmlHoabun = {__html: hoabun};
+        const poju = <span className="poj-unicode" dangerouslySetInnerHTML={htmlPojUnicode}></span>;
+        const pojn = <span className="poj-normalized" dangerouslySetInnerHTML={htmlPojNormalized}></span>;
+        const engl = <span className="english-definition" dangerouslySetInnerHTML={htmlEnglish}></span>;
+        const hoab = <span className="hoabun" dangerouslySetInnerHTML={htmlHoabun}></span>;
 
         // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
         return (
+            // TODO: just change style, instead of changing className
             <div className={clicked ? "entry-container-clicked" : "entry-container"} onClick={this.myOnClick}>
                 <div className="poj-normalized-container">
                     {pojn}
@@ -67,24 +69,24 @@ export class Placeholder extends React.PureComponent<any, any> {
         return <div className="placeholder">{text}</div>;
     }
 }
-const loading_paceholder = <Placeholder text="Loading..." />;
-const loaded_placeholder = <Placeholder text="Type to search!" />;
-const searching_placeholder = <Placeholder text="Searching..." />;
-const no_results_placeholder = <Placeholder text="No results found!" />;
+const loadingPaceholder = <Placeholder text="Loading..." />;
+const loadedPlaceholder = <Placeholder text="Type to search!" />;
+const searchingPlaceholder = <Placeholder text="Searching..." />;
+const noResultsPlaceholder = <Placeholder text="No results found!" />;
 
 export class PlaceholderArea extends React.PureComponent<any, any> {
     render() {
-        const {query, loaded, searching, num_results} = this.props;
+        const {query, loaded, searching, numResults} = this.props;
 
         var placeholder = null;
-        if (!num_results) {
+        if (!numResults) {
             if (searching) {
-                placeholder = searching_placeholder;
+                placeholder = searchingPlaceholder;
             } else {
                 if (query) {
-                    placeholder = no_results_placeholder;
+                    placeholder = noResultsPlaceholder;
                 } else {
-                    placeholder = loaded ? loaded_placeholder : loading_paceholder;
+                    placeholder = loaded ? loadedPlaceholder : loadingPaceholder;
                 }
             }
         }

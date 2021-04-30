@@ -34,6 +34,8 @@ const search_1 = require("./search");
 const search_options_1 = require("./search_options");
 const cha_menu_1 = require("./cha_menu");
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
+// TODO(high): determine why duplicate search results are sometimes returned (see "a" results for giku)
+// TODO(high): add keys as opposed to indices
 // TODO(high): add other databases from ChhoeTaigi
 //               * write out schema
 //               * update conversion scripts
@@ -54,7 +56,7 @@ const cha_menu_1 = require("./cha_menu");
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): keybinding for search (/)
-// TODO(mid): Handle parentheses in poj_unicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll)
+// TODO(mid): Handle parentheses in pojUnicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll)
 // TODO(mid): "search only as fallback"
 // TODO(mid): link to pleco/wiktionary for chinese characters, poj, etc
 // TODO(mid): unit/integration tests
@@ -124,8 +126,8 @@ class ChaTaigi extends React.Component {
     }
     appendResults(results) {
         debug_console_1.default.time("appendResults-setState");
-        const TODO_Intermediate = jsx_runtime_1.jsx(IntermediatePerDictResultsElements, { perDictRes: results }, results.dbName);
-        this.setStateTyped((state) => ({ currentResultsElements: [...state.currentResultsElements, TODO_Intermediate] }));
+        const TODOIntermediate = jsx_runtime_1.jsx(IntermediatePerDictResultsElements, { perDictRes: results }, results.dbName);
+        this.setStateTyped((state) => ({ currentResultsElements: [...state.currentResultsElements, TODOIntermediate] }));
         debug_console_1.default.timeEnd("appendResults-setState");
     }
     onChange(e) {
@@ -143,7 +145,6 @@ class ChaTaigi extends React.Component {
             this.doSearch(query, searchableDicts);
         }
     }
-    //jfkldsaj
     menu() {
         return jsx_runtime_1.jsx(cha_menu_1.ChaMenu, {}, void 0);
     }
@@ -164,7 +165,7 @@ class ChaTaigi extends React.Component {
         const { currentResultsElements, searchableDicts, ongoingSearches, query } = this.getStateTyped();
         const searching = ongoingSearches.some((s) => !s.isCompleted());
         return (jsx_runtime_1.jsxs("div", Object.assign({ className: "ChaTaigi" }, { children: [this.menu(), jsx_runtime_1.jsxs("div", Object.assign({ className: "non-menu" }, { children: [jsx_runtime_1.jsx(components_1.SearchBar, { onChange: onChange }, void 0),
-                        jsx_runtime_1.jsx(components_1.PlaceholderArea, { query: query, num_results: currentResultsElements.length, loaded: !!searchableDicts, searching: searching }, void 0),
+                        jsx_runtime_1.jsx(components_1.PlaceholderArea, { query: query, numResults: currentResultsElements.length, loaded: !!searchableDicts, searching: searching }, void 0),
                         jsx_runtime_1.jsx(components_1.ResultsArea, { results: currentResultsElements }, void 0)] }), void 0)] }), void 0));
     }
 }

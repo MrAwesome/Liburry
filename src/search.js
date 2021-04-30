@@ -50,11 +50,11 @@ function searchDB(searchableDict, query, appendSearchFunc, appendResultsFunc) {
     const { fuzzyOpts } = langDB;
     const newSearchPromise = fuzzysort_1.default.goAsync(query, searchableEntries, fuzzyOpts);
     const newSearch = new OngoingSearch(dbName, query, newSearchPromise);
-    newSearchPromise.then(raw_results => {
+    newSearchPromise.then(rawResults => {
         newSearch.markCompleted();
-        const results = search_results_entities_1.parseFuzzySortResultsForRender(
+        const results = search_results_entities_1.parseFuzzySortResultsForRender(dbName, 
         // @ts-ignore Deal with lack of fuzzysort interfaces
-        raw_results);
+        rawResults);
         appendResultsFunc({
             dbName,
             results

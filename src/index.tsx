@@ -14,6 +14,8 @@ import {DATABASES} from "./search_options";
 import {ChaMenu} from "./cha_menu";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
+// TODO(high): determine why duplicate search results are sometimes returned (see "a" results for giku)
+// TODO(high): add keys as opposed to indices
 // TODO(high): add other databases from ChhoeTaigi
 //               * write out schema
 //               * update conversion scripts
@@ -34,7 +36,7 @@ import {ChaMenu} from "./cha_menu";
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): keybinding for search (/)
-// TODO(mid): Handle parentheses in poj_unicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll)
+// TODO(mid): Handle parentheses in pojUnicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll)
 // TODO(mid): "search only as fallback"
 // TODO(mid): link to pleco/wiktionary for chinese characters, poj, etc
 // TODO(mid): unit/integration tests
@@ -119,8 +121,8 @@ class ChaTaigi extends React.Component<any, any> {
 
     appendResults(results: PerDictResultsElements) {
         debugConsole.time("appendResults-setState");
-        const TODO_Intermediate = <IntermediatePerDictResultsElements key={results.dbName} perDictRes={results} />
-        this.setStateTyped((state: ChaTaigiState<IntermediatePerDictResultsElements>) => ({currentResultsElements: [...state.currentResultsElements, TODO_Intermediate]}));
+        const TODOIntermediate = <IntermediatePerDictResultsElements key={results.dbName} perDictRes={results} />
+        this.setStateTyped((state: ChaTaigiState<IntermediatePerDictResultsElements>) => ({currentResultsElements: [...state.currentResultsElements, TODOIntermediate]}));
         debugConsole.timeEnd("appendResults-setState");
     }
 
@@ -171,7 +173,7 @@ class ChaTaigi extends React.Component<any, any> {
                 {this.menu()}
                 <div className="non-menu">
                     <SearchBar onChange={onChange} />
-                    <PlaceholderArea query={query} num_results={currentResultsElements.length} loaded={!!searchableDicts} searching={searching} />
+                    <PlaceholderArea query={query} numResults={currentResultsElements.length} loaded={!!searchableDicts} searching={searching} />
                     <ResultsArea results={currentResultsElements} />
                 </div>
             </div>
