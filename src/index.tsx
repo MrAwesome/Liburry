@@ -12,10 +12,14 @@ import {OngoingSearch, searchDB} from "./search";
 import {DATABASES} from "./search_options";
 
 import {ChaMenu} from "./cha_menu";
+//import reportWebVitals from "./reportWebVitals";
+
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
+// TODO(high): migrate to tsx cra with service worker (see ~/my-app)
 // TODO(high): determine why duplicate search results are sometimes returned (see "a" results for giku)
 // TODO(high): add keys as opposed to indices
+// TODO(high): fix icon sizes/manifest: https://github.com/facebook/create-react-app/blob/master/packages/cra-template/template/public/manifest.json (both ico and icon)
 // TODO(high): add other databases from ChhoeTaigi
 //               * write out schema
 //               * update conversion scripts
@@ -183,3 +187,5 @@ class ChaTaigi extends React.Component<any, any> {
 
 const rootElement = document.getElementById("root");
 ReactDOM.render(<ChaTaigi />, rootElement);
+
+//reportWebVitals(console.log);
