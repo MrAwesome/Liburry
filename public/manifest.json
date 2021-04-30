@@ -1,28 +1,30 @@
-{  
-  "name": "Cha Tâi-gí!",  
-  "short_name": "Cha Tâi-gí!",  
-  "description": "",  
-  "start_url": "./index.html",  
-  "manifest_version": 2,
-  "version": "0.1",
-  "icons": [  
-    {  
-      "src": "/icons/tw-flag-32.png",  
-      "sizes": "32x32",  
-      "type": "image/png"  
-    },  
-    {  
-      "src": "/icons/tw-flag-128.png",  
-      "sizes": "128x128",  
-      "type": "image/png"  
-    },  
-    {  
-      "src": "/icons/tw-flag-512.png",  
-      "sizes": "512x512",  
-      "type": "image/png"  
-    }  
-  ],  
-  "display": "fullscreen",  
-  "orientation": "portrait",
-  "web_accessible_resources": ["/db/*.json"]
-}  
+{
+    "name": "Cha Tâi-gí!",
+    "short_name": "Cha Tâi-gí!",
+    "description": "",
+    "start_url": "",
+    "manifest_version": 2,
+    "version": "0.2",
+    "icons": [
+        {
+            "src": "/icons/tw-flag-32.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/tw-flag-128.png",
+            "sizes": "128x128",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/tw-flag-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "display": "fullscreen",
+    "orientation": "portrait",
+    "web_accessible_resources": [
+        "/db/*.json"
+    ]
+}
