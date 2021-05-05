@@ -17,6 +17,7 @@ import {ChaMenu} from "./cha_menu";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): migrate to tsx cra with service worker (see ~/my-app)
+// TODO(high): come up with a more elegant/extensible way of transforming a db entry into elements to be displayed
 // TODO(high): change name to chaa5_taigi (chhâ)
 // TODO(high): determine why duplicate search results are sometimes returned (see "a" results for giku)
 // TODO(high): add keys as opposed to indices
@@ -40,7 +41,7 @@ import {ChaMenu} from "./cha_menu";
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): keybinding for search (/)
-// TODO(mid): Handle parentheses in pojUnicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll)
+// TODO(mid): Handle parentheses in pojUnicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll) {{{ create github issue for chhoetaigidatabase }}}
 // TODO(mid): "search only as fallback"
 // TODO(mid): link to pleco/wiktionary for chinese characters, poj, etc
 // TODO(mid): unit/integration tests
