@@ -14,6 +14,13 @@ body {
     padding: 0;
 }
 
+mark {
+    background: none;
+    color: inherit;
+    text-decoration: underline;
+}
+
+
 .ChaTaigi {
 /*    display: grid;*/
 /*    grid-template-areas:*/
@@ -119,7 +126,6 @@ body {
 .clicked-notif {
 }
 
-
 .fading-notif {
     opacity: 0;
 /*    transition: all .5s ease;*/
@@ -170,9 +176,6 @@ body {
     text-align: right;
     position: relative;
     float: right;
-}
-
-.poj-normalized, .poj-normalized-matched-text {
     font-size: 10px;
     color: grey;
 }
@@ -185,13 +188,6 @@ body {
     color: #345;
     padding-left: 10px;
     font-style: italic;
-}
-
-.english-definition-matched-text {
-}
-
-.poj-normalized-matched-text, .poj-unicode-matched-text, .english-definition-matched-text, .hoabun-matched-text {
-    text-decoration: underline;
 }
 
 .search-bar {

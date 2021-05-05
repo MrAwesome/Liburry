@@ -33,10 +33,13 @@ require("./menu.css");
 const search_1 = require("./search");
 const search_options_1 = require("./search_options");
 const cha_menu_1 = require("./cha_menu");
-const reportWebVitals_1 = __importDefault(require("./reportWebVitals"));
+//import reportWebVitals from "./reportWebVitals";
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
+// TODO(high): migrate to tsx cra with service worker (see ~/my-app)
+// TODO(high): change name to chaa5_taigi (chhâ)
 // TODO(high): determine why duplicate search results are sometimes returned (see "a" results for giku)
 // TODO(high): add keys as opposed to indices
+// TODO(high): fix icon sizes/manifest: https://github.com/facebook/create-react-app/blob/master/packages/cra-template/template/public/manifest.json (both ico and icon)
 // TODO(high): add other databases from ChhoeTaigi
 //               * write out schema
 //               * update conversion scripts
@@ -171,5 +174,4 @@ class ChaTaigi extends React.Component {
     }
 }
 const rootElement = document.getElementById("root");
-react_dom_1.default.render(jsx_runtime_1.jsx(ChaTaigi, {}, void 0), rootElement);
-reportWebVitals_1.default(console.log);
+react_dom_1.default.render(jsx_runtime_1.jsx(React.StrictMode, { children: jsx_runtime_1.jsx(ChaTaigi, {}, void 0) }, void 0), rootElement);

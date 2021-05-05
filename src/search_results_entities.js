@@ -26,14 +26,14 @@ function parseFuzzySortResultsForRender(dbName, rawResults) {
         const englishPreHighlight = fuzzysortResult[search_options_1.DEFAULT_ENGLISH_INDEX];
         const pojUnicodePreHighlight = fuzzysortResult[search_options_1.DEFAULT_POJ_UNICODE_INDEX];
         const hoabunPreHighlight = fuzzysortResult[search_options_1.DEFAULT_HOABUN_INDEX];
-        const pojNormPreParen = fuzzysort_1.default.highlight(pojNormalizedPreHighlight, "<span class=\"poj-normalized-matched-text\" class=hlsearch>", "</span>")
+        const pojNormPreParen = fuzzysort_1.default.highlight(pojNormalizedPreHighlight, "<mark class=\"poj-normalized-matched-text\" class=hlsearch>", "</mark>")
             || obj.n;
         const pojNormalized = "(" + pojNormPreParen + ")";
-        const english = fuzzysort_1.default.highlight(englishPreHighlight, "<span class=\"english-definition-matched-text\" class=hlsearch>", "</span>")
+        const english = fuzzysort_1.default.highlight(englishPreHighlight, "<mark class=\"english-definition-matched-text\" class=hlsearch>", "</mark>")
             || obj.e;
-        const pojUnicode = fuzzysort_1.default.highlight(pojUnicodePreHighlight, "<span class=\"poj-unicode-matched-text\" class=hlsearch>", "</span>")
+        const pojUnicode = fuzzysort_1.default.highlight(pojUnicodePreHighlight, "<mark class=\"poj-unicode-matched-text\" class=hlsearch>", "</mark>")
             || pojUnicodeText;
-        const hoabun = fuzzysort_1.default.highlight(hoabunPreHighlight, "<span class=\"hoabun-matched-text\" class=hlsearch>", "</span>")
+        const hoabun = fuzzysort_1.default.highlight(hoabunPreHighlight, "<mark class=\"hoabun-matched-text\" class=hlsearch>", "</mark>")
             || obj.h;
         const locProps = {
             key: dbName + "-" + rowID,

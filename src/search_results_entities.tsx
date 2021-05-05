@@ -28,18 +28,18 @@ export function parseFuzzySortResultsForRender(
             const hoabunPreHighlight = fuzzysortResult[DEFAULT_HOABUN_INDEX];
 
             const pojNormPreParen = fuzzysort.highlight(pojNormalizedPreHighlight,
-                "<span class=\"poj-normalized-matched-text\" class=hlsearch>", "</span>")
+                "<mark class=\"poj-normalized-matched-text\" class=hlsearch>", "</mark>")
                 || obj.n;
             const pojNormalized = "(" + pojNormPreParen + ")";
             const english = fuzzysort.highlight(englishPreHighlight,
-                "<span class=\"english-definition-matched-text\" class=hlsearch>", "</span>")
+                "<mark class=\"english-definition-matched-text\" class=hlsearch>", "</mark>")
                 || obj.e;
             const pojUnicode = fuzzysort.highlight(pojUnicodePreHighlight,
-                "<span class=\"poj-unicode-matched-text\" class=hlsearch>", "</span>")
+                "<mark class=\"poj-unicode-matched-text\" class=hlsearch>", "</mark>")
                 || pojUnicodeText;
 
             const hoabun = fuzzysort.highlight(hoabunPreHighlight,
-                "<span class=\"hoabun-matched-text\" class=hlsearch>", "</span>")
+                "<mark class=\"hoabun-matched-text\" class=hlsearch>", "</mark>")
                 || obj.h;
 
             const locProps = {

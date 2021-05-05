@@ -17,6 +17,7 @@ import {ChaMenu} from "./cha_menu";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): migrate to tsx cra with service worker (see ~/my-app)
+// TODO(high): change name to chaa5_taigi (chhâ)
 // TODO(high): determine why duplicate search results are sometimes returned (see "a" results for giku)
 // TODO(high): add keys as opposed to indices
 // TODO(high): fix icon sizes/manifest: https://github.com/facebook/create-react-app/blob/master/packages/cra-template/template/public/manifest.json (both ico and icon)
@@ -32,7 +33,6 @@ import {ChaMenu} from "./cha_menu";
 // TODO(high): Copy to clipboard on click or tab-enter (allow for tab/hover enter/click focus equivalency?)
 // TODO(high): have search updates appear asynchronously from typing
 // TODO(high): use react-window or react-virtualized to only need to render X results at a time
-// TODO(high): use <mark></mark> instead of individual spans
 // TODO(high): create an index of all 3 categories combined, and search that as text?
 // TODO(high): remove parentheses from unicode entries, treat as separate results
 // TODO(high): let spaces match hyphens and vice-versa
@@ -186,6 +186,9 @@ class ChaTaigi extends React.Component<any, any> {
 }
 
 const rootElement = document.getElementById("root");
-ReactDOM.render(<ChaTaigi />, rootElement);
+ReactDOM.render(
+    <React.StrictMode>
+        <ChaTaigi />
+    </React.StrictMode>, rootElement);
 
 //reportWebVitals(console.log);
