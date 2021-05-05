@@ -1,12 +1,30 @@
 import * as React from "react";
 
+enum clickedOrder {
+    NORMAL,
+    CLICKED,
+    FADING,
+}
+
+const CLICKED_STYLE = {
+    "background": "#FFD586",
+    "border": "1px solid lightgrey",
+    "box-shadow": "1px 1px 4px 2px rgba(0, 0, 0, 0.2)",
+};
+
+const FADING_STYLE = {
+    "transition": "background 1s ease-out",
+}
+
+
 export class EntryContainer extends React.PureComponent<any, any> {
     constructor(props: any) {
         super(props);
         this.state = {
-            clicked: false,
+            clicked: clickedOrder.NORMAL,
         }
         this.myOnClick = this.myOnClick.bind(this);
+        this.fadeClicked = this.fadeClicked.bind(this);
         this.resetClicked = this.resetClicked.bind(this);
         this.clickedNotif = this.clickedNotif.bind(this);
     }
@@ -14,16 +32,33 @@ export class EntryContainer extends React.PureComponent<any, any> {
     myOnClick(_: any) {
         // TODO: handle the case of being in a Chrome/Firefox desktop/mobile app
         navigator.clipboard.writeText(this.props.pojUnicodeText);
-        this.setState({clicked: true});
-        setTimeout(() => this.resetClicked(), 500);
+        this.setState({clicked: clickedOrder.CLICKED});
+        setTimeout(this.fadeClicked, 500);
+    }
+
+    fadeClicked() {
+        this.setState({clicked: clickedOrder.FADING});
+        setTimeout(this.resetClicked, 500);
     }
 
     resetClicked() {
-        this.setState({clicked: false});
+        this.setState({clicked: clickedOrder.NORMAL});
     }
 
     clickedNotif() {
         return <div className="clicked-notif">Copied POJ to clipboard!</div>;
+    }
+
+    fadingStyle(): object {
+        const {clicked} = this.state;
+        switch (clicked) {
+            case clickedOrder.CLICKED:
+                return CLICKED_STYLE;
+            case clickedOrder.FADING:
+                return FADING_STYLE;
+            default:
+                return {};
+        }
     }
 
     render() {
@@ -42,7 +77,7 @@ export class EntryContainer extends React.PureComponent<any, any> {
         // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
         return (
             // TODO: just change style, instead of changing className
-            <div className={clicked ? "entry-container-clicked" : "entry-container"} onClick={this.myOnClick}>
+            <div className="entry-container" style={this.fadingStyle()} onClick={this.myOnClick}>
                 <div className="poj-normalized-container">
                     {pojn}
                 </div>

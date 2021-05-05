@@ -93,13 +93,6 @@ mark {
 }
 
 .entry-container {
-    transition: background 1s ease-out;
-}
-
-.entry-container-clicked {
-    background: #FFD586;
-    border: 1px solid lightgrey;
-    box-shadow: 1px 1px 4px 2px rgba(0, 0, 0, 0.2);
 }
 
 .fading-notif, .clicked-notif {

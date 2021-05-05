@@ -22,27 +22,57 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SearchBar = exports.ResultsArea = exports.PlaceholderArea = exports.Placeholder = exports.EntryContainer = void 0;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const React = __importStar(require("react"));
+var clickedOrder;
+(function (clickedOrder) {
+    clickedOrder[clickedOrder["NORMAL"] = 0] = "NORMAL";
+    clickedOrder[clickedOrder["CLICKED"] = 1] = "CLICKED";
+    clickedOrder[clickedOrder["FADING"] = 2] = "FADING";
+})(clickedOrder || (clickedOrder = {}));
+const CLICKED_STYLE = {
+    "background": "#FFD586",
+    "border": "1px solid lightgrey",
+    "box-shadow": "1px 1px 4px 2px rgba(0, 0, 0, 0.2)",
+};
+const FADING_STYLE = {
+    "transition": "background 1s ease-out",
+};
 class EntryContainer extends React.PureComponent {
     constructor(props) {
         super(props);
         this.state = {
-            clicked: false,
+            clicked: clickedOrder.NORMAL,
         };
         this.myOnClick = this.myOnClick.bind(this);
+        this.fadeClicked = this.fadeClicked.bind(this);
         this.resetClicked = this.resetClicked.bind(this);
         this.clickedNotif = this.clickedNotif.bind(this);
     }
     myOnClick(_) {
         // TODO: handle the case of being in a Chrome/Firefox desktop/mobile app
         navigator.clipboard.writeText(this.props.pojUnicodeText);
-        this.setState({ clicked: true });
-        setTimeout(() => this.resetClicked(), 500);
+        this.setState({ clicked: clickedOrder.CLICKED });
+        setTimeout(this.fadeClicked, 500);
+    }
+    fadeClicked() {
+        this.setState({ clicked: clickedOrder.FADING });
+        setTimeout(this.resetClicked, 500);
     }
     resetClicked() {
-        this.setState({ clicked: false });
+        this.setState({ clicked: clickedOrder.NORMAL });
     }
     clickedNotif() {
         return jsx_runtime_1.jsx("div", Object.assign({ className: "clicked-notif" }, { children: "Copied POJ to clipboard!" }), void 0);
+    }
+    fadingStyle() {
+        const { clicked } = this.state;
+        switch (clicked) {
+            case clickedOrder.CLICKED:
+                return CLICKED_STYLE;
+            case clickedOrder.FADING:
+                return FADING_STYLE;
+            default:
+                return {};
+        }
     }
     render() {
         const { pojUnicode, pojNormalized, english, hoabun } = this.props;
@@ -59,7 +89,7 @@ class EntryContainer extends React.PureComponent {
         // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
         return (
         // TODO: just change style, instead of changing className
-        jsx_runtime_1.jsxs("div", Object.assign({ className: clicked ? "entry-container-clicked" : "entry-container", onClick: this.myOnClick }, { children: [jsx_runtime_1.jsx("div", Object.assign({ className: "poj-normalized-container" }, { children: pojn }), void 0),
+        jsx_runtime_1.jsxs("div", Object.assign({ className: "entry-container", style: this.fadingStyle(), onClick: this.myOnClick }, { children: [jsx_runtime_1.jsx("div", Object.assign({ className: "poj-normalized-container" }, { children: pojn }), void 0),
                 jsx_runtime_1.jsx("span", Object.assign({ className: "poj-unicode-container" }, { children: poju }), void 0), "\u00A0", jsx_runtime_1.jsxs("div", Object.assign({ className: "hoabun-container" }, { children: ["(", hoab, ")"] }), void 0),
                 jsx_runtime_1.jsx("div", Object.assign({ className: "english-container" }, { children: engl }), void 0), clicked ? this.clickedNotif() : null] }), void 0));
     }

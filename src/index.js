@@ -52,7 +52,6 @@ const cha_menu_1 = require("./cha_menu");
 // TODO(high): Copy to clipboard on click or tab-enter (allow for tab/hover enter/click focus equivalency?)
 // TODO(high): have search updates appear asynchronously from typing
 // TODO(high): use react-window or react-virtualized to only need to render X results at a time
-// TODO(high): use <mark></mark> instead of individual spans
 // TODO(high): create an index of all 3 categories combined, and search that as text?
 // TODO(high): remove parentheses from unicode entries, treat as separate results
 // TODO(high): let spaces match hyphens and vice-versa
@@ -70,6 +69,7 @@ const cha_menu_1 = require("./cha_menu");
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
 // TODO(low): abstract away searching logic to avoid too much fuzzysort-specific code
+// TODO(low): pass style instead of changing class on click (for text copying)
 // TODO(low): have GET param for search (and options?)
 // TODO(low): configurable searches (exact search, slow but better search, etc)
 // TODO(low): hashtag load entry (for linking)
