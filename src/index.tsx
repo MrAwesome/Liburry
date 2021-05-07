@@ -23,6 +23,7 @@ import {ChaMenu} from "./cha_menu";
 // TODO(high): come up with a more elegant/extensible way of transforming a db entry into elements to be displayed
 // TODO(high): change name to chaa5_taigi (chhâ)
 // TODO(high): determine why duplicate search results are sometimes returned (see "a" results for giku)
+// TODO(high): change from "fullscreen" to (check) "minimal-ui"
 // TODO(high): add keys as opposed to indices
 // TODO(high): fix icon sizes/manifest: https://github.com/facebook/create-react-app/blob/master/packages/cra-template/template/public/manifest.json (both ico and icon)
 // TODO(high): add other databases from ChhoeTaigi
@@ -67,6 +68,7 @@ import {ChaMenu} from "./cha_menu";
 // TODO(low): title
 // TODO(low): copyright, links, etc
 // TODO(low): fix the default/preview text
+// TODO(low): check web.dev/measure
 // TODO(wishlist): dark mode support
 // TODO(wishlist): "add to desktop" shortcut
 // TODO(wishlist): non-javascript support?

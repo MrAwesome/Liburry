@@ -22,7 +22,7 @@
             "type": "image/png"
         }
     ],
-    "display": "fullscreen",
+    "display": "standalone",
     "orientation": "portrait",
     "web_accessible_resources": [
         "/db/*.json"
