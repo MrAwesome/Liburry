@@ -1,14 +1,14 @@
 import fuzzysort from "fuzzysort";
 
 import debugConsole from "./debug_console"
-import {LangDB, PrePreparedEntry, SearchableDict, SearchableEntry} from "./types";
+import {LangDB, RawJSONEntry, SearchableDict, PreparedSearchableEntry} from "./types";
 
 export function fetchDB(
     dbName: string,
     langDB: LangDB,
     appendFunc: ((searchableDict: SearchableDict) => void)) {
 
-    const {dbFilename, indexedKeys} = langDB;
+    const {dbFilename, shortNameToPreppedNameMapping} = langDB;
     debugConsole.time("fetch-" + dbName);
     fetch(dbFilename)
         .then((response: Response) => {
@@ -16,19 +16,19 @@ export function fetchDB(
             debugConsole.time("jsonConvert-" + dbName);
             return response.json();
         })
-        .then((prePreparedData: PrePreparedEntry[]) => {
+        .then((prePreparedData: RawJSONEntry[]) => {
             debugConsole.timeEnd("jsonConvert-" + dbName);
             debugConsole.time("prepareSlow-" + dbName);
             // For each dictionary entry, prepare a fast search version of each searchable key
             const data = prePreparedData.map(
                 // NOTE: this modifies the PrePreparedEntry by adding fields for each prepped key, 
                 // then returning it as a SearchableEntry
-                (t: PrePreparedEntry) => {
-                    indexedKeys.forEach(
+                (t: RawJSONEntry) => {
+                    shortNameToPreppedNameMapping.forEach(
                         (preppedKey, shortName) => {
                             // @ts-ignore  force dynamic index
                             t[preppedKey] = 
-                                // TODO: scoot this elsewhere to maintain separation of concerns
+                                // TODO: scoot this fuzzysort-specific code elsewhere to maintain separation of concerns
                                 fuzzysort.
                                 // @ts-ignore  prepareSlow does exist
                                 prepareSlow
@@ -36,7 +36,7 @@ export function fetchDB(
                                 (t[shortName]);
                         });
 
-                    return t as SearchableEntry;
+                    return t as PreparedSearchableEntry;
                 }
             )
             debugConsole.timeEnd("prepareSlow-" + dbName);

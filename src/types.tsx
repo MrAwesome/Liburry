@@ -7,14 +7,14 @@ export type SearchPreppedKey = string;
 
 export interface LangDB {
     dbFilename: DBFilename,
-    indexedKeys: Map<JSONDBKey, SearchPreppedKey>,
+    shortNameToPreppedNameMapping: Map<JSONDBKey, SearchPreppedKey>,
     searchKeys: Array<SearchPreppedKey>,
     fuzzyOpts: KeysOptions,
 }
 
 export interface SearchableDict {
     dbName: DBName,
-    searchableEntries: Array<SearchableEntry>,
+    searchableEntries: Array<PreparedSearchableEntry>,
 }
 
 export interface ChaTaigiState<E> {
@@ -27,7 +27,7 @@ export interface ChaTaigiState<E> {
 export interface ChaTaigiStateArgs<E> {
     query?: string,
     currentResultsElements?: Array<E>,
-    searchableDicts?: Array<Array<SearchableEntry>>,
+    searchableDicts?: Array<Array<PreparedSearchableEntry>>,
     ongoingSearches?: Array<OngoingSearch>,
 }
 
@@ -38,14 +38,16 @@ interface Prepared {
 
 // NOTE: The keys for searchable text are so small to reduce the
 //       JSON file size (full length keys add >2MB to the filesize)
-export interface PrePreparedEntry extends Object {
-    readonly e: string,
-    readonly p: string,
-    readonly n: string,
-    readonly h: string,
+export interface RawJSONEntry extends Object {
+    readonly e: string, // English
+    readonly p: string, // POJ Unicode
+    readonly n: string, // Normalized POJ
+    readonly h: string, // Chinese Characters
+    readonly i: string, // POJ Alphanumeric Input (chaa5, hak8-seng, etc)
+    readonly d: number, // Numeric ID
 }
 
-export interface SearchableEntry extends Object {
+export interface PreparedSearchableEntry extends Object {
     readonly e: string,
     engPrepped: Prepared,
     readonly p: string,
@@ -54,7 +56,12 @@ export interface SearchableEntry extends Object {
     pojNormalizedPrepped: Prepared,
     readonly h: string,
     hoaPrepped: Prepared,
+
+    readonly i: string,
+    inputCharsPrepped: Prepared,
+
     readonly d: number,
+
     //    readonly [POJ_UNICODE_SHORTNAME: string]: string,
     //    [POJ_UNICODE_PREPPED_KEY as string]: Prepared,
     //    readonly [POJ_NORMALIZED_SHORTNAME]: string,
@@ -72,13 +79,13 @@ interface Result {
     readonly indexes: number[],
 }
 
-interface KeyResult extends Result {
-    readonly obj: SearchableEntry,
+export interface KeyResult extends Result {
+    readonly obj: PreparedSearchableEntry,
 }
 
 export interface KeyResults extends ReadonlyArray<KeyResult> {
     readonly score: number
-    readonly obj: SearchableEntry
+    readonly obj: PreparedSearchableEntry
 }
 
 interface Options {

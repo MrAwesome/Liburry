@@ -4,6 +4,7 @@
     font-family: 'Noto Sans TC', 'Noto Sans', sans-serif;
 
 }
+
 input {
 }
 
@@ -160,17 +161,31 @@ mark {
     user-select: text;
 }
 
-
-.poj-normalized-container {
+.alt-text-container {
     padding-right: 2px;
-}
+    padding-top: 2px;
 
-.poj-normalized {
-    text-align: right;
+    font-size: 8px;
+    color: grey;
+
+    user-select: none;
+
     position: relative;
     float: right;
-    font-size: 10px;
-    color: grey;
+
+/* To float the two typing inputs above one another */
+/*    clear: right;*/
+}
+
+
+.poj-normalized-container, .poj-input-container {
+    text-align: right;
+    display: inline-block;
+}
+
+.poj-normalized, .poj-input {
+    user-select: text;
+    text-align: right;
 }
 
 .english-container {

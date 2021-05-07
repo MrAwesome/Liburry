@@ -9,11 +9,11 @@ enum clickedOrder {
 const CLICKED_STYLE = {
     "background": "#FFD586",
     "border": "1px solid lightgrey",
-    "box-shadow": "1px 1px 4px 2px rgba(0, 0, 0, 0.2)",
+    "boxShadow": "1px 1px 4px 2px rgba(0, 0, 0, 0.2)",
 };
 
 const FADING_STYLE = {
-    "transition": "background 1s ease-out",
+    "transition": "all 1s ease-out",
 }
 
 
@@ -27,6 +27,8 @@ export class EntryContainer extends React.PureComponent<any, any> {
         this.fadeClicked = this.fadeClicked.bind(this);
         this.resetClicked = this.resetClicked.bind(this);
         this.clickedNotif = this.clickedNotif.bind(this);
+        this.createMatchElement = this.createMatchElement.bind(this);
+        this.getAltTextContainers = this.getAltTextContainers.bind(this);
     }
 
     myOnClick(_: any) {
@@ -61,36 +63,68 @@ export class EntryContainer extends React.PureComponent<any, any> {
         }
     }
 
+    getAltTextContainers(): JSX.Element[] {
+        const {pojNormalized, pojInput} = this.props;
+        var altTextContainers = [];
+
+        if (pojInput !== null) {
+            const poji = this.createMatchElement(pojInput, "poj-input");
+            const pojic = <div className="poj-input-container">
+                ({poji})
+            </div>;
+            altTextContainers.push(pojic);
+            if (pojNormalized !== null) {
+                altTextContainers.push(<>&nbsp;</>);
+            }
+        }
+
+        if (pojNormalized !== null) {
+            const pojn = this.createMatchElement(pojNormalized, "poj-normalized");
+            const pojnc = <div className="poj-normalized-container">
+                ({pojn})
+                </div>;
+            altTextContainers.push(pojnc);
+        }
+
+        return altTextContainers;
+    }
+
+    createMatchElement(inputText: string, className: string) {
+        const rawHtml = {__html: inputText};
+        return <span className={className} dangerouslySetInnerHTML={rawHtml}></span>;
+
+    }
+
     render() {
-        const {pojUnicode, pojNormalized, english, hoabun} = this.props;
+        // TODO: make strongly-typed
+        const {pojUnicode, english, hoabun} = this.props;
         const {clicked} = this.state;
         // FIXME(https://github.com/farzher/fuzzysort/issues/66)
-        const htmlPojUnicode = {__html: pojUnicode};
-        const htmlPojNormalized = {__html: pojNormalized};
-        const htmlEnglish = {__html: english};
-        const htmlHoabun = {__html: hoabun};
-        const poju = <span className="poj-unicode" dangerouslySetInnerHTML={htmlPojUnicode}></span>;
-        const pojn = <span className="poj-normalized" dangerouslySetInnerHTML={htmlPojNormalized}></span>;
-        const engl = <span className="english-definition" dangerouslySetInnerHTML={htmlEnglish}></span>;
-        const hoab = <span className="hoabun" dangerouslySetInnerHTML={htmlHoabun}></span>;
+
+        const poju = this.createMatchElement(pojUnicode, "poj-unicode");
+        const hoab = this.createMatchElement(hoabun, "hoabun");
+        const engl = this.createMatchElement(english, "english-definition");
 
         // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
         return (
             // TODO: just change style, instead of changing className
             <div className="entry-container" style={this.fadingStyle()} onClick={this.myOnClick}>
-                <div className="poj-normalized-container">
-                    {pojn}
+                <div className="alt-text-container">
+                    {this.getAltTextContainers()}
                 </div>
+
                 <span className="poj-unicode-container">
                     {poju}
                 </span>
-        &nbsp;
+                &nbsp;
                 <div className="hoabun-container">
                     ({hoab})
-        </div>
+                </div>
+
                 <div className="english-container">
                     {engl}
                 </div>
+
                 {clicked ? this.clickedNotif() : null}
             </div>
         );

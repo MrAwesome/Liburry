@@ -1,10 +1,10 @@
 import fuzzysort from "fuzzysort";
 import debugConsole from "./debug_console";
 import {EntryContainer} from "./components";
-import {DBName, KeyResults} from "./types";
+import {DBName, KeyResult, KeyResults} from "./types";
 
 // TODO: remove when there are other types of search
-import {DEFAULT_ENGLISH_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./search_options";
+import {DEFAULT_ENGLISH_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./search_options";
 
 export function parseFuzzySortResultsForRender(
     dbName: DBName,
@@ -22,30 +22,24 @@ export function parseFuzzySortResultsForRender(
             //       console.log(fuzzysortResult)
             //
             // TODO: per-db indexing
-            const pojNormalizedPreHighlight = fuzzysortResult[DEFAULT_POJ_NORMALIZED_INDEX];
-            const englishPreHighlight = fuzzysortResult[DEFAULT_ENGLISH_INDEX];
-            const pojUnicodePreHighlight = fuzzysortResult[DEFAULT_POJ_UNICODE_INDEX];
-            const hoabunPreHighlight = fuzzysortResult[DEFAULT_HOABUN_INDEX];
+            const pojNormalizedPossiblePreHLMatch = fuzzysortResult[DEFAULT_POJ_NORMALIZED_INDEX];
+            const pojInputPossiblePreHLMatch = fuzzysortResult[DEFAULT_POJ_INPUT_INDEX];
+            const englishPossiblePreHLMatch = fuzzysortResult[DEFAULT_ENGLISH_INDEX];
+            const pojUnicodePossiblePreHLMatch = fuzzysortResult[DEFAULT_POJ_UNICODE_INDEX];
+            const hoabunPossiblePreHLMatch = fuzzysortResult[DEFAULT_HOABUN_INDEX];
 
-            const pojNormPreParen = fuzzysort.highlight(pojNormalizedPreHighlight,
-                "<mark class=\"poj-normalized-matched-text\" class=hlsearch>", "</mark>")
-                || obj.n;
-            const pojNormalized = "(" + pojNormPreParen + ")";
-            const english = fuzzysort.highlight(englishPreHighlight,
-                "<mark class=\"english-definition-matched-text\" class=hlsearch>", "</mark>")
-                || obj.e;
-            const pojUnicode = fuzzysort.highlight(pojUnicodePreHighlight,
-                "<mark class=\"poj-unicode-matched-text\" class=hlsearch>", "</mark>")
-                || pojUnicodeText;
+            const pojNormalized = fuzzysortHighlight(pojNormalizedPossiblePreHLMatch, null);
+            const pojInput = fuzzysortHighlight(pojInputPossiblePreHLMatch, null);
+            const english = fuzzysortHighlight(englishPossiblePreHLMatch, obj.e);
+            const pojUnicode = fuzzysortHighlight(pojUnicodePossiblePreHLMatch, pojUnicodeText);
+            const hoabun = fuzzysortHighlight(hoabunPossiblePreHLMatch, obj.h);
 
-            const hoabun = fuzzysort.highlight(hoabunPreHighlight,
-                "<mark class=\"hoabun-matched-text\" class=hlsearch>", "</mark>")
-                || obj.h;
-
+            // TODO: strongly type
             const locProps = {
                 key: dbName + "-" + rowID,
                 pojUnicodeText,
                 pojUnicode,
+                pojInput,
                 hoabun,
                 pojNormalized,
                 english,
@@ -55,4 +49,14 @@ export function parseFuzzySortResultsForRender(
         })
     debugConsole.timeEnd("parseFuzzySortResultsForRender");
     return currentResultsElements;
+}
+
+
+function fuzzysortHighlight(
+    possibleMatch: KeyResult | null,
+    defaultDisplay: string | null,
+): string | null {
+    // NOTE: fuzzysort.highlight actually accepts null, but its type signature is wrong
+    if (possibleMatch === null) {return defaultDisplay;}
+    return fuzzysort.highlight(possibleMatch, "<mark>", "</mark>") || defaultDisplay;
 }

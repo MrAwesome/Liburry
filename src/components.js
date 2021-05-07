@@ -31,10 +31,10 @@ var clickedOrder;
 const CLICKED_STYLE = {
     "background": "#FFD586",
     "border": "1px solid lightgrey",
-    "box-shadow": "1px 1px 4px 2px rgba(0, 0, 0, 0.2)",
+    "boxShadow": "1px 1px 4px 2px rgba(0, 0, 0, 0.2)",
 };
 const FADING_STYLE = {
-    "transition": "background 1s ease-out",
+    "transition": "all 1s ease-out",
 };
 class EntryContainer extends React.PureComponent {
     constructor(props) {
@@ -46,6 +46,8 @@ class EntryContainer extends React.PureComponent {
         this.fadeClicked = this.fadeClicked.bind(this);
         this.resetClicked = this.resetClicked.bind(this);
         this.clickedNotif = this.clickedNotif.bind(this);
+        this.createMatchElement = this.createMatchElement.bind(this);
+        this.getAltTextContainers = this.getAltTextContainers.bind(this);
     }
     myOnClick(_) {
         // TODO: handle the case of being in a Chrome/Firefox desktop/mobile app
@@ -74,22 +76,40 @@ class EntryContainer extends React.PureComponent {
                 return {};
         }
     }
+    getAltTextContainers() {
+        const { pojNormalized, pojInput } = this.props;
+        var altTextContainers = [];
+        if (pojInput !== null) {
+            const poji = this.createMatchElement(pojInput, "poj-input");
+            const pojic = jsx_runtime_1.jsxs("div", Object.assign({ className: "poj-input-container" }, { children: ["(", poji, ")"] }), void 0);
+            altTextContainers.push(pojic);
+            if (pojNormalized !== null) {
+                altTextContainers.push(jsx_runtime_1.jsx(jsx_runtime_1.Fragment, { children: "\u00A0" }, void 0));
+            }
+        }
+        if (pojNormalized !== null) {
+            const pojn = this.createMatchElement(pojNormalized, "poj-normalized");
+            const pojnc = jsx_runtime_1.jsxs("div", Object.assign({ className: "poj-normalized-container" }, { children: ["(", pojn, ")"] }), void 0);
+            altTextContainers.push(pojnc);
+        }
+        return altTextContainers;
+    }
+    createMatchElement(inputText, className) {
+        const rawHtml = { __html: inputText };
+        return jsx_runtime_1.jsx("span", { className: className, dangerouslySetInnerHTML: rawHtml }, void 0);
+    }
     render() {
-        const { pojUnicode, pojNormalized, english, hoabun } = this.props;
+        // TODO: make strongly-typed
+        const { pojUnicode, english, hoabun } = this.props;
         const { clicked } = this.state;
         // FIXME(https://github.com/farzher/fuzzysort/issues/66)
-        const htmlPojUnicode = { __html: pojUnicode };
-        const htmlPojNormalized = { __html: pojNormalized };
-        const htmlEnglish = { __html: english };
-        const htmlHoabun = { __html: hoabun };
-        const poju = jsx_runtime_1.jsx("span", { className: "poj-unicode", dangerouslySetInnerHTML: htmlPojUnicode }, void 0);
-        const pojn = jsx_runtime_1.jsx("span", { className: "poj-normalized", dangerouslySetInnerHTML: htmlPojNormalized }, void 0);
-        const engl = jsx_runtime_1.jsx("span", { className: "english-definition", dangerouslySetInnerHTML: htmlEnglish }, void 0);
-        const hoab = jsx_runtime_1.jsx("span", { className: "hoabun", dangerouslySetInnerHTML: htmlHoabun }, void 0);
+        const poju = this.createMatchElement(pojUnicode, "poj-unicode");
+        const hoab = this.createMatchElement(hoabun, "hoabun");
+        const engl = this.createMatchElement(english, "english-definition");
         // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
         return (
         // TODO: just change style, instead of changing className
-        jsx_runtime_1.jsxs("div", Object.assign({ className: "entry-container", style: this.fadingStyle(), onClick: this.myOnClick }, { children: [jsx_runtime_1.jsx("div", Object.assign({ className: "poj-normalized-container" }, { children: pojn }), void 0),
+        jsx_runtime_1.jsxs("div", Object.assign({ className: "entry-container", style: this.fadingStyle(), onClick: this.myOnClick }, { children: [jsx_runtime_1.jsx("div", Object.assign({ className: "alt-text-container" }, { children: this.getAltTextContainers() }), void 0),
                 jsx_runtime_1.jsx("span", Object.assign({ className: "poj-unicode-container" }, { children: poju }), void 0), "\u00A0", jsx_runtime_1.jsxs("div", Object.assign({ className: "hoabun-container" }, { children: ["(", hoab, ")"] }), void 0),
                 jsx_runtime_1.jsx("div", Object.assign({ className: "english-container" }, { children: engl }), void 0), clicked ? this.clickedNotif() : null] }), void 0));
     }

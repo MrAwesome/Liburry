@@ -35,7 +35,11 @@ const search_options_1 = require("./search_options");
 const cha_menu_1 = require("./cha_menu");
 //import reportWebVitals from "./reportWebVitals";
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
+// TODO(high): show/search typing input
+// TODO(high): let hyphens and spaces be interchangeable in search
+// TODO(high): focus search bar on load -> enter typing mode
 // TODO(high): migrate to tsx cra with service worker (see ~/my-app)
+// TODO(high): come up with a more elegant/extensible way of transforming a db entry into elements to be displayed
 // TODO(high): change name to chaa5_taigi (chhâ)
 // TODO(high): determine why duplicate search results are sometimes returned (see "a" results for giku)
 // TODO(high): add keys as opposed to indices
@@ -58,8 +62,9 @@ const cha_menu_1 = require("./cha_menu");
 // TODO(high): investigate more performant search solutions (lunr, jssearch, etc)
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
+// TODO(mid): show per-db loading information
 // TODO(mid): keybinding for search (/)
-// TODO(mid): Handle parentheses in pojUnicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll)
+// TODO(mid): Handle parentheses in pojUnicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll) {{{ create github issue for chhoetaigidatabase }}}
 // TODO(mid): "search only as fallback"
 // TODO(mid): link to pleco/wiktionary for chinese characters, poj, etc
 // TODO(mid): unit/integration tests
@@ -69,7 +74,6 @@ const cha_menu_1 = require("./cha_menu");
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
 // TODO(low): abstract away searching logic to avoid too much fuzzysort-specific code
-// TODO(low): pass style instead of changing class on click (for text copying)
 // TODO(low): have GET param for search (and options?)
 // TODO(low): configurable searches (exact search, slow but better search, etc)
 // TODO(low): hashtag load entry (for linking)
@@ -86,6 +90,8 @@ const cha_menu_1 = require("./cha_menu");
 // TODO(wishlist): "add to desktop" shortcut
 // TODO(wishlist): non-javascript support?
 // TODO(later): generalize for non-english definition
+// TODO(later): allow for entries to be marked incomplete/broken
+// TODO(later): link to ChhoeTaigi for entries
 class IntermediatePerDictResultsElements extends React.Component {
     render() {
         const { perDictRes } = this.props;

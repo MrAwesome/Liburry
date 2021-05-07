@@ -7,7 +7,7 @@ exports.fetchDB = void 0;
 const fuzzysort_1 = __importDefault(require("fuzzysort"));
 const debug_console_1 = __importDefault(require("./debug_console"));
 function fetchDB(dbName, langDB, appendFunc) {
-    const { dbFilename, indexedKeys } = langDB;
+    const { dbFilename, shortNameToPreppedNameMapping } = langDB;
     debug_console_1.default.time("fetch-" + dbName);
     fetch(dbFilename)
         .then((response) => {
@@ -23,10 +23,10 @@ function fetchDB(dbName, langDB, appendFunc) {
         // NOTE: this modifies the PrePreparedEntry by adding fields for each prepped key, 
         // then returning it as a SearchableEntry
         (t) => {
-            indexedKeys.forEach((preppedKey, shortName) => {
+            shortNameToPreppedNameMapping.forEach((preppedKey, shortName) => {
                 // @ts-ignore  force dynamic index
                 t[preppedKey] =
-                    // TODO: scoot this elsewhere to maintain separation of concerns
+                    // TODO: scoot this fuzzysort-specific code elsewhere to maintain separation of concerns
                     fuzzysort_1.default.
                         // @ts-ignore  prepareSlow does exist
                         prepareSlow(t[shortName]);
