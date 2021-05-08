@@ -1,5 +1,8 @@
 import * as React from "react";
 
+// TODO: determine if this import breaks one of Uncle Bob's rules
+import {SearchableDict} from './types';
+
 enum clickedOrder {
     NORMAL,
     CLICKED,
@@ -131,42 +134,6 @@ export class EntryContainer extends React.PureComponent<any, any> {
     };
 }
 
-
-export class Placeholder extends React.PureComponent<any, any> {
-    render() {
-        const {text} = this.props;
-        return <div className="placeholder">{text}</div>;
-    }
-}
-const loadingPaceholder = <Placeholder text="Loading..." />;
-const loadedPlaceholder = <Placeholder text="Type to search!" />;
-const searchingPlaceholder = <Placeholder text="Searching..." />;
-const noResultsPlaceholder = <Placeholder text="No results found!" />;
-
-export class PlaceholderArea extends React.PureComponent<any, any> {
-    render() {
-        const {query, loaded, searching, numResults} = this.props;
-
-        var placeholder = null;
-        if (!numResults) {
-            if (searching) {
-                placeholder = searchingPlaceholder;
-            } else {
-                if (query) {
-                    placeholder = noResultsPlaceholder;
-                } else {
-                    placeholder = loaded ? loadedPlaceholder : loadingPaceholder;
-                }
-            }
-        }
-
-        return <div className="placeholder-container">
-            {placeholder}
-        </div>
-    }
-}
-
-
 export class ResultsArea extends React.PureComponent<any, any> {
     render() {
         const {results} = this.props;
@@ -176,13 +143,54 @@ export class ResultsArea extends React.PureComponent<any, any> {
     }
 }
 
-export class SearchBar extends React.PureComponent<any, any> {
+export class SearchBar extends React.Component<any, any> {
+    textInput: React.RefObject<any>;
+    constructor(props: any) {
+        super(props);
+        this.textInput = React.createRef();
+    }
+
+    componentDidMount() {
+        this.textInput.current.focus();
+    }
+
     render() {
         const {onChange} = this.props;
         return <div className="search-bar">
-            <input autoFocus={true} placeholder="Search..." onChange={onChange} />
+            <input
+                autoFocus
+                type="text"
+                ref={this.textInput}
+                placeholder="Search..."
+                onChange={onChange} />
             <svg aria-hidden="true" className="mag-glass" ><path d="M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z"></path></svg>
         </div>
     }
 }
 
+function DBLoadedState({loadedDBs}: {loadedDBs: Map<string, SearchableDict>}) {
+    var states: JSX.Element[] = [];
+    loadedDBs.forEach((db, dbName) => {
+        const isLoaded = (db === null);
+        const loadedString = isLoaded ? "⌛" : "✅";
+        const borderStyleColor = isLoaded ? "red" : "green";
+        const borderStyle = {"border": "1px " + borderStyleColor + " solid"};
+
+        console.log(borderStyle);
+        const entryDiv = <div className="db-loaded-entry" key={dbName} style={borderStyle} >
+                <span className="db-loaded-entry-name">{dbName}: </span>
+                <span className="db-loaded-entry-isloaded">
+                {loadedString}
+                </span>
+            </div>;
+        states.push(entryDiv);
+    });
+    return <div className="db-loaded-states">{states}</div>
+
+}
+
+export function DebugArea({loadedDBs}: {loadedDBs: Map<string, SearchableDict>}) {
+    return <div className="debug-area">
+        <DBLoadedState loadedDBs={loadedDBs} />
+    </div>
+}

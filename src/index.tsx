@@ -1,7 +1,7 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
 
-import {SearchBar, PlaceholderArea, ResultsArea} from "./components";
+import {DebugArea, SearchBar, ResultsArea} from "./components";
 import debugConsole from "./debug_console";
 import {fetchDB} from "./dictionary_handling";
 
@@ -18,7 +18,7 @@ import {ChaMenu} from "./cha_menu";
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): show/search typing input
 // TODO(high): let hyphens and spaces be interchangeable in search
-// TODO(high): focus search bar on load -> enter typing mode
+// TODO(high): focus search bar on load -> enter typing mode (autofocus is working, so some re-render seems to be taking away focus) (react-burger-menu seems to steal focus?)
 // TODO(high): migrate to tsx cra with service worker (see ~/my-app)
 // TODO(high): come up with a more elegant/extensible way of transforming a db entry into elements to be displayed
 // TODO(high): change name to chaa5_taigi (chhâ)
@@ -91,13 +91,25 @@ class IntermediatePerDictResultsElements extends React.Component<any, any> {
 
 
 class ChaTaigi extends React.Component<any, any> {
+    searchBar: React.RefObject<SearchBar>;
+
     constructor(props: any) {
         super(props);
         this.state = {
             currentResultsElements: [],
-            searchableDicts: [],
+            loadedDBs: new Map(),
             ongoingSearches: [],
         };
+
+        DATABASES.forEach(
+            (_, dbName) => {
+                this.state.loadedDBs.set(dbName, null);
+            }
+        );
+
+        console.log(DATABASES);
+
+        this.searchBar = React.createRef();
 
         this.onChange = this.onChange.bind(this);
         this.doSearch = this.doSearch.bind(this);
@@ -125,7 +137,20 @@ class ChaTaigi extends React.Component<any, any> {
     }
 
     appendDict(newDict: SearchableDict) {
-        this.setStateTyped((state: ChaTaigiState<IntermediatePerDictResultsElements>) => ({searchableDicts: [...state.searchableDicts, newDict]}));
+        const {dbName} = newDict;
+
+        this.setStateTyped((state: ChaTaigiState<IntermediatePerDictResultsElements>) => (
+            state.loadedDBs.set(dbName, newDict)
+        ));
+
+        console.log(this.getStateTyped());
+
+        // TODO: find a better place for this
+        if (this.searchBar.current) {
+            // TODO: block focus until loaded?
+            this.searchBar.current.textInput.current.focus();
+        }
+
     }
 
     appendSearch(newSearch: OngoingSearch) {
@@ -133,15 +158,17 @@ class ChaTaigi extends React.Component<any, any> {
     }
 
     appendResults(results: PerDictResultsElements) {
-        debugConsole.time("appendResults-setState");
-        const TODOIntermediate = <IntermediatePerDictResultsElements key={results.dbName} perDictRes={results} />
+        const {dbName} = results;
+        debugConsole.time("appendResults-setState-" + dbName);
+        const TODOIntermediate = <IntermediatePerDictResultsElements key={dbName} perDictRes={results} />
         this.setStateTyped((state: ChaTaigiState<IntermediatePerDictResultsElements>) => ({currentResultsElements: [...state.currentResultsElements, TODOIntermediate]}));
-        debugConsole.timeEnd("appendResults-setState");
+        console.log(this.getStateTyped());
+        debugConsole.timeEnd("appendResults-setState-" + dbName);
     }
 
 
     onChange(e: any) {
-        const {searchableDicts, ongoingSearches} = this.getStateTyped();
+        const {loadedDBs, ongoingSearches} = this.getStateTyped();
         const {target = {}} = e;
         const {value = ""} = target;
         const query = value;
@@ -153,7 +180,7 @@ class ChaTaigi extends React.Component<any, any> {
         } else {
             // TODO: Correct place for this?
             this.setStateTyped({query, currentResultsElements: []});
-            this.doSearch(query, searchableDicts);
+            this.doSearch(query, Array.from(loadedDBs.values()));
         }
     }
 
@@ -177,18 +204,18 @@ class ChaTaigi extends React.Component<any, any> {
 
     render() {
         const {onChange} = this;
-        const {currentResultsElements, searchableDicts, ongoingSearches, query} = this.getStateTyped();
+        const {currentResultsElements, loadedDBs} = this.getStateTyped();
 
-        const searching = ongoingSearches.some((s) => !s.isCompleted());
+        /*        const searching = ongoingSearches.some((s) => !s.isCompleted());*/
 
         return (
             <div className="ChaTaigi">
-                {this.menu()}
                 <div className="non-menu">
-                    <SearchBar onChange={onChange} />
-                    <PlaceholderArea query={query} numResults={currentResultsElements.length} loaded={!!searchableDicts} searching={searching} />
+                    <SearchBar ref={this.searchBar} onChange={onChange} />
                     <ResultsArea results={currentResultsElements} />
+                    <DebugArea loadedDBs={loadedDBs} />
                 </div>
+                {this.menu()}
             </div>
         );
     }

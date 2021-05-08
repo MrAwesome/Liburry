@@ -28,7 +28,6 @@ mark {
 /*        "header"*/
 /*        "searchbar"*/
 /*        "options" */
-/*        "placeholder"*/
 /*        "results";*/
 }
 
@@ -37,7 +36,7 @@ mark {
     padding: 8px;
 }
 
-.results-container, .placeholder-container {
+.results-container {
     margin-top: 3px;
 }
 
@@ -47,10 +46,13 @@ mark {
 }
 
 .TODO-intermediate-results {
-    margin-bottom: 10px;
+    /* TODO: play with flexbox to simplify code below (margin etc) */
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
 }
 
-.TODO-intermediate-results, .placeholder-container {
+.TODO-intermediate-results {
     margin-top: 5px;
 }
 
@@ -71,7 +73,7 @@ mark {
 .TODO-intermediate-results {
 }
 
-.entry-container, .placeholder, .entry-container-clicked {
+.entry-container, .entry-container-clicked {
     position: relative;
     border-radius: 15px;
     border: 1px solid lightgrey;
@@ -88,7 +90,7 @@ mark {
     box-shadow: 1px 2px 3px 1px rgba(0, 0, 0, 0.3);
 }
 
-.entry-container, .placeholder {
+.entry-container {
     background: white;
     box-shadow: 1px 2px 2px 1px rgba(0, 0, 0, 0.2);
 }
@@ -123,17 +125,6 @@ mark {
 .fading-notif {
     opacity: 0;
 /*    transition: all .5s ease;*/
-}
-/*TODO: make loading container grey*/
-.placeholder-container {
-/*    grid-area: placeholder;*/
-    justify-self: center;
-}
-
-.placeholder {
-    text-align: center;
-    padding-left: 10px;
-    padding-right: 10px;
 }
 
 .poj-unicode-container {
@@ -236,4 +227,30 @@ mark {
     color: grey;
     fill: grey;
     right: auto;
+}
+
+.db-loaded-states {
+    padding-top: 2px;
+    padding-left: 10px;
+    display: flex;
+    gap: 3px;
+}
+
+.db-loaded-entry {
+    background: rgba(255, 255, 255, .55);
+    color: #666666;
+
+    border-radius: 15px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 5px;
+    padding-top: 3px;
+    line-height: 1;
+}
+
+.db-loaded-entry-name {
+    padding-right: 4px;
+    text-transform: capitalize;
+}
+.db-loaded-entry-isloaded {
 }

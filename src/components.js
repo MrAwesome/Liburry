@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SearchBar = exports.ResultsArea = exports.PlaceholderArea = exports.Placeholder = exports.EntryContainer = void 0;
+exports.DebugArea = exports.SearchBar = exports.ResultsArea = exports.EntryContainer = void 0;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const React = __importStar(require("react"));
 var clickedOrder;
@@ -116,38 +116,6 @@ class EntryContainer extends React.PureComponent {
     ;
 }
 exports.EntryContainer = EntryContainer;
-class Placeholder extends React.PureComponent {
-    render() {
-        const { text } = this.props;
-        return jsx_runtime_1.jsx("div", Object.assign({ className: "placeholder" }, { children: text }), void 0);
-    }
-}
-exports.Placeholder = Placeholder;
-const loadingPaceholder = jsx_runtime_1.jsx(Placeholder, { text: "Loading..." }, void 0);
-const loadedPlaceholder = jsx_runtime_1.jsx(Placeholder, { text: "Type to search!" }, void 0);
-const searchingPlaceholder = jsx_runtime_1.jsx(Placeholder, { text: "Searching..." }, void 0);
-const noResultsPlaceholder = jsx_runtime_1.jsx(Placeholder, { text: "No results found!" }, void 0);
-class PlaceholderArea extends React.PureComponent {
-    render() {
-        const { query, loaded, searching, numResults } = this.props;
-        var placeholder = null;
-        if (!numResults) {
-            if (searching) {
-                placeholder = searchingPlaceholder;
-            }
-            else {
-                if (query) {
-                    placeholder = noResultsPlaceholder;
-                }
-                else {
-                    placeholder = loaded ? loadedPlaceholder : loadingPaceholder;
-                }
-            }
-        }
-        return jsx_runtime_1.jsx("div", Object.assign({ className: "placeholder-container" }, { children: placeholder }), void 0);
-    }
-}
-exports.PlaceholderArea = PlaceholderArea;
 class ResultsArea extends React.PureComponent {
     render() {
         const { results } = this.props;
@@ -155,11 +123,36 @@ class ResultsArea extends React.PureComponent {
     }
 }
 exports.ResultsArea = ResultsArea;
-class SearchBar extends React.PureComponent {
+class SearchBar extends React.Component {
+    constructor(props) {
+        super(props);
+        this.textInput = React.createRef();
+    }
+    componentDidMount() {
+        this.textInput.current.focus();
+    }
     render() {
         const { onChange } = this.props;
-        return jsx_runtime_1.jsxs("div", Object.assign({ className: "search-bar" }, { children: [jsx_runtime_1.jsx("input", { autoFocus: true, placeholder: "Search...", onChange: onChange }, void 0),
+        return jsx_runtime_1.jsxs("div", Object.assign({ className: "search-bar" }, { children: [jsx_runtime_1.jsx("input", { autoFocus: true, type: "text", ref: this.textInput, placeholder: "Search...", onChange: onChange }, void 0),
                 jsx_runtime_1.jsx("svg", Object.assign({ "aria-hidden": "true", className: "mag-glass" }, { children: jsx_runtime_1.jsx("path", { d: "M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z" }, void 0) }), void 0)] }), void 0);
     }
 }
 exports.SearchBar = SearchBar;
+function DBLoadedState({ loadedDBs }) {
+    var states = [];
+    loadedDBs.forEach((db, dbName) => {
+        const isLoaded = (db === null);
+        const loadedString = isLoaded ? "⌛" : "✅";
+        const borderStyleColor = isLoaded ? "red" : "green";
+        const borderStyle = { "border": "1px " + borderStyleColor + " solid" };
+        console.log(borderStyle);
+        const entryDiv = jsx_runtime_1.jsxs("div", Object.assign({ className: "db-loaded-entry", style: borderStyle }, { children: [jsx_runtime_1.jsxs("span", Object.assign({ className: "db-loaded-entry-name" }, { children: [dbName, ": "] }), void 0),
+                jsx_runtime_1.jsx("span", Object.assign({ className: "db-loaded-entry-isloaded" }, { children: loadedString }), void 0)] }), dbName);
+        states.push(entryDiv);
+    });
+    return jsx_runtime_1.jsx("div", Object.assign({ className: "db-loaded-states" }, { children: states }), void 0);
+}
+function DebugArea({ loadedDBs }) {
+    return jsx_runtime_1.jsx("div", Object.assign({ className: "debug-area" }, { children: jsx_runtime_1.jsx(DBLoadedState, { loadedDBs: loadedDBs }, void 0) }), void 0);
+}
+exports.DebugArea = DebugArea;

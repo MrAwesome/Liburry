@@ -37,7 +37,7 @@ const cha_menu_1 = require("./cha_menu");
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): show/search typing input
 // TODO(high): let hyphens and spaces be interchangeable in search
-// TODO(high): focus search bar on load -> enter typing mode
+// TODO(high): focus search bar on load -> enter typing mode (autofocus is working, so some re-render seems to be taking away focus) (react-burger-menu seems to steal focus?)
 // TODO(high): migrate to tsx cra with service worker (see ~/my-app)
 // TODO(high): come up with a more elegant/extensible way of transforming a db entry into elements to be displayed
 // TODO(high): change name to chaa5_taigi (chhâ)
@@ -106,9 +106,14 @@ class ChaTaigi extends React.Component {
         super(props);
         this.state = {
             currentResultsElements: [],
-            searchableDicts: [],
+            loadedDBs: new Map(),
             ongoingSearches: [],
         };
+        search_options_1.DATABASES.forEach((_, dbName) => {
+            this.state.loadedDBs.set(dbName, null);
+        });
+        console.log(search_options_1.DATABASES);
+        this.searchBar = React.createRef();
         this.onChange = this.onChange.bind(this);
         this.doSearch = this.doSearch.bind(this);
         this.resetSearch = this.resetSearch.bind(this);
@@ -131,19 +136,28 @@ class ChaTaigi extends React.Component {
         }
     }
     appendDict(newDict) {
-        this.setStateTyped((state) => ({ searchableDicts: [...state.searchableDicts, newDict] }));
+        const { dbName } = newDict;
+        this.setStateTyped((state) => (state.loadedDBs.set(dbName, newDict)));
+        console.log(this.getStateTyped());
+        // TODO: find a better place for this
+        if (this.searchBar.current) {
+            // TODO: block focus until loaded?
+            this.searchBar.current.textInput.current.focus();
+        }
     }
     appendSearch(newSearch) {
         this.setStateTyped((state) => ({ ongoingSearches: [...state.ongoingSearches, newSearch] }));
     }
     appendResults(results) {
-        debug_console_1.default.time("appendResults-setState");
-        const TODOIntermediate = jsx_runtime_1.jsx(IntermediatePerDictResultsElements, { perDictRes: results }, results.dbName);
+        const { dbName } = results;
+        debug_console_1.default.time("appendResults-setState-" + dbName);
+        const TODOIntermediate = jsx_runtime_1.jsx(IntermediatePerDictResultsElements, { perDictRes: results }, dbName);
         this.setStateTyped((state) => ({ currentResultsElements: [...state.currentResultsElements, TODOIntermediate] }));
-        debug_console_1.default.timeEnd("appendResults-setState");
+        console.log(this.getStateTyped());
+        debug_console_1.default.timeEnd("appendResults-setState-" + dbName);
     }
     onChange(e) {
-        const { searchableDicts, ongoingSearches } = this.getStateTyped();
+        const { loadedDBs, ongoingSearches } = this.getStateTyped();
         const { target = {} } = e;
         const { value = "" } = target;
         const query = value;
@@ -154,7 +168,7 @@ class ChaTaigi extends React.Component {
         else {
             // TODO: Correct place for this?
             this.setStateTyped({ query, currentResultsElements: [] });
-            this.doSearch(query, searchableDicts);
+            this.doSearch(query, Array.from(loadedDBs.values()));
         }
     }
     menu() {
@@ -174,11 +188,11 @@ class ChaTaigi extends React.Component {
     }
     render() {
         const { onChange } = this;
-        const { currentResultsElements, searchableDicts, ongoingSearches, query } = this.getStateTyped();
-        const searching = ongoingSearches.some((s) => !s.isCompleted());
-        return (jsx_runtime_1.jsxs("div", Object.assign({ className: "ChaTaigi" }, { children: [this.menu(), jsx_runtime_1.jsxs("div", Object.assign({ className: "non-menu" }, { children: [jsx_runtime_1.jsx(components_1.SearchBar, { onChange: onChange }, void 0),
-                        jsx_runtime_1.jsx(components_1.PlaceholderArea, { query: query, numResults: currentResultsElements.length, loaded: !!searchableDicts, searching: searching }, void 0),
-                        jsx_runtime_1.jsx(components_1.ResultsArea, { results: currentResultsElements }, void 0)] }), void 0)] }), void 0));
+        const { currentResultsElements, loadedDBs } = this.getStateTyped();
+        /*        const searching = ongoingSearches.some((s) => !s.isCompleted());*/
+        return (jsx_runtime_1.jsxs("div", Object.assign({ className: "ChaTaigi" }, { children: [jsx_runtime_1.jsxs("div", Object.assign({ className: "non-menu" }, { children: [jsx_runtime_1.jsx(components_1.SearchBar, { ref: this.searchBar, onChange: onChange }, void 0),
+                        jsx_runtime_1.jsx(components_1.ResultsArea, { results: currentResultsElements }, void 0),
+                        jsx_runtime_1.jsx(components_1.DebugArea, { loadedDBs: loadedDBs }, void 0)] }), void 0), this.menu()] }), void 0));
     }
 }
 const rootElement = document.getElementById("root");

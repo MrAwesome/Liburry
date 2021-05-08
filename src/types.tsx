@@ -20,15 +20,15 @@ export interface SearchableDict {
 export interface ChaTaigiState<E> {
     query: string,
     currentResultsElements: Array<E>,
-    searchableDicts: Array<SearchableDict>,
     ongoingSearches: Array<OngoingSearch>,
+    loadedDBs: Map<DBName, SearchableDict>,
 }
 
 export interface ChaTaigiStateArgs<E> {
     query?: string,
     currentResultsElements?: Array<E>,
-    searchableDicts?: Array<Array<PreparedSearchableEntry>>,
     ongoingSearches?: Array<OngoingSearch>,
+    loadedDBs?: Map<DBName, SearchableDict>,
 }
 
 interface Prepared {
