@@ -12,10 +12,13 @@ import {OngoingSearch, searchDB} from "./search";
 import {DATABASES} from "./search_options";
 
 import {ChaMenu} from "./cha_menu";
+
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 //import reportWebVitals from "./reportWebVitals";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): show/search typing input
+// TODO(high): asynchronous font loading: https://css-tricks.com/the-best-font-loading-strategies-and-how-to-execute-them/
 // TODO(high): let hyphens and spaces be interchangeable in search
 // TODO(high): focus search bar on load -> enter typing mode (autofocus is working, so some re-render seems to be taking away focus) (react-burger-menu seems to steal focus?)
 // TODO(high): migrate to tsx cra with service worker (see ~/my-app)
@@ -106,8 +109,6 @@ class ChaTaigi extends React.Component<any, any> {
             }
         );
 
-        console.log(DATABASES);
-
         this.searchBar = React.createRef();
 
         this.onChange = this.onChange.bind(this);
@@ -142,8 +143,6 @@ class ChaTaigi extends React.Component<any, any> {
             state.loadedDBs.set(dbName, newDict)
         ));
 
-        console.log(this.getStateTyped());
-
         // TODO: find a better place for this
         if (this.searchBar.current) {
             // TODO: block focus until loaded?
@@ -161,7 +160,6 @@ class ChaTaigi extends React.Component<any, any> {
         debugConsole.time("appendResults-setState-" + dbName);
         const TODOIntermediate = <IntermediatePerDictResultsElements key={dbName} perDictRes={results} />
         this.setStateTyped((state: ChaTaigiState<IntermediatePerDictResultsElements>) => ({currentResultsElements: [...state.currentResultsElements, TODOIntermediate]}));
-        console.log(this.getStateTyped());
         debugConsole.timeEnd("appendResults-setState-" + dbName);
     }
 
@@ -226,4 +224,5 @@ ReactDOM.render(
         <ChaTaigi />
     </React.StrictMode>, rootElement);
 
+serviceWorkerRegistration.register();
 //reportWebVitals(console.log);

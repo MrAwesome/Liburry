@@ -1889,6 +1889,18 @@
     "@types/webpack-sources" "*"
     source-map "^0.6.0"
 
+"@types/workbox-core@*":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@types/workbox-core/-/workbox-core-4.3.0.tgz#c2f2a2caad4785f6ccdbef539477d49de6cc9160"
+  integrity sha512-0Tn2bbwYu+Exsp4L3lBA2voRi/7m+6qjgGIs4Lw3Hdm8+7caxAVRra6imkd9Wl3DmK0tKPHinKuo+ElXuqUvlg==
+
+"@types/workbox-precaching@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@types/workbox-precaching/-/workbox-precaching-4.3.0.tgz#c04b5b6c9f77690b0b58cf87c6f8ef632661f8e1"
+  integrity sha512-nnnFemK7X6kfJi7u3cZ2qkHCsWFJn+AUtBgBb8UJB7VxongJsBK/QTVbmMGhvIXBb/xkRpoa52VI2rtZLoB3hA==
+  dependencies:
+    "@types/workbox-core" "*"
+
 "@types/yargs-parser@*":
   version "20.2.0"
   resolved "https://registry.yarnpkg.com/@types/yargs-parser/-/yargs-parser-20.2.0.tgz#dd3e6699ba3237f0348cd085e4698780204842f9"

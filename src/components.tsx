@@ -176,7 +176,6 @@ function DBLoadedState({loadedDBs}: {loadedDBs: Map<string, SearchableDict>}) {
         const borderStyleColor = isLoaded ? "red" : "green";
         const borderStyle = {"border": "1px " + borderStyleColor + " solid"};
 
-        console.log(borderStyle);
         const entryDiv = <div className="db-loaded-entry" key={dbName} style={borderStyle} >
                 <span className="db-loaded-entry-name">{dbName}: </span>
                 <span className="db-loaded-entry-isloaded">
