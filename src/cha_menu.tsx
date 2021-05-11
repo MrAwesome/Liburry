@@ -19,11 +19,12 @@ export class ChaMenu extends React.Component<any, any> {
         // TODO: determine how to store them in localstorage (for now)
     }
 
+    // TODO: check that href="/" doesn't cause problems
     render() {
       return <Menu right>
         <a id="about" className="menu-item" href="/about">About</a>
         <a id="contact" className="menu-item" href="/contact">Contact</a>
-        <a onClick={ this.showSettings } className="menu-item--small" href="">Settings</a>
+        <a onClick={ this.showSettings } className="menu-item--small" href="/">Settings</a>
       </Menu>;
     }
 }

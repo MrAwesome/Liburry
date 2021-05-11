@@ -29,9 +29,9 @@ export function fetchDB(
                             // @ts-ignore  force dynamic index
                             t[preppedKey] = 
                                 // TODO: scoot this fuzzysort-specific code elsewhere to maintain separation of concerns
-                                fuzzysort.
+                                fuzzysort
                                 // @ts-ignore  prepareSlow does exist
-                                prepareSlow
+                                .prepareSlow
                                 // @ts-ignore  force dynamic index
                                 (t[shortName]);
                         });

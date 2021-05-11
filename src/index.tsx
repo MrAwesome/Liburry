@@ -14,7 +14,6 @@ import {DATABASES} from "./search_options";
 import {ChaMenu} from "./cha_menu";
 //import reportWebVitals from "./reportWebVitals";
 
-
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): show/search typing input
 // TODO(high): let hyphens and spaces be interchangeable in search
