@@ -4,13 +4,16 @@ import fuzzysort from "fuzzysort";
 import {parseFuzzySortResultsForRender} from "./search_results_entities";
 import {DATABASES} from "./search_options";
 
-export class OngoingSearch {
+// TODO: type promises
+export class OngoingSearch<T> {
     dbName: DBName;
     query: string;
-    promise?: CancelablePromise<any>;
+    cancelablePromise?: CancelablePromise<any>;
+    parsePromise?: Promise<T>;
     completed: boolean;
+    wasCanceled: boolean = false;
 
-    constructor(dbName: DBName, query: string = "", promise?: CancelablePromise<any>) {
+    constructor(dbName: DBName, query: string = "", cancelablePromise?: CancelablePromise<any>, parsePromise?: Promise<T>) {
         debugConsole.time("asyncSearch-" + dbName);
         this.query = query;
         this.dbName = dbName;
@@ -19,7 +22,8 @@ export class OngoingSearch {
             this.completed = true;
         } else {
             this.completed = false;
-            this.promise = promise;
+            this.cancelablePromise = cancelablePromise;
+            this.parsePromise = parsePromise;
         }
     }
 
@@ -36,51 +40,62 @@ export class OngoingSearch {
         debugConsole.timeEnd("asyncSearch-" + this.dbName);
     }
 
+    markCanceled(): void {
+        this.wasCanceled = true;
+        this.markCompleted();
+    }
+
+    endTimer(): void {
+    }
+
     cancel(): void {
-        if (this.promise && !this.isCompleted()) {
-            this.promise.cancel();
-            this.markCompleted();
+        if (this.cancelablePromise && !this.isCompleted()) {
+            this.cancelablePromise.cancel();
+            this.markCanceled();
         }
     }
 }
 
 // TODO: make generic and allow for multiple search types
 export function searchDB(
-    searchableDict: SearchableDict,
+    searchableDict: SearchableDict | null,
     query: string,
-    appendSearchFunc: ((ongoingSearch: OngoingSearch) => void),
-    appendResultsFunc: ((results: PerDictResultsElements) => void),
+): OngoingSearch<PerDictResultsElements> | null {
+    // TODO: re-trigger currently-ongoing search once db loads?
+    if (searchableDict === null) {
+        return null;
+    }
 
-) {
     const {dbName, searchableEntries} = searchableDict;
     const langDB = DATABASES.get(dbName);
     if (!langDB) {
         console.log("Failed to load langDB:", dbName, DATABASES);
-        return;
+        return null;
     }
     const {fuzzyOpts} = langDB;
-    const newSearchPromise = fuzzysort.goAsync(
+    const cancelableSearchPromise = fuzzysort.goAsync(
         query,
         searchableEntries,
         fuzzyOpts, // TODO: get from langdb
     );
 
-    const newSearch = new OngoingSearch(dbName, query, newSearchPromise);
-    newSearchPromise.then(
+    const parsePromise = cancelableSearchPromise.then(
         rawResults => {
-            newSearch.markCompleted();
+            ongoingSearch.markCompleted();
             const results = parseFuzzySortResultsForRender(
                 dbName,
                 // @ts-ignore Deal with lack of fuzzysort interfaces
                 rawResults,
             );
-            appendResultsFunc({
+            return {
                 dbName,
                 results
-            });
+            } as PerDictResultsElements;
 
         }
     ).catch(debugConsole.log);
 
-    appendSearchFunc(newSearch);
+    const ongoingSearch = new OngoingSearch(dbName, query, cancelableSearchPromise, parsePromise);
+
+    return ongoingSearch;
 }

@@ -11,13 +11,19 @@ import {SearchableDict, ChaTaigiState, ChaTaigiStateArgs, PerDictResultsElements
 import {OngoingSearch, searchDB} from "./search";
 import {DATABASES} from "./search_options";
 
-import {ChaMenu} from "./cha_menu";
+//import {ChaMenu} from "./cha_menu";
 
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 //import reportWebVitals from "./reportWebVitals";
 
+
+function typeGuard<T>(x: T | null | undefined): boolean {
+    return !!x;
+}
+
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(high): show/search typing input
+// TODO(high): make fonts bigger across the board
 // TODO(high): asynchronous font loading: https://css-tricks.com/the-best-font-loading-strategies-and-how-to-execute-them/
 // TODO(high): let hyphens and spaces be interchangeable in search
 // TODO(high): focus search bar on load -> enter typing mode (autofocus is working, so some re-render seems to be taking away focus) (react-burger-menu seems to steal focus?)
@@ -47,6 +53,7 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): show per-db loading information
+// TODO(mid): re-trigger currently-ongoing search once db loads (see top of searchDB)
 // TODO(mid): keybinding for search (/)
 // TODO(mid): Handle parentheses in pojUnicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll) {{{ create github issue for chhoetaigidatabase }}}
 // TODO(mid): "search only as fallback"
@@ -94,13 +101,14 @@ class IntermediatePerDictResultsElements extends React.Component<any, any> {
 
 class ChaTaigi extends React.Component<any, any> {
     searchBar: React.RefObject<SearchBar>;
+    ongoingSearches: OngoingSearch<PerDictResultsElements>[] = [];
+    query = "";
 
     constructor(props: any) {
         super(props);
         this.state = {
             currentResultsElements: [],
             loadedDBs: new Map(),
-            ongoingSearches: [],
         };
 
         DATABASES.forEach(
@@ -113,12 +121,13 @@ class ChaTaigi extends React.Component<any, any> {
 
         this.onChange = this.onChange.bind(this);
         this.doSearch = this.doSearch.bind(this);
+        this.searchQuery = this.searchQuery.bind(this);
         this.resetSearch = this.resetSearch.bind(this);
         this.setStateTyped = this.setStateTyped.bind(this);
         this.getStateTyped = this.getStateTyped.bind(this);
-        this.appendSearch = this.appendSearch.bind(this);
+        this.setOngoingSearches = this.setOngoingSearches.bind(this);
         this.appendDict = this.appendDict.bind(this);
-        this.appendResults = this.appendResults.bind(this);
+        this.setResults = this.setResults.bind(this);
         this.menu = this.menu.bind(this);
     }
 
@@ -131,11 +140,22 @@ class ChaTaigi extends React.Component<any, any> {
     }
 
     componentDidMount() {
+        var dbPromises = [];
         for (let [dbName, langDB] of DATABASES) {
-            fetchDB(dbName, langDB, this.appendDict);
+            dbPromises.push(fetchDB(dbName, langDB, this.appendDict));
         }
+
+        Promise.all(dbPromises).then(() => {
+            console.log("All databases loaded!")
+            if (this.searchBar.current) {
+                this.searchBar.current.textInput.current.focus();
+                this.searchQuery();
+            }
+
+        });
     }
 
+    // TODO: don't render for each of these
     appendDict(newDict: SearchableDict) {
         const {dbName} = newDict;
 
@@ -143,60 +163,75 @@ class ChaTaigi extends React.Component<any, any> {
             state.loadedDBs.set(dbName, newDict)
         ));
 
-        // TODO: find a better place for this
-        if (this.searchBar.current) {
-            // TODO: block focus until loaded?
-            this.searchBar.current.textInput.current.focus();
-        }
-
     }
 
-    appendSearch(newSearch: OngoingSearch) {
-        this.setStateTyped((state: ChaTaigiState<IntermediatePerDictResultsElements>) => ({ongoingSearches: [...state.ongoingSearches, newSearch]}));
+    setOngoingSearches(ongoingSearches: OngoingSearch<PerDictResultsElements>[]) {
+        //this.setStateTyped((state: ChaTaigiState<IntermediatePerDictResultsElements>) => ({ongoingSearches: [...state.ongoingSearches, newSearch]}));
+        this.ongoingSearches = ongoingSearches;
     }
 
-    appendResults(results: PerDictResultsElements) {
-        const {dbName} = results;
-        debugConsole.time("appendResults-setState-" + dbName);
-        const TODOIntermediate = <IntermediatePerDictResultsElements key={dbName} perDictRes={results} />
-        this.setStateTyped((state: ChaTaigiState<IntermediatePerDictResultsElements>) => ({currentResultsElements: [...state.currentResultsElements, TODOIntermediate]}));
-        debugConsole.timeEnd("appendResults-setState-" + dbName);
+    // TODO: remove intermediate hack
+    // TODO: sort dictionaries by which has best result (temporary, until tagging individual results by dict)
+    setResults(allResults: PerDictResultsElements[]) {
+        const resultsElements = allResults.map((perDictRes) => <IntermediatePerDictResultsElements key={perDictRes.dbName} perDictRes={perDictRes} />
+        );
+
+        debugConsole.time("setResults-setState");
+        this.setState({currentResultsElements: resultsElements});
+        debugConsole.timeEnd("setResults-setState");
     }
 
 
     onChange(e: any) {
-        const {loadedDBs, ongoingSearches} = this.getStateTyped();
         const {target = {}} = e;
         const {value = ""} = target;
         const query = value;
 
-        ongoingSearches.forEach((search) => search.cancel());
-
-        if (query === "") {
-            this.resetSearch();
-        } else {
-            // TODO: Correct place for this?
-            this.setStateTyped({query, currentResultsElements: []});
-            this.doSearch(query, Array.from(loadedDBs.values()));
-        }
+        this.query = query;
+        this.searchQuery();
     }
 
     menu() {
-        return <ChaMenu />;
+        // TODO: performance testing
+        return null;
+        //return <ChaMenu />;
     }
 
     resetSearch() {
+        this.query = "";
         this.setStateTyped({
-            query: "",
-            ongoingSearches: [],
             currentResultsElements: []
         });
     }
 
+    searchQuery() {
+        const query = this.query;
+        const {loadedDBs} = this.getStateTyped();
+        this.ongoingSearches.forEach((search) => search.cancel());
+
+        if (query === "") {
+            this.resetSearch();
+        } else {
+            //this.setStateTyped({currentResultsElements: []});
+            this.doSearch(query, Array.from(loadedDBs.values()));
+        }
+    }
+
     doSearch(query: string, searchableDicts: Array<SearchableDict>) {
-        searchableDicts.forEach((searchableDict) => {
-            searchDB(searchableDict, query, this.appendSearch, this.appendResults);
-        });
+        Promise.all(
+            searchableDicts.map(
+                (searchableDict) => searchDB(searchableDict, query)
+            )).then((possiblyOngoingSearches) => {
+                const realOngoingSearches =
+                     possiblyOngoingSearches.filter(typeGuard) as OngoingSearch<PerDictResultsElements>[];
+                const parsePromises = realOngoingSearches.map(s => s.parsePromise).filter(typeGuard) as Promise<any>[];
+                this.setOngoingSearches(realOngoingSearches);
+                Promise.all(parsePromises).then(allResults => {
+                    if (!realOngoingSearches.some(s => s.wasCanceled)) {
+                        this.setResults(allResults.filter(x => x));
+                    }
+                });
+            });
     }
 
     render() {

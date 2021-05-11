@@ -3,14 +3,14 @@ import fuzzysort from "fuzzysort";
 import debugConsole from "./debug_console"
 import {LangDB, RawJSONEntry, SearchableDict, PreparedSearchableEntry} from "./types";
 
-export function fetchDB(
+export async function fetchDB(
     dbName: string,
     langDB: LangDB,
-    appendFunc: ((searchableDict: SearchableDict) => void)) {
+    appendFunc: ((searchableDict: SearchableDict) => void)): Promise<void> {
 
     const {dbFilename, shortNameToPreppedNameMapping} = langDB;
     debugConsole.time("fetch-" + dbName);
-    fetch(dbFilename)
+    return fetch(dbFilename)
         .then((response: Response) => {
             debugConsole.timeEnd("fetch-" + dbName);
             debugConsole.time("jsonConvert-" + dbName);
@@ -48,6 +48,5 @@ export function fetchDB(
             });
             debugConsole.timeEnd("setLoaded-" + dbName);
         });
-
 }
 
