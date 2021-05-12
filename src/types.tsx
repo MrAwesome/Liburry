@@ -19,16 +19,16 @@ export interface SearchableDict {
 
 export interface ChaTaigiState<E> {
     query: string,
-    currentResultsElements: Array<E>,
-    ongoingSearches: Array<OngoingSearch<PerDictResultsElements>>,
-    loadedDBs: Map<DBName, SearchableDict>,
+    currentResults: Map<DBName, Array<E>>,
+    ongoingSearches: Array<OngoingSearch<PerDictResults>>,
+    loadedDBs: Map<DBName, boolean>,
 }
 
 export interface ChaTaigiStateArgs<E> {
     query?: string,
-    currentResultsElements?: Array<E>,
-    ongoingSearches?: Array<OngoingSearch<PerDictResultsElements>>,
-    loadedDBs?: Map<DBName, SearchableDict>,
+    currentResults?: Map<DBName, Array<E>>,
+    ongoingSearches?: Array<OngoingSearch<PerDictResults>>,
+    loadedDBs?: Map<DBName, boolean>,
 }
 
 interface Prepared {
@@ -107,8 +107,18 @@ export interface CancelablePromise<T> extends Promise<T> {
 // TODO: instead of this, tag all results with their relevant dict?
 // TODO: sort all results by overall relevance somehow?
 // TODO: combine overlapping results, etc
-export interface PerDictResultsElements {
+export interface PerDictResults {
     dbName: DBName,
-    results: Array<JSX.Element>,
+    results: Array<SearchResultEntry>,
     // TODO: store the intermediate results for each search as well?
+}
+
+export interface SearchResultEntry {
+    key: string;
+    pojUnicodeText: string;
+    pojUnicode: string;
+    pojInput: string;
+    hoabun: string;
+    pojNormalized: string;
+    english: string;
 }

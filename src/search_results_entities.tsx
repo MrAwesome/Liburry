@@ -1,7 +1,6 @@
 import fuzzysort from "fuzzysort";
 import debugConsole from "./debug_console";
-import {EntryContainer} from "./components";
-import {DBName, KeyResult, KeyResults} from "./types";
+import {DBName, KeyResult, KeyResults, SearchResultEntry} from "./types";
 
 // TODO: remove when there are other types of search
 import {DEFAULT_ENGLISH_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./search_options";
@@ -9,7 +8,7 @@ import {DEFAULT_ENGLISH_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DE
 export function parseFuzzySortResultsForRender(
     dbName: DBName,
     rawResults: KeyResults[]
-): JSX.Element[] {
+): SearchResultEntry[] {
     debugConsole.time("parseFuzzySortResultsForRender");
     const currentResultsElements = rawResults
         .slice(0, DISPLAY_RESULTS_LIMIT)
@@ -35,7 +34,7 @@ export function parseFuzzySortResultsForRender(
             const hoabun = fuzzysortHighlight(hoabunPossiblePreHLMatch, obj.h);
 
             // TODO: strongly type
-            const locProps = {
+            return {
                 key: dbName + "-" + rowID,
                 pojUnicodeText,
                 pojUnicode,
@@ -43,9 +42,7 @@ export function parseFuzzySortResultsForRender(
                 hoabun,
                 pojNormalized,
                 english,
-            }
-
-            return <EntryContainer {...locProps} />;
+            } as SearchResultEntry;
         })
     debugConsole.timeEnd("parseFuzzySortResultsForRender");
     return currentResultsElements;

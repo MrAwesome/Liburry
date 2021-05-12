@@ -1,5 +1,8 @@
 import {JSONDBKey, KeysOptions, LangDB, SearchPreppedKey} from "./types";
 
+(global as any).$RefreshReg$ = () => {};
+(global as any).$RefreshSig$$ = () => () => {};
+
 const SEARCH_RESULTS_LIMIT = 20;
 export const DISPLAY_RESULTS_LIMIT = 20;
 
@@ -45,21 +48,22 @@ function getFuzzyOpts(searchKeys: Array<string> = DEFAULT_SEARCH_KEYS): KeysOpti
 export const DATABASES: Map<string, LangDB> = new Map([
     ["maryknoll",
         {
-            "dbFilename": "db/maryknoll.json",
+            "dbFilename": "/db/maryknoll.json",
             shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,
             searchKeys: DEFAULT_SEARCH_KEYS,
             fuzzyOpts: getFuzzyOpts(),
         }],
     ["embree",
         {
-            "dbFilename": "db/embree.json",
+            "dbFilename": "/db/embree.json",
             shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,
             searchKeys: DEFAULT_SEARCH_KEYS,
             fuzzyOpts: getFuzzyOpts(),
         }],
     ["giku",
         {
-            "dbFilename": "db/giku.json",
+        // F
+            "dbFilename": "/db/giku.json",
             shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,
             searchKeys: DEFAULT_SEARCH_KEYS,
             fuzzyOpts: getFuzzyOpts(),

@@ -1,7 +1,7 @@
 import * as React from "react";
 
 // TODO: determine if this import breaks one of Uncle Bob's rules
-import {SearchableDict} from './types';
+import {PerDictResults} from './types';
 
 enum clickedOrder {
     NORMAL,
@@ -19,7 +19,7 @@ const FADING_STYLE = {
     "transition": "all 1s ease-out",
 }
 
-
+// TODO: strongly type props by making it a SearchResultEntry
 export class EntryContainer extends React.PureComponent<any, any> {
     constructor(props: any) {
         super(props);
@@ -137,8 +137,10 @@ export class EntryContainer extends React.PureComponent<any, any> {
 export class ResultsArea extends React.PureComponent<any, any> {
     render() {
         const {results} = this.props;
+        let resContainers = (results as Array<PerDictResults>).map(
+            (perDictRes) => <IntermediatePerDictResultsElements key={perDictRes.dbName} perDictRes={perDictRes} />);
         return <div className="results-container">
-            {results}
+            {resContainers}
         </div>;
     }
 }
@@ -168,28 +170,43 @@ export class SearchBar extends React.Component<any, any> {
     }
 }
 
-function DBLoadedState({loadedDBs}: {loadedDBs: Map<string, SearchableDict>}) {
+function DBLoadedState({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
     var states: JSX.Element[] = [];
     loadedDBs.forEach((db, dbName) => {
-        const isLoaded = (db === null);
+        const isLoaded = (db === null) || (db === false);
         const loadedString = isLoaded ? "⌛" : "✅";
         const borderStyleColor = isLoaded ? "red" : "green";
         const borderStyle = {"border": "1px " + borderStyleColor + " solid"};
 
         const entryDiv = <div className="db-loaded-entry" key={dbName} style={borderStyle} >
-                <span className="db-loaded-entry-name">{dbName}: </span>
-                <span className="db-loaded-entry-isloaded">
+            <span className="db-loaded-entry-name">{dbName}: </span>
+            <span className="db-loaded-entry-isloaded">
                 {loadedString}
-                </span>
-            </div>;
+            </span>
+        </div>;
         states.push(entryDiv);
     });
     return <div className="db-loaded-states">{states}</div>
 
 }
 
-export function DebugArea({loadedDBs}: {loadedDBs: Map<string, SearchableDict>}) {
+export function DebugArea({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
     return <div className="debug-area">
         <DBLoadedState loadedDBs={loadedDBs} />
     </div>
 }
+
+
+export class IntermediatePerDictResultsElements extends React.Component<any, any> {
+    render() {
+        const {perDictRes} = this.props;
+        const {dbName, results}: PerDictResults = perDictRes;
+        const entries = results.map((res) => <EntryContainer {...res} />);
+
+        return <div className="TODO-intermediate-results">
+            <div className="TODO-db-header">{dbName}</div>
+            {entries}
+        </div>
+    }
+}
+

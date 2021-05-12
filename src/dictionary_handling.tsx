@@ -6,7 +6,7 @@ import {LangDB, RawJSONEntry, SearchableDict, PreparedSearchableEntry} from "./t
 export async function fetchDB(
     dbName: string,
     langDB: LangDB,
-    appendFunc: ((searchableDict: SearchableDict) => void)): Promise<void> {
+    ): Promise<SearchableDict> {
 
     const {dbFilename, shortNameToPreppedNameMapping} = langDB;
     debugConsole.time("fetch-" + dbName);
@@ -41,12 +41,10 @@ export async function fetchDB(
             )
             debugConsole.timeEnd("prepareSlow-" + dbName);
 
-            debugConsole.time("setLoaded-" + dbName);
-            appendFunc({
+            return {
                 dbName,
                 searchableEntries: data
-            });
-            debugConsole.timeEnd("setLoaded-" + dbName);
+            } as SearchableDict;
         });
 }
 

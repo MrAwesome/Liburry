@@ -1,5 +1,5 @@
 import debugConsole from "./debug_console";
-import {DBName, CancelablePromise, SearchableDict, PerDictResultsElements} from "./types";
+import {DBName, CancelablePromise, SearchableDict, PerDictResults} from "./types";
 import fuzzysort from "fuzzysort";
 import {parseFuzzySortResultsForRender} from "./search_results_entities";
 import {DATABASES} from "./search_options";
@@ -48,6 +48,7 @@ export class OngoingSearch<T> {
     endTimer(): void {
     }
 
+    // TODO: cancel parsepromise, if possible
     cancel(): void {
         if (this.cancelablePromise && !this.isCompleted()) {
             this.cancelablePromise.cancel();
@@ -60,7 +61,7 @@ export class OngoingSearch<T> {
 export function searchDB(
     searchableDict: SearchableDict | null,
     query: string,
-): OngoingSearch<PerDictResultsElements> | null {
+): OngoingSearch<PerDictResults> | null {
     // TODO: re-trigger currently-ongoing search once db loads?
     if (searchableDict === null) {
         return null;
@@ -90,7 +91,7 @@ export function searchDB(
             return {
                 dbName,
                 results
-            } as PerDictResultsElements;
+            } as PerDictResults;
 
         }
     ).catch(debugConsole.log);
