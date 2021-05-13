@@ -10,13 +10,16 @@ enum clickedOrder {
 }
 
 const CLICKED_STYLE = {
-    "background": "#FFD586",
-    "border": "1px solid lightgrey",
-    "boxShadow": "1px 1px 4px 2px rgba(0, 0, 0, 0.2)",
+    //"background": "#FFD586",
+    "background": "#aaaaaa",
+    //"transform": "rotate3d(2, -1, -1, -0.2turn)",
+    "transition": "all 1s ease",
+    "border-radius": "5px",
 };
 
 const FADING_STYLE = {
-    "transition": "all 1s ease-out",
+    "transition": "all 1s ease",
+    //"transform": "perspective(400px) translate3d(0em, 0em, -60px)",
 }
 
 // TODO: strongly type props by making it a SearchResultEntry
@@ -176,9 +179,13 @@ function DBLoadedState({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
         const isLoaded = (db === null) || (db === false);
         const loadedString = isLoaded ? "⌛" : "✅";
         const borderStyleColor = isLoaded ? "red" : "green";
-        const borderStyle = {"border": "1px " + borderStyleColor + " solid"};
+        const backgroundColor = isLoaded ? "pink" : "white";
+        const loadedStatusStyle = {
+            "border": `1px ${borderStyleColor} solid`,
+            "background": backgroundColor,
+        };
 
-        const entryDiv = <div className="db-loaded-entry" key={dbName} style={borderStyle} >
+        const entryDiv = <div className="db-loaded-entry" key={dbName} style={loadedStatusStyle} >
             <span className="db-loaded-entry-name">{dbName}: </span>
             <span className="db-loaded-entry-isloaded">
                 {loadedString}

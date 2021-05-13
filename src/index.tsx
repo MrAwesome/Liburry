@@ -65,6 +65,8 @@ import Worker from "worker-loader!./search.worker";
 // TODO(mid): move search bar to middle of page when no results and no search yet
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
+// TODO(low): font size button
+// TODO(low): locally-stored settings, or users
 // TODO(low): abstract away searching logic to avoid too much fuzzysort-specific code
 // TODO(low): have GET param for search (and options?)
 // TODO(low): configurable searches (exact search, slow but better search, etc)
@@ -202,6 +204,7 @@ class ChaTaigi extends React.Component<any, any> {
         //return <ChaMenu />;
     }
 
+    // TODO: ensure results are cleared when the query is emptied (try pressing "a" and then backspace quickly)
     resetSearch() {
         this.query = "";
         debugConsole.time("clearSearch");
@@ -231,12 +234,17 @@ class ChaTaigi extends React.Component<any, any> {
         const allPerDictResults = [...currentResults.values()].filter(typeGuard);
 
         const int = allPerDictResults.map(getRes);
+
+        console.log(currentResults);
+        var shouldDisplayDebugArea = currentResults.size === 0;
+        const dbg = shouldDisplayDebugArea ? <DebugArea loadedDBs={loadedDBs} /> : null;
         return (
             <div className="ChaTaigi">
                 <div className="non-menu">
                     <SearchBar ref={this.searchBar} onChange={onChange} />
+                    <div className="search-area-buffer" />
                     {int}
-                    <DebugArea loadedDBs={loadedDBs} />
+                    {dbg}
                 </div>
                 {this.menu()}
             </div>
