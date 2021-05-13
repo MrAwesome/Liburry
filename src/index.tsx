@@ -235,7 +235,6 @@ class ChaTaigi extends React.Component<any, any> {
 
         const int = allPerDictResults.map(getRes);
 
-        console.log(currentResults);
         var shouldDisplayDebugArea = currentResults.size === 0;
         const dbg = shouldDisplayDebugArea ? <DebugArea loadedDBs={loadedDBs} /> : null;
         return (
