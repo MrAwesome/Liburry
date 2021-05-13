@@ -1,3 +1,4 @@
+import debugConsole from "./debug_console";
 import type {LangDB, DBName, SearchableDict, PerDictResults} from "./types";
 import {fetchDB} from "./dictionary_handling";
 import {OngoingSearch, searchDB} from "./search";
@@ -7,7 +8,6 @@ import {OngoingSearch, searchDB} from "./search";
 // eslint-disable-next-line no-restricted-globals
 const ctx: Worker = self as any;
 
-//type RunningStatesList = "started"|"searching";
 type WorkerInitializedState =
   { init: "uninitialized" } |
   { init: "started", dbName: DBName, langDB: LangDB } |
@@ -69,15 +69,12 @@ class SearchWorkerHelper {
     }
 
     log() {
-        console.log(this);
+        debugConsole.log(this);
     }
 }
 
 // TODO: move types to d.ts, import type
 var sw: SearchWorkerHelper = new SearchWorkerHelper();
-
-// Post data to parent thread
-//ctx.postMessage({ foo: "foo" });
 
 // Respond to message from parent thread
 ctx.addEventListener("message", (e) => {

@@ -70,7 +70,7 @@ export function searchDB(
     const {dbName, searchableEntries} = searchableDict;
     const langDB = DATABASES.get(dbName);
     if (!langDB) {
-        console.log("Failed to load langDB:", dbName, DATABASES);
+        debugConsole.log("Failed to load langDB:", dbName, DATABASES);
         return null;
     }
     const {fuzzyOpts} = langDB;
@@ -82,17 +82,26 @@ export function searchDB(
 
     const parsePromise = cancelableSearchPromise.then(
         rawResults => {
+            // Filter out duplicates, as fuzzysort occasionally gives them to us and React loathes duplicate keys
+            // TODO: Find out why this doesn't prevent the flash of warning text from react
+            const seen = new Set();
+            const res = rawResults.filter(({ obj }) => {
+                if (seen.has(obj.d)) {
+                    return false;
+                }
+                seen.add(obj.d);
+                return true;
+            });
             ongoingSearch.markCompleted();
             const results = parseFuzzySortResultsForRender(
                 dbName,
                 // @ts-ignore Deal with lack of fuzzysort interfaces
-                rawResults,
+                res,
             );
             return {
                 dbName,
                 results
             } as PerDictResults;
-
         }
     ).catch(debugConsole.log);
 

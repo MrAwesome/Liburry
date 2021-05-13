@@ -92,6 +92,7 @@ export class EntryContainer extends React.PureComponent<any, any> {
         return altTextContainers;
     }
 
+    // FIXME(https://github.com/farzher/fuzzysort/issues/66)
     createMatchElement(inputText: string, className: string) {
         const rawHtml = {__html: inputText};
         return <span className={className} dangerouslySetInnerHTML={rawHtml}></span>;
@@ -102,7 +103,6 @@ export class EntryContainer extends React.PureComponent<any, any> {
         // TODO: make strongly-typed
         const {pojUnicode, english, hoabun} = this.props;
         const {clicked} = this.state;
-        // FIXME(https://github.com/farzher/fuzzysort/issues/66)
 
         const poju = this.createMatchElement(pojUnicode, "poj-unicode");
         const hoab = this.createMatchElement(hoabun, "hoabun");
@@ -139,9 +139,9 @@ export class ResultsArea extends React.PureComponent<any, any> {
         const {results} = this.props;
         let resContainers = (results as Array<PerDictResults>).map(
             (perDictRes) => <IntermediatePerDictResultsElements key={perDictRes.dbName} perDictRes={perDictRes} />);
-        return <div className="results-container">
+        return <>
             {resContainers}
-        </div>;
+        </>;
     }
 }
 
@@ -197,7 +197,7 @@ export function DebugArea({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
 }
 
 
-export class IntermediatePerDictResultsElements extends React.Component<any, any> {
+export class IntermediatePerDictResultsElements extends React.PureComponent<any, any> {
     render() {
         const {perDictRes} = this.props;
         const {dbName, results}: PerDictResults = perDictRes;

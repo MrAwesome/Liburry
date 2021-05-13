@@ -36,15 +36,6 @@ mark {
     padding: 8px;
 }
 
-.results-container {
-    margin-top: 3px;
-}
-
-.results-container {
-    margin-right: 0px;
-/*    grid-area: results;*/
-}
-
 .TODO-intermediate-results {
     /* TODO: play with flexbox to simplify code below (margin etc) */
     display: flex;
@@ -193,6 +184,7 @@ mark {
 /*    grid-area: searchbar;*/
     width: 100%;
     position: relative;
+    margin-bottom: 3px;
 }
 
 .search-bar input {

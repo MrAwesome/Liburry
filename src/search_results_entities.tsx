@@ -1,5 +1,4 @@
 import fuzzysort from "fuzzysort";
-import debugConsole from "./debug_console";
 import {DBName, KeyResult, KeyResults, SearchResultEntry} from "./types";
 
 // TODO: remove when there are other types of search
@@ -9,7 +8,6 @@ export function parseFuzzySortResultsForRender(
     dbName: DBName,
     rawResults: KeyResults[]
 ): SearchResultEntry[] {
-    debugConsole.time("parseFuzzySortResultsForRender");
     const currentResultsElements = rawResults
         .slice(0, DISPLAY_RESULTS_LIMIT)
         .map((fuzzysortResult: KeyResults, _: number) => {
@@ -44,7 +42,6 @@ export function parseFuzzySortResultsForRender(
                 english,
             } as SearchResultEntry;
         })
-    debugConsole.timeEnd("parseFuzzySortResultsForRender");
     return currentResultsElements;
 }
 

@@ -19,14 +19,14 @@ export interface SearchableDict {
 
 export interface ChaTaigiState<E> {
     query: string,
-    currentResults: Map<DBName, Array<E>>,
+    currentResults: Map<DBName, E>,
     ongoingSearches: Array<OngoingSearch<PerDictResults>>,
     loadedDBs: Map<DBName, boolean>,
 }
 
 export interface ChaTaigiStateArgs<E> {
     query?: string,
-    currentResults?: Map<DBName, Array<E>>,
+    currentResults?: Map<DBName, E>,
     ongoingSearches?: Array<OngoingSearch<PerDictResults>>,
     loadedDBs?: Map<DBName, boolean>,
 }
