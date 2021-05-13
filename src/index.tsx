@@ -144,26 +144,26 @@ class ChaTaigi extends React.Component<any, any> {
                 switch (rt) {
                     case "SEARCH_SUCCESS": {
                         let {results, dbName} = payload;
-                        debugConsole.time("searchRender-"+dbName);
+                        debugConsole.time("searchRender-" + dbName);
                         this.setStateTyped((state) => {
                             return state.currentResults.set(dbName, results);
                         });
-                        debugConsole.timeEnd("searchRender-"+dbName);
+                        debugConsole.timeEnd("searchRender-" + dbName);
                     }
-                    break;
+                        break;
                     case "DB_LOAD_SUCCESS": {
                         let {dbName} = payload;
-                        debugConsole.time("dbLoadRender-"+dbName);
+                        debugConsole.time("dbLoadRender-" + dbName);
                         this.setStateTyped((state) => {
                             return state.loadedDBs.set(dbName, true);
                         });
-                        debugConsole.timeEnd("dbLoadRender-"+dbName);
+                        debugConsole.timeEnd("dbLoadRender-" + dbName);
                         // TODO: Can this have a race with the above because of passing in a function?
                         if (!Array.from(this.state.loadedDBs.values()).some(x => !x)) {
                             this.registerAllDBsLoadedSuccessfully();
                         }
                     }
-                    break;
+                        break;
                 }
             };
 
@@ -208,6 +208,12 @@ class ChaTaigi extends React.Component<any, any> {
     resetSearch() {
         this.query = "";
         debugConsole.time("clearSearch");
+
+        this.searchWorkers.forEach(
+            (worker, _) =>
+                worker.postMessage({command: "CANCEL"})
+        );
+
         this.setStateTyped((state) => {
             state.currentResults.clear();
             return state;
