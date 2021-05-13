@@ -129,6 +129,7 @@ class ChaTaigi extends React.Component<any, any> {
     }
 
     componentDidMount() {
+        console.timeLog("initToAllDB", "componentDidMount");
         for (let [dbName, langDB] of DATABASES) {
             const worker = new Worker();
             this.searchWorkers.set(
@@ -136,7 +137,7 @@ class ChaTaigi extends React.Component<any, any> {
                 worker,
             );
 
-            // TODO: find a better place for this sort of logic to live? 
+            // TODO: find a better place for this sort of logic to live?
             // (next to the search worker in another file, and pass a callback for this to use to append results?)
             worker.onmessage = (e) => {
                 const rt = e.data.resultType;
@@ -205,6 +206,9 @@ class ChaTaigi extends React.Component<any, any> {
     }
 
     // TODO: ensure results are cleared when the query is emptied (try pressing "a" and then backspace quickly)
+    //
+    //       METHOD: use nanoid or similar to give each overall search an ID. pass that ID back and forth. keep a shortlist of
+    //       invalidated searches, and refuse to render results from invalidated (aka canceled) searches.
     resetSearch() {
         this.query = "";
         debugConsole.time("clearSearch");
@@ -223,7 +227,6 @@ class ChaTaigi extends React.Component<any, any> {
 
     searchQuery() {
         const query = this.query;
-        //const {loadedDBs} = this.getStateTyped();
         this.ongoingSearches.forEach((search) => search.cancel());
 
         if (query === "") {

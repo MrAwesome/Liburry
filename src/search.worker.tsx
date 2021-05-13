@@ -50,7 +50,20 @@ class SearchWorkerHelper {
                     const originalState = this.state;
                     this.state = {...originalState, init: "searching", ogs: ongoingSearch};
                     ongoingSearch.parsePromise?.then((results) => {
-                        ctx.postMessage({resultType: "SEARCH_SUCCESS", payload: {results, dbName}});
+
+                        if (
+                            this.state.init === "searching") {
+                            console.log(this.state.init
+                            , this.state.ogs.query !== query
+                            , !this.state.ogs.wasCanceled);
+                        }
+                        if (
+                            this.state.init === "searching"
+                            && this.state.ogs.query !== query
+                            && !this.state.ogs.wasCanceled
+                        ) {
+                            ctx.postMessage({resultType: "SEARCH_SUCCESS", payload: {results, dbName}});
+                        }
                         this.state = originalState;
                     });
                 }
