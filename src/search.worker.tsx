@@ -37,11 +37,11 @@ class SearchWorkerHelper {
         }
     }
 
-    search(query: string) {
+    search(query: string, searchID: number) {
         switch (this.state.init) {
             case "searching":
                 this.cancel();
-                this.search(query);
+                this.search(query, searchID);
                 break;
             case "loaded":
                 const ongoingSearch = searchDB(this.state.db, query);
@@ -62,7 +62,7 @@ class SearchWorkerHelper {
 //                            && this.state.ogs.query !== query
 //                            && !this.state.ogs.wasCanceled
 //                        ) {
-                        ctx.postMessage({resultType: "SEARCH_SUCCESS", payload: {results, dbName}});
+                        ctx.postMessage({resultType: "SEARCH_SUCCESS", payload: {results, dbName, searchID}});
                         this.state = originalState;
                     });
                 }
@@ -107,8 +107,8 @@ ctx.addEventListener("message", (e) => {
             sw.loadDB();
             break;
         case "SEARCH":
-            const {query} = payload;
-            sw.search(query);
+            const {query, searchID} = payload;
+            sw.search(query, searchID);
             break;
         case "CANCEL":
             sw.cancel();

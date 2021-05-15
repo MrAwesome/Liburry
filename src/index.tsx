@@ -7,11 +7,12 @@ import debugConsole from "./debug_console";
 import "./cha_taigi.css";
 import "./menu.css";
 import {ChaTaigiState, ChaTaigiStateArgs, PerDictResults} from "./types";
-import {OngoingSearch} from "./search";
 import {DATABASES} from "./search_options";
 import {typeGuard} from "./typeguard";
 
 //import {ChaMenu} from "./cha_menu";
+
+import {mod} from './utils';
 
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 //import reportWebVitals from "./reportWebVitals";
@@ -82,9 +83,11 @@ import Worker from "worker-loader!./search.worker";
 // TODO(low): settings
 // TODO(low): fix the default/preview text
 // TODO(low): check web.dev/measure
+// TODO(low): replace !some with every
 // TODO(wishlist): dark mode support
 // TODO(wishlist): "add to desktop" shortcut
 // TODO(wishlist): non-javascript support?
+// TODO(wishlist): dark and light themes
 // TODO(later): homepage
 // TODO(later): homepage WOTD
 // TODO(later): "show me random words"
@@ -98,7 +101,7 @@ import Worker from "worker-loader!./search.worker";
 //
 // Project: Hoabun definitions
 //      1) generalize "english" to definition
-//      2) solidify transitional schema (soatbeng? or save that for later?)
+//      2) solidify transitional schema (soatbeng? or save that for later?) (hoabun vs hanlo_taibun_poj?)
 //      3) modify build script to generate json files
 //      4) create schemas under current model
 //      5) modify containers if needed
@@ -108,9 +111,12 @@ import Worker from "worker-loader!./search.worker";
 
 class ChaTaigi extends React.Component<any, any> {
     searchBar: React.RefObject<SearchBar>;
-    ongoingSearches: OngoingSearch<PerDictResults>[] = [];
     query = "";
+
+    // TODO: move these into their own helper class?
     searchWorkers: Map<string, Worker> = new Map();
+    searchInvalidations: Array<boolean> = Array.from({length: 10}).map(_ => false);
+    currentSearchIndex: number = 0;
 
     constructor(props: any) {
         super(props);
@@ -119,12 +125,7 @@ class ChaTaigi extends React.Component<any, any> {
             loadedDBs: new Map(),
         };
 
-
-        DATABASES.forEach(
-            (_, dbName) => {
-                this.state.loadedDBs.set(dbName, false);
-            }
-        );
+        DATABASES.forEach((_, dbName) => {this.state.loadedDBs.set(dbName, false)});
 
         this.searchBar = React.createRef();
 
@@ -133,8 +134,8 @@ class ChaTaigi extends React.Component<any, any> {
         this.resetSearch = this.resetSearch.bind(this);
         this.setStateTyped = this.setStateTyped.bind(this);
         this.getStateTyped = this.getStateTyped.bind(this);
-        this.setOngoingSearches = this.setOngoingSearches.bind(this);
         this.registerAllDBsLoadedSuccessfully = this.registerAllDBsLoadedSuccessfully.bind(this);
+        this.cancelOngoingSearch = this.cancelOngoingSearch.bind(this);
         this.menu = this.menu.bind(this);
     }
 
@@ -162,11 +163,13 @@ class ChaTaigi extends React.Component<any, any> {
                 const payload = e.data.payload;
                 switch (rt) {
                     case "SEARCH_SUCCESS": {
-                        let {results, dbName} = payload;
+                        let {results, dbName, searchID} = payload;
                         debugConsole.time("searchRender-" + dbName);
-                        this.setStateTyped((state) => {
-                            return state.currentResults.set(dbName, results);
-                        });
+                        if (!this.searchInvalidations[searchID]) {
+                            this.setStateTyped((state) => {
+                                return state.currentResults.set(dbName, results);
+                            });
+                        }
                         debugConsole.timeEnd("searchRender-" + dbName);
                     }
                         break;
@@ -204,10 +207,6 @@ class ChaTaigi extends React.Component<any, any> {
         debugConsole.timeEnd("allDBRegister");
     }
 
-    setOngoingSearches(ongoingSearches: OngoingSearch<PerDictResults>[]) {
-        this.ongoingSearches = ongoingSearches;
-    }
-
     onChange(e: any) {
         const {target = {}} = e;
         const {value = ""} = target;
@@ -223,34 +222,36 @@ class ChaTaigi extends React.Component<any, any> {
         //return <ChaMenu />;
     }
 
-    // TODO: ensure results are cleared when the query is emptied (try pressing "a" and then backspace quickly)
-    //
-    //       METHOD: use nanoid or similar to give each overall search an ID. pass that ID back and forth. keep a shortlist of
-    //       invalidated searches, and refuse to render results from invalidated (aka canceled) searches.
     resetSearch() {
         this.query = "";
-        debugConsole.time("clearSearch");
-
-        this.searchWorkers.forEach(
-            (worker, _) =>
-                worker.postMessage({command: "CANCEL"})
-        );
 
         this.setStateTyped((state) => {
             state.currentResults.clear();
             return state;
         });
-        debugConsole.timeEnd("clearSearch");
+    }
+
+    cancelOngoingSearch() {
+        this.searchInvalidations[mod(this.currentSearchIndex-1, this.searchInvalidations.length)] = true;
+        this.searchWorkers.forEach(
+            (worker, _) =>
+                worker.postMessage({command: "CANCEL"})
+        );
     }
 
     searchQuery() {
         const query = this.query;
-        this.ongoingSearches.forEach((search) => search.cancel());
+
+        this.cancelOngoingSearch();
 
         if (query === "") {
             this.resetSearch();
         } else {
-            this.searchWorkers.forEach((worker, _) => worker.postMessage({command: "SEARCH", payload: {query}}));
+            this.searchWorkers.forEach((worker, _) =>
+                worker.postMessage({command: "SEARCH", payload: {query, searchID: this.currentSearchIndex}}));
+
+            this.currentSearchIndex = mod(this.currentSearchIndex+1, this.searchInvalidations.length);
+            this.searchInvalidations[this.currentSearchIndex] = false;
         }
     }
 
