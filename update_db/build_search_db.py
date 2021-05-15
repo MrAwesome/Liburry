@@ -18,32 +18,89 @@ from pathlib import Path
 # NOTE: You will need to install the unidecode library for this to work.
 from unidecode import unidecode
 
-DB_CSV_FILENAMES_AND_FIELDS = [
-        {
-            "csv_filename": "ChhoeTaigi_MaryknollTaiengSutian.csv",
-            "expected_fields": ["id","poj_unicode","poj_input","kip_unicode","kip_input","hoabun","english","page_number"],
-            "output_filename": "maryknoll.json",
-        },
-
-        {
-            "csv_filename": "ChhoeTaigi_TaioanPehoeKichhooGiku.csv",
-            "expected_fields": ["id","poj_unicode","poj_unicode_other","poj_input","poj_input_other","kip_unicode","kip_unicode_other","kip_input","kip_input_other","hoabun","english","english_soatbeng","noun_classifiers","example_su","opposite","example_ku_taibun_poj","example_ku_english","example_ku_hoabun","from_su","page_number"],
-            "output_filename": "giku.json",
-        },
-
-        {
-            "csv_filename": "ChhoeTaigi_EmbreeTaiengSutian.csv",
-            "expected_fields": ["id","poj_unicode","poj_input","kip_unicode","kip_input","abbreviations","noun_classifiers","reduplication","hoabun","english","synonym","cf","page_number"],
-            "output_filename": "embree.json",
-        }
-]
-
 DB_CSV_URL_PREFIX: str = "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/raw/master/ChhoeTaigiDatabase/"
 OUTPUT_JSON_FILENAME: str = "maryknoll.json"
 
 BASE_DIR: Path = Path(__file__).parent.parent.absolute()
 BUILD_DIR: Path = BASE_DIR.joinpath("build/")
 OUTPUT_DIR: Path = BASE_DIR.joinpath("public/db")
+
+class CSVLangDB:
+    def __init__(self,
+            csv_filename: str,
+            expected_fields: list[str],
+            output_filename: str,
+            definition_fieldname: str
+    ):
+        self.csv_filename = csv_filename
+        self.expected_fields = expected_fields
+        self.output_filename = output_filename
+        self.definition_fieldname = definition_fieldname
+
+    def parse_csv(self, csv_text: str) -> list[dict[str, str]]:
+        print("Parsing CSV...")
+        csv_lines = csv_text.splitlines()
+        header_reader = csv.DictReader(csv_lines[:2])
+        reader = csv.DictReader(csv_lines)
+
+
+        # Check that the header values we see are expected
+        next(header_reader)
+        sorted_seen_fields = sorted(header_reader._fieldnames)
+        sorted_expected_fields = sorted(self.expected_fields)
+        if sorted_seen_fields != sorted_expected_fields:
+            print(sorted_seen_fields)
+            print(sorted_expected_fields)
+            raise ValueError(f"Header fields have changed for {self.csv_filename}!")
+
+        obj_list = []
+
+        # TODO(high): print out values and make sure they match
+
+        for row in reader:
+            row_id = int(row["id"])
+            poj_unicode = row["poj_unicode"]
+            poj_input = row["poj_input"]
+            hoabun = row["hoabun"]
+            definition = row[self.definition_fieldname]
+
+            # Normalize text (remove diacritics)
+            poj_normalized = unidecode(poj_unicode.replace("ⁿ", ""))
+
+            muh_obj = {
+                "d": row_id,
+                "p": poj_unicode,
+                "n": poj_normalized,
+                "i": poj_input,
+                "h": hoabun,
+                "e": definition
+            }
+            obj_list.append(muh_obj)
+
+        return obj_list
+
+
+DB_CSV_FILENAMES_AND_FIELDS = [
+        CSVLangDB(
+                csv_filename="ChhoeTaigi_MaryknollTaiengSutian.csv",
+                expected_fields=["id","poj_unicode","poj_input","kip_unicode","kip_input","hoabun","english","page_number"],
+                output_filename="maryknoll.json",
+                definition_fieldname="english",
+        ),
+        CSVLangDB(
+                csv_filename="ChhoeTaigi_TaioanPehoeKichhooGiku.csv",
+                expected_fields=["id","poj_unicode","poj_unicode_other","poj_input","poj_input_other","kip_unicode","kip_unicode_other","kip_input","kip_input_other","hoabun","english","english_soatbeng","noun_classifiers","example_su","opposite","example_ku_taibun_poj","example_ku_english","example_ku_hoabun","from_su","page_number"],
+                output_filename="giku.json",
+                definition_fieldname="english",
+        ),
+        CSVLangDB(
+                csv_filename="ChhoeTaigi_EmbreeTaiengSutian.csv",
+                expected_fields=["id","poj_unicode","poj_input","kip_unicode","kip_input","abbreviations","noun_classifiers","reduplication","hoabun","english","synonym","cf","page_number"],
+                output_filename="embree.json",
+                definition_fieldname="english",
+        )
+]
+
 
 def fetch_csv_data(csv_filename: str, csv_filename_path: Path) -> None:
     print(f"Local CSV copy not detected for \"{csv_filename}\", fetching...")
@@ -64,46 +121,6 @@ def get_db_data_from_local_copy(csv_filename_path: Path) -> str:
     return rawbytes.decode("utf-8")
 
 
-def parse_csv(csv_filename: str, csv_text: str, expected_fields: list[str]) -> list[dict[str, str]]:
-    print("Parsing CSV...")
-    csv_lines = csv_text.splitlines()
-    header_reader = csv.DictReader(csv_lines[:2])
-    reader = csv.DictReader(csv_lines)
-
-    # Check that the header values we see are expected
-    next(header_reader)
-    sorted_seen_fields = sorted(header_reader._fieldnames)
-    sorted_expected_fields = sorted(expected_fields)
-    if sorted_seen_fields != sorted_expected_fields:
-        print(sorted_seen_fields)
-        print(sorted_expected_fields)
-        raise ValueError(f"Header fields have changed for {csv_filename}!")
-
-    obj_list = []
-
-    # TODO(high): print out values and make sure they match
-
-    for row in reader:
-        row_id = int(row["id"])
-        poj_unicode = row["poj_unicode"]
-        poj_input = row["poj_input"]
-        hoabun = row["hoabun"]
-        english = row["english"]
-
-        # Normalize text (remove diacritics)
-        poj_normalized = unidecode(poj_unicode.replace("ⁿ", ""))
-
-        muh_obj = {
-            "d": row_id,
-            "p": poj_unicode,
-            "n": poj_normalized,
-            "i": poj_input,
-            "h": hoabun,
-            "e": english
-        }
-        obj_list.append(muh_obj)
-
-    return obj_list
 
 def convert_to_json(list_of_objs: list[dict[str, str]]) -> str:
     print("Converting to JSON...")
@@ -117,17 +134,16 @@ def write_to_db_file(outfile_name: str, jayson: str) -> None:
 
 def main() -> None:
     # TODO: tag filename with git revision of master on chhoe repo
-    for csv_entry in DB_CSV_FILENAMES_AND_FIELDS:
-        csv_filename = csv_entry["csv_filename"]
-        expected_fields =  csv_entry["expected_fields"]
-        output_filename = csv_entry["output_filename"]
+    for csv_langdb in DB_CSV_FILENAMES_AND_FIELDS:
+        csv_filename = csv_langdb.csv_filename
+        output_filename = csv_langdb.output_filename
 
         csv_filename_path = BUILD_DIR.joinpath(csv_filename)
 
         if not csv_filename_path.is_file():
             fetch_csv_data(csv_filename, csv_filename_path)
         decoded_rawbytes = get_db_data_from_local_copy(csv_filename_path)
-        list_of_objs = parse_csv(csv_filename, decoded_rawbytes, expected_fields)
+        list_of_objs = csv_langdb.parse_csv(decoded_rawbytes)
         jayson = convert_to_json(list_of_objs)
         write_to_db_file(output_filename, jayson)
 

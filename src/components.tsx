@@ -70,7 +70,7 @@ export class EntryContainer extends React.PureComponent<any, any> {
     }
 
     getAltTextContainers(): JSX.Element[] {
-        const {pojNormalized, pojInput} = this.props;
+        const {pojNormalized, pojInput} = this.props.entry;
         var altTextContainers = [];
 
         if (pojInput !== null) {
@@ -104,12 +104,12 @@ export class EntryContainer extends React.PureComponent<any, any> {
 
     render() {
         // TODO: make strongly-typed
-        const {pojUnicode, english, hoabun} = this.props;
+        const {pojUnicode, definition, hoabun} = this.props.entry;
         const {clicked} = this.state;
 
         const poju = this.createMatchElement(pojUnicode, "poj-unicode");
         const hoab = this.createMatchElement(hoabun, "hoabun");
-        const engl = this.createMatchElement(english, "english-definition");
+        const engl = this.createMatchElement(definition, "definition");
 
         // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
         return (
@@ -127,7 +127,7 @@ export class EntryContainer extends React.PureComponent<any, any> {
                     ({hoab})
                 </div>
 
-                <div className="english-container">
+                <div className="definition-container">
                     {engl}
                 </div>
 
@@ -208,12 +208,13 @@ export class IntermediatePerDictResultsElements extends React.PureComponent<any,
     render() {
         const {perDictRes} = this.props;
         const {dbName, results}: PerDictResults = perDictRes;
-        const entries = results.map((res) => <EntryContainer {...res} />);
+        const entries = results.map((entry) => <EntryContainer entry={entry} key={entry.key} />);
 
         return <div className="TODO-intermediate-results">
             <div className="TODO-db-header">{dbName}</div>
             {entries}
         </div>
+        //return <> {entries} </>;
     }
 }
 

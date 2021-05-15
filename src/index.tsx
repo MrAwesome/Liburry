@@ -79,14 +79,32 @@ import Worker from "worker-loader!./search.worker";
 // TODO(low): hoabun text click should copy hoabun?
 // TODO(low): title
 // TODO(low): copyright, links, etc
+// TODO(low): settings
 // TODO(low): fix the default/preview text
 // TODO(low): check web.dev/measure
 // TODO(wishlist): dark mode support
 // TODO(wishlist): "add to desktop" shortcut
 // TODO(wishlist): non-javascript support?
+// TODO(later): homepage
+// TODO(later): homepage WOTD
+// TODO(later): "show me random words"
+// TODO(later): include soatbeng/explanations
+// TODO(later): include alternates (very hard with maryknoll)
+// TODO(later): remove parentheticals from maryknoll entries
 // TODO(later): generalize for non-english definition
+// TODO(later): word similarity analysis, link to similar/possibly-related words (this could be added to the CSVs)
 // TODO(later): allow for entries to be marked incomplete/broken
 // TODO(later): link to ChhoeTaigi for entries
+//
+// Project: Hoabun definitions
+//      1) generalize "english" to definition
+//      2) solidify transitional schema (soatbeng? or save that for later?)
+//      3) modify build script to generate json files
+//      4) create schemas under current model
+//      5) modify containers if needed
+//      6) test performance
+//      7) create settings page with language toggle?
+
 
 class ChaTaigi extends React.Component<any, any> {
     searchBar: React.RefObject<SearchBar>;

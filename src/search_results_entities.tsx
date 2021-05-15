@@ -2,7 +2,7 @@ import fuzzysort from "fuzzysort";
 import {DBName, KeyResult, KeyResults, SearchResultEntry} from "./types";
 
 // TODO: remove when there are other types of search
-import {DEFAULT_ENGLISH_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./search_options";
+import {DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./search_options";
 
 export function parseFuzzySortResultsForRender(
     dbName: DBName,
@@ -21,13 +21,13 @@ export function parseFuzzySortResultsForRender(
             // TODO: per-db indexing
             const pojNormalizedPossiblePreHLMatch = fuzzysortResult[DEFAULT_POJ_NORMALIZED_INDEX];
             const pojInputPossiblePreHLMatch = fuzzysortResult[DEFAULT_POJ_INPUT_INDEX];
-            const englishPossiblePreHLMatch = fuzzysortResult[DEFAULT_ENGLISH_INDEX];
+            const definitionPossiblePreHLMatch = fuzzysortResult[DEFAULT_DEFINITION_INDEX];
             const pojUnicodePossiblePreHLMatch = fuzzysortResult[DEFAULT_POJ_UNICODE_INDEX];
             const hoabunPossiblePreHLMatch = fuzzysortResult[DEFAULT_HOABUN_INDEX];
 
             const pojNormalized = fuzzysortHighlight(pojNormalizedPossiblePreHLMatch, null);
             const pojInput = fuzzysortHighlight(pojInputPossiblePreHLMatch, null);
-            const english = fuzzysortHighlight(englishPossiblePreHLMatch, obj.e);
+            const definition = fuzzysortHighlight(definitionPossiblePreHLMatch, obj.e);
             const pojUnicode = fuzzysortHighlight(pojUnicodePossiblePreHLMatch, pojUnicodeText);
             const hoabun = fuzzysortHighlight(hoabunPossiblePreHLMatch, obj.h);
 
@@ -39,7 +39,7 @@ export function parseFuzzySortResultsForRender(
                 pojInput,
                 hoabun,
                 pojNormalized,
-                english,
+                definition,
             } as SearchResultEntry;
         })
     return currentResultsElements;

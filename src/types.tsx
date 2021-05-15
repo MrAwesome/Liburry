@@ -39,7 +39,7 @@ interface Prepared {
 // NOTE: The keys for searchable text are so small to reduce the
 //       JSON file size (full length keys add >2MB to the filesize)
 export interface RawJSONEntry extends Object {
-    readonly e: string, // English
+    readonly e: string, // Definition
     readonly p: string, // POJ Unicode
     readonly n: string, // Normalized POJ
     readonly h: string, // Chinese Characters
@@ -62,14 +62,9 @@ export interface PreparedSearchableEntry extends Object {
 
     readonly d: number,
 
+    // Ideal:
     //    readonly [POJ_UNICODE_SHORTNAME: string]: string,
     //    [POJ_UNICODE_PREPPED_KEY as string]: Prepared,
-    //    readonly [POJ_NORMALIZED_SHORTNAME]: string,
-    //    [POJ_NORMALIZED_PREPPED_KEY]: Prepared,
-    //    readonly [ENGLISH_SHORTNAME]: string,
-    //    [ENGLISH_PREPPED_KEY]: Prepared,
-    //    readonly [HOABUN_SHORTNAME]: string,
-    //    [HOABUN_PREPPED_KEY]: Prepared,
 }
 
 // fuzzysort does not export types, so we have to recreate them {{{
@@ -120,5 +115,5 @@ export interface SearchResultEntry {
     pojInput: string;
     hoabun: string;
     pojNormalized: string;
-    english: string;
+    definition: string;
 }
