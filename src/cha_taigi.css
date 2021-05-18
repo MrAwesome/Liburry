@@ -106,6 +106,9 @@ mark {
 
 /* Old container look */
 .entry-container {
+    width: 100%;
+    box-sizing: border-box;
+
     padding-top: 3px;
     padding-bottom: 3px;
     padding-left: 5px;
@@ -118,6 +121,7 @@ mark {
 
     background: #fff1e5;
 }
+
 .entry-container:hover {
 /*    background: #eeffee;*/
     box-sizing: border-box;

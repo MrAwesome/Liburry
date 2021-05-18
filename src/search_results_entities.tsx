@@ -34,6 +34,8 @@ export function parseFuzzySortResultsForRender(
             // TODO: strongly type
             return {
                 key: dbName + "-" + rowID,
+                dbName,
+                dbSearchRanking: fuzzysortResult.score,
                 pojUnicodeText,
                 pojUnicode,
                 pojInput,

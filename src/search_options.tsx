@@ -45,6 +45,9 @@ function getFuzzyOpts(searchKeys: Array<string> = DEFAULT_SEARCH_KEYS): KeysOpti
     };
 }
 
+// TODO: include links to each DB's schema entry (use the fullname instead of the shortname)
+// https://github.com/ChhoeTaigi/ChhoeTaigiDatabase
+//
 export const DATABASES: Map<string, LangDB> = new Map([
     ["maryknoll",
         {

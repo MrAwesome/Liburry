@@ -69,7 +69,7 @@ class SearchWorkerHelper {
                 break;
             case "started":
                 this.log();
-                console.error("Attempted to search db before load!")
+                console.warn("Attempted to search db before load!")
                 break;
             case "uninitialized":
                 this.log();

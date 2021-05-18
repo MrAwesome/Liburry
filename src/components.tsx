@@ -1,7 +1,7 @@
 import * as React from "react";
 
 // TODO: determine if this import breaks one of Uncle Bob's rules
-import {PerDictResults} from './types';
+import {PerDictResults, SearchResultEntry} from './types';
 
 enum clickedOrder {
     NORMAL,
@@ -209,7 +209,7 @@ export class IntermediatePerDictResultsElements extends React.PureComponent<any,
     render() {
         const {perDictRes} = this.props;
         const {dbName, results}: PerDictResults = perDictRes;
-        const entries = results.map((entry) => <EntryContainer entry={entry} key={entry.key} />);
+        const entries = results.map((entry: SearchResultEntry) => <EntryContainer entry={entry} key={entry.key} />);
 
         return <div className="TODO-intermediate-results">
             <div className="TODO-db-header">{dbName}</div>

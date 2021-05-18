@@ -1,12 +1,12 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
 
-import {DebugArea, SearchBar, IntermediatePerDictResultsElements} from "./components";
+import {DebugArea, SearchBar, EntryContainer} from "./components";
 import debugConsole from "./debug_console";
 
 import "./cha_taigi.css";
 import "./menu.css";
-import {ChaTaigiState, ChaTaigiStateArgs, PerDictResults} from "./types";
+import {ChaTaigiState, ChaTaigiStateArgs, PerDictResults, SearchResultEntry} from "./types";
 import {DATABASES} from "./search_options";
 import {typeGuard} from "./typeguard";
 
@@ -234,7 +234,7 @@ class ChaTaigi extends React.Component<any, any> {
     }
 
     cancelOngoingSearch() {
-        this.searchInvalidations[mod(this.currentSearchIndex-1, this.searchInvalidations.length)] = true;
+        this.searchInvalidations[mod(this.currentSearchIndex - 1, this.searchInvalidations.length)] = true;
         this.searchWorkers.forEach(
             (worker, _) =>
                 worker.postMessage({command: "CANCEL"})
@@ -252,7 +252,7 @@ class ChaTaigi extends React.Component<any, any> {
             this.searchWorkers.forEach((worker, _) =>
                 worker.postMessage({command: "SEARCH", payload: {query, searchID: this.currentSearchIndex}}));
 
-            this.currentSearchIndex = mod(this.currentSearchIndex+1, this.searchInvalidations.length);
+            this.currentSearchIndex = mod(this.currentSearchIndex + 1, this.searchInvalidations.length);
             this.searchInvalidations[this.currentSearchIndex] = false;
         }
     }
@@ -263,16 +263,16 @@ class ChaTaigi extends React.Component<any, any> {
         // TODO: strengthen typing, find out why "undefined" can get passed from search results
         const allPerDictResults = [...currentResults.values()].filter(typeGuard);
 
-        const int = allPerDictResults.map(getRes);
-
         var shouldDisplayDebugArea = currentResults.size === 0;
         const dbg = shouldDisplayDebugArea ? <DebugArea loadedDBs={loadedDBs} /> : null;
+        const entries = getEntries(allPerDictResults);
+
         return (
             <div className="ChaTaigi">
                 <div className="non-menu">
                     <SearchBar ref={this.searchBar} onChange={onChange} />
                     <div className="search-area-buffer" />
-                    {int}
+                    {entries}
                     {dbg}
                 </div>
                 {this.menu()}
@@ -281,10 +281,23 @@ class ChaTaigi extends React.Component<any, any> {
     }
 }
 
-// TODO: remove intermediate hack
-// TODO: sort dictionaries by which has best result (temporary, until tagging individual results by dict)
-function getRes(perDictRes: PerDictResults) {
-    return <IntermediatePerDictResultsElements key={perDictRes.dbName} perDictRes={perDictRes} />;
+// TODO: clean up, include dict names/links
+function getEntries(perDictRes: PerDictResults[]): JSX.Element[] {
+    let entries: SearchResultEntry[] = [];
+
+    // Flatten out all results
+    perDictRes.forEach((perDict: PerDictResults) => {
+        perDict.results.forEach((entry: SearchResultEntry) => {
+            entries.push(entry);
+        });
+    });
+
+    entries.sort((a, b) => b.dbSearchRanking - a.dbSearchRanking);
+
+    const entryContainers = entries.map((entry) => <EntryContainer entry={entry} key={entry.key} />);
+
+    return entryContainers;
+    //return <IntermediatePerDictResultsElements key={perDictRes.dbName} perDictRes={perDictRes} />;
 }
 
 debugConsole.time("initToAllDB");

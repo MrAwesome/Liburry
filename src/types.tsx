@@ -4,6 +4,7 @@ export type DBName = string;
 export type DBFilename = string;
 export type JSONDBKey = string;
 export type SearchPreppedKey = string;
+export type DBSearchRanking = number;
 
 export interface LangDB {
     dbFilename: DBFilename,
@@ -110,6 +111,8 @@ export interface PerDictResults {
 
 export interface SearchResultEntry {
     key: string;
+    dbName: DBName;
+    dbSearchRanking: DBSearchRanking;
     pojUnicodeText: string;
     pojUnicode: string;
     pojInput: string;
