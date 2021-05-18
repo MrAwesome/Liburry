@@ -14,7 +14,7 @@ const CLICKED_STYLE = {
     "background": "#aaaaaa",
     //"transform": "rotate3d(2, -1, -1, -0.2turn)",
     "transition": "all 1s ease",
-    "border-radius": "5px",
+    "borderRadius": "5px",
 };
 
 const FADING_STYLE = {
@@ -39,7 +39,8 @@ export class EntryContainer extends React.PureComponent<any, any> {
 
     myOnClick(_: any) {
         // TODO: handle the case of being in a Chrome/Firefox desktop/mobile app
-        navigator.clipboard.writeText(this.props.pojUnicodeText);
+        const {pojUnicodeText} = this.props.entry;
+        navigator.clipboard.writeText(pojUnicodeText);
         this.setState({clicked: clickedOrder.CLICKED});
         setTimeout(this.fadeClicked, 500);
     }

@@ -54,6 +54,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
 // TODO(mid): replace "var" with "let"
+// TODO(mid): download progress indicators
 // TODO(mid): show per-db loading information
 // TODO(mid): re-trigger currently-ongoing search once db loads (see top of searchDB)
 // TODO(mid): keybinding for search (/)
@@ -90,6 +91,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(wishlist): dark and light themes
 // TODO(later): homepage
 // TODO(later): homepage WOTD
+// TODO(later): download CSVs, do initial processing via js, store in service worker (if possible?)
 // TODO(later): "show me random words"
 // TODO(later): include soatbeng/explanations
 // TODO(later): include alternates (very hard with maryknoll)
