@@ -120,6 +120,7 @@ mark {
     display: inline-block;
 
     background: #fff1e5;
+    position: relative;
 }
 
 .entry-container:hover {
@@ -187,6 +188,7 @@ mark {
 }
 
 .alt-text-container {
+    /* TODO: determine if float or absolute is better for these (see dbname below) */
     padding-right: 2px;
     padding-top: 2px;
 
@@ -223,6 +225,22 @@ mark {
     padding-left: 10px;
     font-style: italic;
 }
+
+.dbname-container {
+    font-size: 8px;
+    color: #777777;
+
+    position: absolute;
+    right: 5px;
+    bottom: 3px;
+}
+
+.dbname {
+    display: inline-block;
+    text-align: right;
+    text-transform: capitalize;
+}
+
 
 .db-loaded-states {
     display: flex;

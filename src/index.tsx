@@ -23,6 +23,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): chase down error causing duplicate search entries
 // TODO(urgent): debug and address firefox flash of blankness during font load
+// TODO(high): see if maryknoll has non-hoabun characters
 // TODO(high): show/search typing input
 // TODO(high): make fonts bigger across the board
 // TODO(high): asynchronous font loading: https://css-tricks.com/the-best-font-loading-strategies-and-how-to-execute-them/
@@ -85,10 +86,10 @@ import Worker from "worker-loader!./search.worker";
 // TODO(low): fix the default/preview text
 // TODO(low): check web.dev/measure
 // TODO(low): replace !some with every
-// TODO(wishlist): dark mode support
 // TODO(wishlist): "add to desktop" shortcut
 // TODO(wishlist): non-javascript support?
 // TODO(wishlist): dark and light themes
+// TODO(wishlist): engaging buttons - random words, random search, etc
 // TODO(later): homepage
 // TODO(later): homepage WOTD
 // TODO(later): download CSVs, do initial processing via js, store in service worker (if possible?)
@@ -100,6 +101,9 @@ import Worker from "worker-loader!./search.worker";
 // TODO(later): word similarity analysis, link to similar/possibly-related words (this could be added to the CSVs)
 // TODO(later): allow for entries to be marked incomplete/broken
 // TODO(later): link to ChhoeTaigi for entries
+// TODO(later): cross-reference noun classifiers across DBs (and noun status)
+// TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
+// TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
 //
 // Project: Hoabun definitions
 //      1) generalize "english" to definition

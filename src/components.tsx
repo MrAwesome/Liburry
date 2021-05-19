@@ -3,7 +3,7 @@ import * as React from "react";
 // TODO: determine if this import breaks one of Uncle Bob's rules
 import {PerDictResults, SearchResultEntry} from './types';
 
-enum clickedOrder {
+enum ClickedOrder {
     NORMAL,
     CLICKED,
     FADING,
@@ -22,12 +22,11 @@ const FADING_STYLE = {
     //"transform": "perspective(400px) translate3d(0em, 0em, -60px)",
 }
 
-// TODO: strongly type props by making it a SearchResultEntry
 export class EntryContainer extends React.PureComponent<any, any> {
     constructor(props: any) {
         super(props);
         this.state = {
-            clicked: clickedOrder.NORMAL,
+            clicked: ClickedOrder.NORMAL,
         }
         this.myOnClick = this.myOnClick.bind(this);
         this.fadeClicked = this.fadeClicked.bind(this);
@@ -37,21 +36,29 @@ export class EntryContainer extends React.PureComponent<any, any> {
         this.getAltTextContainers = this.getAltTextContainers.bind(this);
     }
 
+    getEntry(): SearchResultEntry {
+        return this.props.entry;
+    }
+
+    getClicked(): ClickedOrder {
+        return this.state.clicked;
+    }
+
     myOnClick(_: any) {
         // TODO: handle the case of being in a Chrome/Firefox desktop/mobile app
-        const {pojUnicodeText} = this.props.entry;
+        const {pojUnicodeText} = this.getEntry();
         navigator.clipboard.writeText(pojUnicodeText);
-        this.setState({clicked: clickedOrder.CLICKED});
+        this.setState({clicked: ClickedOrder.CLICKED});
         setTimeout(this.fadeClicked, 500);
     }
 
     fadeClicked() {
-        this.setState({clicked: clickedOrder.FADING});
+        this.setState({clicked: ClickedOrder.FADING});
         setTimeout(this.resetClicked, 500);
     }
 
     resetClicked() {
-        this.setState({clicked: clickedOrder.NORMAL});
+        this.setState({clicked: ClickedOrder.NORMAL});
     }
 
     clickedNotif() {
@@ -59,11 +66,11 @@ export class EntryContainer extends React.PureComponent<any, any> {
     }
 
     fadingStyle(): object {
-        const {clicked} = this.state;
+        const clicked = this.getClicked();
         switch (clicked) {
-            case clickedOrder.CLICKED:
+            case ClickedOrder.CLICKED:
                 return CLICKED_STYLE;
-            case clickedOrder.FADING:
+            case ClickedOrder.FADING:
                 return FADING_STYLE;
             default:
                 return {};
@@ -71,7 +78,7 @@ export class EntryContainer extends React.PureComponent<any, any> {
     }
 
     getAltTextContainers(): JSX.Element[] {
-        const {pojNormalized, pojInput} = this.props.entry;
+        const {pojNormalized, pojInput} = this.getEntry();
         var altTextContainers = [];
 
         if (pojInput !== null) {
@@ -104,9 +111,8 @@ export class EntryContainer extends React.PureComponent<any, any> {
     }
 
     render() {
-        // TODO: make strongly-typed
-        const {pojUnicode, definition, hoabun} = this.props.entry;
-        const {clicked} = this.state;
+        const {pojUnicode, definition, hoabun, dbName} = this.getEntry();
+        const clicked = this.getClicked();
 
         const poju = this.createMatchElement(pojUnicode, "poj-unicode");
         const hoab = this.createMatchElement(hoabun, "hoabun");
@@ -130,6 +136,12 @@ export class EntryContainer extends React.PureComponent<any, any> {
 
                 <div className="definition-container">
                     {engl}
+                </div>
+
+                <div className="dbname-container">
+                    <div className="dbname">
+                        {dbName}
+                    </div>
                 </div>
 
                 {clicked ? this.clickedNotif() : null}
