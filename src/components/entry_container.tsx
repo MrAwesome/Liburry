@@ -1,6 +1,7 @@
 import * as React from "react";
 
-import {SearchResultEntry} from '../types';
+import {DEBUG_MODE} from "../debug_console";
+import {SearchResultEntry} from "../types";
 
 enum ClickedOrder {
     NORMAL,
@@ -44,7 +45,6 @@ export class EntryContainer extends React.PureComponent<any, any> {
     }
 
     myOnClick(_: any) {
-        // TODO: handle the case of being in a Chrome/Firefox desktop/mobile app
         const {pojUnicodeText} = this.getEntry();
         navigator.clipboard.writeText(pojUnicodeText);
         this.setState({clicked: ClickedOrder.CLICKED});
@@ -103,10 +103,19 @@ export class EntryContainer extends React.PureComponent<any, any> {
     }
 
     // FIXME(https://github.com/farzher/fuzzysort/issues/66)
-    createMatchElement(inputText: string, className: string) {
+    createMatchElement(inputText: string, className: string): JSX.Element {
         const rawHtml = {__html: inputText};
         return <span className={className} dangerouslySetInnerHTML={rawHtml}></span>;
 
+    }
+
+    getSearchScore(): JSX.Element {
+        const {dbSearchRanking} = this.getEntry();
+        return <div className="searchscore-container">
+            <div className="searchscore">
+                {dbSearchRanking}
+            </div>
+        </div>
     }
 
     render() {
@@ -116,6 +125,7 @@ export class EntryContainer extends React.PureComponent<any, any> {
         const poju = this.createMatchElement(pojUnicode, "poj-unicode");
         const hoab = this.createMatchElement(hoabun, "hoabun");
         const engl = this.createMatchElement(definition, "definition");
+
 
         return (
             // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
@@ -141,6 +151,8 @@ export class EntryContainer extends React.PureComponent<any, any> {
                         {dbName}
                     </div>
                 </div>
+
+                {DEBUG_MODE ? this.getSearchScore() : null}
 
                 {clicked ? this.clickedNotif() : null}
             </div>

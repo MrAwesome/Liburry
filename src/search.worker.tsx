@@ -1,4 +1,4 @@
-import debugConsole from "./debug_console";
+import {getWorkerDebugConsole, StubConsole} from "./debug_console";
 import type {LangDB, DBName, SearchableDict, PerDictResults} from "./types";
 import {fetchDB} from "./dictionary_handling";
 import {OngoingSearch, searchDB} from "./search";
@@ -16,9 +16,13 @@ type WorkerInitializedState =
 
 class SearchWorkerHelper {
     state: WorkerInitializedState = {init: "uninitialized"};
+    debug: boolean = false;
+    console: StubConsole = getWorkerDebugConsole(false);
 
-    start(dbName: DBName, langDB: LangDB) {
+    start(dbName: DBName, langDB: LangDB, debug: boolean) {
         this.state = {init: "started", dbName: dbName, langDB: langDB};
+        this.console = getWorkerDebugConsole(debug);
+        this.debug = debug;
         // TODO: send message back for start, to avoid race?
     }
 
@@ -26,7 +30,7 @@ class SearchWorkerHelper {
         if (this.state.init === "started") {
             const dbName = this.state.dbName;
             const langDB = this.state.langDB;
-            fetchDB(dbName, langDB).then(
+            fetchDB(dbName, langDB, this.debug).then(
                 (searchableDict) => {
                     this.state = {init: "loaded", db: searchableDict, dbName, langDB};
                     ctx.postMessage({resultType: "DB_LOAD_SUCCESS", payload: {dbName}});
@@ -44,7 +48,7 @@ class SearchWorkerHelper {
                 this.search(query, searchID);
                 break;
             case "loaded":
-                const ongoingSearch = searchDB(this.state.db, query);
+                const ongoingSearch = searchDB(this.state.db, query, this.debug);
                 const dbName = this.state.dbName;
                 if (ongoingSearch !== null) {
                     const originalState = this.state;
@@ -87,7 +91,7 @@ class SearchWorkerHelper {
     }
 
     log() {
-        debugConsole.log(this);
+        this.console.log(this);
     }
 }
 
@@ -100,8 +104,8 @@ ctx.addEventListener("message", (e) => {
     const payload = e.data.payload;
     switch (command) {
         case "INIT":
-            const {dbName, langDB} = payload;
-            sw.start(dbName, langDB);
+            const {dbName, langDB, debug} = payload;
+            sw.start(dbName, langDB, debug);
             break;
         case "LOAD_DB":
             sw.loadDB();

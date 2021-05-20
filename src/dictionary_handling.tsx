@@ -1,13 +1,15 @@
 import fuzzysort from "fuzzysort";
 
-import debugConsole from "./debug_console"
+import {getWorkerDebugConsole} from "./debug_console"
 import {LangDB, RawJSONEntry, SearchableDict, PreparedSearchableEntry} from "./types";
 
 export async function fetchDB(
     dbName: string,
     langDB: LangDB,
+    debug: boolean,
     ): Promise<SearchableDict> {
 
+    const debugConsole = getWorkerDebugConsole(debug);
     const {dbFilename, shortNameToPreppedNameMapping} = langDB;
     debugConsole.time("fetch-" + dbName);
     return fetch(dbFilename)

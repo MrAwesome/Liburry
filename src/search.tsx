@@ -1,4 +1,4 @@
-import debugConsole from "./debug_console";
+import {getWorkerDebugConsole, StubConsole} from "./debug_console";
 import {DBName, CancelablePromise, SearchableDict, PerDictResults} from "./types";
 import fuzzysort from "fuzzysort";
 import {parseFuzzySortResultsForRender} from "./search_results_entities";
@@ -12,9 +12,11 @@ export class OngoingSearch<T> {
     parsePromise?: Promise<T>;
     completed: boolean;
     wasCanceled: boolean = false;
+    console: StubConsole;
 
-    constructor(dbName: DBName, query: string = "", cancelablePromise?: CancelablePromise<any>, parsePromise?: Promise<T>) {
-        debugConsole.time("asyncSearch-" + dbName);
+    constructor(dbName: DBName, query: string = "", debug: boolean, cancelablePromise?: CancelablePromise<any>, parsePromise?: Promise<T>) {
+        this.console = getWorkerDebugConsole(debug);
+        this.console.time("asyncSearch-" + dbName);
         this.query = query;
         this.dbName = dbName;
 
@@ -37,7 +39,7 @@ export class OngoingSearch<T> {
 
     markCompleted(): void {
         this.completed = true;
-        debugConsole.timeEnd("asyncSearch-" + this.dbName);
+        this.console.timeEnd("asyncSearch-" + this.dbName);
     }
 
     markCanceled(): void {
@@ -61,7 +63,9 @@ export class OngoingSearch<T> {
 export function searchDB(
     searchableDict: SearchableDict | null,
     query: string,
+    debug: boolean,
 ): OngoingSearch<PerDictResults> | null {
+    const debugConsole = getWorkerDebugConsole(debug);
     // TODO: re-trigger currently-ongoing search once db loads?
     if (searchableDict === null) {
         return null;
@@ -103,9 +107,11 @@ export function searchDB(
                 results
             } as PerDictResults;
         }
-    ).catch(debugConsole.log);
+    );
 
-    const ongoingSearch = new OngoingSearch(dbName, query, cancelableSearchPromise, parsePromise);
+    parsePromise.catch(debugConsole.log);
+
+    const ongoingSearch = new OngoingSearch(dbName, query, debug, cancelableSearchPromise, parsePromise);
 
     return ongoingSearch;
 }

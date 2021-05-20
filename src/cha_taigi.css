@@ -241,6 +241,20 @@ mark {
     text-transform: capitalize;
 }
 
+.searchscore-container {
+    font-size: 8px;
+    color: #555555;
+
+    position: absolute;
+    right: 5px;
+    bottom: 14px;
+}
+
+.searchscore {
+    display: inline-block;
+    text-align: right;
+    text-transform: capitalize;
+}
 
 .db-loaded-states {
     display: flex;
