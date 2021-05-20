@@ -62,7 +62,7 @@ export const DATABASES: Map<string, LangDB> = new Map([
         {
             dbFilename: "/db/embree.json",
             dbFullname: "ChhoeTaigi_EmbreeTaiengSutian",
-            dbDescLink: "${CTD}#4-1973-embree%E5%8F%B0%E8%8B%B1%E8%BE%AD%E5%85%B8",
+            dbDescLink: `${CTD}#4-1973-embree%E5%8F%B0%E8%8B%B1%E8%BE%AD%E5%85%B8`,
             shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,
             searchKeys: DEFAULT_SEARCH_KEYS,
             fuzzyOpts: getFuzzyOpts(),
@@ -71,7 +71,7 @@ export const DATABASES: Map<string, LangDB> = new Map([
         {
             dbFilename: "/db/giku.json",
             dbFullname: "ChhoeTaigi_TaioanPehoeKichhooGiku",
-            dbDescLink: "${CTD}#8-1956-%E5%8F%B0%E7%81%A3%E7%99%BD%E8%A9%B1%E5%9F%BA%E7%A4%8E%E8%AA%9E%E5%8F%A5",
+            dbDescLink: `${CTD}#8-1956-%E5%8F%B0%E7%81%A3%E7%99%BD%E8%A9%B1%E5%9F%BA%E7%A4%8E%E8%AA%9E%E5%8F%A5`,
             shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,
             searchKeys: DEFAULT_SEARCH_KEYS,
             fuzzyOpts: getFuzzyOpts(),
