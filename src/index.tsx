@@ -1,7 +1,8 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
 
-import {DebugArea, SearchBar, EntryContainer} from "./components";
+import {DebugArea, SearchBar} from "./components/components";
+import {EntryContainer} from "./components/entry_container";
 import debugConsole from "./debug_console";
 
 import "./cha_taigi.css";
@@ -55,6 +56,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): keyboard shortcuts
 // TODO(mid): replace "var" with "let"
+// TODO(mid): split maryknoll into multiple pieces?
 // TODO(mid): download progress indicators
 // TODO(mid): show per-db loading information
 // TODO(mid): re-trigger currently-ongoing search once db loads (see top of searchDB)
@@ -143,8 +145,8 @@ class ChaTaigi extends React.Component<any, any> {
         this.resetSearch = this.resetSearch.bind(this);
         this.setStateTyped = this.setStateTyped.bind(this);
         this.getStateTyped = this.getStateTyped.bind(this);
-        this.registerAllDBsLoadedSuccessfully = this.registerAllDBsLoadedSuccessfully.bind(this);
         this.cancelOngoingSearch = this.cancelOngoingSearch.bind(this);
+        this.searchWorkerReply = this.searchWorkerReply.bind(this);
         this.menu = this.menu.bind(this);
     }
 
@@ -158,6 +160,10 @@ class ChaTaigi extends React.Component<any, any> {
 
     componentDidMount() {
         console.timeLog("initToAllDB", "componentDidMount");
+        if (this.searchBar.current) {
+            this.searchBar.current.textInput.current.focus();
+        }
+
         for (let [dbName, langDB] of DATABASES) {
             const worker = new Worker();
             this.searchWorkers.set(
@@ -165,55 +171,47 @@ class ChaTaigi extends React.Component<any, any> {
                 worker,
             );
 
-            // TODO: find a better place for this sort of logic to live?
-            // (next to the search worker in another file, and pass a callback for this to use to append results?)
-            worker.onmessage = (e) => {
-                const rt = e.data.resultType;
-                const payload = e.data.payload;
-                switch (rt) {
-                    case "SEARCH_SUCCESS": {
-                        let {results, dbName, searchID} = payload;
-                        debugConsole.time("searchRender-" + dbName);
-                        if (!this.searchInvalidations[searchID]) {
-                            this.setStateTyped((state) => {
-                                return state.currentResults.set(dbName, results);
-                            });
-                        }
-                        debugConsole.timeEnd("searchRender-" + dbName);
-                    }
-                        break;
-                    case "DB_LOAD_SUCCESS": {
-                        let {dbName} = payload;
-                        debugConsole.time("dbLoadRender-" + dbName);
-                        this.setStateTyped((state) => {
-                            return state.loadedDBs.set(dbName, true);
-                        });
-                        debugConsole.timeEnd("dbLoadRender-" + dbName);
-                        // TODO: Can this have a race with the above because of passing in a function?
-                        if (!Array.from(this.state.loadedDBs.values()).some(x => !x)) {
-                            this.registerAllDBsLoadedSuccessfully();
-                        }
-                    }
-                        break;
-                }
-            };
-
+            worker.onmessage = this.searchWorkerReply;
 
             worker.postMessage({command: "INIT", payload: {dbName, langDB}});
             worker.postMessage({command: "LOAD_DB"});
         }
     }
 
+    searchWorkerReply(e: MessageEvent<any>) {
+        const rt = e.data.resultType;
+        const payload = e.data.payload;
+        switch (rt) {
+            case "SEARCH_SUCCESS": {
+                let {results, dbName, searchID} = payload;
+                debugConsole.time("searchRender-" + dbName);
+                if (!this.searchInvalidations[searchID]) {
+                    this.setStateTyped((state) => {
+                        return state.currentResults.set(dbName, results);
+                    });
+                }
+                debugConsole.timeEnd("searchRender-" + dbName);
+            }
+                break;
+            case "DB_LOAD_SUCCESS": {
+                let {dbName} = payload;
+                debugConsole.time("dbLoadRender-" + dbName);
+                this.setStateTyped((state) => {
+                    return state.loadedDBs.set(dbName, true);
+                });
+                debugConsole.timeEnd("dbLoadRender-" + dbName);
 
-    registerAllDBsLoadedSuccessfully() {
-        debugConsole.log("All databases loaded!")
-        debugConsole.timeEnd("initToAllDB");
-        debugConsole.time("allDBRegister");
-        if (this.searchBar.current) {
-            this.searchBar.current.textInput.current.focus();
-            this.searchQuery();
+                this.searchQuery();
+
+                if (!Array.from(this.state.loadedDBs.values()).some(x => !x)) {
+                    debugConsole.log("All databases loaded!");
+                    debugConsole.timeEnd("initToAllDB");
+                }
+            }
+                break;
+            default:
+                console.warn("Received unknown message from search worker!", e);
         }
-        debugConsole.timeEnd("allDBRegister");
     }
 
     onChange(e: any) {

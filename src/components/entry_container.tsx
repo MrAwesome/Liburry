@@ -1,7 +1,6 @@
 import * as React from "react";
 
-// TODO: determine if this import breaks one of Uncle Bob's rules
-import {PerDictResults, SearchResultEntry} from './types';
+import {SearchResultEntry} from '../types';
 
 enum ClickedOrder {
     NORMAL,
@@ -118,9 +117,8 @@ export class EntryContainer extends React.PureComponent<any, any> {
         const hoab = this.createMatchElement(hoabun, "hoabun");
         const engl = this.createMatchElement(definition, "definition");
 
-        // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
         return (
-            // TODO: just change style, instead of changing className
+            // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
             <div className="entry-container" style={this.fadingStyle()} onClick={this.myOnClick}>
                 <div className="alt-text-container">
                     {this.getAltTextContainers()}
@@ -148,86 +146,5 @@ export class EntryContainer extends React.PureComponent<any, any> {
             </div>
         );
     };
-}
-
-export class ResultsArea extends React.PureComponent<any, any> {
-    render() {
-        const {results} = this.props;
-        let resContainers = (results as Array<PerDictResults>).map(
-            (perDictRes) => <IntermediatePerDictResultsElements key={perDictRes.dbName} perDictRes={perDictRes} />);
-        return <>
-            {resContainers}
-        </>;
-    }
-}
-
-export class SearchBar extends React.Component<any, any> {
-    textInput: React.RefObject<any>;
-    constructor(props: any) {
-        super(props);
-        this.textInput = React.createRef();
-    }
-
-    componentDidMount() {
-        this.textInput.current.focus();
-    }
-
-    render() {
-        const {onChange} = this.props;
-        return <div className="search-bar">
-            <input
-                autoFocus
-                type="text"
-                ref={this.textInput}
-                placeholder="Search..."
-                onChange={onChange} />
-            <svg aria-hidden="true" className="mag-glass" ><path d="M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z"></path></svg>
-        </div>
-    }
-}
-
-function DBLoadedState({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
-    var states: JSX.Element[] = [];
-    loadedDBs.forEach((db, dbName) => {
-        const isLoaded = (db === null) || (db === false);
-        const loadedString = isLoaded ? "⌛" : "✅";
-        const borderStyleColor = isLoaded ? "red" : "green";
-        const backgroundColor = isLoaded ? "pink" : "white";
-        const loadedStatusStyle = {
-            "border": `1px ${borderStyleColor} solid`,
-            "background": backgroundColor,
-        };
-
-        const entryDiv = <div className="db-loaded-entry" key={dbName} style={loadedStatusStyle} >
-            <span className="db-loaded-entry-name">{dbName}: </span>
-            <span className="db-loaded-entry-isloaded">
-                {loadedString}
-            </span>
-        </div>;
-        states.push(entryDiv);
-    });
-    return <div className="db-loaded-states">{states}</div>
-
-}
-
-export function DebugArea({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
-    return <div className="debug-area">
-        <DBLoadedState loadedDBs={loadedDBs} />
-    </div>
-}
-
-
-export class IntermediatePerDictResultsElements extends React.PureComponent<any, any> {
-    render() {
-        const {perDictRes} = this.props;
-        const {dbName, results}: PerDictResults = perDictRes;
-        const entries = results.map((entry: SearchResultEntry) => <EntryContainer entry={entry} key={entry.key} />);
-
-        return <div className="TODO-intermediate-results">
-            <div className="TODO-db-header">{dbName}</div>
-            {entries}
-        </div>
-        //return <> {entries} </>;
-    }
 }
 
