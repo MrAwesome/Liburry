@@ -1,5 +1,7 @@
 import {JSONDBKey, KeysOptions, LangDB, SearchPreppedKey} from "./types";
 
+// HACK to allow web worker loader to work:
+// https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/24#issuecomment-672853561
 (global as any).$RefreshReg$ = () => {};
 (global as any).$RefreshSig$$ = () => () => {};
 
@@ -45,28 +47,31 @@ function getFuzzyOpts(searchKeys: Array<string> = DEFAULT_SEARCH_KEYS): KeysOpti
     };
 }
 
-// TODO: include links to each DB's schema entry (use the fullname instead of the shortname)
-// https://github.com/ChhoeTaigi/ChhoeTaigiDatabase
-//
+const CTD = "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/blob/master/README.md";
 export const DATABASES: Map<string, LangDB> = new Map([
     ["maryknoll",
         {
-            "dbFilename": "/db/maryknoll.json",
+            dbFilename: "/db/maryknoll.json",
+            dbFullname: "ChhoeTaigi_MaryknollTaiengSutian",
+            dbDescLink: `${CTD}#3-1976-maryknoll%E5%8F%B0%E8%8B%B1%E8%BE%AD%E5%85%B8`,
             shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,
             searchKeys: DEFAULT_SEARCH_KEYS,
             fuzzyOpts: getFuzzyOpts(),
         }],
     ["embree",
         {
-            "dbFilename": "/db/embree.json",
+            dbFilename: "/db/embree.json",
+            dbFullname: "ChhoeTaigi_EmbreeTaiengSutian",
+            dbDescLink: "${CTD}#4-1973-embree%E5%8F%B0%E8%8B%B1%E8%BE%AD%E5%85%B8",
             shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,
             searchKeys: DEFAULT_SEARCH_KEYS,
             fuzzyOpts: getFuzzyOpts(),
         }],
     ["giku",
         {
-        // F
-            "dbFilename": "/db/giku.json",
+            dbFilename: "/db/giku.json",
+            dbFullname: "ChhoeTaigi_TaioanPehoeKichhooGiku",
+            dbDescLink: "${CTD}#8-1956-%E5%8F%B0%E7%81%A3%E7%99%BD%E8%A9%B1%E5%9F%BA%E7%A4%8E%E8%AA%9E%E5%8F%A5",
             shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,
             searchKeys: DEFAULT_SEARCH_KEYS,
             fuzzyOpts: getFuzzyOpts(),

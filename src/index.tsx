@@ -53,7 +53,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(high): let spaces match hyphens and vice-versa
 // TODO(high): investigate more performant search solutions (lunr, jssearch, etc)
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
-// TODO(high): remove parentheses from unicode, treat as separate results, chomp each result
+// TODO(high): keyboard shortcuts
 // TODO(mid): replace "var" with "let"
 // TODO(mid): download progress indicators
 // TODO(mid): show per-db loading information
@@ -94,6 +94,8 @@ import Worker from "worker-loader!./search.worker";
 // TODO(later): homepage WOTD
 // TODO(later): download CSVs, do initial processing via js, store in service worker (if possible?)
 // TODO(later): "show me random words"
+// TODO(later): "show me words of this particular word type" (see "abbreviations" field in embree)
+// TODO(later): use embree noun classifier / word type in other dbs
 // TODO(later): include soatbeng/explanations
 // TODO(later): include alternates (very hard with maryknoll)
 // TODO(later): remove parentheticals from maryknoll entries
@@ -102,10 +104,11 @@ import Worker from "worker-loader!./search.worker";
 // TODO(later): allow for entries to be marked incomplete/broken
 // TODO(later): link to ChhoeTaigi for entries
 // TODO(later): cross-reference noun classifiers across DBs (and noun status)
+// TODO(later): accessibility? what needs to be done? link to POJ screen readers?
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
 //
-// Project: Hoabun definitions
+// Project: Taibun definitions
 //      1) generalize "english" to definition
 //      2) solidify transitional schema (soatbeng? or save that for later?) (hoabun vs hanlo_taibun_poj?)
 //      3) modify build script to generate json files
