@@ -5,9 +5,6 @@ import debugConsole from "./debug_console";
 import {ChaTaigi} from "./ChaTaigi";
 
 import "./cha_taigi.css";
-import "./menu.css";
-
-//import {ChaMenu} from "./cha_menu";
 
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 //import reportWebVitals from "./reportWebVitals";

@@ -23,7 +23,6 @@ import Worker from "worker-loader!./search.worker";
 // TODO(high): make fonts bigger across the board
 // TODO(high): asynchronous font loading: https://css-tricks.com/the-best-font-loading-strategies-and-how-to-execute-them/
 // TODO(high): let hyphens and spaces be interchangeable in search
-// TODO(high): focus search bar on load -> enter typing mode (autofocus is working, so some re-render seems to be taking away focus) (react-burger-menu seems to steal focus?)
 // TODO(high): migrate to tsx cra with service worker (see ~/my-app)
 // TODO(high): come up with a more elegant/extensible way of transforming a db entry into elements to be displayed
 // TODO(high): change name to chaa5_taigi (chhâ)
@@ -78,6 +77,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(low): fix the default/preview text
 // TODO(low): check web.dev/measure
 // TODO(low): replace !some with every
+// TODO(low): 'X' button for clearing search
 // TODO(wishlist): "add to desktop" shortcut
 // TODO(wishlist): non-javascript support?
 // TODO(wishlist): dark and light themes
@@ -100,8 +100,13 @@ import Worker from "worker-loader!./search.worker";
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
 //
+// Project: Stateful non-search area
+//      1) Clean up menu code
+//      2) Make area disappear during search, but maintain its current state (aka have a non-search-results entity)
+//      3) Determine which areas to add and what they will look like
+//
 // Project: Taibun definitions
-//      1) generalize "english" to definition
+//      1) DONE: generalize "english" to definition
 //      2) solidify transitional schema (soatbeng? or save that for later?) (hoabun vs hanlo_taibun_poj?)
 //      3) modify build script to generate json files
 //      4) create schemas under current model
@@ -137,7 +142,6 @@ export class ChaTaigi extends React.Component<any, any> {
         this.getStateTyped = this.getStateTyped.bind(this);
         this.cancelOngoingSearch = this.cancelOngoingSearch.bind(this);
         this.searchWorkerReply = this.searchWorkerReply.bind(this);
-        this.menu = this.menu.bind(this);
     }
 
     setStateTyped(state: ChaTaigiStateArgs<PerDictResults | null> | ((prevState: ChaTaigiState<PerDictResults | null>) => any)) {
@@ -213,12 +217,6 @@ export class ChaTaigi extends React.Component<any, any> {
         this.searchQuery();
     }
 
-    menu() {
-        // TODO: performance testing
-        return null;
-        //return <ChaMenu />;
-    }
-
     resetSearch() {
         this.query = "";
 
@@ -269,7 +267,6 @@ export class ChaTaigi extends React.Component<any, any> {
                     {entries}
                     {dbg}
                 </div>
-                {this.menu()}
             </div>
         );
     }
