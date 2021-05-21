@@ -1,8 +1,8 @@
 import * as React from "react";
 
-import {DebugArea, SearchBar} from "./components/components";
+import {AboutPage, DebugArea, SearchBar} from "./components/components";
 import {EntryContainer} from "./components/entry_container";
-import {ChaTaigiState, ChaTaigiStateArgs, PerDictResults, SearchResultEntry} from "./types";
+import {DBName, PerDictResults, SearchResultEntry} from "./types";
 import {DATABASES} from "./search_options";
 import {typeGuard} from "./typeguard";
 import {mod} from './utils';
@@ -114,6 +114,62 @@ import Worker from "worker-loader!./search.worker";
 //      6) test performance
 //      7) create settings page with language toggle?
 
+enum MainDisplayAreaMode {
+    DEFAULT,
+    SEARCH,
+    ABOUT,
+    CONTACT,
+    SETTINGS,
+}
+
+class ResultsHolder {
+    currentResults: Map<DBName, PerDictResults> = new Map();
+    numResults: number = 0;
+
+    addResults(res: PerDictResults): this {
+        this.currentResults.set(res.dbName, res);
+        this.numResults += res.results.length;
+        return this;
+    }
+
+    clear(): this {
+        this.currentResults = new Map();
+        this.numResults = 0;
+        return this;
+    }
+
+    getNumResults(): number {
+        return this.numResults;
+    }
+
+    getAllResults(): SearchResultEntry[] {
+        let allPerDictRes = Array.from(this.currentResults.values()).filter(typeGuard) as PerDictResults[];
+
+        let entries: SearchResultEntry[] = [];
+
+        // Flatten out all results
+        allPerDictRes.forEach((perDict: PerDictResults) => {
+            perDict.results.forEach((entry: SearchResultEntry) => {
+                entries.push(entry);
+            });
+        });
+
+        // TODO: Sort on add? Sort first in worker?
+        entries.sort((a, b) => b.dbSearchRanking - a.dbSearchRanking);
+
+        return entries;
+    }
+}
+
+export interface ChaTaigiState {
+    resultsHolder: ResultsHolder,
+    loadedDBs: Map<DBName, boolean>,
+}
+
+export interface ChaTaigiStateArgs {
+    resultsHolder?: ResultsHolder,
+    loadedDBs?: Map<DBName, boolean>,
+}
 
 export class ChaTaigi extends React.Component<any, any> {
     searchBar: React.RefObject<SearchBar>;
@@ -127,8 +183,8 @@ export class ChaTaigi extends React.Component<any, any> {
     constructor(props: any) {
         super(props);
         this.state = {
-            currentResults: new Map(),
             loadedDBs: new Map(),
+            resultsHolder: new ResultsHolder(),
         };
 
         DATABASES.forEach((_, dbName) => {this.state.loadedDBs.set(dbName, false)});
@@ -142,14 +198,16 @@ export class ChaTaigi extends React.Component<any, any> {
         this.getStateTyped = this.getStateTyped.bind(this);
         this.cancelOngoingSearch = this.cancelOngoingSearch.bind(this);
         this.searchWorkerReply = this.searchWorkerReply.bind(this);
+        this.mainDisplayArea = this.mainDisplayArea.bind(this);
+        this.determineMainDisplayAreaMode = this.determineMainDisplayAreaMode.bind(this);
     }
 
-    setStateTyped(state: ChaTaigiStateArgs<PerDictResults | null> | ((prevState: ChaTaigiState<PerDictResults | null>) => any)) {
+    setStateTyped(state: ChaTaigiStateArgs | ((prevState: ChaTaigiState) => any)) {
         this.setState(state)
     }
 
-    getStateTyped(): ChaTaigiState<PerDictResults | null> {
-        return this.state as ChaTaigiState<PerDictResults | null>;
+    getStateTyped(): ChaTaigiState {
+        return this.state as ChaTaigiState;
     }
 
     componentDidMount() {
@@ -180,9 +238,7 @@ export class ChaTaigi extends React.Component<any, any> {
                 let {results, dbName, searchID} = payload;
                 debugConsole.time("searchRender-" + dbName);
                 if (!this.searchInvalidations[searchID]) {
-                    this.setStateTyped((state) => {
-                        return state.currentResults.set(dbName, results);
-                    });
+                    this.setStateTyped((state) => state.resultsHolder.addResults(results));
                 }
                 debugConsole.timeEnd("searchRender-" + dbName);
             }
@@ -190,9 +246,7 @@ export class ChaTaigi extends React.Component<any, any> {
             case "DB_LOAD_SUCCESS": {
                 let {dbName} = payload;
                 debugConsole.time("dbLoadRender-" + dbName);
-                this.setStateTyped((state) => {
-                    return state.loadedDBs.set(dbName, true);
-                });
+                this.setStateTyped((state) => state.loadedDBs.set(dbName, true));
                 debugConsole.timeEnd("dbLoadRender-" + dbName);
 
                 this.searchQuery();
@@ -219,11 +273,7 @@ export class ChaTaigi extends React.Component<any, any> {
 
     resetSearch() {
         this.query = "";
-
-        this.setStateTyped((state) => {
-            state.currentResults.clear();
-            return state;
-        });
+        this.setStateTyped((state) => state.resultsHolder.clear());
     }
 
     cancelOngoingSearch() {
@@ -250,42 +300,55 @@ export class ChaTaigi extends React.Component<any, any> {
         }
     }
 
+    getEntries(): JSX.Element {
+        const {resultsHolder} = this.getStateTyped();
+        const entries = resultsHolder.getAllResults();
+
+        const entryContainers = entries.map((entry) => <EntryContainer entry={entry} key={entry.key} />);
+
+        return <>{entryContainers}</>;
+    }
+
+    determineMainDisplayAreaMode(): MainDisplayAreaMode {
+        const {resultsHolder} = this.getStateTyped();
+
+
+        if (resultsHolder.getNumResults() > 0) {
+            return MainDisplayAreaMode.SEARCH;
+        }
+
+        return MainDisplayAreaMode.DEFAULT;
+    }
+
+    mainDisplayArea(mode: MainDisplayAreaMode): JSX.Element {
+        switch (mode) {
+            case MainDisplayAreaMode.SEARCH:
+                return this.getEntries();
+            case MainDisplayAreaMode.ABOUT:
+                return <AboutPage />;
+            default:
+                return this.mainAreaDefaultView();
+        }
+    }
+
+    // TODO: Create individual components for these if necessary
+    mainAreaDefaultView() {
+        const {loadedDBs} = this.getStateTyped();
+        return <>
+            <DebugArea loadedDBs={loadedDBs} />
+        </>
+    }
+
     render() {
         const {onChange} = this;
-        const {currentResults, loadedDBs} = this.getStateTyped();
-        const allPerDictResults = [...currentResults.values()].filter(typeGuard) as PerDictResults[];
-
-        var shouldDisplayDebugArea = currentResults.size === 0;
-        const dbg = shouldDisplayDebugArea ? <DebugArea loadedDBs={loadedDBs} /> : null;
-        const entries = getEntries(allPerDictResults);
+        const mainDisplayAreaMode = this.determineMainDisplayAreaMode();
 
         return (
             <div className="ChaTaigi">
-                <div className="non-menu">
-                    <SearchBar ref={this.searchBar} onChange={onChange} />
-                    <div className="search-area-buffer" />
-                    {entries}
-                    {dbg}
-                </div>
+                <SearchBar ref={this.searchBar} onChange={onChange} />
+                {this.mainDisplayArea(mainDisplayAreaMode)}
             </div>
         );
     }
-}
-
-function getEntries(perDictRes: PerDictResults[]): JSX.Element[] {
-    let entries: SearchResultEntry[] = [];
-
-    // Flatten out all results
-    perDictRes.forEach((perDict: PerDictResults) => {
-        perDict.results.forEach((entry: SearchResultEntry) => {
-            entries.push(entry);
-        });
-    });
-
-    entries.sort((a, b) => b.dbSearchRanking - a.dbSearchRanking);
-
-    const entryContainers = entries.map((entry) => <EntryContainer entry={entry} key={entry.key} />);
-
-    return entryContainers;
 }
 

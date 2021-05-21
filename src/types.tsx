@@ -1,5 +1,3 @@
-import {OngoingSearch} from "./search";
-
 export type DBName = string;
 export type DBFilename = string;
 export type JSONDBKey = string;
@@ -18,19 +16,6 @@ export interface SearchableDict {
     searchableEntries: Array<PreparedSearchableEntry>,
 }
 
-export interface ChaTaigiState<E> {
-    query: string,
-    currentResults: Map<DBName, E>,
-    ongoingSearches: Array<OngoingSearch<PerDictResults>>,
-    loadedDBs: Map<DBName, boolean>,
-}
-
-export interface ChaTaigiStateArgs<E> {
-    query?: string,
-    currentResults?: Map<DBName, E>,
-    ongoingSearches?: Array<OngoingSearch<PerDictResults>>,
-    loadedDBs?: Map<DBName, boolean>,
-}
 
 interface Prepared {
     // Original target string

@@ -13,7 +13,8 @@ export class SearchBar extends React.PureComponent<any, any> {
 
     render() {
         const {onChange} = this.props;
-        return <div className="search-bar">
+        return <>
+        <div className="search-bar">
             <input
                 autoFocus
                 type="text"
@@ -22,6 +23,8 @@ export class SearchBar extends React.PureComponent<any, any> {
                 onChange={onChange} />
             <svg aria-hidden="true" className="mag-glass" ><path d="M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z"></path></svg>
         </div>
+        <div className="search-area-buffer" />
+        </>
     }
 }
 
@@ -52,5 +55,13 @@ function DBLoadedState({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
 export function DebugArea({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
     return <div className="debug-area">
         <DBLoadedState loadedDBs={loadedDBs} />
+    </div>
+}
+
+export function AboutPage() {
+    return <div className="about-container">
+        <div className="about">
+            To see information about the databases used in this website, visit here: https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/
+        </div>
     </div>
 }
