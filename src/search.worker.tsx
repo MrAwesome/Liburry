@@ -12,7 +12,7 @@ type WorkerInitializedState =
     {init: "uninitialized"} |
     {init: "started", dbName: DBName, langDB: LangDB} |
     {init: "loaded", dbName: DBName, langDB: LangDB, db: SearchableDict} |
-    {init: "searching", dbName: DBName, langDB: LangDB, db: SearchableDict, ogs: OngoingSearch<PerDictResults>};
+    {init: "searching", dbName: DBName, langDB: LangDB, db: SearchableDict, ogs: OngoingSearch<PerDictResults | null>};
 
 class SearchWorkerHelper {
     state: WorkerInitializedState = {init: "uninitialized"};

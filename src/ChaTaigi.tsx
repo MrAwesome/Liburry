@@ -142,12 +142,12 @@ export class ChaTaigi extends React.Component<any, any> {
         this.menu = this.menu.bind(this);
     }
 
-    setStateTyped(state: ChaTaigiStateArgs<PerDictResults> | ((prevState: ChaTaigiState<PerDictResults>) => any)) {
+    setStateTyped(state: ChaTaigiStateArgs<PerDictResults | null> | ((prevState: ChaTaigiState<PerDictResults | null>) => any)) {
         this.setState(state)
     }
 
-    getStateTyped(): ChaTaigiState<PerDictResults> {
-        return this.state as ChaTaigiState<PerDictResults>;
+    getStateTyped(): ChaTaigiState<PerDictResults | null> {
+        return this.state as ChaTaigiState<PerDictResults | null>;
     }
 
     componentDidMount() {
@@ -257,9 +257,7 @@ export class ChaTaigi extends React.Component<any, any> {
     render() {
         const {onChange} = this;
         const {currentResults, loadedDBs} = this.getStateTyped();
-        // TODO: strengthen typing, find out why "undefined" can get passed from search results
-        // TODO TODO: try this again now that debugConsole.log is being caught correctly in search.tsx
-        const allPerDictResults = [...currentResults.values()].filter(typeGuard);
+        const allPerDictResults = [...currentResults.values()].filter(typeGuard) as PerDictResults[];
 
         var shouldDisplayDebugArea = currentResults.size === 0;
         const dbg = shouldDisplayDebugArea ? <DebugArea loadedDBs={loadedDBs} /> : null;

@@ -64,7 +64,7 @@ export function searchDB(
     searchableDict: SearchableDict | null,
     query: string,
     debug: boolean,
-): OngoingSearch<PerDictResults> | null {
+): OngoingSearch<PerDictResults | null> | null {
     const debugConsole = getWorkerDebugConsole(debug);
     // TODO: re-trigger currently-ongoing search once db loads?
     if (searchableDict === null) {
@@ -89,7 +89,7 @@ export function searchDB(
             // Filter out duplicates, as fuzzysort occasionally gives them to us and React loathes duplicate keys
             // TODO: Find out why this doesn't prevent the flash of warning text from react
             const seen = new Set();
-            const res = rawResults.filter(({ obj }) => {
+            const res = rawResults.filter(({obj}) => {
                 if (seen.has(obj.d)) {
                     return false;
                 }
@@ -107,9 +107,12 @@ export function searchDB(
                 results
             } as PerDictResults;
         }
+    ).catch(
+        (reason) => {
+            debugConsole.log(reason);
+            return null;
+        }
     );
-
-    parsePromise.catch(debugConsole.log);
 
     const ongoingSearch = new OngoingSearch(dbName, query, debug, cancelableSearchPromise, parsePromise);
 
