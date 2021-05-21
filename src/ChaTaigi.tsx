@@ -48,7 +48,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(mid): split maryknoll into multiple pieces?
 // TODO(mid): download progress indicators
 // TODO(mid): show per-db loading information
-// TODO(mid): re-trigger currently-ongoing search once db loads (see top of searchDB)
+// TODO(mid): re-trigger currently-ongoing search once db loads (see top of searchFuzzySort)
 // TODO(mid): keybinding for search (/)
 // TODO(mid): Handle parentheses in pojUnicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll) {{{ create github issue for chhoetaigidatabase }}}
 // TODO(mid): "search only as fallback"

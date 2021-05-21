@@ -1,7 +1,7 @@
 import {getWorkerDebugConsole, StubConsole} from "./debug_console";
-import type {LangDB, DBName, SearchableDict, PerDictResults} from "./types";
+import type {LangDB, DBName, SearchableDict} from "./types";
 import {fetchDB} from "./dictionary_handling";
-import {OngoingSearch, searchDB} from "./search";
+import {OngoingSearch, searchFuzzySort} from "./search";
 
 // TODO(low): use enum for states
 
@@ -12,7 +12,7 @@ type WorkerInitializedState =
     {init: "uninitialized"} |
     {init: "started", dbName: DBName, langDB: LangDB} |
     {init: "loaded", dbName: DBName, langDB: LangDB, db: SearchableDict} |
-    {init: "searching", dbName: DBName, langDB: LangDB, db: SearchableDict, ogs: OngoingSearch<PerDictResults | null>};
+    {init: "searching", dbName: DBName, langDB: LangDB, db: SearchableDict, ogs: OngoingSearch};
 
 class SearchWorkerHelper {
     state: WorkerInitializedState = {init: "uninitialized"};
@@ -48,7 +48,7 @@ class SearchWorkerHelper {
                 this.search(query, searchID);
                 break;
             case "loaded":
-                const ongoingSearch = searchDB(this.state.db, query, this.debug);
+                const ongoingSearch = searchFuzzySort(this.state.db, query, this.debug);
                 const dbName = this.state.dbName;
                 if (ongoingSearch !== null) {
                     const originalState = this.state;

@@ -4,17 +4,31 @@ import fuzzysort from "fuzzysort";
 import {parseFuzzySortResultsForRender} from "./search_results_entities";
 import {DATABASES} from "./search_options";
 
+interface Searcher {
+    dbName: DBName;
+    constructor(dbName: DBName): this;
+    init(): void;
+    prepare(): void;
+    search(query: string): OngoingSearch | null;
+}
+
 // TODO: type promises
-export class OngoingSearch<T> {
+export class OngoingSearch {
     dbName: DBName;
     query: string;
     cancelablePromise?: CancelablePromise<any>;
-    parsePromise?: Promise<T>;
+    parsePromise?: Promise<PerDictResults | null>;
     completed: boolean;
     wasCanceled: boolean = false;
     console: StubConsole;
 
-    constructor(dbName: DBName, query: string = "", debug: boolean, cancelablePromise?: CancelablePromise<any>, parsePromise?: Promise<T>) {
+    constructor(
+        dbName: DBName,
+        query: string = "",
+        debug: boolean,
+        cancelablePromise?: CancelablePromise<any>,
+        parsePromise?: Promise<PerDictResults | null>,
+    ) {
         this.console = getWorkerDebugConsole(debug);
         this.console.time("asyncSearch-" + dbName);
         this.query = query;
@@ -60,11 +74,11 @@ export class OngoingSearch<T> {
 }
 
 // TODO: make generic and allow for multiple search types
-export function searchDB(
+export function searchFuzzySort(
     searchableDict: SearchableDict | null,
     query: string,
     debug: boolean,
-): OngoingSearch<PerDictResults | null> | null {
+): OngoingSearch | null {
     const debugConsole = getWorkerDebugConsole(debug);
     // TODO: re-trigger currently-ongoing search once db loads?
     if (searchableDict === null) {
