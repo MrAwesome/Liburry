@@ -15,8 +15,10 @@ import Worker from "worker-loader!./search.worker";
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): chase down error causing duplicate search entries
 // TODO(urgent): debug and address firefox flash of blankness during font load
+// TODO(high): create side box for dbname/alttext/etc, differentiate it with vertical line?
+// TODO(high): better styling, fewer borders
 // TODO(high): fix integration tests: https://stackoverflow.com/questions/42567535/resolving-imports-using-webpacks-worker-loader-in-jest-tests
-// TODO(high): see if maryknoll has non-hoabun characters
+// TODO(high): decide how to handle hoabun vs taibun, settings for display
 // TODO(high): show/search typing input
 // TODO(high): make fonts bigger across the board
 // TODO(high): asynchronous font loading: https://css-tricks.com/the-best-font-loading-strategies-and-how-to-execute-them/
@@ -37,12 +39,8 @@ import Worker from "worker-loader!./search.worker";
 // TODO(high): handle explanation text (see "le" in Giku)
 // TODO(high): add copyright/about page/info
 // TODO(high): Fix clipboard notif not working on most browsers
-// TODO(high): Fix typing before load not searching
 // TODO(high): Copy to clipboard on click or tab-enter (allow for tab/hover enter/click focus equivalency?)
-// TODO(high): have search updates appear asynchronously from typing
-// TODO(high): use react-window or react-virtualized to only need to render X results at a time
 // TODO(high): create an index of all 3 categories combined, and search that as text?
-// TODO(high): remove parentheses from unicode entries, treat as separate results
 // TODO(high): let spaces match hyphens and vice-versa
 // TODO(high): investigate more performant search solutions (lunr, jssearch, etc)
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
