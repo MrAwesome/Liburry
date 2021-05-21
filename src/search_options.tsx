@@ -1,4 +1,5 @@
-import {JSONDBKey, KeysOptions, LangDB, SearchPreppedKey} from "./types";
+import {JSONDBKey, LangDB, SearchPreppedKey} from "./types";
+import {FuzzyKeysOptions} from "./fuzzySortTypes";
 
 // HACK to allow web worker loader to work:
 // https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/24#issuecomment-672853561
@@ -38,7 +39,7 @@ export const DEFAULT_DEFINITION_INDEX = DEFAULT_SEARCH_KEYS.indexOf(DEFINITION_P
 export const DEFAULT_POJ_UNICODE_INDEX = DEFAULT_SEARCH_KEYS.indexOf(POJ_UNICODE_PREPPED_KEY);
 export const DEFAULT_HOABUN_INDEX = DEFAULT_SEARCH_KEYS.indexOf(HOABUN_PREPPED_KEY);
 
-function getFuzzyOpts(searchKeys: Array<string> = DEFAULT_SEARCH_KEYS): KeysOptions {
+function getFuzzyOpts(searchKeys: Array<string> = DEFAULT_SEARCH_KEYS): FuzzyKeysOptions {
     return {
         keys: searchKeys,
         allowTypo: false,

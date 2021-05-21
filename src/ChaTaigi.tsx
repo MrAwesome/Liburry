@@ -15,6 +15,8 @@ import Worker from "worker-loader!./search.worker";
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): chase down error causing duplicate search entries
 // TODO(urgent): debug and address firefox flash of blankness during font load
+// TODO(urgent): integration tests
+// TODO(urgent): find how to create unit tests in js, and create them
 // TODO(high): create side box for dbname/alttext/etc, differentiate it with vertical line?
 // TODO(high): better styling, fewer borders
 // TODO(high): fix integration tests: https://stackoverflow.com/questions/42567535/resolving-imports-using-webpacks-worker-loader-in-jest-tests
@@ -53,7 +55,6 @@ import Worker from "worker-loader!./search.worker";
 // TODO(mid): Handle parentheses in pojUnicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll) {{{ create github issue for chhoetaigidatabase }}}
 // TODO(mid): "search only as fallback"
 // TODO(mid): link to pleco/wiktionary for chinese characters, poj, etc
-// TODO(mid): unit/integration tests
 // TODO(mid): long press for copy on mobile
 // TODO(mid): replace loading placeholder with *grid* of db loading updates
 // TODO(mid): move search bar to middle of page when no results and no search yet
@@ -99,6 +100,15 @@ import Worker from "worker-loader!./search.worker";
 // TODO(later): accessibility? what needs to be done? link to POJ screen readers?
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
+//
+// Project: Integration tests
+//      1) Determine how to mock
+//      2) Mock out calls to search worker initialization
+//      3) Simulate worker responses, if possible. If not, set fake results directly.
+//      4) Test for the display of:
+//          a) entries, when results are populated
+//          b) about/contact/etc pages, when appropriate MainDisplayAreaMode is set
+//          c) inverse when above aren't true
 //
 // Project: Stateful non-search area
 //      1) Clean up menu code

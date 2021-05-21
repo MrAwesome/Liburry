@@ -1,8 +1,9 @@
 import {getWorkerDebugConsole, StubConsole} from "./debug_console";
-import {DBName, CancelablePromise, SearchableDict, PerDictResults} from "./types";
+import {DBName, PerDictResults} from "./types";
 import fuzzysort from "fuzzysort";
-import {parseFuzzySortResultsForRender} from "./search_results_entities";
+import {parseFuzzySortResultsForRender} from "./fuzzySortUtils";
 import {DATABASES} from "./search_options";
+import {CancelablePromise, FuzzySearchableDict} from "./fuzzySortTypes";
 
 interface Searcher {
     dbName: DBName;
@@ -75,7 +76,7 @@ export class OngoingSearch {
 
 // TODO: make generic and allow for multiple search types
 export function searchFuzzySort(
-    searchableDict: SearchableDict | null,
+    searchableDict: FuzzySearchableDict | null,
     query: string,
     debug: boolean,
 ): OngoingSearch | null {

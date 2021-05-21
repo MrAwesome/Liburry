@@ -1,16 +1,17 @@
 import fuzzysort from "fuzzysort";
-import {DBName, KeyResult, KeyResults, SearchResultEntry} from "./types";
+import {DBName, SearchResultEntry} from "./types";
+import {FuzzyKeyResult, FuzzyKeyResults} from "./fuzzySortTypes";
 
 // TODO: remove when there are other types of search
 import {DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./search_options";
 
 export function parseFuzzySortResultsForRender(
     dbName: DBName,
-    rawResults: KeyResults[]
+    rawResults: FuzzyKeyResults[]
 ): SearchResultEntry[] {
     const currentResultsElements = rawResults
         .slice(0, DISPLAY_RESULTS_LIMIT)
-        .map((fuzzysortResult: KeyResults, _: number) => {
+        .map((fuzzysortResult: FuzzyKeyResults, _: number) => {
             const obj = fuzzysortResult.obj;
             const pojUnicodeText = obj.p;
             const rowID = obj.d;
@@ -49,7 +50,7 @@ export function parseFuzzySortResultsForRender(
 
 
 function fuzzysortHighlight(
-    possibleMatch: KeyResult | null,
+    possibleMatch: FuzzyKeyResult | null,
     defaultDisplay: string | null,
 ): string | null {
     // NOTE: fuzzysort.highlight actually accepts null, but its type signature is wrong

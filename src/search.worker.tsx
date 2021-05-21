@@ -1,5 +1,6 @@
 import {getWorkerDebugConsole, StubConsole} from "./debug_console";
-import type {LangDB, DBName, SearchableDict} from "./types";
+import type {LangDB, DBName} from "./types";
+import type {FuzzySearchableDict} from "./fuzzySortTypes";
 import {fetchDB} from "./dictionary_handling";
 import {OngoingSearch, searchFuzzySort} from "./search";
 
@@ -11,8 +12,8 @@ const ctx: Worker = self as any;
 type WorkerInitializedState =
     {init: "uninitialized"} |
     {init: "started", dbName: DBName, langDB: LangDB} |
-    {init: "loaded", dbName: DBName, langDB: LangDB, db: SearchableDict} |
-    {init: "searching", dbName: DBName, langDB: LangDB, db: SearchableDict, ogs: OngoingSearch};
+    {init: "loaded", dbName: DBName, langDB: LangDB, db: FuzzySearchableDict} |
+    {init: "searching", dbName: DBName, langDB: LangDB, db: FuzzySearchableDict, ogs: OngoingSearch};
 
 class SearchWorkerHelper {
     state: WorkerInitializedState = {init: "uninitialized"};

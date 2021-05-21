@@ -1,13 +1,14 @@
 import fuzzysort from "fuzzysort";
 
 import {getWorkerDebugConsole} from "./debug_console"
-import {LangDB, RawJSONEntry, SearchableDict, PreparedSearchableEntry} from "./types";
+import {LangDB, RawJSONEntry} from "./types";
+import {FuzzySearchableDict, FuzzyPreparedSearchableEntry} from "./fuzzySortTypes";
 
 export async function fetchDB(
     dbName: string,
     langDB: LangDB,
     debug: boolean,
-    ): Promise<SearchableDict> {
+    ): Promise<FuzzySearchableDict> {
 
     const debugConsole = getWorkerDebugConsole(debug);
     const {dbFilename, shortNameToPreppedNameMapping} = langDB;
@@ -38,7 +39,7 @@ export async function fetchDB(
                                 (t[shortName]);
                         });
 
-                    return t as PreparedSearchableEntry;
+                    return t as FuzzyPreparedSearchableEntry;
                 }
             )
             debugConsole.timeEnd("prepareSlow-" + dbName);
@@ -46,7 +47,6 @@ export async function fetchDB(
             return {
                 dbName,
                 searchableEntries: data
-            } as SearchableDict;
+            } as FuzzySearchableDict;
         });
 }
-
