@@ -79,6 +79,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(low): check web.dev/measure
 // TODO(low): replace !some with every
 // TODO(low): 'X' button for clearing search
+// TODO(low): replicate "cannot read property dbName" of null race condition
 // TODO(wishlist): "add to desktop" shortcut
 // TODO(wishlist): non-javascript support?
 // TODO(wishlist): dark and light themes
@@ -164,7 +165,7 @@ class ResultsHolder {
             });
         });
 
-        // TODO: Sort on add? Sort first in worker?
+        // TODO: Sort on add? Sort first in worker? Store all results flat and just sort as they come in?
         entries.sort((a, b) => b.dbSearchRanking - a.dbSearchRanking);
 
         return entries;

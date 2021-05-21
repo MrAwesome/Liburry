@@ -2,38 +2,44 @@ import {getWorkerDebugConsole, StubConsole} from "./debug_console";
 import type {LangDB, DBName} from "./types";
 import type {FuzzySearchableDict} from "./fuzzySortTypes";
 import {fetchDB} from "./dictionary_handling";
-import {OngoingSearch, searchFuzzySort} from "./search";
-
-// TODO(low): use enum for states
+import {OngoingSearch} from "./search";
+import {fuzzysortSearch} from "./fuzzySortUtils";
 
 // eslint-disable-next-line no-restricted-globals
 const ctx: Worker = self as any;
 
+enum WorkerInitState {
+    UNINITIALIZED,
+    STARTED,
+    LOADED,
+    SEARCHING,
+}
+
 type WorkerInitializedState =
-    {init: "uninitialized"} |
-    {init: "started", dbName: DBName, langDB: LangDB} |
-    {init: "loaded", dbName: DBName, langDB: LangDB, db: FuzzySearchableDict} |
-    {init: "searching", dbName: DBName, langDB: LangDB, db: FuzzySearchableDict, ogs: OngoingSearch};
+    {init: WorkerInitState.UNINITIALIZED} |
+    {init: WorkerInitState.STARTED, dbName: DBName, langDB: LangDB} |
+    {init: WorkerInitState.LOADED, dbName: DBName, langDB: LangDB, db: FuzzySearchableDict} |
+    {init: WorkerInitState.SEARCHING, dbName: DBName, langDB: LangDB, db: FuzzySearchableDict, ogs: OngoingSearch};
 
 class SearchWorkerHelper {
-    state: WorkerInitializedState = {init: "uninitialized"};
+    state: WorkerInitializedState = {init: WorkerInitState.UNINITIALIZED};
     debug: boolean = false;
     console: StubConsole = getWorkerDebugConsole(false);
 
     start(dbName: DBName, langDB: LangDB, debug: boolean) {
-        this.state = {init: "started", dbName: dbName, langDB: langDB};
+        this.state = {init: WorkerInitState.STARTED, dbName: dbName, langDB: langDB};
         this.console = getWorkerDebugConsole(debug);
         this.debug = debug;
         // TODO: send message back for start, to avoid race?
     }
 
     loadDB() {
-        if (this.state.init === "started") {
+        if (this.state.init === WorkerInitState.STARTED) {
             const dbName = this.state.dbName;
             const langDB = this.state.langDB;
             fetchDB(dbName, langDB, this.debug).then(
                 (searchableDict) => {
-                    this.state = {init: "loaded", db: searchableDict, dbName, langDB};
+                    this.state = {init: WorkerInitState.LOADED, db: searchableDict, dbName, langDB};
                     ctx.postMessage({resultType: "DB_LOAD_SUCCESS", payload: {dbName}});
                 });
         } else {
@@ -44,26 +50,26 @@ class SearchWorkerHelper {
 
     search(query: string, searchID: number) {
         switch (this.state.init) {
-            case "searching":
+            case WorkerInitState.SEARCHING:
                 this.cancel();
                 this.search(query, searchID);
                 break;
-            case "loaded":
-                const ongoingSearch = searchFuzzySort(this.state.db, query, this.debug);
+            case WorkerInitState.LOADED:
+                const ongoingSearch = fuzzysortSearch(this.state.db, query, this.debug);
                 const dbName = this.state.dbName;
                 if (ongoingSearch !== null) {
                     const originalState = this.state;
-                    this.state = {...originalState, init: "searching", ogs: ongoingSearch};
+                    this.state = {...originalState, init: WorkerInitState.SEARCHING, ogs: ongoingSearch};
                     ongoingSearch.parsePromise?.then((results) => {
 
 //                        if (
-//                            this.state.init === "searching") {
+//                            this.state.init === WorkerInitState.SEARCHING) {
 //                            console.log(this.state.init
 //                            , this.state.ogs.query !== query
 //                            , !this.state.ogs.wasCanceled);
 //                        }
 //                        if (
-//                            this.state.init === "searching"
+//                            this.state.init === WorkerInitState.SEARCHING
 //                            && this.state.ogs.query !== query
 //                            && !this.state.ogs.wasCanceled
 //                        ) {
@@ -72,11 +78,11 @@ class SearchWorkerHelper {
                     });
                 }
                 break;
-            case "started":
+            case WorkerInitState.STARTED:
                 this.log();
                 console.warn("Attempted to search db before load!")
                 break;
-            case "uninitialized":
+            case WorkerInitState.UNINITIALIZED:
                 this.log();
                 console.error("Attempted to search uninitialized DB!")
         }
@@ -84,10 +90,10 @@ class SearchWorkerHelper {
     }
 
     cancel() {
-        if (this.state.init === "searching") {
+        if (this.state.init === WorkerInitState.SEARCHING) {
             const {ogs} = this.state;
             ogs.cancel();
-            this.state = {...this.state, init: "loaded"};
+            this.state = {...this.state, init: WorkerInitState.LOADED};
         }
     }
 

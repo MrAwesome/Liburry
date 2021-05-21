@@ -1,9 +1,11 @@
 import fuzzysort from "fuzzysort";
-import {DBName, SearchResultEntry} from "./types";
-import {FuzzyKeyResult, FuzzyKeyResults} from "./fuzzySortTypes";
+import {DBName, PerDictResults, SearchResultEntry} from "./types";
+import {FuzzyKeyResult, FuzzyKeyResults, FuzzySearchableDict} from "./fuzzySortTypes";
 
 // TODO: remove when there are other types of search
-import {DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./search_options";
+import {DATABASES, DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./search_options";
+import {OngoingSearch} from "./search";
+import {getWorkerDebugConsole} from "./debug_console";
 
 export function parseFuzzySortResultsForRender(
     dbName: DBName,
@@ -56,4 +58,64 @@ function fuzzysortHighlight(
     // NOTE: fuzzysort.highlight actually accepts null, but its type signature is wrong
     if (possibleMatch === null) {return defaultDisplay;}
     return fuzzysort.highlight(possibleMatch, "<mark>", "</mark>") || defaultDisplay;
+}
+
+// TODO: make generic and allow for multiple search types
+export function fuzzysortSearch(
+    searchableDict: FuzzySearchableDict | null,
+    query: string,
+    debug: boolean,
+): OngoingSearch | null {
+    const debugConsole = getWorkerDebugConsole(debug);
+    // TODO: re-trigger currently-ongoing search once db loads?
+    if (searchableDict === null) {
+        return null;
+    }
+
+    const {dbName, searchableEntries} = searchableDict;
+    const langDB = DATABASES.get(dbName);
+    if (!langDB) {
+        debugConsole.log("Failed to load langDB:", dbName, DATABASES);
+        return null;
+    }
+    const {fuzzyOpts} = langDB;
+    const cancelableSearchPromise = fuzzysort.goAsync(
+        query,
+        searchableEntries,
+        fuzzyOpts, // TODO: get from langdb
+    );
+
+    const parsePromise = cancelableSearchPromise.then(
+        rawResults => {
+            // Filter out duplicates, as fuzzysort occasionally gives them to us and React loathes duplicate keys
+            // TODO: Find out why this doesn't prevent the flash of warning text from react
+            const seen = new Set();
+            const res = rawResults.filter(({obj}) => {
+                if (seen.has(obj.d)) {
+                    return false;
+                }
+                seen.add(obj.d);
+                return true;
+            });
+            ongoingSearch.markCompleted();
+            const results = parseFuzzySortResultsForRender(
+                dbName,
+                // @ts-ignore Deal with lack of fuzzysort interfaces
+                res,
+            );
+            return {
+                dbName,
+                results
+            } as PerDictResults;
+        }
+    ).catch(
+        (reason) => {
+            debugConsole.log(reason);
+            return null;
+        }
+    );
+
+    const ongoingSearch = new OngoingSearch(dbName, query, debug, cancelableSearchPromise, parsePromise);
+
+    return ongoingSearch;
 }
