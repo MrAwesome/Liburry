@@ -110,7 +110,7 @@ export function fuzzysortSearch(
         }
     ).catch(
         (reason) => {
-            debugConsole.log(reason);
+            debugConsole.log(searchableDict.dbName, reason);
             return null;
         }
     );

@@ -11,6 +11,11 @@ export class SearchBar extends React.PureComponent<any, any> {
         this.textInput.current.focus();
     }
 
+    updateAndFocus(query: string) {
+        this.textInput.current.value = query;
+        this.textInput.current.focus();
+    }
+
     render() {
         const {onChange} = this.props;
         return <>

@@ -1,22 +1,24 @@
 import * as React from "react";
 
+import QueryStringHandler from "./QueryStringHandler";
+
 import {AboutPage, DebugArea, SearchBar} from "./components/components";
 import {EntryContainer} from "./components/entry_container";
-import {DBName, PerDictResults, SearchResultEntry} from "./types";
+import {DBName, MainDisplayAreaMode, PerDictResults, SearchResultEntry} from "./types";
 import {DATABASES} from "./search_options";
 import {typeGuard} from "./typeguard";
 import {mod} from './utils';
 
-import debugConsole, {DEBUG_MODE} from "./debug_console";
+import debugConsole from "./debug_console";
 
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import Worker from "worker-loader!./search.worker";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
-// TODO(urgent): chase down error causing duplicate search entries
 // TODO(urgent): debug and address firefox flash of blankness during font load
 // TODO(urgent): integration tests
 // TODO(urgent): find how to create unit tests in js, and create them
+// TODO(high): chase down error causing duplicate search entries
 // TODO(high): create side box for dbname/alttext/etc, differentiate it with vertical line?
 // TODO(high): better styling, fewer borders
 // TODO(high): fix integration tests: https://stackoverflow.com/questions/42567535/resolving-imports-using-webpacks-worker-loader-in-jest-tests
@@ -60,7 +62,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(mid): move search bar to middle of page when no results and no search yet
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
-// TODO(low): "install app" button in Chrome (see app.simplenote.com)
+// TODO(low): better color for manifest.json theme
 // TODO(low): font size button
 // TODO(low): locally-stored settings, or users
 // TODO(low): abstract away searching logic to avoid too much fuzzysort-specific code
@@ -126,13 +128,9 @@ import Worker from "worker-loader!./search.worker";
 //      6) test performance
 //      7) create settings page with language toggle?
 
-enum MainDisplayAreaMode {
-    DEFAULT,
-    SEARCH,
-    ABOUT,
-    CONTACT,
-    SETTINGS,
-}
+debugConsole.time("initToAllDB");
+let queryStringHandler = new QueryStringHandler();
+let options = queryStringHandler.parse();
 
 class ResultsHolder {
     currentResults: Map<DBName, PerDictResults> = new Map();
@@ -185,7 +183,7 @@ export interface ChaTaigiStateArgs {
 
 export class ChaTaigi extends React.Component<any, any> {
     searchBar: React.RefObject<SearchBar>;
-    query = "";
+    query = queryStringHandler.parse().query;
 
     // TODO: move these into their own helper class?
     searchWorkers: Map<string, Worker> = new Map();
@@ -195,6 +193,8 @@ export class ChaTaigi extends React.Component<any, any> {
     constructor(props: any) {
         super(props);
         this.state = {
+            // TODO: determine if options should live in the state, including query
+            options: options,
             loadedDBs: new Map(),
             resultsHolder: new ResultsHolder(),
         };
@@ -203,15 +203,19 @@ export class ChaTaigi extends React.Component<any, any> {
 
         this.searchBar = React.createRef();
 
-        this.onChange = this.onChange.bind(this);
-        this.searchQuery = this.searchQuery.bind(this);
-        this.resetSearch = this.resetSearch.bind(this);
-        this.setStateTyped = this.setStateTyped.bind(this);
-        this.getStateTyped = this.getStateTyped.bind(this);
+        this.bumpSearchInvalidations = this.bumpSearchInvalidations.bind(this);
         this.cancelOngoingSearch = this.cancelOngoingSearch.bind(this);
-        this.searchWorkerReply = this.searchWorkerReply.bind(this);
-        this.mainDisplayArea = this.mainDisplayArea.bind(this);
         this.determineMainDisplayAreaMode = this.determineMainDisplayAreaMode.bind(this);
+        this.getStateTyped = this.getStateTyped.bind(this);
+        this.mainDisplayArea = this.mainDisplayArea.bind(this);
+        this.onChange = this.onChange.bind(this);
+        this.resetSearch = this.resetSearch.bind(this);
+        this.searchQuery = this.searchQuery.bind(this);
+        this.searchWorkerReply = this.searchWorkerReply.bind(this);
+        this.setStateTyped = this.setStateTyped.bind(this);
+        this.updateOptionsFromHash = this.updateOptionsFromHash.bind(this);
+        this.updateSearchBar = this.updateSearchBar.bind(this);
+        this.updateQuery = this.updateQuery.bind(this);
     }
 
     setStateTyped(state: ChaTaigiStateArgs | ((prevState: ChaTaigiState) => any)) {
@@ -224,9 +228,7 @@ export class ChaTaigi extends React.Component<any, any> {
 
     componentDidMount() {
         debugConsole.timeLog("initToAllDB", "componentDidMount");
-        if (this.searchBar.current) {
-            this.searchBar.current.textInput.current.focus();
-        }
+        this.updateSearchBar();
 
         for (let [dbName, langDB] of DATABASES) {
             const worker = new Worker();
@@ -237,11 +239,36 @@ export class ChaTaigi extends React.Component<any, any> {
 
             worker.onmessage = this.searchWorkerReply;
 
-            worker.postMessage({command: "INIT", payload: {dbName, langDB, debug: DEBUG_MODE}});
+            worker.postMessage({command: "INIT", payload: {dbName, langDB, debug: options.debug}});
             worker.postMessage({command: "LOAD_DB"});
+        }
+
+
+        //window.onhashchange = () => this.updateOptionsFromHash;
+        window.addEventListener("hashchange", this.updateOptionsFromHash);
+
+    }
+
+    updateOptionsFromHash(_e: HashChangeEvent) {
+        let queryStringHandler = new QueryStringHandler();
+        let options = queryStringHandler.parse();
+
+        // TODO: move query to options? rename it context?
+        if (this.query !== options.query) {
+            this.updateQuery(options.query);
+            this.updateSearchBar();
+            this.searchQuery();
         }
     }
 
+    updateSearchBar() {
+        if (this.searchBar.current) {
+            this.searchBar.current.updateAndFocus(this.query);
+        }
+    }
+
+    // TODO: type the returns from a union type, and type on both sides
+    //                                      vvv
     async searchWorkerReply(e: MessageEvent<any>) {
         const rt = e.data.resultType;
         const payload = e.data.payload;
@@ -261,7 +288,10 @@ export class ChaTaigi extends React.Component<any, any> {
                 this.setStateTyped((state) => state.loadedDBs.set(dbName, true));
                 debugConsole.timeEnd("dbLoadRender-" + dbName);
 
-                this.searchQuery();
+                this.searchWorkers.get(dbName)?.postMessage(
+                    {command: "SEARCH", payload: {query: this.query, searchID: this.currentSearchIndex}}
+                );
+                this.bumpSearchInvalidations();
 
                 if (!Array.from(this.state.loadedDBs.values()).some(x => !x)) {
                     debugConsole.log("All databases loaded!");
@@ -279,12 +309,17 @@ export class ChaTaigi extends React.Component<any, any> {
         const {value = ""} = target;
         const query = value;
 
-        this.query = query;
+        this.updateQuery(query);
         this.searchQuery();
     }
 
+    updateQuery(query: string) {
+        this.query = query;
+        queryStringHandler.updateQuery(query);
+    }
+
     resetSearch() {
-        this.query = "";
+        this.updateQuery("");
         this.setStateTyped((state) => state.resultsHolder.clear());
     }
 
@@ -307,9 +342,13 @@ export class ChaTaigi extends React.Component<any, any> {
             this.searchWorkers.forEach((worker, _) =>
                 worker.postMessage({command: "SEARCH", payload: {query, searchID: this.currentSearchIndex}}));
 
-            this.currentSearchIndex = mod(this.currentSearchIndex + 1, this.searchInvalidations.length);
-            this.searchInvalidations[this.currentSearchIndex] = false;
+            this.bumpSearchInvalidations();
         }
+    }
+
+    bumpSearchInvalidations() {
+        this.currentSearchIndex = mod(this.currentSearchIndex + 1, this.searchInvalidations.length);
+        this.searchInvalidations[this.currentSearchIndex] = false;
     }
 
     getEntries(): JSX.Element {

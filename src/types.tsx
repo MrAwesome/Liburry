@@ -1,5 +1,13 @@
 import type {FuzzyKeysOptions} from "./fuzzySortTypes";
 
+export enum MainDisplayAreaMode {
+    DEFAULT,
+    SEARCH,
+    ABOUT,
+    CONTACT,
+    SETTINGS,
+}
+
 export type DBName = string;
 export type DBFilename = string;
 export type JSONDBKey = string;

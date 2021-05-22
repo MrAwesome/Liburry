@@ -27,7 +27,7 @@ class SearchWorkerHelper {
     console: StubConsole = getWorkerDebugConsole(false);
 
     start(dbName: DBName, langDB: LangDB, debug: boolean) {
-        this.state = {init: WorkerInitState.STARTED, dbName: dbName, langDB: langDB};
+        this.state = {init: WorkerInitState.STARTED, dbName, langDB};
         this.console = getWorkerDebugConsole(debug);
         this.debug = debug;
         // TODO: send message back for start, to avoid race?

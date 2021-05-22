@@ -1,9 +1,8 @@
-// TODO: make this use a GET flag
-//const DEBUG_MODE = document.location.hostname === 'localhost';
+import QueryStringHandler from "./QueryStringHandler";
 
 function getDebugMode(): boolean {
     try {
-        return document.location.hash.includes("enabledebug");
+        return (new QueryStringHandler()).parse().debug;
     } catch {
         return false;
     }
