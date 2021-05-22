@@ -60,6 +60,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(mid): move search bar to middle of page when no results and no search yet
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
+// TODO(low): "install app" button in Chrome (see app.simplenote.com)
 // TODO(low): font size button
 // TODO(low): locally-stored settings, or users
 // TODO(low): abstract away searching logic to avoid too much fuzzysort-specific code
