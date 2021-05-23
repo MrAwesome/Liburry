@@ -103,7 +103,7 @@ class SearchWorkerHelper {
 }
 
 // TODO: move types to d.ts, import type
-var sw: SearchWorkerHelper = new SearchWorkerHelper();
+let sw: SearchWorkerHelper = new SearchWorkerHelper();
 
 // Respond to message from parent thread
 ctx.addEventListener("message", (e) => {

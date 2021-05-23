@@ -34,7 +34,7 @@ export class SearchBar extends React.PureComponent<any, any> {
 }
 
 function DBLoadedState({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
-    var states: JSX.Element[] = [];
+    let states: JSX.Element[] = [];
     loadedDBs.forEach((db, dbName) => {
         const isLoaded = (db === null) || (db === false);
         const loadedString = isLoaded ? "⌛" : "✅";

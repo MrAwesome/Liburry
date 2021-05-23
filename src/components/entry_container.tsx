@@ -78,7 +78,7 @@ export class EntryContainer extends React.PureComponent<any, any> {
 
     getAltTextContainers(): JSX.Element[] {
         const {pojNormalized, pojInput} = this.getEntry();
-        var altTextContainers = [];
+        let altTextContainers = [];
 
         if (pojInput !== null) {
             const poji = this.createMatchElement(pojInput, "poj-input");

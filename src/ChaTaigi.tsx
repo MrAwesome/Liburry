@@ -48,11 +48,8 @@ import Worker from "worker-loader!./search.worker";
 // TODO(high): investigate more performant search solutions (lunr, jssearch, etc)
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): keyboard shortcuts
-// TODO(mid): replace "var" with "let"
 // TODO(mid): split maryknoll into multiple pieces?
 // TODO(mid): download progress indicators
-// TODO(mid): show per-db loading information
-// TODO(mid): re-trigger currently-ongoing search once db loads (see top of searchFuzzySort)
 // TODO(mid): keybinding for search (/)
 // TODO(mid): Handle parentheses in pojUnicode in maryknoll: "kàu chia (án-ni) jî-í" (giku), "nā-tiāⁿ (niā-tiāⁿ, niā-niā)" (maryknoll) {{{ create github issue for chhoetaigidatabase }}}
 // TODO(mid): "search only as fallback"
@@ -63,13 +60,14 @@ import Worker from "worker-loader!./search.worker";
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
 // TODO(low): better color for manifest.json theme
+// TODO(low): in db load indicator, have a separate icon for downloading and loading
 // TODO(low): font size button
 // TODO(low): locally-stored settings, or users
 // TODO(low): abstract away searching logic to avoid too much fuzzysort-specific code
-// TODO(low): have GET param for search (and options?)
 // TODO(low): configurable searches (exact search, slow but better search, etc)
-// TODO(low): hashtag load entry (for linking)
-// TODO(low): move to camelCase
+// TODO(low): move to camelCase filename
+// TODO(low): move to camelCase variable names
+// TODO(low): move to camelCase repository name
 // TODO(low): prettier search/load indicators
 // TODO(low): notify when DBs fail to load
 // TODO(low): store options between sessions
@@ -80,8 +78,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(low): settings
 // TODO(low): fix the default/preview text
 // TODO(low): check web.dev/measure
-// TODO(low): replace !some with every
-// TODO(low): 'X' button for clearing search
+// TODO(low): 'X' button for clearing search (search for an svg)
 // TODO(low): replicate "cannot read property dbName" of null race condition
 // TODO(wishlist): "add to desktop" shortcut
 // TODO(wishlist): non-javascript support?
@@ -293,7 +290,7 @@ export class ChaTaigi extends React.Component<any, any> {
                 );
                 this.bumpSearchInvalidations();
 
-                if (!Array.from(this.state.loadedDBs.values()).some(x => !x)) {
+                if (Array.from(this.state.loadedDBs.values()).every(x => x)) {
                     debugConsole.log("All databases loaded!");
                     debugConsole.timeEnd("initToAllDB");
                 }

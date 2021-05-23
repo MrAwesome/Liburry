@@ -102,8 +102,8 @@ mark {
 .TODO-intermediate-results {
 }
 
-/* Old container look */
 .entry-container {
+    transition: all 1s ease;
     width: 100%;
     box-sizing: border-box;
 
