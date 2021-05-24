@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import {ChaTaigi} from "./ChaTaigi";
 
 import "./cha_taigi.css";
+import "./pages.css";
 
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 //import reportWebVitals from "./reportWebVitals";

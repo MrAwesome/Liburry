@@ -48,6 +48,8 @@ class SearchWorkerHelper {
         }
     }
 
+
+    // TODO: replace postMessage with function taking typed union
     search(query: string, searchID: number) {
         switch (this.state.init) {
             case WorkerInitState.SEARCHING:

@@ -1,7 +1,7 @@
 import type {FuzzyKeysOptions} from "./fuzzySortTypes";
 
 export enum MainDisplayAreaMode {
-    DEFAULT,
+    HOME,
     SEARCH,
     ABOUT,
     CONTACT,

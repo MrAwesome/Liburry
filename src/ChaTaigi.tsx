@@ -2,7 +2,7 @@ import * as React from "react";
 
 import QueryStringHandler from "./QueryStringHandler";
 
-import {AboutPage, DebugArea, SearchBar} from "./components/components";
+import {AboutPage, DebugArea, SearchBar, SelectBar} from "./components/components";
 import {EntryContainer} from "./components/entry_container";
 import {DBName, MainDisplayAreaMode, PerDictResults, SearchResultEntry} from "./types";
 import {DATABASES} from "./search_options";
@@ -27,17 +27,10 @@ import Worker from "worker-loader!./search.worker";
 // TODO(high): make fonts bigger across the board
 // TODO(high): asynchronous font loading: https://css-tricks.com/the-best-font-loading-strategies-and-how-to-execute-them/
 // TODO(high): let hyphens and spaces be interchangeable in search
-// TODO(high): migrate to tsx cra with service worker (see ~/my-app)
 // TODO(high): come up with a more elegant/extensible way of transforming a db entry into elements to be displayed
 // TODO(high): change name to chaa5_taigi (chhâ)
 // TODO(high): determine why duplicate search results are sometimes returned (see "a" results for giku)
-// TODO(high): change from "fullscreen" to (check) "minimal-ui"
-// TODO(high): add keys as opposed to indices
 // TODO(high): fix icon sizes/manifest: https://github.com/facebook/create-react-app/blob/master/packages/cra-template/template/public/manifest.json (both ico and icon)
-// TODO(high): add other databases from ChhoeTaigi
-//               * write out schema
-//               * update conversion scripts
-//               * decide on display changes for multiple DBs
 // TODO(high): handle alternate spellings / parentheticals vs separate fields
 // TODO(high): handle explanation text (see "le" in Giku)
 // TODO(high): add copyright/about page/info
@@ -48,6 +41,8 @@ import Worker from "worker-loader!./search.worker";
 // TODO(high): investigate more performant search solutions (lunr, jssearch, etc)
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): keyboard shortcuts
+// TODO(mid): show bottom bar with links to different modes
+// TODO(mid): ensure that any navigational links include characters/POJ (or have a fast language switch)
 // TODO(mid): split maryknoll into multiple pieces?
 // TODO(mid): download progress indicators
 // TODO(mid): keybinding for search (/)
@@ -68,9 +63,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(low): move to camelCase filename
 // TODO(low): move to camelCase variable names
 // TODO(low): move to camelCase repository name
-// TODO(low): prettier search/load indicators
 // TODO(low): notify when DBs fail to load
-// TODO(low): store options between sessions
 // TODO(low): radio buttons of which text to search
 // TODO(low): hoabun text click should copy hoabun?
 // TODO(low): title
@@ -80,6 +73,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(low): check web.dev/measure
 // TODO(low): 'X' button for clearing search (search for an svg)
 // TODO(low): replicate "cannot read property dbName" of null race condition
+// TODO(low): install button in settings page
 // TODO(wishlist): "add to desktop" shortcut
 // TODO(wishlist): non-javascript support?
 // TODO(wishlist): dark and light themes
@@ -99,6 +93,7 @@ import Worker from "worker-loader!./search.worker";
 // TODO(later): link to ChhoeTaigi for entries
 // TODO(later): cross-reference noun classifiers across DBs (and noun status)
 // TODO(later): accessibility? what needs to be done? link to POJ screen readers?
+// TODO(later): store options between sessions
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
 //
@@ -191,7 +186,7 @@ export class ChaTaigi extends React.Component<any, any> {
         super(props);
         this.state = {
             // TODO: determine if options should live in the state, including query
-            options: options,
+            mode: options.mainMode,
             loadedDBs: new Map(),
             resultsHolder: new ResultsHolder(),
         };
@@ -202,17 +197,16 @@ export class ChaTaigi extends React.Component<any, any> {
 
         this.bumpSearchInvalidations = this.bumpSearchInvalidations.bind(this);
         this.cancelOngoingSearch = this.cancelOngoingSearch.bind(this);
-        this.determineMainDisplayAreaMode = this.determineMainDisplayAreaMode.bind(this);
         this.getStateTyped = this.getStateTyped.bind(this);
+        this.hashChange = this.hashChange.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
         this.onChange = this.onChange.bind(this);
         this.resetSearch = this.resetSearch.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
         this.searchWorkerReply = this.searchWorkerReply.bind(this);
         this.setStateTyped = this.setStateTyped.bind(this);
-        this.updateOptionsFromHash = this.updateOptionsFromHash.bind(this);
-        this.updateSearchBar = this.updateSearchBar.bind(this);
         this.updateQuery = this.updateQuery.bind(this);
+        this.updateSearchBar = this.updateSearchBar.bind(this);
     }
 
     setStateTyped(state: ChaTaigiStateArgs | ((prevState: ChaTaigiState) => any)) {
@@ -240,15 +234,12 @@ export class ChaTaigi extends React.Component<any, any> {
             worker.postMessage({command: "LOAD_DB"});
         }
 
-
-        //window.onhashchange = () => this.updateOptionsFromHash;
-        window.addEventListener("hashchange", this.updateOptionsFromHash);
+        window.addEventListener("hashchange", this.hashChange);
 
     }
 
-    updateOptionsFromHash(_e: HashChangeEvent) {
-        let queryStringHandler = new QueryStringHandler();
-        let options = queryStringHandler.parse();
+    hashChange(_e: HashChangeEvent) {
+        const options = new QueryStringHandler().parse();
 
         // TODO: move query to options? rename it context?
         if (this.query !== options.query) {
@@ -256,6 +247,15 @@ export class ChaTaigi extends React.Component<any, any> {
             this.updateSearchBar();
             this.searchQuery();
         }
+
+        if (this.state.mode !== options.mainMode) {
+            this.setState({mode: options.mainMode});
+        }
+    }
+
+    // Note that we don't need to update state here - the hash change does that for us.
+    setMode(mode: MainDisplayAreaMode) {
+        queryStringHandler.updateMode(mode);
     }
 
     updateSearchBar() {
@@ -271,8 +271,10 @@ export class ChaTaigi extends React.Component<any, any> {
         const payload = e.data.payload;
         switch (rt) {
             case "SEARCH_SUCCESS": {
+                // TODO: handle null dbName
                 let {results, dbName, searchID} = payload;
                 debugConsole.time("searchRender-" + dbName);
+                // TODO: add the concept of retries (or waits?) to handle case of broken/initializing db
                 if (!this.searchInvalidations[searchID]) {
                     this.setStateTyped((state) => state.resultsHolder.addResults(results));
                 }
@@ -282,6 +284,7 @@ export class ChaTaigi extends React.Component<any, any> {
             case "DB_LOAD_SUCCESS": {
                 let {dbName} = payload;
                 debugConsole.time("dbLoadRender-" + dbName);
+                // TODO: don't search DBs until they're loaded
                 this.setStateTyped((state) => state.loadedDBs.set(dbName, true));
                 debugConsole.timeEnd("dbLoadRender-" + dbName);
 
@@ -322,10 +325,7 @@ export class ChaTaigi extends React.Component<any, any> {
 
     cancelOngoingSearch() {
         this.searchInvalidations[mod(this.currentSearchIndex - 1, this.searchInvalidations.length)] = true;
-        this.searchWorkers.forEach(
-            (worker, _) =>
-                worker.postMessage({command: "CANCEL"})
-        );
+        this.searchWorkers.forEach((worker, _) => worker.postMessage({command: "CANCEL"}));
     }
 
     searchQuery() {
@@ -341,6 +341,8 @@ export class ChaTaigi extends React.Component<any, any> {
 
             this.bumpSearchInvalidations();
         }
+
+        this.setMode(MainDisplayAreaMode.SEARCH);
     }
 
     bumpSearchInvalidations() {
@@ -357,24 +359,15 @@ export class ChaTaigi extends React.Component<any, any> {
         return <>{entryContainers}</>;
     }
 
-    determineMainDisplayAreaMode(): MainDisplayAreaMode {
-        const {resultsHolder} = this.getStateTyped();
-
-
-        if (resultsHolder.getNumResults() > 0) {
-            return MainDisplayAreaMode.SEARCH;
-        }
-
-        return MainDisplayAreaMode.DEFAULT;
-    }
-
     mainDisplayArea(mode: MainDisplayAreaMode): JSX.Element {
         switch (mode) {
             case MainDisplayAreaMode.SEARCH:
                 return this.getEntries();
             case MainDisplayAreaMode.ABOUT:
                 return <AboutPage />;
-            default:
+            case MainDisplayAreaMode.SETTINGS:
+            case MainDisplayAreaMode.CONTACT:
+            case MainDisplayAreaMode.HOME:
                 return this.mainAreaDefaultView();
         }
     }
@@ -382,19 +375,25 @@ export class ChaTaigi extends React.Component<any, any> {
     // TODO: Create individual components for these if necessary
     mainAreaDefaultView() {
         const {loadedDBs} = this.getStateTyped();
-        return <>
-            <DebugArea loadedDBs={loadedDBs} />
-        </>
+        if (options.debug) {
+            return <>
+                <DebugArea loadedDBs={loadedDBs} />
+            </>
+        } else {
+            return <></>;
+        }
     }
 
     render() {
         const {onChange} = this;
-        const mainDisplayAreaMode = this.determineMainDisplayAreaMode();
+        const options = queryStringHandler.parse();
+        const mainDisplayAreaMode = options.mainMode;
 
         return (
             <div className="ChaTaigi">
                 <SearchBar ref={this.searchBar} onChange={onChange} />
                 {this.mainDisplayArea(mainDisplayAreaMode)}
+                {options.debug ? <SelectBar /> : null}
             </div>
         );
     }
