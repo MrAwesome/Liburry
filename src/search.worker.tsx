@@ -15,6 +15,13 @@ enum WorkerInitState {
     SEARCHING,
 }
 
+type SearchWorkerCommandMessage =
+    {command: "INIT", payload: {dbName: DBName, langDB: LangDB, debug: boolean}} |
+    {command: "LOAD_DB", payload: null} |
+    {command: "SEARCH", payload: {query: string, searchID: number}} |
+    {command: "CANCEL", payload: null} |
+    {command: "LOG", payload: null};
+
 type WorkerInitializedState =
     {init: WorkerInitState.UNINITIALIZED} |
     {init: WorkerInitState.STARTED, dbName: DBName, langDB: LangDB} |
@@ -75,7 +82,8 @@ class SearchWorkerHelper {
 //                            && this.state.ogs.query !== query
 //                            && !this.state.ogs.wasCanceled
 //                        ) {
-                        ctx.postMessage({resultType: "SEARCH_SUCCESS", payload: {results, dbName, searchID}});
+//                      // TODO: type postMessage
+                        ctx.postMessage({resultType: "SEARCH_SUCCESS", payload: {query, results, dbName, searchID}});
                         this.state = originalState;
                     });
                 }
@@ -109,18 +117,17 @@ let sw: SearchWorkerHelper = new SearchWorkerHelper();
 
 // Respond to message from parent thread
 ctx.addEventListener("message", (e) => {
-    const command = e.data.command;
-    const payload = e.data.payload;
-    switch (command) {
+    const message: SearchWorkerCommandMessage = e.data;
+    switch (message.command) {
         case "INIT":
-            const {dbName, langDB, debug} = payload;
+            const {dbName, langDB, debug} = message.payload;
             sw.start(dbName, langDB, debug);
             break;
         case "LOAD_DB":
             sw.loadDB();
             break;
         case "SEARCH":
-            const {query, searchID} = payload;
+            const {query, searchID} = message.payload;
             sw.search(query, searchID);
             break;
         case "CANCEL":

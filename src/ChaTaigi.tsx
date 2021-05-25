@@ -7,12 +7,12 @@ import {EntryContainer} from "./components/entry_container";
 import {DBName, MainDisplayAreaMode, PerDictResults, SearchResultEntry} from "./types";
 import {DATABASES} from "./search_options";
 import {typeGuard} from "./typeguard";
-import {mod} from './utils';
 
 import debugConsole from "./debug_console";
 
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import Worker from "worker-loader!./search.worker";
+import SearchManager from "./SearchManager";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): debug and address firefox flash of blankness during font load
@@ -179,8 +179,7 @@ export class ChaTaigi extends React.Component<any, any> {
 
     // TODO: move these into their own helper class?
     searchWorkers: Map<string, Worker> = new Map();
-    searchInvalidations: Array<boolean> = Array.from({length: 10}).map(_ => false);
-    currentSearchIndex: number = 0;
+    searchManager = new SearchManager();
 
     constructor(props: any) {
         super(props);
@@ -195,13 +194,13 @@ export class ChaTaigi extends React.Component<any, any> {
 
         this.searchBar = React.createRef();
 
-        this.bumpSearchInvalidations = this.bumpSearchInvalidations.bind(this);
         this.cancelOngoingSearch = this.cancelOngoingSearch.bind(this);
         this.getStateTyped = this.getStateTyped.bind(this);
         this.hashChange = this.hashChange.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
         this.onChange = this.onChange.bind(this);
         this.resetSearch = this.resetSearch.bind(this);
+        this.searchDB = this.searchDB.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
         this.searchWorkerReply = this.searchWorkerReply.bind(this);
         this.setStateTyped = this.setStateTyped.bind(this);
@@ -264,6 +263,7 @@ export class ChaTaigi extends React.Component<any, any> {
         }
     }
 
+    // TODO: move this logic and other search-related logic elsewhere
     // TODO: type the returns from a union type, and type on both sides
     //                                      vvv
     async searchWorkerReply(e: MessageEvent<any>) {
@@ -272,11 +272,23 @@ export class ChaTaigi extends React.Component<any, any> {
         switch (rt) {
             case "SEARCH_SUCCESS": {
                 // TODO: handle null dbName
-                let {results, dbName, searchID} = payload;
+                let {query, results, dbName, searchID} = payload;
                 debugConsole.time("searchRender-" + dbName);
-                // TODO: add the concept of retries (or waits?) to handle case of broken/initializing db
-                if (!this.searchInvalidations[searchID]) {
-                    this.setStateTyped((state) => state.resultsHolder.addResults(results));
+
+                const wasInvalidated = this.searchManager.isInvalidated(searchID);
+                if (!wasInvalidated) {
+                    // TODO: make sure this re-searching doesn't introduce double-results
+                    if (results === null) {
+                        // TODO: use a brief setTimeout here?
+                        console.warn(`Got no results from ${dbName} on search "${query}". Trying again...`);
+                        if (this.searchManager.attemptRetry(dbName, searchID)) {
+                            this.searchDB(dbName, query, searchID);
+                        } else {
+                            console.warn(`Got no results from ${dbName} on search "${query}". Ran out of retries!`);
+                        }
+                    } else {
+                        this.setStateTyped((state) => state.resultsHolder.addResults(results));
+                    }
                 }
                 debugConsole.timeEnd("searchRender-" + dbName);
             }
@@ -288,10 +300,10 @@ export class ChaTaigi extends React.Component<any, any> {
                 this.setStateTyped((state) => state.loadedDBs.set(dbName, true));
                 debugConsole.timeEnd("dbLoadRender-" + dbName);
 
-                this.searchWorkers.get(dbName)?.postMessage(
-                    {command: "SEARCH", payload: {query: this.query, searchID: this.currentSearchIndex}}
-                );
-                this.bumpSearchInvalidations();
+                if (this.query) {
+                    this.searchDB(dbName, this.query, this.searchManager.currentSearchIndex);
+                    this.searchManager.bump();
+                }
 
                 if (Array.from(this.state.loadedDBs.values()).every(x => x)) {
                     debugConsole.log("All databases loaded!");
@@ -303,6 +315,13 @@ export class ChaTaigi extends React.Component<any, any> {
                 console.warn("Received unknown message from search worker!", e);
         }
     }
+
+    // Search an individual DB (for retries, on load, etc)
+    searchDB(dbName: DBName, query: string, searchID: number) {
+        this.searchWorkers.get(dbName)?.postMessage(
+            {command: "SEARCH", payload: {query, searchID}}
+        );
+    };
 
     onChange(e: any) {
         const {target = {}} = e;
@@ -324,7 +343,7 @@ export class ChaTaigi extends React.Component<any, any> {
     }
 
     cancelOngoingSearch() {
-        this.searchInvalidations[mod(this.currentSearchIndex - 1, this.searchInvalidations.length)] = true;
+        this.searchManager.invalidate();
         this.searchWorkers.forEach((worker, _) => worker.postMessage({command: "CANCEL"}));
     }
 
@@ -337,17 +356,12 @@ export class ChaTaigi extends React.Component<any, any> {
             this.resetSearch();
         } else {
             this.searchWorkers.forEach((worker, _) =>
-                worker.postMessage({command: "SEARCH", payload: {query, searchID: this.currentSearchIndex}}));
+                worker.postMessage({command: "SEARCH", payload: {query, searchID: this.searchManager.currentSearchIndex}}));
 
-            this.bumpSearchInvalidations();
+            this.searchManager.bump();
         }
 
         this.setMode(MainDisplayAreaMode.SEARCH);
-    }
-
-    bumpSearchInvalidations() {
-        this.currentSearchIndex = mod(this.currentSearchIndex + 1, this.searchInvalidations.length);
-        this.searchInvalidations[this.currentSearchIndex] = false;
     }
 
     getEntries(): JSX.Element {

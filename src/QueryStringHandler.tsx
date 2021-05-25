@@ -2,10 +2,30 @@ import qs from "qs";
 import ChaTaigiOptions from "./ChaTaigiOptions";
 import {MainDisplayAreaMode} from "./types";
 
+// HACK to allow web worker loader to work:
+// https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/24#issuecomment-672853561
+(global as any).$RefreshReg$ = () => {};
+(global as any).$RefreshSig$$ = () => () => {};
+
 // These are the actual fields used/set in the hash
 const QUERY = "q";
 const DEBUG = "debug";
 const MAIN_MODE = "mode";
+
+const QS_SORT_FN = (a: string, b: string) => {
+    if (a === b) {
+        return 0;
+    } else if (a === QUERY) {
+        return 1;
+    } else if (b === QUERY) {
+        return -1;
+    } else {
+        return a.localeCompare(b);
+    }
+};
+
+const QS_PARSE_OPTS = {delimiter: ';'};
+const QS_STRINGIFY_OPTS = {delimiter: ';', sort: QS_SORT_FN};
 
 // TODO(low): consider having the hash string be part of the app state?
 export default class QueryStringParser {
@@ -27,12 +47,18 @@ export default class QueryStringParser {
         this.update(MAIN_MODE, MainDisplayAreaMode[mode]);
     }
 
+    private parseInternal() {
+        return qs.parse(this.getString(), QS_PARSE_OPTS);
+    }
 
-    // TODO: allow the delimiter to be typed in search (encode it by hand?)
+    private stringifyInternal(parsed: qs.ParsedQs) {
+        return qs.stringify(parsed, QS_STRINGIFY_OPTS);
+    }
+
     private update(field: string, value: string) {
-        const parsed = qs.parse(this.getString(), {delimiter: ';'});
+        const parsed = this.parseInternal();
         parsed[field] = value;
-        const strang = qs.stringify(parsed, {delimiter: ';'});
+        const strang = this.stringifyInternal(parsed);
         if (this.testString) {
             this.testString = strang;
         } else {
@@ -42,7 +68,7 @@ export default class QueryStringParser {
 
     parse(): ChaTaigiOptions {
         let options = new ChaTaigiOptions();
-        const parsed = qs.parse(this.getString(), {delimiter: ';'});
+        const parsed = this.parseInternal();
         const q = parsed[QUERY];
         const mode = parsed[MAIN_MODE];
 

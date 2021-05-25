@@ -24,13 +24,13 @@ export async function fetchDB(
             debugConsole.time("prepareSlow-" + dbName);
             // For each dictionary entry, prepare a fast search version of each searchable key
             const data = prePreparedData.map(
-                // NOTE: this modifies the PrePreparedEntry by adding fields for each prepped key, 
+                // NOTE: this modifies the PrePreparedEntry by adding fields for each prepped key,
                 // then returning it as a SearchableEntry
                 (t: RawJSONEntry) => {
                     shortNameToPreppedNameMapping.forEach(
                         (preppedKey, shortName) => {
                             // @ts-ignore  force dynamic index
-                            t[preppedKey] = 
+                            t[preppedKey] =
                                 // TODO: scoot this fuzzysort-specific code elsewhere to maintain separation of concerns
                                 fuzzysort
                                 // @ts-ignore  prepareSlow does exist

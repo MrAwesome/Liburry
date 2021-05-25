@@ -6,6 +6,8 @@ import {FuzzyKeysOptions} from "./fuzzySortTypes";
 (global as any).$RefreshReg$ = () => {};
 (global as any).$RefreshSig$$ = () => () => {};
 
+export const RETRY_ATTEMPTS = 2;
+
 const SEARCH_RESULTS_LIMIT = 20;
 export const DISPLAY_RESULTS_LIMIT = 20;
 

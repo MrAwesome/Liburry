@@ -77,8 +77,8 @@ mark {
     position: absolute;
     top: 11px;
     left: 8px;
-    width: 18px; 
-    height: 18px; 
+    width: 18px;
+    height: 18px;
     color: grey;
     fill: grey;
     right: auto;
@@ -179,7 +179,7 @@ mark {
     user-select: none;
 }
 
-.hoabun { 
+.hoabun {
     user-select: text;
 }
 
