@@ -2,7 +2,7 @@ import {RETRY_ATTEMPTS} from "./search_options";
 import {DBName} from "./types";
 import {mod} from "./utils";
 
-export default class SearchManager {
+export default class SearchInvalidationAndRetryManager {
     bufLen: number = 10;
     retries: Array<Map<DBName, number>> = Array.from({length: this.bufLen}).map(_ => new Map());
     searchInvalidations: Array<boolean> = Array.from({length: this.bufLen}).map(_ => false);

@@ -4,15 +4,15 @@ import QueryStringHandler from "./QueryStringHandler";
 
 import {AboutPage, DebugArea, SearchBar, SelectBar} from "./components/components";
 import {EntryContainer} from "./components/entry_container";
-import {DBName, MainDisplayAreaMode, PerDictResults, SearchResultEntry} from "./types";
-import {DATABASES} from "./search_options";
-import {typeGuard} from "./typeguard";
+import {DBName, MainDisplayAreaMode} from "./types";
 
 import debugConsole from "./debug_console";
 
-// eslint-disable-next-line import/no-webpack-loader-syntax
-import Worker from "worker-loader!./search.worker";
-import SearchManager from "./SearchManager";
+import SearchValidityManager from "./SearchValidityManager";
+import SearchResultsHolder from "./SearchResultsHolder";
+import SearchWorkerManager from "./SearchWorkerManager";
+import {DATABASES} from "./search_options";
+import {SearchWorkerResponseMessage} from "./search.worker";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): debug and address firefox flash of blankness during font load
@@ -124,52 +124,13 @@ debugConsole.time("initToAllDB");
 let queryStringHandler = new QueryStringHandler();
 let options = queryStringHandler.parse();
 
-class ResultsHolder {
-    currentResults: Map<DBName, PerDictResults> = new Map();
-    numResults: number = 0;
-
-    addResults(res: PerDictResults): this {
-        this.currentResults.set(res.dbName, res);
-        this.numResults += res.results.length;
-        return this;
-    }
-
-    clear(): this {
-        this.currentResults = new Map();
-        this.numResults = 0;
-        return this;
-    }
-
-    getNumResults(): number {
-        return this.numResults;
-    }
-
-    getAllResults(): SearchResultEntry[] {
-        let allPerDictRes = Array.from(this.currentResults.values()).filter(typeGuard) as PerDictResults[];
-
-        let entries: SearchResultEntry[] = [];
-
-        // Flatten out all results
-        allPerDictRes.forEach((perDict: PerDictResults) => {
-            perDict.results.forEach((entry: SearchResultEntry) => {
-                entries.push(entry);
-            });
-        });
-
-        // TODO: Sort on add? Sort first in worker? Store all results flat and just sort as they come in?
-        entries.sort((a, b) => b.dbSearchRanking - a.dbSearchRanking);
-
-        return entries;
-    }
-}
-
 export interface ChaTaigiState {
-    resultsHolder: ResultsHolder,
+    resultsHolder: SearchResultsHolder,
     loadedDBs: Map<DBName, boolean>,
 }
 
 export interface ChaTaigiStateArgs {
-    resultsHolder?: ResultsHolder,
+    resultsHolder?: SearchResultsHolder,
     loadedDBs?: Map<DBName, boolean>,
 }
 
@@ -177,9 +138,8 @@ export class ChaTaigi extends React.Component<any, any> {
     searchBar: React.RefObject<SearchBar>;
     query = queryStringHandler.parse().query;
 
-    // TODO: move these into their own helper class?
-    searchWorkers: Map<string, Worker> = new Map();
-    searchManager = new SearchManager();
+    searchWorkerManager = new SearchWorkerManager(options);
+    searchValidityManager = new SearchValidityManager();
 
     constructor(props: any) {
         super(props);
@@ -187,7 +147,7 @@ export class ChaTaigi extends React.Component<any, any> {
             // TODO: determine if options should live in the state, including query
             mode: options.mainMode,
             loadedDBs: new Map(),
-            resultsHolder: new ResultsHolder(),
+            resultsHolder: new SearchResultsHolder(),
         };
 
         DATABASES.forEach((_, dbName) => {this.state.loadedDBs.set(dbName, false)});
@@ -200,7 +160,6 @@ export class ChaTaigi extends React.Component<any, any> {
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
         this.onChange = this.onChange.bind(this);
         this.resetSearch = this.resetSearch.bind(this);
-        this.searchDB = this.searchDB.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
         this.searchWorkerReply = this.searchWorkerReply.bind(this);
         this.setStateTyped = this.setStateTyped.bind(this);
@@ -220,19 +179,7 @@ export class ChaTaigi extends React.Component<any, any> {
         debugConsole.timeLog("initToAllDB", "componentDidMount");
         this.updateSearchBar();
 
-        for (let [dbName, langDB] of DATABASES) {
-            const worker = new Worker();
-            this.searchWorkers.set(
-                dbName,
-                worker,
-            );
-
-            worker.onmessage = this.searchWorkerReply;
-
-            worker.postMessage({command: "INIT", payload: {dbName, langDB, debug: options.debug}});
-            worker.postMessage({command: "LOAD_DB"});
-        }
-
+        this.searchWorkerManager.init(this.searchWorkerReply);
         window.addEventListener("hashchange", this.hashChange);
 
     }
@@ -264,45 +211,42 @@ export class ChaTaigi extends React.Component<any, any> {
     }
 
     // TODO: move this logic and other search-related logic elsewhere
-    // TODO: type the returns from a union type, and type on both sides
-    //                                      vvv
-    async searchWorkerReply(e: MessageEvent<any>) {
-        const rt = e.data.resultType;
-        const payload = e.data.payload;
-        switch (rt) {
+    async searchWorkerReply(e: MessageEvent<SearchWorkerResponseMessage>) {
+        const message = e.data;
+        switch (message.resultType) {
             case "SEARCH_SUCCESS": {
                 // TODO: handle null dbName
-                let {query, results, dbName, searchID} = payload;
+                let {results, dbName, searchID} = message.payload;
                 debugConsole.time("searchRender-" + dbName);
 
-                const wasInvalidated = this.searchManager.isInvalidated(searchID);
+                const wasInvalidated = this.searchValidityManager.isInvalidated(searchID);
                 if (!wasInvalidated) {
-                    // TODO: make sure this re-searching doesn't introduce double-results
-                    if (results === null) {
-                        // TODO: use a brief setTimeout here?
-                        console.warn(`Got no results from ${dbName} on search "${query}". Trying again...`);
-                        if (this.searchManager.attemptRetry(dbName, searchID)) {
-                            this.searchDB(dbName, query, searchID);
-                        } else {
-                            console.warn(`Got no results from ${dbName} on search "${query}". Ran out of retries!`);
-                        }
-                    } else {
-                        this.setStateTyped((state) => state.resultsHolder.addResults(results));
-                    }
+                    this.setStateTyped((state) => state.resultsHolder.addResults(results));
                 }
                 debugConsole.timeEnd("searchRender-" + dbName);
             }
                 break;
+            case "SEARCH_FAILURE": {
+                let {query, dbName, searchID} = message.payload;
+
+                // TODO: use a brief setTimeout here?
+                console.warn(`Encountered a failure on ${dbName} on search "${query}". Trying again...`);
+                if (this.searchValidityManager.attemptRetry(dbName, searchID)) {
+                    this.searchWorkerManager.searchDB(dbName, query, searchID);
+                } else {
+                    console.warn(`Got no results from ${dbName} on search "${query}". Ran out of retries!`);
+                }
+            }
+                break;
             case "DB_LOAD_SUCCESS": {
-                let {dbName} = payload;
+                let {dbName} = message.payload;
                 debugConsole.time("dbLoadRender-" + dbName);
-                // TODO: don't search DBs until they're loaded
                 this.setStateTyped((state) => state.loadedDBs.set(dbName, true));
                 debugConsole.timeEnd("dbLoadRender-" + dbName);
 
                 if (this.query) {
-                    this.searchDB(dbName, this.query, this.searchManager.currentSearchIndex);
-                    this.searchManager.bump();
+                    this.searchWorkerManager.searchDB(dbName, this.query, this.searchValidityManager.currentSearchIndex);
+                    this.searchValidityManager.bump();
                 }
 
                 if (Array.from(this.state.loadedDBs.values()).every(x => x)) {
@@ -316,12 +260,6 @@ export class ChaTaigi extends React.Component<any, any> {
         }
     }
 
-    // Search an individual DB (for retries, on load, etc)
-    searchDB(dbName: DBName, query: string, searchID: number) {
-        this.searchWorkers.get(dbName)?.postMessage(
-            {command: "SEARCH", payload: {query, searchID}}
-        );
-    };
 
     onChange(e: any) {
         const {target = {}} = e;
@@ -343,8 +281,8 @@ export class ChaTaigi extends React.Component<any, any> {
     }
 
     cancelOngoingSearch() {
-        this.searchManager.invalidate();
-        this.searchWorkers.forEach((worker, _) => worker.postMessage({command: "CANCEL"}));
+        this.searchValidityManager.invalidate();
+        this.searchWorkerManager.cancelAllCurrent();
     }
 
     searchQuery() {
@@ -355,10 +293,8 @@ export class ChaTaigi extends React.Component<any, any> {
         if (query === "") {
             this.resetSearch();
         } else {
-            this.searchWorkers.forEach((worker, _) =>
-                worker.postMessage({command: "SEARCH", payload: {query, searchID: this.searchManager.currentSearchIndex}}));
-
-            this.searchManager.bump();
+            this.searchWorkerManager.searchAll(query, this.searchValidityManager.currentSearchIndex);
+            this.searchValidityManager.bump();
         }
 
         this.setMode(MainDisplayAreaMode.SEARCH);

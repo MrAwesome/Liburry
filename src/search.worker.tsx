@@ -1,5 +1,5 @@
 import {getWorkerDebugConsole, StubConsole} from "./debug_console";
-import type {LangDB, DBName} from "./types";
+import type {LangDB, DBName, PerDictResults} from "./types";
 import type {FuzzySearchableDict} from "./fuzzySortTypes";
 import {fetchDB} from "./dictionary_handling";
 import {OngoingSearch} from "./search";
@@ -15,12 +15,26 @@ enum WorkerInitState {
     SEARCHING,
 }
 
-type SearchWorkerCommandMessage =
+export type SearchWorkerCommandMessage =
     {command: "INIT", payload: {dbName: DBName, langDB: LangDB, debug: boolean}} |
-    {command: "LOAD_DB", payload: null} |
+    {command: "LOAD_DB", payload?: null} |
     {command: "SEARCH", payload: {query: string, searchID: number}} |
-    {command: "CANCEL", payload: null} |
-    {command: "LOG", payload: null};
+    {command: "CANCEL", payload?: null} |
+    {command: "LOG", payload?: null};
+
+export type SearchWorkerResponseMessage =
+    {
+        resultType: "SEARCH_SUCCESS",
+        payload: {dbName: DBName, query: string, results: PerDictResults, searchID: number}
+    } |
+    {
+        resultType: "SEARCH_FAILURE",
+        payload: {dbName: DBName, query: string, searchID: number}
+    } |
+    {
+        resultType: "DB_LOAD_SUCCESS",
+        payload: {dbName: DBName}
+    };
 
 type WorkerInitializedState =
     {init: WorkerInitState.UNINITIALIZED} |
@@ -40,6 +54,10 @@ class SearchWorkerHelper {
         // TODO: send message back for start, to avoid race?
     }
 
+    private sendResponse(message: SearchWorkerResponseMessage) {
+        ctx.postMessage(message);
+    }
+
     loadDB() {
         if (this.state.init === WorkerInitState.STARTED) {
             const dbName = this.state.dbName;
@@ -47,7 +65,7 @@ class SearchWorkerHelper {
             fetchDB(dbName, langDB, this.debug).then(
                 (searchableDict) => {
                     this.state = {init: WorkerInitState.LOADED, db: searchableDict, dbName, langDB};
-                    ctx.postMessage({resultType: "DB_LOAD_SUCCESS", payload: {dbName}});
+                    this.sendResponse({resultType: "DB_LOAD_SUCCESS", payload: {dbName}});
                 });
         } else {
             this.log();
@@ -70,20 +88,11 @@ class SearchWorkerHelper {
                     const originalState = this.state;
                     this.state = {...originalState, init: WorkerInitState.SEARCHING, ogs: ongoingSearch};
                     ongoingSearch.parsePromise?.then((results) => {
-
-//                        if (
-//                            this.state.init === WorkerInitState.SEARCHING) {
-//                            console.log(this.state.init
-//                            , this.state.ogs.query !== query
-//                            , !this.state.ogs.wasCanceled);
-//                        }
-//                        if (
-//                            this.state.init === WorkerInitState.SEARCHING
-//                            && this.state.ogs.query !== query
-//                            && !this.state.ogs.wasCanceled
-//                        ) {
-//                      // TODO: type postMessage
-                        ctx.postMessage({resultType: "SEARCH_SUCCESS", payload: {query, results, dbName, searchID}});
+                        if (results === null) {
+                            this.sendResponse({resultType: "SEARCH_FAILURE", payload: {query, dbName, searchID}});
+                        } else {
+                            this.sendResponse({resultType: "SEARCH_SUCCESS", payload: {query, results, dbName, searchID}});
+                        }
                         this.state = originalState;
                     });
                 }
