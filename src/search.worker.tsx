@@ -22,17 +22,23 @@ export type SearchWorkerCommandMessage =
     {command: "CANCEL", payload?: null} |
     {command: "LOG", payload?: null};
 
+export enum SearchWorkerResponseType {
+    SEARCH_SUCCESS,
+    SEARCH_FAILURE,
+    DB_LOAD_SUCCESS,
+}
+
 export type SearchWorkerResponseMessage =
     {
-        resultType: "SEARCH_SUCCESS",
+        resultType: SearchWorkerResponseType.SEARCH_SUCCESS,
         payload: {dbName: DBName, query: string, results: PerDictResults, searchID: number}
     } |
     {
-        resultType: "SEARCH_FAILURE",
+        resultType: SearchWorkerResponseType.SEARCH_FAILURE,
         payload: {dbName: DBName, query: string, searchID: number}
     } |
     {
-        resultType: "DB_LOAD_SUCCESS",
+        resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS,
         payload: {dbName: DBName}
     };
 
@@ -65,7 +71,7 @@ class SearchWorkerHelper {
             fetchDB(dbName, langDB, this.debug).then(
                 (searchableDict) => {
                     this.state = {init: WorkerInitState.LOADED, db: searchableDict, dbName, langDB};
-                    this.sendResponse({resultType: "DB_LOAD_SUCCESS", payload: {dbName}});
+                    this.sendResponse({resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbName}});
                 });
         } else {
             this.log();
@@ -89,9 +95,9 @@ class SearchWorkerHelper {
                     this.state = {...originalState, init: WorkerInitState.SEARCHING, ogs: ongoingSearch};
                     ongoingSearch.parsePromise?.then((results) => {
                         if (results === null) {
-                            this.sendResponse({resultType: "SEARCH_FAILURE", payload: {query, dbName, searchID}});
+                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbName, searchID}});
                         } else {
-                            this.sendResponse({resultType: "SEARCH_SUCCESS", payload: {query, results, dbName, searchID}});
+                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results, dbName, searchID}});
                         }
                         this.state = originalState;
                     });

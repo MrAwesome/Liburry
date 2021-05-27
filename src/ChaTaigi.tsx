@@ -12,7 +12,7 @@ import SearchValidityManager from "./SearchValidityManager";
 import SearchResultsHolder from "./SearchResultsHolder";
 import SearchWorkerManager from "./SearchWorkerManager";
 import {DATABASES} from "./search_options";
-import {SearchWorkerResponseMessage} from "./search.worker";
+import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.worker";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): debug and address firefox flash of blankness during font load
@@ -94,6 +94,7 @@ import {SearchWorkerResponseMessage} from "./search.worker";
 // TODO(later): cross-reference noun classifiers across DBs (and noun status)
 // TODO(later): accessibility? what needs to be done? link to POJ screen readers?
 // TODO(later): store options between sessions
+// TODO(later): run a spellchecker on "english"
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
 //
@@ -214,7 +215,7 @@ export class ChaTaigi extends React.Component<any, any> {
     async searchWorkerReply(e: MessageEvent<SearchWorkerResponseMessage>) {
         const message = e.data;
         switch (message.resultType) {
-            case "SEARCH_SUCCESS": {
+            case SearchWorkerResponseType.SEARCH_SUCCESS: {
                 // TODO: handle null dbName
                 let {results, dbName, searchID} = message.payload;
                 debugConsole.time("searchRender-" + dbName);
@@ -226,7 +227,7 @@ export class ChaTaigi extends React.Component<any, any> {
                 debugConsole.timeEnd("searchRender-" + dbName);
             }
                 break;
-            case "SEARCH_FAILURE": {
+            case SearchWorkerResponseType.SEARCH_FAILURE: {
                 let {query, dbName, searchID} = message.payload;
 
                 // TODO: use a brief setTimeout here?
@@ -238,7 +239,7 @@ export class ChaTaigi extends React.Component<any, any> {
                 }
             }
                 break;
-            case "DB_LOAD_SUCCESS": {
+            case SearchWorkerResponseType.DB_LOAD_SUCCESS: {
                 let {dbName} = message.payload;
                 debugConsole.time("dbLoadRender-" + dbName);
                 this.setStateTyped((state) => state.loadedDBs.set(dbName, true));
