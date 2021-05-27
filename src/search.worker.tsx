@@ -15,12 +15,20 @@ enum WorkerInitState {
     SEARCHING,
 }
 
+export enum SearchWorkerCommandType {
+    INIT,
+    LOAD_DB,
+    SEARCH,
+    CANCEL,
+    LOG, 
+}
+
 export type SearchWorkerCommandMessage =
-    {command: "INIT", payload: {dbName: DBName, langDB: LangDB, debug: boolean}} |
-    {command: "LOAD_DB", payload?: null} |
-    {command: "SEARCH", payload: {query: string, searchID: number}} |
-    {command: "CANCEL", payload?: null} |
-    {command: "LOG", payload?: null};
+    {command: SearchWorkerCommandType.INIT, payload: {dbName: DBName, langDB: LangDB, debug: boolean}} |
+    {command: SearchWorkerCommandType.LOAD_DB, payload?: null} |
+    {command: SearchWorkerCommandType.SEARCH, payload: {query: string, searchID: number}} |
+    {command: SearchWorkerCommandType.CANCEL, payload?: null} |
+    {command: SearchWorkerCommandType.LOG, payload?: null};
 
 export enum SearchWorkerResponseType {
     SEARCH_SUCCESS,
@@ -134,21 +142,21 @@ let sw: SearchWorkerHelper = new SearchWorkerHelper();
 ctx.addEventListener("message", (e) => {
     const message: SearchWorkerCommandMessage = e.data;
     switch (message.command) {
-        case "INIT":
+        case SearchWorkerCommandType.INIT:
             const {dbName, langDB, debug} = message.payload;
             sw.start(dbName, langDB, debug);
             break;
-        case "LOAD_DB":
+        case SearchWorkerCommandType.LOAD_DB:
             sw.loadDB();
             break;
-        case "SEARCH":
+        case SearchWorkerCommandType.SEARCH:
             const {query, searchID} = message.payload;
             sw.search(query, searchID);
             break;
-        case "CANCEL":
+        case SearchWorkerCommandType.CANCEL:
             sw.cancel();
             break;
-        case "LOG":
+        case SearchWorkerCommandType.LOG:
             sw.log();
             break;
     }
