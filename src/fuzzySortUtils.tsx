@@ -1,6 +1,7 @@
 import fuzzysort from "fuzzysort";
-import {DBName, PerDictResults, SearchResultEntry} from "./types";
-import {FuzzyKeyResult, FuzzyKeyResults, FuzzySearchableDict} from "./fuzzySortTypes";
+import {DBName, PerDictResults, SearchResultEntry, LangDB, RawJSONEntry, ShortNameToPreppedNameMapping} from "./types";
+
+import {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedSearchableEntry, FuzzySearchableDict} from "./fuzzySortTypes";
 
 // TODO: remove when there are other types of search
 import {DATABASES, DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./search_options";
@@ -28,13 +29,12 @@ export function parseFuzzySortResultsForRender(
             const pojUnicodePossiblePreHLMatch = fuzzysortResult[DEFAULT_POJ_UNICODE_INDEX];
             const hoabunPossiblePreHLMatch = fuzzysortResult[DEFAULT_HOABUN_INDEX];
 
-            const pojNormalized = fuzzysortHighlight(pojNormalizedPossiblePreHLMatch, null);
-            const pojInput = fuzzysortHighlight(pojInputPossiblePreHLMatch, null);
-            const definition = fuzzysortHighlight(definitionPossiblePreHLMatch, obj.e);
-            const pojUnicode = fuzzysortHighlight(pojUnicodePossiblePreHLMatch, pojUnicodeText);
-            const hoabun = fuzzysortHighlight(hoabunPossiblePreHLMatch, obj.h);
+            const pojNormalized = fuzzySortHighlight(pojNormalizedPossiblePreHLMatch, null);
+            const pojInput = fuzzySortHighlight(pojInputPossiblePreHLMatch, null);
+            const definition = fuzzySortHighlight(definitionPossiblePreHLMatch, obj.e);
+            const pojUnicode = fuzzySortHighlight(pojUnicodePossiblePreHLMatch, pojUnicodeText);
+            const hoabun = fuzzySortHighlight(hoabunPossiblePreHLMatch, obj.h);
 
-            // TODO: strongly type
             return {
                 key: dbName + "-" + rowID,
                 dbID: rowID,
@@ -52,7 +52,7 @@ export function parseFuzzySortResultsForRender(
 }
 
 
-function fuzzysortHighlight(
+function fuzzySortHighlight(
     possibleMatch: FuzzyKeyResult | null,
     defaultDisplay: string | null,
 ): string | null {
@@ -61,8 +61,7 @@ function fuzzysortHighlight(
     return fuzzysort.highlight(possibleMatch, "<mark>", "</mark>") || defaultDisplay;
 }
 
-// TODO: make generic and allow for multiple search types
-export function fuzzysortSearch(
+export function fuzzySortSearch(
     searchableDict: FuzzySearchableDict | null,
     query: string,
     debug: boolean,
@@ -98,6 +97,7 @@ export function fuzzysortSearch(
                 seen.add(obj.d);
                 return true;
             });
+
             ongoingSearch.markCompleted();
             const results = parseFuzzySortResultsForRender(
                 dbName,
@@ -119,4 +119,53 @@ export function fuzzysortSearch(
     const ongoingSearch = new OngoingSearch(dbName, query, debug, cancelableSearchPromise, parsePromise);
 
     return ongoingSearch;
+}
+
+
+export async function fuzzySortFetchAndPrepare(
+    dbName: string,
+    langDB: LangDB,
+    debug: boolean,
+): Promise<FuzzySearchableDict> {
+    const debugConsole = getWorkerDebugConsole(debug);
+    const {dbFilename, shortNameToPreppedNameMapping} = langDB;
+    debugConsole.time("fetch-" + dbName);
+    return fetch(dbFilename)
+        .then((response: Response) => {
+            debugConsole.timeEnd("fetch-" + dbName);
+            debugConsole.time("jsonConvert-" + dbName);
+            return response.json();
+        })
+        .then((prePreparedData: RawJSONEntry[]) => {
+            debugConsole.timeEnd("jsonConvert-" + dbName);
+            debugConsole.time("prepareSlow-" + dbName);
+            const data = prePreparedData.map((d) => convertRawJSONEntryToFuzzySortPrepared(shortNameToPreppedNameMapping, d));
+            debugConsole.timeEnd("prepareSlow-" + dbName);
+
+            return {
+                dbName,
+                searchableEntries: data
+            } as FuzzySearchableDict;
+        });
+}
+
+// Prepare a fast search version of each searchable key.
+// NOTE: this modifies the object and returns it as a type
+//       which is a superset of its original type.
+function convertRawJSONEntryToFuzzySortPrepared(
+    shortNameToPreppedNameMapping: ShortNameToPreppedNameMapping,
+    rawJSONEntry: RawJSONEntry,
+) {
+    shortNameToPreppedNameMapping.forEach(
+        (preppedKey, shortName) => {
+            // @ts-ignore  force dynamic index
+            rawJSONEntry[preppedKey] =
+                fuzzysort
+                    // @ts-ignore  prepareSlow does exist
+                    .prepareSlow
+                    // @ts-ignore  force dynamic index
+                    (rawJSONEntry[shortName]);
+        });
+
+    return rawJSONEntry as FuzzyPreparedSearchableEntry;
 }

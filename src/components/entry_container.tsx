@@ -139,6 +139,12 @@ export class EntryContainer extends React.PureComponent<any, any> {
         </div>
 
     }
+    getDebugBox(): JSX.Element {
+        return <div className="entry-debugbox">
+            {this.getSearchScore()}
+            {this.getDBID()}
+        </div>
+    }
 
     render() {
         const {pojUnicode, definition, hoabun, dbName} = this.getEntry();
@@ -171,15 +177,14 @@ export class EntryContainer extends React.PureComponent<any, any> {
                         {this.getAltTextContainers()}
                     </div>
 
-                    {DEBUG_MODE ? this.getSearchScore() : null}
-                    {DEBUG_MODE ? this.getDBID() : null}
-
                     <div className="dbname-container">
                         <div className="dbname">
                             {dbName}
                         </div>
                     </div>
                 </div>
+
+                {DEBUG_MODE ? this.getDebugBox() : null}
 
                 {clicked ? this.clickedNotif() : null}
             </div>

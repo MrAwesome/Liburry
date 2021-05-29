@@ -14,10 +14,11 @@ export type DBFilename = string;
 export type JSONDBKey = string;
 export type SearchPreppedKey = string;
 export type DBSearchRanking = number;
+export type ShortNameToPreppedNameMapping = Map<JSONDBKey, SearchPreppedKey>;
 
 export interface LangDB {
     dbFilename: DBFilename,
-    shortNameToPreppedNameMapping: Map<JSONDBKey, SearchPreppedKey>,
+    shortNameToPreppedNameMapping: ShortNameToPreppedNameMapping,
     searchKeys: Array<SearchPreppedKey>,
     fuzzyOpts: FuzzyKeysOptions,
 }

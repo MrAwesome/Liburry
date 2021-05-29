@@ -105,8 +105,6 @@ mark {
     width: 100%;
     box-sizing: border-box;
 
-    padding: 2px;
-
     border-left: 1px solid black;
     border-right: 1px solid black;
     border-bottom: 1px solid black;
@@ -128,17 +126,29 @@ mark {
 }
 
 .entry-mainbox {
+    flex-grow: 1;
+    padding: 2px;
 }
 
-.entry-sidebox {
+.entry-sidebox,.entry-debugbox {
+    padding: 2px;
+
     max-width: 15%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    align-items: flex-end;
-
 }
 
+.entry-sidebox {
+    align-items: flex-end;
+}
+
+.entry-debugbox {
+    min-width: 5%;
+    border-left: 1px solid black;
+    padding-left: 2px;
+    align-items: center;
+}
 
 .fading-notif, .clicked-notif {
     position: fixed;

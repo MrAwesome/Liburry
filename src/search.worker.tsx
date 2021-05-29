@@ -1,9 +1,8 @@
 import {getWorkerDebugConsole, StubConsole} from "./debug_console";
 import type {LangDB, DBName, PerDictResults} from "./types";
 import type {FuzzySearchableDict} from "./fuzzySortTypes";
-import {fetchDB} from "./dictionary_handling";
 import {OngoingSearch} from "./search";
-import {fuzzysortSearch} from "./fuzzySortUtils";
+import {fuzzySortFetchAndPrepare, fuzzySortSearch} from "./fuzzySortUtils";
 
 // eslint-disable-next-line no-restricted-globals
 const ctx: Worker = self as any;
@@ -88,14 +87,14 @@ class SearchWorkerHelper {
         if (this.state.init === WorkerInitState.STARTED) {
             const dbName = this.state.dbName;
             const langDB = this.state.langDB;
-            fetchDB(dbName, langDB, this.debug).then(
+            fuzzySortFetchAndPrepare(dbName, langDB, this.debug).then(
                 (searchableDict) => {
                     this.state = {init: WorkerInitState.LOADED, db: searchableDict, dbName, langDB};
                     this.sendResponse({resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbName}});
                 });
         } else {
             this.log();
-            console.error("Attempted to load db before worker initialization!")
+            console.error("Attempted to load DB while init state state was not STARTED:", this.state)
         }
     }
 
@@ -108,7 +107,7 @@ class SearchWorkerHelper {
                 this.search(query, searchID);
                 break;
             case WorkerInitState.LOADED:
-                const ongoingSearch = fuzzysortSearch(this.state.db, query, this.debug);
+                const ongoingSearch = fuzzySortSearch(this.state.db, query, this.debug);
                 const dbName = this.state.dbName;
                 if (ongoingSearch !== null) {
                     const originalState = this.state;
