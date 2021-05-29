@@ -1,6 +1,7 @@
 import * as React from "react";
 import {DBName, MainDisplayAreaMode} from "../types";
 import QueryStringHandler from "../QueryStringHandler";
+import {REPO_LINK} from "../constants";
 
 export class SearchBar extends React.PureComponent<any, any> {
     textInput: React.RefObject<any>;
@@ -106,7 +107,7 @@ export class AboutPage extends React.PureComponent<any, any> {
                     <div className="about">
                         <p>This website is powered by open source technology.</p>
                         <p>The code can be viewed here:<br />
-                            <a href="https://github.com/MrAwesome/cha_taigi_web">https://github.com/MrAwesome/cha_taigi_web</a>
+                            <a href={REPO_LINK}>{REPO_LINK}</a>
                         </p>
 
                         <p>The databases used for search can all be found here, along with relevant licensing information:<br />

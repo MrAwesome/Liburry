@@ -145,9 +145,14 @@ mark {
 
 .entry-debugbox {
     min-width: 5%;
-    border-left: 1px solid black;
-    padding-left: 2px;
+    border-right: 1px solid black;
     align-items: center;
+    z-index: 200;
+}
+
+.report-button {
+    font-size: 10px;
+    padding: 0px;
 }
 
 .fading-notif, .clicked-notif {

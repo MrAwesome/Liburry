@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import {REPO_LINK} from "../constants";
 import {DEBUG_MODE} from "../debug_console";
 import {FUZZY_SCORE_LOWER_THRESHOLD} from "../search_options";
 import {SearchResultEntry} from "../types";
@@ -37,6 +38,7 @@ export class EntryContainer extends React.PureComponent<any, any> {
         this.getSearchScore = this.getSearchScore.bind(this);
         this.myOnClick = this.myOnClick.bind(this);
         this.resetClicked = this.resetClicked.bind(this);
+        this.clickReport = this.clickReport.bind(this);
     }
 
     getEntry(): SearchResultEntry {
@@ -47,8 +49,11 @@ export class EntryContainer extends React.PureComponent<any, any> {
         return this.state.clicked;
     }
 
-    myOnClick(_: any) {
+    myOnClick(e: React.MouseEvent) {
+        e.preventDefault();
+
         const {pojUnicodeText} = this.getEntry();
+        // TODO: wrap in a try/catch for situations where clipboard isn't accessible (http, etc)
         navigator.clipboard.writeText(pojUnicodeText);
         this.setState({clicked: ClickedOrder.CLICKED});
         setTimeout(this.fadeClicked, 500);
@@ -139,9 +144,29 @@ export class EntryContainer extends React.PureComponent<any, any> {
         </div>
 
     }
+
+
+    clickReport(e: React.MouseEvent) {
+        e.preventDefault();
+
+        const {dbName,dbID,pojUnicodeText} = this.getEntry();
+        const pojUnicodeCSV = pojUnicodeText.replace(/"/g, '""');
+        const csvReportSkeleton = `"${dbName}","${dbID}","${pojUnicodeCSV}",`;
+        navigator.clipboard.writeText(csvReportSkeleton).then(() =>
+            window.open(`${REPO_LINK}/edit/main/misc/incorrect_entries.csv`)
+        );
+
+        e.stopPropagation();
+    }
+
     getDebugBox(): JSX.Element {
         return <div className="entry-debugbox">
             {this.getSearchScore()}
+
+            <button className="report-button" onClick={this.clickReport}>
+                Report
+            </button>
+
             {this.getDBID()}
         </div>
     }
@@ -158,6 +183,8 @@ export class EntryContainer extends React.PureComponent<any, any> {
         return (
             // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
             <div className="entry-container" style={this.fadingStyle()} onClick={this.myOnClick}>
+                {DEBUG_MODE ? this.getDebugBox() : null}
+
                 <div className="entry-mainbox">
                     <span className="poj-unicode-container">
                         {poju}
@@ -184,11 +211,8 @@ export class EntryContainer extends React.PureComponent<any, any> {
                     </div>
                 </div>
 
-                {DEBUG_MODE ? this.getDebugBox() : null}
-
                 {clicked ? this.clickedNotif() : null}
             </div>
         );
     };
 }
-
