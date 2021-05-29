@@ -101,23 +101,22 @@ mark {
 }
 
 .entry-container {
-    transition: all 1s ease;
+    transition: all .3s ease;
     width: 100%;
     box-sizing: border-box;
 
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-left: 5px;
-    padding-right: 3px;
+    padding: 2px;
 
     border-left: 1px solid black;
     border-right: 1px solid black;
     border-bottom: 1px solid black;
-    display: inline-block;
 
     color: var(--container-dark-color);
     background: var(--container-bg-color);
-    position: relative;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .entry-container:hover {
@@ -127,6 +126,19 @@ mark {
     box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, .2);
 
 }
+
+.entry-mainbox {
+}
+
+.entry-sidebox {
+    max-width: 15%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+
+}
+
 
 .fading-notif, .clicked-notif {
     position: fixed;
@@ -192,18 +204,11 @@ mark {
     color: grey;
 
     user-select: none;
-
-    position: relative;
-    float: right;
-
-/* To float the two typing inputs above one another */
-/*    clear: right;*/
 }
 
 
 .poj-normalized-container, .poj-input-container {
     text-align: right;
-    display: inline-block;
 }
 
 .poj-normalized, .poj-input {
@@ -225,9 +230,9 @@ mark {
     font-size: 8px;
     color: #777777;
 
-    position: absolute;
-    right: 5px;
-    bottom: 3px;
+/*    position: absolute;*/
+/*    right: 5px;*/
+/*    bottom: 3px;*/
 }
 
 .dbname {
@@ -240,15 +245,28 @@ mark {
     font-size: 8px;
     color: #555555;
 
-    position: absolute;
-    right: 5px;
-    bottom: 14px;
+/*    position: absolute;*/
+/*    right: 5px;*/
+/*    bottom: 14px;*/
 }
 
 .searchscore {
     display: inline-block;
     text-align: right;
-    text-transform: capitalize;
+}
+
+.dbid-container {
+    font-size: 8px;
+    color: #555555;
+
+/*    position: absolute;*/
+/*    right: 5px;*/
+/*    bottom: 16px;*/
+}
+
+.dbid {
+    display: inline-block;
+    text-align: right;
 }
 
 .db-loaded-states {

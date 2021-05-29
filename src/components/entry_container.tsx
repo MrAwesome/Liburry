@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import {DEBUG_MODE} from "../debug_console";
+import {FUZZY_SCORE_LOWER_THRESHOLD} from "../search_options";
 import {SearchResultEntry} from "../types";
 
 enum ClickedOrder {
@@ -28,12 +29,14 @@ export class EntryContainer extends React.PureComponent<any, any> {
         this.state = {
             clicked: ClickedOrder.NORMAL,
         }
-        this.myOnClick = this.myOnClick.bind(this);
-        this.fadeClicked = this.fadeClicked.bind(this);
-        this.resetClicked = this.resetClicked.bind(this);
         this.clickedNotif = this.clickedNotif.bind(this);
         this.createMatchElement = this.createMatchElement.bind(this);
+        this.fadeClicked = this.fadeClicked.bind(this);
         this.getAltTextContainers = this.getAltTextContainers.bind(this);
+        this.getDBID = this.getDBID.bind(this);
+        this.getSearchScore = this.getSearchScore.bind(this);
+        this.myOnClick = this.myOnClick.bind(this);
+        this.resetClicked = this.resetClicked.bind(this);
     }
 
     getEntry(): SearchResultEntry {
@@ -86,9 +89,6 @@ export class EntryContainer extends React.PureComponent<any, any> {
                 ({poji})
             </div>;
             altTextContainers.push(pojic);
-            if (pojNormalized !== null) {
-                altTextContainers.push(<>&nbsp;</>);
-            }
         }
 
         if (pojNormalized !== null) {
@@ -109,13 +109,35 @@ export class EntryContainer extends React.PureComponent<any, any> {
 
     }
 
+    // TODO: remove reliance on fuzzysort
     getSearchScore(): JSX.Element {
         const {dbSearchRanking} = this.getEntry();
+
+        const score = dbSearchRanking;
+        const worst = FUZZY_SCORE_LOWER_THRESHOLD;
+        const green = (1 - (score / worst)) * 255;
+        const red = (score / worst) * 255;
+        const style = {"color": `rgb(${red}, ${green}, 0)`};
+
         return <div className="searchscore-container">
-            <div className="searchscore">
-                {dbSearchRanking}
+            Score:&nbsp;
+            <div className="searchscore" style={style}>
+                {score}
             </div>
         </div>
+    }
+
+
+    getDBID(): JSX.Element {
+        const {dbID} = this.getEntry();
+
+        return <div className="dbid-container">
+            ID:&nbsp;
+            <div className="dbid">
+                {dbID}
+            </div>
+        </div>
+
     }
 
     render() {
@@ -130,29 +152,34 @@ export class EntryContainer extends React.PureComponent<any, any> {
         return (
             // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
             <div className="entry-container" style={this.fadingStyle()} onClick={this.myOnClick}>
-                <div className="alt-text-container">
-                    {this.getAltTextContainers()}
-                </div>
+                <div className="entry-mainbox">
+                    <span className="poj-unicode-container">
+                        {poju}
+                    </span>
+                    &nbsp;
+                    <div className="hoabun-container">
+                        ({hoab})
+                    </div>
 
-                <span className="poj-unicode-container">
-                    {poju}
-                </span>
-                &nbsp;
-                <div className="hoabun-container">
-                    ({hoab})
-                </div>
-
-                <div className="definition-container">
-                    {engl}
-                </div>
-
-                <div className="dbname-container">
-                    <div className="dbname">
-                        {dbName}
+                    <div className="definition-container">
+                        {engl}
                     </div>
                 </div>
 
-                {DEBUG_MODE ? this.getSearchScore() : null}
+                <div className="entry-sidebox">
+                    <div className="alt-text-container">
+                        {this.getAltTextContainers()}
+                    </div>
+
+                    {DEBUG_MODE ? this.getSearchScore() : null}
+                    {DEBUG_MODE ? this.getDBID() : null}
+
+                    <div className="dbname-container">
+                        <div className="dbname">
+                            {dbName}
+                        </div>
+                    </div>
+                </div>
 
                 {clicked ? this.clickedNotif() : null}
             </div>

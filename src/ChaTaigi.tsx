@@ -2,7 +2,7 @@ import * as React from "react";
 
 import QueryStringHandler from "./QueryStringHandler";
 
-import {AboutPage, DebugArea, SearchBar, SelectBar} from "./components/components";
+import {AboutPage, DebugArea, SearchBar} from "./components/components";
 import {EntryContainer} from "./components/entry_container";
 import {DBName, MainDisplayAreaMode} from "./types";
 
@@ -17,7 +17,10 @@ import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.wo
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): debug and address firefox flash of blankness during font load
 // TODO(urgent): integration tests
+// TODO(urgent): do not retry on cancel
+// TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(urgent): find how to create unit tests in js, and create them
+// TODO(high): implement select bar (note the way it squishes on very narrow screen - create space under it?)
 // TODO(high): chase down error causing duplicate search entries
 // TODO(high): create side box for dbname/alttext/etc, differentiate it with vertical line?
 // TODO(high): better styling, fewer borders
@@ -42,6 +45,7 @@ import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.wo
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): keyboard shortcuts
 // TODO(mid): show bottom bar with links to different modes
+// TODO(mid): exit behavior on multiple presses of back in app mode? exit button?
 // TODO(mid): ensure that any navigational links include characters/POJ (or have a fast language switch)
 // TODO(mid): split maryknoll into multiple pieces?
 // TODO(mid): download progress indicators
@@ -97,6 +101,7 @@ import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.wo
 // TODO(later): run a spellchecker on "english"
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
+// TODO(watch): keep an eye out for 200% CPU util. infinite search loop?
 //
 // Project: Integration tests
 //      1) Determine how to mock
@@ -155,7 +160,6 @@ export class ChaTaigi extends React.Component<any, any> {
 
         this.searchBar = React.createRef();
 
-        this.cancelOngoingSearch = this.cancelOngoingSearch.bind(this);
         this.getStateTyped = this.getStateTyped.bind(this);
         this.hashChange = this.hashChange.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
@@ -215,8 +219,12 @@ export class ChaTaigi extends React.Component<any, any> {
     async searchWorkerReply(e: MessageEvent<SearchWorkerResponseMessage>) {
         const message = e.data;
         switch (message.resultType) {
+            case SearchWorkerResponseType.CANCELED: {
+                let {query, dbName, searchID} = message.payload;
+                debugConsole.log(`Canceled search "${query}" with searchID "${searchID}" on db "${dbName}".`);
+            }
+                break;
             case SearchWorkerResponseType.SEARCH_SUCCESS: {
-                // TODO: handle null dbName
                 let {results, dbName, searchID} = message.payload;
                 debugConsole.time("searchRender-" + dbName);
 
@@ -281,15 +289,11 @@ export class ChaTaigi extends React.Component<any, any> {
         this.setStateTyped((state) => state.resultsHolder.clear());
     }
 
-    cancelOngoingSearch() {
-        this.searchValidityManager.invalidate();
-        this.searchWorkerManager.cancelAllCurrent();
-    }
-
     searchQuery() {
         const query = this.query;
 
-        this.cancelOngoingSearch();
+        // Invalidate the previous search, so any lingering results don't pollute the current view
+        this.searchValidityManager.invalidate();
 
         if (query === "") {
             this.resetSearch();
@@ -344,9 +348,10 @@ export class ChaTaigi extends React.Component<any, any> {
             <div className="ChaTaigi">
                 <SearchBar ref={this.searchBar} onChange={onChange} />
                 {this.mainDisplayArea(mainDisplayAreaMode)}
-                {options.debug ? <SelectBar /> : null}
             </div>
         );
+        // TODO: place a filler element inside SelectBar with the same height, at the bottom of the page
+        //{options.debug ? <SelectBar /> : null}
     }
 }
 

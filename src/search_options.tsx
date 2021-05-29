@@ -41,12 +41,14 @@ export const DEFAULT_DEFINITION_INDEX = DEFAULT_SEARCH_KEYS.indexOf(DEFINITION_P
 export const DEFAULT_POJ_UNICODE_INDEX = DEFAULT_SEARCH_KEYS.indexOf(POJ_UNICODE_PREPPED_KEY);
 export const DEFAULT_HOABUN_INDEX = DEFAULT_SEARCH_KEYS.indexOf(HOABUN_PREPPED_KEY);
 
+export const FUZZY_SCORE_LOWER_THRESHOLD = -1000;
+
 function getFuzzyOpts(searchKeys: Array<string> = DEFAULT_SEARCH_KEYS): FuzzyKeysOptions {
     return {
         keys: searchKeys,
         allowTypo: false,
         limit: SEARCH_RESULTS_LIMIT,
-        threshold: -10000,
+        threshold: FUZZY_SCORE_LOWER_THRESHOLD,
     };
 }
 

@@ -9,18 +9,18 @@ import {fuzzysortSearch} from "./fuzzySortUtils";
 const ctx: Worker = self as any;
 
 enum WorkerInitState {
-    UNINITIALIZED,
-    STARTED,
-    LOADED,
-    SEARCHING,
+    UNINITIALIZED = "UNINITIALIZED",
+    STARTED = "STARTED",
+    LOADED = "LOADED",
+    SEARCHING = "SEARCHING",
 }
 
 export enum SearchWorkerCommandType {
-    INIT,
-    LOAD_DB,
-    SEARCH,
-    CANCEL,
-    LOG, 
+    INIT = "INIT",
+    LOAD_DB = "LOAD_DB",
+    SEARCH = "SEARCH",
+    CANCEL = "CANCEL",
+    LOG = "LOG",
 }
 
 export type SearchWorkerCommandMessage =
@@ -31,12 +31,17 @@ export type SearchWorkerCommandMessage =
     {command: SearchWorkerCommandType.LOG, payload?: null};
 
 export enum SearchWorkerResponseType {
-    SEARCH_SUCCESS,
-    SEARCH_FAILURE,
-    DB_LOAD_SUCCESS,
+    CANCELED = "CANCELED",
+    DB_LOAD_SUCCESS = "DB_LOAD_SUCCESS",
+    SEARCH_FAILURE = "SEARCH_FAILURE",
+    SEARCH_SUCCESS = "SEARCH_SUCCESS",
 }
 
 export type SearchWorkerResponseMessage =
+    {
+        resultType: SearchWorkerResponseType.CANCELED,
+        payload: {dbName: DBName, query: string, searchID: number}
+    } |
     {
         resultType: SearchWorkerResponseType.SEARCH_SUCCESS,
         payload: {dbName: DBName, query: string, results: PerDictResults, searchID: number}
@@ -54,7 +59,7 @@ type WorkerInitializedState =
     {init: WorkerInitState.UNINITIALIZED} |
     {init: WorkerInitState.STARTED, dbName: DBName, langDB: LangDB} |
     {init: WorkerInitState.LOADED, dbName: DBName, langDB: LangDB, db: FuzzySearchableDict} |
-    {init: WorkerInitState.SEARCHING, dbName: DBName, langDB: LangDB, db: FuzzySearchableDict, ogs: OngoingSearch};
+    {init: WorkerInitState.SEARCHING, dbName: DBName, langDB: LangDB, db: FuzzySearchableDict, ogs: OngoingSearch, searchID: number};
 
 class SearchWorkerHelper {
     state: WorkerInitializedState = {init: WorkerInitState.UNINITIALIZED};
@@ -69,6 +74,13 @@ class SearchWorkerHelper {
     }
 
     private sendResponse(message: SearchWorkerResponseMessage) {
+        if (this.state.init !== WorkerInitState.UNINITIALIZED) {
+            const {dbName} = this.state;
+            this.console.log("Sending response from:", dbName, message);
+        } else {
+            this.console.log("Sending response from uninitialized worker:", message);
+        }
+
         ctx.postMessage(message);
     }
 
@@ -100,12 +112,16 @@ class SearchWorkerHelper {
                 const dbName = this.state.dbName;
                 if (ongoingSearch !== null) {
                     const originalState = this.state;
-                    this.state = {...originalState, init: WorkerInitState.SEARCHING, ogs: ongoingSearch};
+                    this.state = {...originalState, init: WorkerInitState.SEARCHING, ogs: ongoingSearch, searchID};
                     ongoingSearch.parsePromise?.then((results) => {
-                        if (results === null) {
-                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbName, searchID}});
+                        if (ongoingSearch.wasCanceled) {
+                            this.sendResponse({resultType: SearchWorkerResponseType.CANCELED, payload: {query, dbName, searchID}});
                         } else {
-                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results, dbName, searchID}});
+                            if (results === null) {
+                                this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbName, searchID}});
+                            } else {
+                                this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results, dbName, searchID}});
+                            }
                         }
                         this.state = originalState;
                     });
@@ -124,8 +140,10 @@ class SearchWorkerHelper {
 
     cancel() {
         if (this.state.init === WorkerInitState.SEARCHING) {
-            const {ogs} = this.state;
+            const {ogs, dbName, searchID} = this.state;
+            const {query} = ogs;
             ogs.cancel();
+            this.sendResponse({resultType: SearchWorkerResponseType.CANCELED, payload: {query, dbName, searchID}});
             this.state = {...this.state, init: WorkerInitState.LOADED};
         }
     }

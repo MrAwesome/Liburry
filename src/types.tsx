@@ -8,6 +8,7 @@ export enum MainDisplayAreaMode {
     SETTINGS,
 }
 
+export type DBIdentifier = number;
 export type DBName = string;
 export type DBFilename = string;
 export type JSONDBKey = string;
@@ -38,8 +39,10 @@ export interface PerDictResults {
     // TODO: store the intermediate results for each search as well?
 }
 
+// TODO: add type of search which produced this
 export interface SearchResultEntry {
     key: string;
+    dbID: DBIdentifier;
     dbName: DBName;
     dbSearchRanking: DBSearchRanking;
     pojUnicodeText: string;
