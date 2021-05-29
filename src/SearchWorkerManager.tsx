@@ -2,31 +2,37 @@ import {DATABASES} from "./search_options";
 
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import Worker from "worker-loader!./search.worker";
-import ChaTaigiOptions from "./ChaTaigiOptions";
 import {DBName} from "./types";
 import {SearchWorkerCommandMessage, SearchWorkerCommandType, SearchWorkerResponseMessage} from "./search.worker";
-import debugConsole from "./debug_console";
+import {getWorkerDebugConsole, StubConsole} from "./debug_console";
+import {SearcherType} from "./search";
 
 export default class SearchWorkerManager {
     searchWorkers: Map<string, Worker> = new Map();
-    options: ChaTaigiOptions;
+    debug: boolean;
+    console: StubConsole;
 
-    constructor(options: ChaTaigiOptions) {
-        this.options = options;
+    constructor(debug: boolean) {
+        this.debug = debug;
+        this.console = getWorkerDebugConsole(debug);
 
         this.searchAll = this.searchAll.bind(this);
         this.cancelAllCurrent = this.cancelAllCurrent.bind(this);
         this.init = this.init.bind(this);
-        this.searchDB = this.searchDB.bind(this);
+        this.searchSpecificDB = this.searchSpecificDB.bind(this);
         this.sendCommand = this.sendCommand.bind(this);
     }
 
-    private sendCommand(dbName: DBName, worker: Worker, message: SearchWorkerCommandMessage) {
-        debugConsole.log(`Sending message to "${dbName}:`, message);
-        worker.postMessage(message);
+    private sendCommand(dbName: DBName, worker: Worker, command: SearchWorkerCommandMessage) {
+        this.console.log(`Sending command to "${dbName}:`, command);
+        worker.postMessage(command);
     }
 
-    init(searchWorkerReply: (e: MessageEvent<SearchWorkerResponseMessage>) => Promise<void>) {
+    private sendAll(command: SearchWorkerCommandMessage) {
+        this.searchWorkers.forEach((worker, dbName) => this.sendCommand(dbName, worker, command));
+    }
+
+    init(searcherType: SearcherType, searchWorkerReplyHandler: (e: MessageEvent<SearchWorkerResponseMessage>) => Promise<void>) {
         for (let [dbName, langDB] of DATABASES) {
             const worker = new Worker();
             this.searchWorkers.set(
@@ -34,19 +40,23 @@ export default class SearchWorkerManager {
                 worker,
             );
 
-            worker.onmessage = searchWorkerReply;
+            worker.onmessage = searchWorkerReplyHandler;
 
-            this.sendCommand(dbName, worker, {command: SearchWorkerCommandType.INIT, payload: {dbName, langDB, debug: this.options.debug}});
-            this.sendCommand(dbName, worker, {command: SearchWorkerCommandType.LOAD_DB});
+            this.sendCommand(dbName, worker, {command: SearchWorkerCommandType.INIT, payload: {dbName, langDB, debug: this.debug, searcherType}});
         }
 
     }
 
-    cancelAllCurrent() {
-        this.searchWorkers.forEach((worker, dbName) => this.sendCommand(dbName, worker, {command: SearchWorkerCommandType.CANCEL}));
+    changeAllSearcherTypes(searcherType: SearcherType) {
+        this.sendAll({command: SearchWorkerCommandType.CHANGE_SEARCHER, payload: {searcherType}});
     }
 
-    searchDB(dbName: DBName, query: string, searchID: number) {
+
+    cancelAllCurrent() {
+        this.sendAll({command: SearchWorkerCommandType.CANCEL});
+    }
+
+    searchSpecificDB(dbName: DBName, query: string, searchID: number) {
         const worker = this.searchWorkers.get(dbName);
         if (worker !== undefined) {
             this.sendCommand(dbName, worker, {command: SearchWorkerCommandType.SEARCH, payload: {query, searchID}});
@@ -56,7 +66,6 @@ export default class SearchWorkerManager {
     }
 
     searchAll(query: string, searchID: number) {
-        this.searchWorkers.forEach((worker, dbName) =>
-            this.sendCommand(dbName, worker, {command: SearchWorkerCommandType.SEARCH, payload: {query, searchID}}));
+        this.sendAll({command: SearchWorkerCommandType.SEARCH, payload: {query, searchID}});
     }
 }

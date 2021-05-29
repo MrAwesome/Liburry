@@ -1,22 +1,42 @@
 import {getWorkerDebugConsole, StubConsole} from "./debug_console";
-import {DBName, PerDictResults} from "./types";
+import {DBName, LangDB, PerDictResults} from "./types";
 import {CancelablePromise} from "./fuzzySortTypes";
+import FuzzySortSearcher from "./FuzzySortSearcher";
 
-interface Searcher {
+export interface Searcher {
+    searcherType: SearcherType;
     dbName: DBName;
-    constructor(dbName: DBName): this;
-    init(): void;
-    prepare(): void;
-    search(query: string): OngoingSearch | null;
+    langDB: LangDB;
+    debug: boolean;
+    prepare(): Promise<void>;
+    search(query: string): OngoingSearch | SearchFailure;
+}
+
+export enum SearcherType {
+    FuzzySort = "FuzzySort"
+}
+
+export function getSearcher(searcherType: SearcherType, dbName: DBName, langDB: LangDB, debug: boolean): Searcher {
+    switch (searcherType) {
+        case SearcherType.FuzzySort:
+            return new FuzzySortSearcher(dbName, langDB, debug);
+    }
+}
+
+export enum SearchFailure {
+    FuzzyNoSearchableDict = "FuzzyNoSearchableDict",
+    FuzzyFailedToLoadLangDB = "FuzzyFailedToLoadLangDB",
+    FuzzyParsePromiseFailed = "FuzzyParsePromiseFailed",
+    FuzzySearchedBeforePrepare = "FuzzySearchedBeforePrepare",
 }
 
 // TODO: type promises
-// TODO: make less fuzzysort-specific
+// TODO: find a generic cancelable promise to use instead of fuzzysort's
 export class OngoingSearch {
     dbName: DBName;
     query: string;
     cancelablePromise?: CancelablePromise<any>;
-    parsePromise?: Promise<PerDictResults | null>;
+    parsePromise?: Promise<PerDictResults | SearchFailure>;
     completed: boolean;
     wasCanceled: boolean = false;
     console: StubConsole;
@@ -26,7 +46,7 @@ export class OngoingSearch {
         query: string = "",
         debug: boolean,
         cancelablePromise?: CancelablePromise<any>,
-        parsePromise?: Promise<PerDictResults | null>,
+        parsePromise?: Promise<PerDictResults | SearchFailure>,
     ) {
         this.console = getWorkerDebugConsole(debug);
         this.console.time("asyncSearch-" + dbName);

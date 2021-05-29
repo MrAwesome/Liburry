@@ -15,12 +15,12 @@ import {DATABASES} from "./search_options";
 import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.worker";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
-// TODO(urgent): debug and address firefox flash of blankness during font load
 // TODO(urgent): integration tests
-// TODO(urgent): do not retry on cancel
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(urgent): find how to create unit tests in js, and create them
+// TODO(high): give some visual indication that DBs are loading, even in search mode
 // TODO(high): implement select bar (note the way it squishes on very narrow screen - create space under it?)
+// TODO(high): debug and address firefox flash of blankness during font load
 // TODO(high): chase down error causing duplicate search entries
 // TODO(high): create side box for dbname/alttext/etc, differentiate it with vertical line?
 // TODO(high): better styling, fewer borders
@@ -144,7 +144,7 @@ export class ChaTaigi extends React.Component<any, any> {
     searchBar: React.RefObject<SearchBar>;
     query = queryStringHandler.parse().query;
 
-    searchWorkerManager = new SearchWorkerManager(options);
+    searchWorkerManager = new SearchWorkerManager(options.debug);
     searchValidityManager = new SearchValidityManager();
 
     constructor(props: any) {
@@ -184,7 +184,7 @@ export class ChaTaigi extends React.Component<any, any> {
         debugConsole.timeLog("initToAllDB", "componentDidMount");
         this.updateSearchBar();
 
-        this.searchWorkerManager.init(this.searchWorkerReply);
+        this.searchWorkerManager.init(options.searcherType, this.searchWorkerReply);
         window.addEventListener("hashchange", this.hashChange);
 
     }
@@ -236,14 +236,15 @@ export class ChaTaigi extends React.Component<any, any> {
             }
                 break;
             case SearchWorkerResponseType.SEARCH_FAILURE: {
-                let {query, dbName, searchID} = message.payload;
+                let {query, dbName, searchID, failure} = message.payload;
 
                 // TODO: use a brief setTimeout here?
-                console.warn(`Encountered a failure on ${dbName} on search "${query}". Trying again...`);
+                const msg = `Encountered a failure "${failure}" while searching "${dbName}" for "${query}". `;
                 if (this.searchValidityManager.attemptRetry(dbName, searchID)) {
-                    this.searchWorkerManager.searchDB(dbName, query, searchID);
+                    this.searchWorkerManager.searchSpecificDB(dbName, query, searchID);
+                    console.warn(msg + "Trying again...");
                 } else {
-                    console.warn(`Got no results from ${dbName} on search "${query}". Ran out of retries!`);
+                    console.error(msg + "Ran out of retries!");
                 }
             }
                 break;
@@ -254,7 +255,7 @@ export class ChaTaigi extends React.Component<any, any> {
                 debugConsole.timeEnd("dbLoadRender-" + dbName);
 
                 if (this.query) {
-                    this.searchWorkerManager.searchDB(dbName, this.query, this.searchValidityManager.currentSearchIndex);
+                    this.searchWorkerManager.searchSpecificDB(dbName, this.query, this.searchValidityManager.currentSearchIndex);
                     this.searchValidityManager.bump();
                 }
 
@@ -285,6 +286,7 @@ export class ChaTaigi extends React.Component<any, any> {
     }
 
     resetSearch() {
+        this.searchWorkerManager.cancelAllCurrent();
         this.updateQuery("");
         this.setStateTyped((state) => state.resultsHolder.clear());
     }

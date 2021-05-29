@@ -5,8 +5,35 @@ import {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedSearchableEntry, FuzzySear
 
 // TODO: remove when there are other types of search
 import {DATABASES, DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./search_options";
-import {OngoingSearch} from "./search";
+import {SearchFailure, OngoingSearch} from "./search";
 import {getWorkerDebugConsole} from "./debug_console";
+
+export async function fuzzySortFetchAndPrepare(
+    dbName: string,
+    langDB: LangDB,
+    debug: boolean,
+): Promise<FuzzySearchableDict> {
+    const debugConsole = getWorkerDebugConsole(debug);
+    const {dbFilename, shortNameToPreppedNameMapping} = langDB;
+    debugConsole.time("fetch-" + dbName);
+    return fetch(dbFilename)
+        .then((response: Response) => {
+            debugConsole.timeEnd("fetch-" + dbName);
+            debugConsole.time("jsonConvert-" + dbName);
+            return response.json();
+        })
+        .then((prePreparedData: RawJSONEntry[]) => {
+            debugConsole.timeEnd("jsonConvert-" + dbName);
+            debugConsole.time("prepareSlow-" + dbName);
+            const data = prePreparedData.map((d) => convertRawJSONEntryToFuzzySortPrepared(shortNameToPreppedNameMapping, d));
+            debugConsole.timeEnd("prepareSlow-" + dbName);
+
+            return {
+                dbName,
+                searchableEntries: data
+            } as FuzzySearchableDict;
+        });
+}
 
 export function parseFuzzySortResultsForRender(
     dbName: DBName,
@@ -51,6 +78,26 @@ export function parseFuzzySortResultsForRender(
     return currentResultsElements;
 }
 
+// Prepare a fast search version of each searchable key.
+// NOTE: this modifies the object and returns it as a type
+//       which is a superset of its original type.
+function convertRawJSONEntryToFuzzySortPrepared(
+    shortNameToPreppedNameMapping: ShortNameToPreppedNameMapping,
+    rawJSONEntry: RawJSONEntry,
+) {
+    shortNameToPreppedNameMapping.forEach(
+        (preppedKey, shortName) => {
+            // @ts-ignore  force dynamic index
+            rawJSONEntry[preppedKey] =
+                fuzzysort
+                    // @ts-ignore  prepareSlow does exist
+                    .prepareSlow
+                    // @ts-ignore  force dynamic index
+                    (rawJSONEntry[shortName]);
+        });
+
+    return rawJSONEntry as FuzzyPreparedSearchableEntry;
+}
 
 function fuzzySortHighlight(
     possibleMatch: FuzzyKeyResult | null,
@@ -65,18 +112,17 @@ export function fuzzySortSearch(
     searchableDict: FuzzySearchableDict | null,
     query: string,
     debug: boolean,
-): OngoingSearch | null {
+): OngoingSearch | SearchFailure {
     const debugConsole = getWorkerDebugConsole(debug);
-    // TODO: re-trigger currently-ongoing search once db loads?
     if (searchableDict === null) {
-        return null;
+        return SearchFailure.FuzzyNoSearchableDict;
     }
 
     const {dbName, searchableEntries} = searchableDict;
     const langDB = DATABASES.get(dbName);
     if (!langDB) {
         debugConsole.log("Failed to load langDB:", dbName, DATABASES);
-        return null;
+        return SearchFailure.FuzzyFailedToLoadLangDB;
     }
     const {fuzzyOpts} = langDB;
     const cancelableSearchPromise = fuzzysort.goAsync(
@@ -112,60 +158,11 @@ export function fuzzySortSearch(
     ).catch(
         (reason) => {
             debugConsole.log(searchableDict.dbName, reason);
-            return null;
+            return SearchFailure.FuzzyParsePromiseFailed;
         }
     );
 
     const ongoingSearch = new OngoingSearch(dbName, query, debug, cancelableSearchPromise, parsePromise);
 
     return ongoingSearch;
-}
-
-
-export async function fuzzySortFetchAndPrepare(
-    dbName: string,
-    langDB: LangDB,
-    debug: boolean,
-): Promise<FuzzySearchableDict> {
-    const debugConsole = getWorkerDebugConsole(debug);
-    const {dbFilename, shortNameToPreppedNameMapping} = langDB;
-    debugConsole.time("fetch-" + dbName);
-    return fetch(dbFilename)
-        .then((response: Response) => {
-            debugConsole.timeEnd("fetch-" + dbName);
-            debugConsole.time("jsonConvert-" + dbName);
-            return response.json();
-        })
-        .then((prePreparedData: RawJSONEntry[]) => {
-            debugConsole.timeEnd("jsonConvert-" + dbName);
-            debugConsole.time("prepareSlow-" + dbName);
-            const data = prePreparedData.map((d) => convertRawJSONEntryToFuzzySortPrepared(shortNameToPreppedNameMapping, d));
-            debugConsole.timeEnd("prepareSlow-" + dbName);
-
-            return {
-                dbName,
-                searchableEntries: data
-            } as FuzzySearchableDict;
-        });
-}
-
-// Prepare a fast search version of each searchable key.
-// NOTE: this modifies the object and returns it as a type
-//       which is a superset of its original type.
-function convertRawJSONEntryToFuzzySortPrepared(
-    shortNameToPreppedNameMapping: ShortNameToPreppedNameMapping,
-    rawJSONEntry: RawJSONEntry,
-) {
-    shortNameToPreppedNameMapping.forEach(
-        (preppedKey, shortName) => {
-            // @ts-ignore  force dynamic index
-            rawJSONEntry[preppedKey] =
-                fuzzysort
-                    // @ts-ignore  prepareSlow does exist
-                    .prepareSlow
-                    // @ts-ignore  force dynamic index
-                    (rawJSONEntry[shortName]);
-        });
-
-    return rawJSONEntry as FuzzyPreparedSearchableEntry;
 }

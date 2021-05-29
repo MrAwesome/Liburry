@@ -1,40 +1,16 @@
 import {getWorkerDebugConsole, StubConsole} from "./debug_console";
 import type {LangDB, DBName, PerDictResults} from "./types";
-import type {FuzzySearchableDict} from "./fuzzySortTypes";
-import {OngoingSearch} from "./search";
-import {fuzzySortFetchAndPrepare, fuzzySortSearch} from "./fuzzySortUtils";
+import {getSearcher, OngoingSearch, Searcher, SearcherType, SearchFailure} from "./search";
 
 // eslint-disable-next-line no-restricted-globals
 const ctx: Worker = self as any;
 
-enum WorkerInitState {
-    UNINITIALIZED = "UNINITIALIZED",
-    STARTED = "STARTED",
-    LOADED = "LOADED",
-    SEARCHING = "SEARCHING",
-}
-
-export enum SearchWorkerCommandType {
-    INIT = "INIT",
-    LOAD_DB = "LOAD_DB",
-    SEARCH = "SEARCH",
-    CANCEL = "CANCEL",
-    LOG = "LOG",
-}
-
 export type SearchWorkerCommandMessage =
-    {command: SearchWorkerCommandType.INIT, payload: {dbName: DBName, langDB: LangDB, debug: boolean}} |
-    {command: SearchWorkerCommandType.LOAD_DB, payload?: null} |
+    {command: SearchWorkerCommandType.INIT, payload: {dbName: DBName, langDB: LangDB, debug: boolean, searcherType: SearcherType}} |
     {command: SearchWorkerCommandType.SEARCH, payload: {query: string, searchID: number}} |
     {command: SearchWorkerCommandType.CANCEL, payload?: null} |
-    {command: SearchWorkerCommandType.LOG, payload?: null};
-
-export enum SearchWorkerResponseType {
-    CANCELED = "CANCELED",
-    DB_LOAD_SUCCESS = "DB_LOAD_SUCCESS",
-    SEARCH_FAILURE = "SEARCH_FAILURE",
-    SEARCH_SUCCESS = "SEARCH_SUCCESS",
-}
+    {command: SearchWorkerCommandType.LOG, payload?: null} |
+    {command: SearchWorkerCommandType.CHANGE_SEARCHER, payload: {searcherType: SearcherType}};
 
 export type SearchWorkerResponseMessage =
     {
@@ -47,7 +23,7 @@ export type SearchWorkerResponseMessage =
     } |
     {
         resultType: SearchWorkerResponseType.SEARCH_FAILURE,
-        payload: {dbName: DBName, query: string, searchID: number}
+        payload: {dbName: DBName, query: string, searchID: number, failure: SearchFailure}
     } |
     {
         resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS,
@@ -56,21 +32,39 @@ export type SearchWorkerResponseMessage =
 
 type WorkerInitializedState =
     {init: WorkerInitState.UNINITIALIZED} |
-    {init: WorkerInitState.STARTED, dbName: DBName, langDB: LangDB} |
-    {init: WorkerInitState.LOADED, dbName: DBName, langDB: LangDB, db: FuzzySearchableDict} |
-    {init: WorkerInitState.SEARCHING, dbName: DBName, langDB: LangDB, db: FuzzySearchableDict, ogs: OngoingSearch, searchID: number};
+    {init: WorkerInitState.FAILED_TO_PREPARE, dbName: DBName, langDB: LangDB} |
+    {init: WorkerInitState.LOADING, dbName: DBName, langDB: LangDB, searcher: Searcher} |
+    {init: WorkerInitState.LOADED, dbName: DBName, langDB: LangDB, searcher: Searcher} |
+    {init: WorkerInitState.SEARCHING, dbName: DBName, langDB: LangDB, searcher: Searcher, ogs: OngoingSearch, searchID: number};
+
+enum WorkerInitState {
+    UNINITIALIZED = "UNINITIALIZED",
+    LOADING = "LOADING",
+    LOADED = "LOADED",
+    SEARCHING = "SEARCHING",
+    FAILED_TO_PREPARE = "FAILED_TO_PREPARE",
+}
+
+export enum SearchWorkerCommandType {
+    INIT = "INIT",
+    SEARCH = "SEARCH",
+    CANCEL = "CANCEL",
+    LOG = "LOG",
+    CHANGE_SEARCHER = "CHANGE_SEARCHER",
+}
+
+export enum SearchWorkerResponseType {
+    CANCELED = "CANCELED",
+    DB_LOAD_SUCCESS = "DB_LOAD_SUCCESS",
+    SEARCH_FAILURE = "SEARCH_FAILURE",
+    SEARCH_SUCCESS = "SEARCH_SUCCESS",
+}
+
 
 class SearchWorkerHelper {
     state: WorkerInitializedState = {init: WorkerInitState.UNINITIALIZED};
     debug: boolean = false;
     console: StubConsole = getWorkerDebugConsole(false);
-
-    start(dbName: DBName, langDB: LangDB, debug: boolean) {
-        this.state = {init: WorkerInitState.STARTED, dbName, langDB};
-        this.console = getWorkerDebugConsole(debug);
-        this.debug = debug;
-        // TODO: send message back for start, to avoid race?
-    }
 
     private sendResponse(message: SearchWorkerResponseMessage) {
         if (this.state.init !== WorkerInitState.UNINITIALIZED) {
@@ -83,19 +77,19 @@ class SearchWorkerHelper {
         ctx.postMessage(message);
     }
 
-    loadDB() {
-        if (this.state.init === WorkerInitState.STARTED) {
-            const dbName = this.state.dbName;
-            const langDB = this.state.langDB;
-            fuzzySortFetchAndPrepare(dbName, langDB, this.debug).then(
-                (searchableDict) => {
-                    this.state = {init: WorkerInitState.LOADED, db: searchableDict, dbName, langDB};
-                    this.sendResponse({resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbName}});
-                });
-        } else {
-            this.log();
-            console.error("Attempted to load DB while init state state was not STARTED:", this.state)
-        }
+    start(dbName: DBName, langDB: LangDB, debug: boolean, searcherType: SearcherType) {
+        this.debug = debug;
+        this.console = getWorkerDebugConsole(debug);
+        const searcher = getSearcher(searcherType, dbName, langDB, this.debug);
+        this.state = {dbName, langDB, searcher, init: WorkerInitState.LOADING};
+
+        searcher.prepare().then(() => {
+            this.state = {searcher, dbName, langDB, init: WorkerInitState.LOADED};
+            this.sendResponse({resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbName}});
+        }).catch(() => {
+            console.warn("DB preparation failure!", this);
+            this.state = {dbName, langDB, init: WorkerInitState.FAILED_TO_PREPARE};
+        });
     }
 
 
@@ -107,28 +101,28 @@ class SearchWorkerHelper {
                 this.search(query, searchID);
                 break;
             case WorkerInitState.LOADED:
-                const ongoingSearch = fuzzySortSearch(this.state.db, query, this.debug);
+                const ongoingSearch = this.state.searcher.search(query);
                 const dbName = this.state.dbName;
-                if (ongoingSearch !== null) {
+                if (ongoingSearch instanceof OngoingSearch) {
                     const originalState = this.state;
                     this.state = {...originalState, init: WorkerInitState.SEARCHING, ogs: ongoingSearch, searchID};
                     ongoingSearch.parsePromise?.then((results) => {
                         if (ongoingSearch.wasCanceled) {
-                            this.sendResponse({resultType: SearchWorkerResponseType.CANCELED, payload: {query, dbName, searchID}});
+                            this.console.log("Parse promise completed on canceled search:", ongoingSearch)
                         } else {
-                            if (results === null) {
-                                this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbName, searchID}});
+                            // TODO: XXX: find a better way to assert enum type. (I'm on a plane and don't know TS. Forgive me.)
+                            if ((results as PerDictResults).results !== undefined) {
+                                this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results: results as PerDictResults, dbName, searchID}});
                             } else {
-                                this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results, dbName, searchID}});
+                                this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbName, searchID, failure: results as SearchFailure}});
                             }
                         }
                         this.state = originalState;
                     });
+                } else {
+                    this.console.log("Failed searching!", ongoingSearch, this);
+                    this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbName, searchID, failure: ongoingSearch}});
                 }
-                break;
-            case WorkerInitState.STARTED:
-                this.log();
-                console.warn("Attempted to search db before load!")
                 break;
             case WorkerInitState.UNINITIALIZED:
                 this.log();
@@ -147,6 +141,15 @@ class SearchWorkerHelper {
         }
     }
 
+    changeSearcher(searcherType: SearcherType) {
+        if (this.state.init !== WorkerInitState.UNINITIALIZED) {
+            const {dbName, langDB} = this.state;
+
+            this.cancel();
+            sw.start(dbName, langDB, this.debug, searcherType);
+        }
+    }
+
     log() {
         this.console.log(this);
     }
@@ -159,12 +162,10 @@ let sw: SearchWorkerHelper = new SearchWorkerHelper();
 ctx.addEventListener("message", (e) => {
     const message: SearchWorkerCommandMessage = e.data;
     switch (message.command) {
-        case SearchWorkerCommandType.INIT:
-            const {dbName, langDB, debug} = message.payload;
-            sw.start(dbName, langDB, debug);
-            break;
-        case SearchWorkerCommandType.LOAD_DB:
-            sw.loadDB();
+        case SearchWorkerCommandType.INIT: {
+            const {dbName, langDB, debug, searcherType} = message.payload;
+            sw.start(dbName, langDB, debug, searcherType);
+        }
             break;
         case SearchWorkerCommandType.SEARCH:
             const {query, searchID} = message.payload;
@@ -175,6 +176,10 @@ ctx.addEventListener("message", (e) => {
             break;
         case SearchWorkerCommandType.LOG:
             sw.log();
+            break;
+        case SearchWorkerCommandType.CHANGE_SEARCHER:
+            const {searcherType} = message.payload;
+            sw.changeSearcher(searcherType);
             break;
     }
 });
