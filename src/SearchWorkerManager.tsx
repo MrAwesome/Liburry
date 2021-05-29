@@ -1,10 +1,10 @@
-import {DATABASES} from "./search_options";
+import {DATABASES} from "./searchSettings";
 
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import Worker from "worker-loader!./search.worker";
 import {DBName} from "./types";
 import {SearchWorkerCommandMessage, SearchWorkerCommandType, SearchWorkerResponseMessage} from "./search.worker";
-import getDebugConsole, {StubConsole} from "./debug_console";
+import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {SearcherType} from "./search";
 
 export default class SearchWorkerManager {

@@ -1,4 +1,4 @@
-import getDebugConsole, {StubConsole} from "./debug_console";
+import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import type {LangDB, DBName, PerDictResults} from "./types";
 import {getSearcher, OngoingSearch, Searcher, SearcherType, SearchFailure} from "./search";
 

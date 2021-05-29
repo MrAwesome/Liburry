@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import {REPO_LINK} from "../constants";
-import {FUZZY_SCORE_LOWER_THRESHOLD} from "../search_options";
+import {FUZZY_SCORE_LOWER_THRESHOLD} from "../searchSettings";
 import {SearchResultEntry} from "../types";
 
 enum ClickedOrder {
@@ -23,7 +23,7 @@ const FADING_STYLE = {
     //"transform": "perspective(400px) translate3d(0em, 0em, -60px)",
 }
 
-export class EntryContainer extends React.PureComponent<any, any> {
+export default class EntryContainer extends React.PureComponent<any, any> {
     constructor(props: any) {
         super(props);
         this.state = {

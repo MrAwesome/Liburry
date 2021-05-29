@@ -1,4 +1,4 @@
-import getDebugConsole, {StubConsole} from "./debug_console";
+import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {DBName, LangDB, PerDictResults} from "./types";
 import {CancelablePromise} from "./fuzzySortTypes";
 import FuzzySortSearcher from "./FuzzySortSearcher";

@@ -1,4 +1,4 @@
-import {RETRY_ATTEMPTS} from "./search_options";
+import {RETRY_ATTEMPTS} from "./searchSettings";
 import {DBName} from "./types";
 import {mod} from "./utils";
 

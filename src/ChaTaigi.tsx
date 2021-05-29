@@ -3,13 +3,13 @@ import * as React from "react";
 import QueryStringHandler from "./QueryStringHandler";
 
 import {AboutPage, DebugArea, SearchBar} from "./components/components";
-import {EntryContainer} from "./components/entry_container";
+import EntryContainer from "./components/EntryContainer";
 import {DBName, MainDisplayAreaMode, PerDictResults} from "./types";
 
-import getDebugConsole from "./debug_console";
+import getDebugConsole from "./getDebugConsole";
 
 import SearchResultsHolder from "./SearchResultsHolder";
-import {DATABASES} from "./search_options";
+import {DATABASES} from "./searchSettings";
 import SearchController from "./SearchController";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
@@ -64,7 +64,6 @@ import SearchController from "./SearchController";
 // TODO(low): locally-stored settings, or users
 // TODO(low): abstract away searching logic to avoid too much fuzzysort-specific code
 // TODO(low): configurable searches (exact search, slow but better search, etc)
-// TODO(low): move to camelCase filename
 // TODO(low): move to camelCase variable names
 // TODO(low): move to camelCase repository name
 // TODO(low): notify when DBs fail to load
@@ -78,10 +77,12 @@ import SearchController from "./SearchController";
 // TODO(low): 'X' button for clearing search (search for an svg)
 // TODO(low): replicate "cannot read property dbName" of null race condition
 // TODO(low): install button in settings page
+// TODO(low): take a nap
 // TODO(wishlist): "add to desktop" shortcut
 // TODO(wishlist): non-javascript support?
 // TODO(wishlist): dark and light themes
 // TODO(wishlist): engaging buttons - random words, random search, etc
+// TODO(wishlist): typing / sentence construction mode. clicking a sentence/word adds it to a list, and clicking on it in that list deletes it (or selects it for replacement?)
 // TODO(later): homepage
 // TODO(later): homepage WOTD
 // TODO(later): download CSVs, do initial processing via js, store in service worker (if possible?)

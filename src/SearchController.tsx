@@ -1,7 +1,7 @@
 import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.worker";
 
 // TODO: check workers
-import getDebugConsole, {StubConsole} from "./debug_console";
+import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import SearchWorkerManager from "./SearchWorkerManager";
 import SearchValidityManager from "./SearchValidityManager";
 import {DBName, PerDictResults} from "./types";

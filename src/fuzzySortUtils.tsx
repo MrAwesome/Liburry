@@ -4,9 +4,9 @@ import {DBName, PerDictResults, SearchResultEntry, LangDB, RawJSONEntry, ShortNa
 import {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedSearchableEntry, FuzzySearchableDict} from "./fuzzySortTypes";
 
 // TODO: remove when there are other types of search
-import {DATABASES, DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./search_options";
+import {DATABASES, DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./searchSettings";
 import {SearchFailure, OngoingSearch} from "./search";
-import getDebugConsole from "./debug_console";
+import getDebugConsole from "./getDebugConsole";
 
 export async function fuzzySortFetchAndPrepare(
     dbName: string,

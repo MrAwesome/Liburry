@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 
 import {ChaTaigi} from "./ChaTaigi";
 
-import "./cha_taigi.css";
+import "./ChaTaigi.css";
 import "./pages.css";
 
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
