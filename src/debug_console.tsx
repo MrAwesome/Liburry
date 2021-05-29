@@ -1,15 +1,3 @@
-import QueryStringHandler from "./QueryStringHandler";
-
-function getDebugMode(): boolean {
-    try {
-        return (new QueryStringHandler()).parse().debug;
-    } catch {
-        return false;
-    }
-}
-
-export const DEBUG_MODE = getDebugMode();
-
 export interface StubConsole {
     time(label?: string): void;
     timeLog(label?: string, ...data: any[]): void;
@@ -24,8 +12,6 @@ class FakeConsole implements StubConsole {
     log(..._: any[]) {}
 }
 
-const debugConsole: StubConsole = DEBUG_MODE ? console : new FakeConsole();
-// TODO: use this everywhere, as it's much less janky?
-export const getWorkerDebugConsole: (x: boolean) => StubConsole = (x: boolean) => x ? console : new FakeConsole();
-
-export default debugConsole;
+export default function getDebugConsole(x: boolean): StubConsole {
+    return x ? console : new FakeConsole();
+}

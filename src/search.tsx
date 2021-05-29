@@ -1,4 +1,4 @@
-import {getWorkerDebugConsole, StubConsole} from "./debug_console";
+import getDebugConsole, {StubConsole} from "./debug_console";
 import {DBName, LangDB, PerDictResults} from "./types";
 import {CancelablePromise} from "./fuzzySortTypes";
 import FuzzySortSearcher from "./FuzzySortSearcher";
@@ -48,7 +48,7 @@ export class OngoingSearch {
         cancelablePromise?: CancelablePromise<any>,
         parsePromise?: Promise<PerDictResults | SearchFailure>,
     ) {
-        this.console = getWorkerDebugConsole(debug);
+        this.console = getDebugConsole(debug);
         this.console.time("asyncSearch-" + dbName);
         this.query = query;
         this.dbName = dbName;

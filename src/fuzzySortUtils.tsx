@@ -6,14 +6,14 @@ import {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedSearchableEntry, FuzzySear
 // TODO: remove when there are other types of search
 import {DATABASES, DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./search_options";
 import {SearchFailure, OngoingSearch} from "./search";
-import {getWorkerDebugConsole} from "./debug_console";
+import getDebugConsole from "./debug_console";
 
 export async function fuzzySortFetchAndPrepare(
     dbName: string,
     langDB: LangDB,
     debug: boolean,
 ): Promise<FuzzySearchableDict> {
-    const debugConsole = getWorkerDebugConsole(debug);
+    const debugConsole = getDebugConsole(debug);
     const {dbFilename, shortNameToPreppedNameMapping} = langDB;
     debugConsole.time("fetch-" + dbName);
     return fetch(dbFilename)
@@ -113,7 +113,7 @@ export function fuzzySortSearch(
     query: string,
     debug: boolean,
 ): OngoingSearch | SearchFailure {
-    const debugConsole = getWorkerDebugConsole(debug);
+    const debugConsole = getDebugConsole(debug);
     if (searchableDict === null) {
         return SearchFailure.FuzzyNoSearchableDict;
     }

@@ -1,7 +1,6 @@
 import * as React from "react";
 
 import {REPO_LINK} from "../constants";
-import {DEBUG_MODE} from "../debug_console";
 import {FUZZY_SCORE_LOWER_THRESHOLD} from "../search_options";
 import {SearchResultEntry} from "../types";
 
@@ -172,6 +171,7 @@ export class EntryContainer extends React.PureComponent<any, any> {
     }
 
     render() {
+        const {debug} = this.props;
         const {pojUnicode, definition, hoabun, dbName} = this.getEntry();
         const clicked = this.getClicked();
 
@@ -183,7 +183,7 @@ export class EntryContainer extends React.PureComponent<any, any> {
         return (
             // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
             <div className="entry-container" style={this.fadingStyle()} onClick={this.myOnClick}>
-                {DEBUG_MODE ? this.getDebugBox() : null}
+                {debug ? this.getDebugBox() : null}
 
                 <div className="entry-mainbox">
                     <span className="poj-unicode-container">

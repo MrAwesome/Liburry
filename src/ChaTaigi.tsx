@@ -6,16 +6,18 @@ import {AboutPage, DebugArea, SearchBar} from "./components/components";
 import {EntryContainer} from "./components/entry_container";
 import {DBName, MainDisplayAreaMode, PerDictResults} from "./types";
 
-import debugConsole from "./debug_console";
+import getDebugConsole from "./debug_console";
 
 import SearchResultsHolder from "./SearchResultsHolder";
 import {DATABASES} from "./search_options";
 import SearchController from "./SearchController";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
+// TODO(urgent): either remove DEBUG_MODE and pass debug everywhere, or fix it
 // TODO(urgent): integration tests
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(urgent): find how to create unit tests in js, and create them
+// TODO(high): chase down the issue with multiple copies of log messages are appearing after a while. double-applying a handler?
 // TODO(high): give some visual indication that DBs are loading, even in search mode
 // TODO(high): implement select bar (note the way it squishes on very narrow screen - create space under it?)
 // TODO(high): debug and address firefox flash of blankness during font load
@@ -130,11 +132,11 @@ import SearchController from "./SearchController";
 //      6) test performance
 //      7) create settings page with language toggle?
 
-debugConsole.time("initToAllDB");
 let queryStringHandler = new QueryStringHandler();
 let options = queryStringHandler.parse();
 
-let searchController = new SearchController(options.debug, options.query);
+const debugConsole = getDebugConsole(options.debug);
+debugConsole.time("initToAllDB");
 
 export interface ChaTaigiState {
     resultsHolder: SearchResultsHolder,
@@ -148,12 +150,14 @@ export interface ChaTaigiStateArgs {
 
 export class ChaTaigi extends React.Component<any, any> {
     searchBar: React.RefObject<SearchBar>;
-    query = queryStringHandler.parse().query;
+    query = options.query;
+
+    searchController: SearchController;
+
 
     constructor(props: any) {
         super(props);
         this.state = {
-            // TODO: determine if options should live in the state, including query
             mode: options.mainMode,
             loadedDBs: new Map(),
             resultsHolder: new SearchResultsHolder(),
@@ -167,14 +171,25 @@ export class ChaTaigi extends React.Component<any, any> {
         this.hashChange = this.hashChange.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
         this.onSearchBarChange = this.onSearchBarChange.bind(this);
-        this.resetSearch = this.resetSearch.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
         this.setStateTyped = this.setStateTyped.bind(this);
         this.updateQuery = this.updateQuery.bind(this);
         this.updateSearchBar = this.updateSearchBar.bind(this);
         this.addResultsCallback = this.addResultsCallback.bind(this);
         this.addDBLoadedCallback = this.addDBLoadedCallback.bind(this);
+        this.getCurrentQueryCallback = this.getCurrentQueryCallback.bind(this);
         this.checkIfAllDBLoadedCallback = this.checkIfAllDBLoadedCallback.bind(this);
+        this.clearResultsCallback = this.clearResultsCallback.bind(this);
+
+        // Initialize the search controller with callbacks for passing information/state
+        // back and forth with the main component.
+        this.searchController = new SearchController(options.debug,
+            this.addResultsCallback,
+            this.addDBLoadedCallback,
+            this.checkIfAllDBLoadedCallback,
+            this.getCurrentQueryCallback,
+            this.clearResultsCallback,
+        );
     }
 
     setStateTyped(state: ChaTaigiStateArgs | ((prevState: ChaTaigiState) => any)) {
@@ -189,10 +204,8 @@ export class ChaTaigi extends React.Component<any, any> {
         debugConsole.timeLog("initToAllDB", "componentDidMount");
         this.updateSearchBar();
 
-        searchController.searchWorkerManager.init(
-            options.searcherType,
-            searchController.searchWorkerReplyHandlerPartial(this.addResultsCallback, this.addDBLoadedCallback, this.checkIfAllDBLoadedCallback)
-        );
+        this.searchController.startWorkersAndListener(options.searcherType);
+
         window.addEventListener("hashchange", this.hashChange);
 
     }
@@ -202,9 +215,8 @@ export class ChaTaigi extends React.Component<any, any> {
 
         // TODO: move query to options? rename it context?
         if (this.query !== options.query) {
-            this.updateQuery(options.query);
             this.updateSearchBar();
-            this.searchQuery();
+            this.searchQuery(options.query);
         }
 
         if (this.state.mode !== options.mainMode) {
@@ -232,8 +244,16 @@ export class ChaTaigi extends React.Component<any, any> {
         this.setStateTyped((state) => state.loadedDBs.set(dbName, true));
     }
 
+    async clearResultsCallback() {
+        this.setStateTyped((state) => state.resultsHolder.clear());
+    }
+
     checkIfAllDBLoadedCallback(): boolean {
         return Array.from(this.state.loadedDBs.values()).every(x => x);
+    }
+
+    getCurrentQueryCallback(): string {
+        return this.query;
     }
 
     onSearchBarChange(e: any) {
@@ -241,8 +261,7 @@ export class ChaTaigi extends React.Component<any, any> {
         const {value = ""} = target;
         const query = value;
 
-        this.updateQuery(query);
-        this.searchQuery();
+        this.searchQuery(query);
     }
 
     updateQuery(query: string) {
@@ -250,25 +269,9 @@ export class ChaTaigi extends React.Component<any, any> {
         queryStringHandler.updateQuery(query);
     }
 
-    resetSearch() {
-        searchController.searchWorkerManager.cancelAllCurrent();
-        this.updateQuery("");
-        this.setStateTyped((state) => state.resultsHolder.clear());
-    }
-
-    searchQuery() {
-        const query = this.query;
-
-        // Invalidate the previous search, so any lingering results don't pollute the current view
-        searchController.searchValidityManager.invalidate();
-
-        if (query === "") {
-            this.resetSearch();
-        } else {
-            searchController.searchWorkerManager.searchAll(query, searchController.searchValidityManager.currentSearchIndex);
-            searchController.searchValidityManager.bump();
-        }
-
+    searchQuery(query: string) {
+        this.searchController.search(query);
+        this.updateQuery(query);
         this.setMode(MainDisplayAreaMode.SEARCH);
     }
 
@@ -276,7 +279,7 @@ export class ChaTaigi extends React.Component<any, any> {
         const {resultsHolder} = this.getStateTyped();
         const entries = resultsHolder.getAllResults();
 
-        const entryContainers = entries.map((entry) => <EntryContainer entry={entry} key={entry.key} />);
+        const entryContainers = entries.map((entry) => <EntryContainer debug={options.debug} entry={entry} key={entry.key} />);
 
         return <>{entryContainers}</>;
     }

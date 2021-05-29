@@ -4,17 +4,17 @@ import {DATABASES} from "./search_options";
 import Worker from "worker-loader!./search.worker";
 import {DBName} from "./types";
 import {SearchWorkerCommandMessage, SearchWorkerCommandType, SearchWorkerResponseMessage} from "./search.worker";
-import {getWorkerDebugConsole, StubConsole} from "./debug_console";
+import getDebugConsole, {StubConsole} from "./debug_console";
 import {SearcherType} from "./search";
 
 export default class SearchWorkerManager {
-    searchWorkers: Map<string, Worker> = new Map();
-    debug: boolean;
-    console: StubConsole;
+    private searchWorkers: Map<string, Worker> = new Map();
+    private debug: boolean;
+    private console: StubConsole;
 
     constructor(debug: boolean) {
         this.debug = debug;
-        this.console = getWorkerDebugConsole(debug);
+        this.console = getDebugConsole(debug);
 
         this.searchAll = this.searchAll.bind(this);
         this.cancelAllCurrent = this.cancelAllCurrent.bind(this);

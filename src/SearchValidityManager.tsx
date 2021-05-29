@@ -3,18 +3,20 @@ import {DBName} from "./types";
 import {mod} from "./utils";
 
 export default class SearchInvalidationAndRetryManager {
-    bufLen: number = 10;
-    retries: Array<Map<DBName, number>> = Array.from({length: this.bufLen}).map(_ => new Map());
-    searchInvalidations: Array<boolean> = Array.from({length: this.bufLen}).map(_ => false);
-    currentSearchIndex: number = 0;
+    private bufLen: number = 10;
+    private retries: Array<Map<DBName, number>> = Array.from({length: this.bufLen}).map(_ => new Map());
+    private searchInvalidations: Array<boolean> = Array.from({length: this.bufLen}).map(_ => false);
+
+    initialSearchID: number = 0;
+    currentSearchID: number = this.initialSearchID;
 
     // Bump the counter, wait for the next search to start
     bump() {
-        this.currentSearchIndex = mod(this.currentSearchIndex + 1, this.searchInvalidations.length);
+        this.currentSearchID = mod(this.currentSearchID + 1, this.searchInvalidations.length);
 
         // Pre-allow the next index
-        this.searchInvalidations[this.currentSearchIndex] = false;
-        this.retries[this.currentSearchIndex] = new Map();
+        this.searchInvalidations[this.currentSearchID] = false;
+        this.retries[this.currentSearchID] = new Map();
     }
 
     // Check if the named search can return results
@@ -24,14 +26,12 @@ export default class SearchInvalidationAndRetryManager {
 
     // Invalidate the previous search
     invalidate() {
-        const index = mod(this.currentSearchIndex - 1, this.searchInvalidations.length);
+        const index = mod(this.currentSearchID - 1, this.searchInvalidations.length);
         this.searchInvalidations[index] = true;
     }
 
-    // Check if the named DB can retry
-    attemptRetry(dbName: DBName, searchID: number) {
-        console.log("RETRY SEARCH ID", searchID);
-        // TODO: implement
+    // Check if the named DB can retry for the named searchID
+    acquireRetry(dbName: DBName, searchID: number) {
         const currentAttempt = this.retries[searchID];
         const retries = currentAttempt.get(dbName);
         if (retries === undefined) {

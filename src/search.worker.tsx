@@ -1,4 +1,4 @@
-import {getWorkerDebugConsole, StubConsole} from "./debug_console";
+import getDebugConsole, {StubConsole} from "./debug_console";
 import type {LangDB, DBName, PerDictResults} from "./types";
 import {getSearcher, OngoingSearch, Searcher, SearcherType, SearchFailure} from "./search";
 
@@ -64,7 +64,7 @@ export enum SearchWorkerResponseType {
 class SearchWorkerHelper {
     state: WorkerInitializedState = {init: WorkerInitState.UNINITIALIZED};
     debug: boolean = false;
-    console: StubConsole = getWorkerDebugConsole(false);
+    console: StubConsole = getDebugConsole(false);
 
     private sendResponse(message: SearchWorkerResponseMessage) {
         if (this.state.init !== WorkerInitState.UNINITIALIZED) {
@@ -79,7 +79,7 @@ class SearchWorkerHelper {
 
     start(dbName: DBName, langDB: LangDB, debug: boolean, searcherType: SearcherType) {
         this.debug = debug;
-        this.console = getWorkerDebugConsole(debug);
+        this.console = getDebugConsole(debug);
         const searcher = getSearcher(searcherType, dbName, langDB, this.debug);
         this.state = {dbName, langDB, searcher, init: WorkerInitState.LOADING};
 
