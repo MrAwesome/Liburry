@@ -4,15 +4,13 @@ import QueryStringHandler from "./QueryStringHandler";
 
 import {AboutPage, DebugArea, SearchBar} from "./components/components";
 import {EntryContainer} from "./components/entry_container";
-import {DBName, MainDisplayAreaMode} from "./types";
+import {DBName, MainDisplayAreaMode, PerDictResults} from "./types";
 
 import debugConsole from "./debug_console";
 
-import SearchValidityManager from "./SearchValidityManager";
 import SearchResultsHolder from "./SearchResultsHolder";
-import SearchWorkerManager from "./SearchWorkerManager";
 import {DATABASES} from "./search_options";
-import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.worker";
+import SearchController from "./SearchController";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): integration tests
@@ -45,7 +43,7 @@ import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.wo
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): keyboard shortcuts
 // TODO(mid): show bottom bar with links to different modes
-// TODO(mid): exit behavior on multiple presses of back in app mode? exit button?
+// TODO(mid): exit behavior on multiple presses of back in app mode? exit button? can you make it such that hash changes don't count as page loads?
 // TODO(mid): ensure that any navigational links include characters/POJ (or have a fast language switch)
 // TODO(mid): split maryknoll into multiple pieces?
 // TODO(mid): download progress indicators
@@ -103,6 +101,12 @@ import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.wo
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
 // TODO(watch): keep an eye out for 200% CPU util. infinite search loop?
 //
+// Project: non-fuzzysort search
+//      1) DONE: create a Searcher interface to abstract away the direct reliance on fuzzysort in the workers
+//      2) find a suitably simple alternative to test, and implement Searcher for it
+//      3) remove remaining reliance on fuzzy variables (note debug mode score threshold)
+//      4) test out lovefield
+//
 // Project: Integration tests
 //      1) Determine how to mock
 //      2) Mock out calls to search worker initialization
@@ -130,6 +134,8 @@ debugConsole.time("initToAllDB");
 let queryStringHandler = new QueryStringHandler();
 let options = queryStringHandler.parse();
 
+let searchController = new SearchController(options.debug, options.query);
+
 export interface ChaTaigiState {
     resultsHolder: SearchResultsHolder,
     loadedDBs: Map<DBName, boolean>,
@@ -143,9 +149,6 @@ export interface ChaTaigiStateArgs {
 export class ChaTaigi extends React.Component<any, any> {
     searchBar: React.RefObject<SearchBar>;
     query = queryStringHandler.parse().query;
-
-    searchWorkerManager = new SearchWorkerManager(options.debug);
-    searchValidityManager = new SearchValidityManager();
 
     constructor(props: any) {
         super(props);
@@ -163,13 +166,15 @@ export class ChaTaigi extends React.Component<any, any> {
         this.getStateTyped = this.getStateTyped.bind(this);
         this.hashChange = this.hashChange.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
-        this.onChange = this.onChange.bind(this);
+        this.onSearchBarChange = this.onSearchBarChange.bind(this);
         this.resetSearch = this.resetSearch.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
-        this.searchWorkerReply = this.searchWorkerReply.bind(this);
         this.setStateTyped = this.setStateTyped.bind(this);
         this.updateQuery = this.updateQuery.bind(this);
         this.updateSearchBar = this.updateSearchBar.bind(this);
+        this.addResultsCallback = this.addResultsCallback.bind(this);
+        this.addDBLoadedCallback = this.addDBLoadedCallback.bind(this);
+        this.checkIfAllDBLoadedCallback = this.checkIfAllDBLoadedCallback.bind(this);
     }
 
     setStateTyped(state: ChaTaigiStateArgs | ((prevState: ChaTaigiState) => any)) {
@@ -184,7 +189,10 @@ export class ChaTaigi extends React.Component<any, any> {
         debugConsole.timeLog("initToAllDB", "componentDidMount");
         this.updateSearchBar();
 
-        this.searchWorkerManager.init(options.searcherType, this.searchWorkerReply);
+        searchController.searchWorkerManager.init(
+            options.searcherType,
+            searchController.searchWorkerReplyHandlerPartial(this.addResultsCallback, this.addDBLoadedCallback, this.checkIfAllDBLoadedCallback)
+        );
         window.addEventListener("hashchange", this.hashChange);
 
     }
@@ -215,63 +223,20 @@ export class ChaTaigi extends React.Component<any, any> {
         }
     }
 
-    // TODO: move this logic and other search-related logic elsewhere
-    async searchWorkerReply(e: MessageEvent<SearchWorkerResponseMessage>) {
-        const message = e.data;
-        switch (message.resultType) {
-            case SearchWorkerResponseType.CANCELED: {
-                let {query, dbName, searchID} = message.payload;
-                debugConsole.log(`Canceled search "${query}" with searchID "${searchID}" on db "${dbName}".`);
-            }
-                break;
-            case SearchWorkerResponseType.SEARCH_SUCCESS: {
-                let {results, dbName, searchID} = message.payload;
-                debugConsole.time("searchRender-" + dbName);
 
-                const wasInvalidated = this.searchValidityManager.isInvalidated(searchID);
-                if (!wasInvalidated) {
-                    this.setStateTyped((state) => state.resultsHolder.addResults(results));
-                }
-                debugConsole.timeEnd("searchRender-" + dbName);
-            }
-                break;
-            case SearchWorkerResponseType.SEARCH_FAILURE: {
-                let {query, dbName, searchID, failure} = message.payload;
-
-                // TODO: use a brief setTimeout here?
-                const msg = `Encountered a failure "${failure}" while searching "${dbName}" for "${query}". `;
-                if (this.searchValidityManager.attemptRetry(dbName, searchID)) {
-                    this.searchWorkerManager.searchSpecificDB(dbName, query, searchID);
-                    console.warn(msg + "Trying again...");
-                } else {
-                    console.error(msg + "Ran out of retries!");
-                }
-            }
-                break;
-            case SearchWorkerResponseType.DB_LOAD_SUCCESS: {
-                let {dbName} = message.payload;
-                debugConsole.time("dbLoadRender-" + dbName);
-                this.setStateTyped((state) => state.loadedDBs.set(dbName, true));
-                debugConsole.timeEnd("dbLoadRender-" + dbName);
-
-                if (this.query) {
-                    this.searchWorkerManager.searchSpecificDB(dbName, this.query, this.searchValidityManager.currentSearchIndex);
-                    this.searchValidityManager.bump();
-                }
-
-                if (Array.from(this.state.loadedDBs.values()).every(x => x)) {
-                    debugConsole.log("All databases loaded!");
-                    debugConsole.timeEnd("initToAllDB");
-                }
-            }
-                break;
-            default:
-                console.warn("Received unknown message from search worker!", e);
-        }
+    async addResultsCallback(results: PerDictResults) {
+        this.setStateTyped((state) => state.resultsHolder.addResults(results));
     }
 
+    async addDBLoadedCallback(dbName: DBName) {
+        this.setStateTyped((state) => state.loadedDBs.set(dbName, true));
+    }
 
-    onChange(e: any) {
+    checkIfAllDBLoadedCallback(): boolean {
+        return Array.from(this.state.loadedDBs.values()).every(x => x);
+    }
+
+    onSearchBarChange(e: any) {
         const {target = {}} = e;
         const {value = ""} = target;
         const query = value;
@@ -286,7 +251,7 @@ export class ChaTaigi extends React.Component<any, any> {
     }
 
     resetSearch() {
-        this.searchWorkerManager.cancelAllCurrent();
+        searchController.searchWorkerManager.cancelAllCurrent();
         this.updateQuery("");
         this.setStateTyped((state) => state.resultsHolder.clear());
     }
@@ -295,13 +260,13 @@ export class ChaTaigi extends React.Component<any, any> {
         const query = this.query;
 
         // Invalidate the previous search, so any lingering results don't pollute the current view
-        this.searchValidityManager.invalidate();
+        searchController.searchValidityManager.invalidate();
 
         if (query === "") {
             this.resetSearch();
         } else {
-            this.searchWorkerManager.searchAll(query, this.searchValidityManager.currentSearchIndex);
-            this.searchValidityManager.bump();
+            searchController.searchWorkerManager.searchAll(query, searchController.searchValidityManager.currentSearchIndex);
+            searchController.searchValidityManager.bump();
         }
 
         this.setMode(MainDisplayAreaMode.SEARCH);
@@ -325,12 +290,12 @@ export class ChaTaigi extends React.Component<any, any> {
             case MainDisplayAreaMode.SETTINGS:
             case MainDisplayAreaMode.CONTACT:
             case MainDisplayAreaMode.HOME:
-                return this.mainAreaDefaultView();
+                return this.mainAreaHomeView();
         }
     }
 
-    // TODO: Create individual components for these if necessary
-    mainAreaDefaultView() {
+    // TODO: create a HomePage element
+    mainAreaHomeView() {
         const {loadedDBs} = this.getStateTyped();
         if (options.debug) {
             return <>
@@ -342,13 +307,13 @@ export class ChaTaigi extends React.Component<any, any> {
     }
 
     render() {
-        const {onChange} = this;
+        const {onSearchBarChange} = this;
         const options = queryStringHandler.parse();
         const mainDisplayAreaMode = options.mainMode;
 
         return (
             <div className="ChaTaigi">
-                <SearchBar ref={this.searchBar} onChange={onChange} />
+                <SearchBar ref={this.searchBar} onChange={onSearchBarChange} />
                 {this.mainDisplayArea(mainDisplayAreaMode)}
             </div>
         );

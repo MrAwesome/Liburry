@@ -186,6 +186,7 @@ mark {
 }
 
 .poj-unicode-container {
+    padding-top: 2px;
     padding-left: 3px;
     line-height: 1;
     display: inline-block;

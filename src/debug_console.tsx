@@ -25,6 +25,7 @@ class FakeConsole implements StubConsole {
 }
 
 const debugConsole: StubConsole = DEBUG_MODE ? console : new FakeConsole();
+// TODO: use this everywhere, as it's much less janky?
 export const getWorkerDebugConsole: (x: boolean) => StubConsole = (x: boolean) => x ? console : new FakeConsole();
 
 export default debugConsole;
