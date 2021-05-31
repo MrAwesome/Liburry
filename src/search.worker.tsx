@@ -1,5 +1,5 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import type {LangDB, DBName, PerDictResults} from "./types";
+import type {LangDB, DBName, PerDictResults} from "./types/dbTypes";
 import {getSearcher, OngoingSearch, Searcher, SearcherType, SearchFailure} from "./search";
 
 // eslint-disable-next-line no-restricted-globals

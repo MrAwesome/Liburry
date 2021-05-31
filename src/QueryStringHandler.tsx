@@ -1,6 +1,6 @@
 import qs from "qs";
 import ChaTaigiOptions from "./ChaTaigiOptions";
-import {MainDisplayAreaMode} from "./types";
+import {MainDisplayAreaMode} from "./types/displayTypes";
 
 // HACK to allow web worker loader to work:
 // https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/24#issuecomment-672853561

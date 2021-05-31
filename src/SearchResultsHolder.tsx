@@ -1,5 +1,5 @@
 import {typeGuard} from "./typeguard";
-import {DBName, PerDictResults, SearchResultEntry} from "./types";
+import {DBName, PerDictResults, SearchResultEntry} from "./types/dbTypes";
 
 export default class SearchResultsHolder {
     currentResults: Map<DBName, PerDictResults> = new Map();

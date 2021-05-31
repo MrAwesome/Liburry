@@ -1,5 +1,5 @@
 import {RETRY_ATTEMPTS} from "./searchSettings";
-import {DBName} from "./types";
+import {DBName} from "./types/dbTypes";
 import {mod} from "./utils";
 
 export default class SearchInvalidationAndRetryManager {

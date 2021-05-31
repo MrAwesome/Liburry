@@ -1,6 +1,6 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import {DBName, LangDB, PerDictResults} from "./types";
-import {CancelablePromise} from "./fuzzySortTypes";
+import {DBName, LangDB, PerDictResults} from "./types/dbTypes";
+import {CancelablePromise} from "./types/fuzzySortTypes";
 import FuzzySortSearcher from "./FuzzySortSearcher";
 
 export interface Searcher {

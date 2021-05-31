@@ -4,7 +4,8 @@ import QueryStringHandler from "./QueryStringHandler";
 
 import {AboutPage, DebugArea, SearchBar} from "./components/components";
 import EntryContainer from "./components/EntryContainer";
-import {DBName, MainDisplayAreaMode, PerDictResults} from "./types";
+import type {DBName, PerDictResults} from "./types/dbTypes";
+import {MainDisplayAreaMode} from "./types/displayTypes";
 
 import getDebugConsole from "./getDebugConsole";
 
@@ -17,7 +18,6 @@ import SearchController from "./SearchController";
 // TODO(urgent): integration tests
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(urgent): find how to create unit tests in js, and create them
-// TODO(high): chase down the issue with multiple copies of log messages are appearing after a while. double-applying a handler?
 // TODO(high): give some visual indication that DBs are loading, even in search mode
 // TODO(high): implement select bar (note the way it squishes on very narrow screen - create space under it?)
 // TODO(high): debug and address firefox flash of blankness during font load
@@ -44,6 +44,7 @@ import SearchController from "./SearchController";
 // TODO(high): investigate more performant search solutions (lunr, jssearch, etc)
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): keyboard shortcuts
+// TODO(mid): with fuzzysort, just ignore dashes and spaces? or search once with them included and once without?
 // TODO(mid): show bottom bar with links to different modes
 // TODO(mid): exit behavior on multiple presses of back in app mode? exit button? can you make it such that hash changes don't count as page loads?
 // TODO(mid): ensure that any navigational links include characters/POJ (or have a fast language switch)
@@ -58,6 +59,7 @@ import SearchController from "./SearchController";
 // TODO(mid): move search bar to middle of page when no results and no search yet
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
+// TODO(low): pass around a DebugContext with the logger and boolean instead of calling getDebugConsole everywhere. (could also just pass a program context object around, which includes DebugContext) (passing the logger around may actually be a non-starter, because of web workers?)
 // TODO(low): better color for manifest.json theme
 // TODO(low): in db load indicator, have a separate icon for downloading and loading
 // TODO(low): font size button

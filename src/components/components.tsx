@@ -1,5 +1,6 @@
 import * as React from "react";
-import {DBName, MainDisplayAreaMode} from "../types";
+import {DBName} from "../types/dbTypes";
+import {MainDisplayAreaMode} from "../types/displayTypes";
 import QueryStringHandler from "../QueryStringHandler";
 import {REPO_LINK} from "../constants";
 

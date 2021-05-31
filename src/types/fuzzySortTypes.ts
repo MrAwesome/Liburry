@@ -1,4 +1,4 @@
-import {DBName} from "./types";
+import {DBName} from "./dbTypes";
 
 export interface FuzzySearchableDict {
     dbName: DBName,

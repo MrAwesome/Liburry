@@ -4,7 +4,7 @@ import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.wo
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import SearchWorkerManager from "./SearchWorkerManager";
 import SearchValidityManager from "./SearchValidityManager";
-import {DBName, PerDictResults} from "./types";
+import {DBName, PerDictResults} from "./types/dbTypes";
 import {SearcherType} from "./search";
 
 

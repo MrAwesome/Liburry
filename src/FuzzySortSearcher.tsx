@@ -1,7 +1,7 @@
-import {FuzzySearchableDict} from "./fuzzySortTypes";
+import {FuzzySearchableDict} from "./types/fuzzySortTypes";
 import {fuzzySortFetchAndPrepare, fuzzySortSearch} from "./fuzzySortUtils";
 import {OngoingSearch, Searcher, SearcherType, SearchFailure} from "./search";
-import {DBName, LangDB} from "./types";
+import {DBName, LangDB} from "./types/dbTypes";
 
 export default class FuzzySortSearcher implements Searcher {
     searcherType = SearcherType.FuzzySort;

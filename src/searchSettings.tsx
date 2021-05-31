@@ -1,5 +1,5 @@
-import {JSONDBKey, LangDB, SearchPreppedKey} from "./types";
-import {FuzzyKeysOptions} from "./fuzzySortTypes";
+import {JSONDBKey, LangDB, SearchPreppedKey} from "./types/dbTypes";
+import type {FuzzyKeysOptions} from "./types/fuzzySortTypes";
 
 // HACK to allow web worker loader to work:
 // https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/24#issuecomment-672853561

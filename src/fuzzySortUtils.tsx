@@ -1,7 +1,7 @@
 import fuzzysort from "fuzzysort";
-import {DBName, PerDictResults, SearchResultEntry, LangDB, RawJSONEntry, ShortNameToPreppedNameMapping} from "./types";
+import type {DBName, PerDictResults, SearchResultEntry, LangDB, RawJSONEntry, ShortNameToPreppedNameMapping} from "./types/dbTypes";
 
-import {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedSearchableEntry, FuzzySearchableDict} from "./fuzzySortTypes";
+import type {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedSearchableEntry, FuzzySearchableDict} from "./types/fuzzySortTypes";
 
 // TODO: remove when there are other types of search
 import {DATABASES, DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./searchSettings";

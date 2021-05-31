@@ -1,13 +1,5 @@
 import type {FuzzyKeysOptions} from "./fuzzySortTypes";
 
-export enum MainDisplayAreaMode {
-    HOME,
-    SEARCH,
-    ABOUT,
-    CONTACT,
-    SETTINGS,
-}
-
 export type DBIdentifier = number;
 export type DBName = string;
 export type DBFilename = string;

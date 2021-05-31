@@ -2,7 +2,7 @@ import {DATABASES} from "./searchSettings";
 
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import Worker from "worker-loader!./search.worker";
-import {DBName} from "./types";
+import {DBName} from "./types/dbTypes";
 import {SearchWorkerCommandMessage, SearchWorkerCommandType, SearchWorkerResponseMessage} from "./search.worker";
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {SearcherType} from "./search";

@@ -2,7 +2,7 @@ import * as React from "react";
 
 import {REPO_LINK} from "../constants";
 import {FUZZY_SCORE_LOWER_THRESHOLD} from "../searchSettings";
-import {SearchResultEntry} from "../types";
+import {SearchResultEntry} from "../types/dbTypes";
 
 enum ClickedOrder {
     NORMAL,

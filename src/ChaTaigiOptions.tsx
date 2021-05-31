@@ -1,5 +1,5 @@
 import {SearcherType} from "./search";
-import {MainDisplayAreaMode} from "./types";
+import {MainDisplayAreaMode} from "./types/displayTypes";
 
 export default class ChaTaigiOptions {
     mainMode: MainDisplayAreaMode = MainDisplayAreaMode.HOME;
