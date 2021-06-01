@@ -11,7 +11,10 @@ import getDebugConsole from "./getDebugConsole";
 
 import SearchResultsHolder from "./SearchResultsHolder";
 import {DATABASES} from "./searchSettings";
+
 import SearchController from "./SearchController";
+
+import {runningInJest} from "./utils";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): either remove DEBUG_MODE and pass debug everywhere, or fix it
@@ -79,6 +82,7 @@ import SearchController from "./SearchController";
 // TODO(low): 'X' button for clearing search (search for an svg)
 // TODO(low): replicate "cannot read property dbName" of null race condition
 // TODO(low): install button in settings page
+// TODO(low): incorrect behavior of search box when using back/forward in browser
 // TODO(low): take a nap
 // TODO(wishlist): "add to desktop" shortcut
 // TODO(wishlist): non-javascript support?
@@ -193,6 +197,13 @@ export class ChaTaigi extends React.Component<any, any> {
             this.getCurrentQueryCallback,
             this.clearResultsCallback,
         );
+
+        if (runningInJest()) {
+            const {mockResults} = this.props;
+            if (mockResults !== undefined) {
+                this.state.resultsHolder.addResults(mockResults);
+            }
+        }
     }
 
     setStateTyped(state: ChaTaigiStateArgs | ((prevState: ChaTaigiState) => any)) {
@@ -207,7 +218,9 @@ export class ChaTaigi extends React.Component<any, any> {
         debugConsole.timeLog("initToAllDB", "componentDidMount");
         this.updateSearchBar();
 
-        this.searchController.startWorkersAndListener(options.searcherType);
+        if (!runningInJest()) {
+            this.searchController.startWorkersAndListener(options.searcherType);
+        }
 
         window.addEventListener("hashchange", this.hashChange);
 
@@ -314,8 +327,13 @@ export class ChaTaigi extends React.Component<any, any> {
 
     render() {
         const {onSearchBarChange} = this;
+        const {modeOverride} = this.props;
         const options = queryStringHandler.parse();
-        const mainDisplayAreaMode = options.mainMode;
+
+        let mainDisplayAreaMode = options.mainMode;
+        if (modeOverride !== undefined) {
+            mainDisplayAreaMode = modeOverride;
+        }
 
         return (
             <div className="ChaTaigi">

@@ -1,7 +1,8 @@
 import {DATABASES} from "./searchSettings";
 
 // eslint-disable-next-line import/no-webpack-loader-syntax
-import Worker from "worker-loader!./search.worker";
+import type Worker from "worker-loader!./search.worker";
+
 import {DBName} from "./types/dbTypes";
 import {SearchWorkerCommandMessage, SearchWorkerCommandType, SearchWorkerResponseMessage} from "./search.worker";
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
@@ -32,18 +33,23 @@ export default class SearchWorkerManager {
         this.searchWorkers.forEach((worker, dbName) => this.sendCommand(dbName, worker, command));
     }
 
-    init(searcherType: SearcherType, searchWorkerReplyHandler: (e: MessageEvent<SearchWorkerResponseMessage>) => Promise<void>) {
-        for (let [dbName, langDB] of DATABASES) {
-            const worker = new Worker();
-            this.searchWorkers.set(
-                dbName,
-                worker,
-            );
+    async init(searcherType: SearcherType, searchWorkerReplyHandler: (e: MessageEvent<SearchWorkerResponseMessage>) => Promise<void>) {
+        import("worker-loader!./search.worker").then((worker) => {
 
-            worker.onmessage = searchWorkerReplyHandler;
+            for (let [dbName, langDB] of DATABASES) {
 
-            this.sendCommand(dbName, worker, {command: SearchWorkerCommandType.INIT, payload: {dbName, langDB, debug: this.debug, searcherType}});
-        }
+                const searchWorker = new worker.default();
+                this.searchWorkers.set(
+                    dbName,
+                    searchWorker,
+                );
+
+                searchWorker.onmessage = searchWorkerReplyHandler;
+
+                this.sendCommand(dbName, searchWorker, {command: SearchWorkerCommandType.INIT, payload: {dbName, langDB, debug: this.debug, searcherType}});
+            }
+
+        });
 
     }
 
