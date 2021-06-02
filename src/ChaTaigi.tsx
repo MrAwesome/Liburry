@@ -230,6 +230,7 @@ export class ChaTaigi extends React.Component<any, any> {
 
         const {options} = this.getStateTyped();
         this.console.timeLog("initToAllDB", "componentDidMount");
+
         // TODO: does this need to happen here? can we just start a search?
         this.updateSearchBar(options.query);
 
@@ -242,6 +243,7 @@ export class ChaTaigi extends React.Component<any, any> {
 
     componentWillUnmount() {
         this.mountedState = MountedState.UNMOUNTED;
+        window.removeEventListener("hashchange", this.hashChange);
     }
 
     hashChange(_e: HashChangeEvent) {
