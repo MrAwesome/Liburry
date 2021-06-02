@@ -16,11 +16,11 @@ export function makeCancelable<T>(promise: Promise<T>): CancelablePromise<T> {
     const wrappedPromise: Partial<CancelablePromise<T>> =
         new Promise((resolve, reject) => {
             promise
-                .then((val) => (isCanceled ? reject({isCanceled}) : resolve(val)))
-                .catch((error) => (isCanceled ? reject({isCanceled}) : reject(error)));
+                .then((val) => (!isCanceled && resolve(val)))
+                .catch((error) => (!isCanceled && reject(error)));
         });
 
-     wrappedPromise.cancel = () => { isCanceled = true; };
+    wrappedPromise.cancel = () => {isCanceled = true;};
 
     return wrappedPromise as CancelablePromise<T>;
 }

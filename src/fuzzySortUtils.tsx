@@ -132,7 +132,7 @@ export function fuzzySortSearch(
         fuzzyOpts, // TODO: get from langdb
     );
 
-    const parsePromise = cancelableSearchPromise.then(
+    const cancelableParsePromise = makeCancelable(cancelableSearchPromise.then(
         rawResults => {
             // Filter out duplicates, as fuzzysort occasionally gives them to us and React loathes duplicate keys
             // TODO: Find out why this doesn't prevent the flash of warning text from react
@@ -161,9 +161,7 @@ export function fuzzySortSearch(
             debugConsole.log(searchableDict.dbName, reason);
             return SearchFailure.FuzzyParsePromiseFailed;
         }
-    );
-
-    const cancelableParsePromise = makeCancelable(parsePromise);
+    ));
 
     const ongoingSearch = new OngoingSearch(dbName, query, debug, cancelableSearchPromise, cancelableParsePromise);
 

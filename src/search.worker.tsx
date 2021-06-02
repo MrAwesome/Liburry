@@ -106,17 +106,13 @@ class SearchWorkerHelper {
                 if (ongoingSearch instanceof OngoingSearch) {
                     const originalState = this.state;
                     this.state = {...originalState, init: WorkerInitState.SEARCHING, ogs: ongoingSearch, searchID};
-                    console.log(ongoingSearch.parsePromise);
                     ongoingSearch.parsePromise?.then((results) => {
-                        if (ongoingSearch.wasCanceled) {
-                            this.console.log("Parse promise completed on canceled search:", ongoingSearch)
+
+                        // TODO: XXX: find a better way to assert enum type. (I'm on a plane and don't know TS. Forgive me.)
+                        if ((results as PerDictResults).results !== undefined) {
+                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results: results as PerDictResults, dbName, searchID}});
                         } else {
-                            // TODO: XXX: find a better way to assert enum type. (I'm on a plane and don't know TS. Forgive me.)
-                            if ((results as PerDictResults).results !== undefined) {
-                                this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results: results as PerDictResults, dbName, searchID}});
-                            } else {
-                                this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbName, searchID, failure: results as SearchFailure}});
-                            }
+                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbName, searchID, failure: results as SearchFailure}});
                         }
                         this.state = originalState;
                     });
