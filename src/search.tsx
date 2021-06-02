@@ -1,6 +1,6 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {DBName, LangDB, PerDictResults} from "./types/dbTypes";
-import {CancelablePromise} from "./types/fuzzySortTypes";
+import {CancelablePromise} from "./types/general";
 import FuzzySortSearcher from "./FuzzySortSearcher";
 
 export interface Searcher {
@@ -31,12 +31,11 @@ export enum SearchFailure {
 }
 
 // TODO: type promises
-// TODO: find a generic cancelable promise to use instead of fuzzysort's
 export class OngoingSearch {
     dbName: DBName;
     query: string;
-    cancelablePromise?: CancelablePromise<any>;
-    parsePromise?: Promise<PerDictResults | SearchFailure>;
+    searchPromise?: CancelablePromise<any>;
+    parsePromise?: CancelablePromise<PerDictResults | SearchFailure>;
     completed: boolean;
     wasCanceled: boolean = false;
     console: StubConsole;
@@ -45,8 +44,8 @@ export class OngoingSearch {
         dbName: DBName,
         query: string = "",
         debug: boolean,
-        cancelablePromise?: CancelablePromise<any>,
-        parsePromise?: Promise<PerDictResults | SearchFailure>,
+        searchPromise?: CancelablePromise<any>,
+        parsePromise?: CancelablePromise<PerDictResults | SearchFailure>,
     ) {
         this.console = getDebugConsole(debug);
         this.console.time("asyncSearch-" + dbName);
@@ -57,7 +56,7 @@ export class OngoingSearch {
             this.completed = true;
         } else {
             this.completed = false;
-            this.cancelablePromise = cancelablePromise;
+            this.searchPromise = searchPromise;
             this.parsePromise = parsePromise;
         }
     }
@@ -83,10 +82,14 @@ export class OngoingSearch {
     endTimer(): void {
     }
 
-    // TODO: cancel parsepromise, if possible
     cancel(): void {
-        if (this.cancelablePromise && !this.isCompleted()) {
-            this.cancelablePromise.cancel();
+        if (!this.isCompleted()) {
+            if (this.searchPromise) {
+                this.searchPromise.cancel();
+            }
+            if (this.parsePromise) {
+                this.parsePromise.cancel();
+            }
             this.markCanceled();
         }
     }

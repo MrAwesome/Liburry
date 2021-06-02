@@ -7,7 +7,7 @@ import EntryContainer from "./components/EntryContainer";
 import type {DBName, PerDictResults} from "./types/dbTypes";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
-import getDebugConsole, {getDebugConsoleBasedOnQueryString, StubConsole} from "./getDebugConsole";
+import getDebugConsole, {StubConsole} from "./getDebugConsole";
 
 import SearchResultsHolder from "./SearchResultsHolder";
 import {DATABASES} from "./searchSettings";
@@ -61,7 +61,6 @@ import ChaTaigiOptions from "./ChaTaigiOptions";
 // TODO(mid): move search bar to middle of page when no results and no search yet
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
-// TODO(low): pass around a DebugContext with the logger and boolean instead of calling getDebugConsole everywhere. (could also just pass a program context object around, which includes DebugContext) (passing the logger around may actually be a non-starter, because of web workers?)
 // TODO(low): better color for manifest.json theme
 // TODO(low): in db load indicator, have a separate icon for downloading and loading
 // TODO(low): font size button
@@ -138,12 +137,6 @@ import ChaTaigiOptions from "./ChaTaigiOptions";
 //      6) test performance
 //      7) create settings page with language toggle?
 
-
-// TODO: debugConsole log initToAllDB
-
-const importConsole = getDebugConsoleBasedOnQueryString();
-importConsole.timeLog("initToAllDB");
-
 const queryStringHandler = new QueryStringHandler();
 
 export interface ChaTaigiState {
@@ -158,7 +151,14 @@ export interface ChaTaigiStateArgs {
     loadedDBs?: Map<DBName, boolean>,
 }
 
+enum MountedState {
+    INIT = "INIT",
+    MOUNTED = "MOUNTED",
+    UNMOUNTED = "UNMOUNTED",
+}
+
 export class ChaTaigi extends React.Component<any, any> {
+    mountedState = MountedState.INIT;
     searchBar: React.RefObject<SearchBar>;
     console: StubConsole;
 
@@ -195,11 +195,13 @@ export class ChaTaigi extends React.Component<any, any> {
         // Initialize the search controller with callbacks for passing information/state
         // back and forth with the main component.
         this.searchController = new SearchController(this.state.options.debug,
-            this.addResultsCallback,
-            this.addDBLoadedCallback,
-            this.checkIfAllDBLoadedCallback,
-            this.getCurrentQueryCallback,
-            this.clearResultsCallback,
+            {
+                addResultsCallback: this.addResultsCallback,
+                addDBLoadedCallback: this.addDBLoadedCallback,
+                checkIfAllDBLoadedCallback: this.checkIfAllDBLoadedCallback,
+                getCurrentQueryCallback: this.getCurrentQueryCallback,
+                clearResultsCallback: this.clearResultsCallback,
+            }
         );
 
         if (runningInJest()) {
@@ -211,7 +213,12 @@ export class ChaTaigi extends React.Component<any, any> {
     }
 
     setStateTyped(state: ChaTaigiStateArgs | ((prevState: ChaTaigiState) => any)) {
-        this.setState(state)
+        // TODO: Restructure callbacks such that they don't live on the component?
+        if (this.mountedState !== MountedState.MOUNTED) {
+            this.console.warn("Attempting to change state after unmount! MountedState: ", this.mountedState, "State: ", state);
+        } else {
+            this.setState(state)
+        }
     }
 
     getStateTyped(): ChaTaigiState {
@@ -219,6 +226,8 @@ export class ChaTaigi extends React.Component<any, any> {
     }
 
     componentDidMount() {
+        this.mountedState = MountedState.MOUNTED;
+
         const {options} = this.getStateTyped();
         this.console.timeLog("initToAllDB", "componentDidMount");
         // TODO: does this need to happen here? can we just start a search?
@@ -229,7 +238,10 @@ export class ChaTaigi extends React.Component<any, any> {
         }
 
         window.addEventListener("hashchange", this.hashChange);
+    }
 
+    componentWillUnmount() {
+        this.mountedState = MountedState.UNMOUNTED;
     }
 
     hashChange(_e: HashChangeEvent) {
@@ -255,7 +267,6 @@ export class ChaTaigi extends React.Component<any, any> {
             this.searchBar.current.updateAndFocus(query);
         }
     }
-
 
     async addResultsCallback(results: PerDictResults) {
         this.setStateTyped((state) => state.resultsHolder.addResults(results));

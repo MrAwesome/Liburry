@@ -7,6 +7,7 @@ import type {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedSearchableEntry, Fuzz
 import {DATABASES, DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./searchSettings";
 import {SearchFailure, OngoingSearch} from "./search";
 import getDebugConsole from "./getDebugConsole";
+import {makeCancelable} from "./utils";
 
 export async function fuzzySortFetchAndPrepare(
     dbName: string,
@@ -162,7 +163,9 @@ export function fuzzySortSearch(
         }
     );
 
-    const ongoingSearch = new OngoingSearch(dbName, query, debug, cancelableSearchPromise, parsePromise);
+    const cancelableParsePromise = makeCancelable(parsePromise);
+
+    const ongoingSearch = new OngoingSearch(dbName, query, debug, cancelableSearchPromise, cancelableParsePromise);
 
     return ongoingSearch;
 }

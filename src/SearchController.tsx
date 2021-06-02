@@ -7,7 +7,6 @@ import SearchValidityManager from "./SearchValidityManager";
 import {DBName, PerDictResults} from "./types/dbTypes";
 import {SearcherType} from "./search";
 
-
 export default class SearchController {
     private searchWorkerManager: SearchWorkerManager;
     private validity: SearchValidityManager;
@@ -21,21 +20,23 @@ export default class SearchController {
 
     constructor(
         debug: boolean,
-        addResultsCallback: (results: PerDictResults) => Promise<void>,
-        addDBLoadedCallback: (dbName: DBName) => Promise<void>,
-        checkIfAllDBLoadedCallback: () => boolean,
-        getCurrentQueryCallback: () => string,
-        clearResultsCallback: () => Promise<void>,
+        callbacks: {
+            addResultsCallback: (results: PerDictResults) => Promise<void>,
+            addDBLoadedCallback: (dbName: DBName) => Promise<void>,
+            clearResultsCallback: () => Promise<void>,
+            checkIfAllDBLoadedCallback: () => boolean,
+            getCurrentQueryCallback: () => string,
+        }
     ) {
         this.console = getDebugConsole(debug);
         this.searchWorkerManager = new SearchWorkerManager(debug);
         this.validity = new SearchValidityManager();
 
-        this.addResultsCallback = addResultsCallback;
-        this.addDBLoadedCallback = addDBLoadedCallback;
-        this.checkIfAllDBLoadedCallback = checkIfAllDBLoadedCallback;
-        this.getCurrentQueryCallback = getCurrentQueryCallback;
-        this.clearResultsCallback = clearResultsCallback;
+        this.addResultsCallback = callbacks.addResultsCallback;
+        this.addDBLoadedCallback = callbacks.addDBLoadedCallback;
+        this.checkIfAllDBLoadedCallback = callbacks.checkIfAllDBLoadedCallback;
+        this.getCurrentQueryCallback = callbacks.getCurrentQueryCallback;
+        this.clearResultsCallback = callbacks.clearResultsCallback;
 
         this.search = this.search.bind(this);
         this.searchWorkerReplyHandler = this.searchWorkerReplyHandler.bind(this);

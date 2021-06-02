@@ -42,22 +42,17 @@ export interface FuzzyKeyResult extends FuzzyResult {
 }
 
 export interface FuzzyKeyResults extends ReadonlyArray<FuzzyKeyResult> {
-    readonly score: number
-    readonly obj: FuzzyPreparedSearchableEntry
+    readonly score: number,
+    readonly obj: FuzzyPreparedSearchableEntry,
 }
 
 interface FuzzyOptions {
-    threshold?: number
-    limit?: number
-    allowTypo?: boolean
+    threshold?: number,
+    limit?: number,
+    allowTypo?: boolean,
 }
 
 export interface FuzzyKeysOptions extends FuzzyOptions {
     keys: ReadonlyArray<string | ReadonlyArray<string>>
     //scoreFn?: (keysResult:ReadonlyArray<KeyResult<T>>) => number
 }
-
-export interface CancelablePromise<T> extends Promise<T> {
-    cancel(): void
-}
-// }}}
