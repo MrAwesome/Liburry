@@ -26,22 +26,23 @@ export interface RawJSONEntry extends Object {
     readonly d: number, // Numeric ID
 }
 
+// NOTE: This type is passed back from web workers.
 export interface PerDictResults {
     dbName: DBName,
     results: Array<SearchResultEntry>,
-    // TODO: store the intermediate results for each search as well?
 }
 
-// TODO: add type of search which produced this
+// NOTE: This type is passed back from web workers.
+// TODO: add type of search which produced this?
 export interface SearchResultEntry {
     key: string;
     dbID: DBIdentifier;
     dbName: DBName;
     dbSearchRanking: DBSearchRanking;
     pojUnicodeText: string;
-    pojUnicode: string;
-    pojInput: string;
-    hoabun: string;
-    pojNormalized: string;
-    definition: string;
+    pojUnicodePossibleMatch: string;
+    pojInputPossibleMatch: string | null;
+    hoabunPossibleMatch: string;
+    pojNormalizedPossibleMatch: string | null;
+    definitionPossibleMatch: string;
 }

@@ -55,6 +55,8 @@ export default class QueryStringParser {
         return qs.stringify(parsed, QS_STRINGIFY_OPTS);
     }
 
+    // NOTE: This function updates window.location.hash, which
+    //       will trigger a state change in the main component.
     private update(field: string, value: string) {
         const parsed = this.parseInternal();
         parsed[field] = value;

@@ -84,19 +84,19 @@ export default class EntryContainer extends React.PureComponent<any, any> {
     }
 
     getAltTextContainers(): JSX.Element[] {
-        const {pojNormalized, pojInput} = this.getEntry();
+        const {pojNormalizedPossibleMatch, pojInputPossibleMatch} = this.getEntry();
         let altTextContainers = [];
 
-        if (pojInput !== null) {
-            const poji = this.createMatchElement(pojInput, "poj-input");
+        if (pojInputPossibleMatch !== null) {
+            const poji = this.createMatchElement(pojInputPossibleMatch, "poj-input");
             const pojic = <div className="poj-input-container">
                 ({poji})
             </div>;
             altTextContainers.push(pojic);
         }
 
-        if (pojNormalized !== null) {
-            const pojn = this.createMatchElement(pojNormalized, "poj-normalized");
+        if (pojNormalizedPossibleMatch !== null) {
+            const pojn = this.createMatchElement(pojNormalizedPossibleMatch, "poj-normalized");
             const pojnc = <div className="poj-normalized-container">
                 ({pojn})
                 </div>;
@@ -172,12 +172,12 @@ export default class EntryContainer extends React.PureComponent<any, any> {
 
     render() {
         const {debug} = this.props;
-        const {pojUnicode, definition, hoabun, dbName} = this.getEntry();
+        const {pojUnicodePossibleMatch, definitionPossibleMatch, hoabunPossibleMatch, dbName} = this.getEntry();
         const clicked = this.getClicked();
 
-        const poju = this.createMatchElement(pojUnicode, "poj-unicode");
-        const hoab = this.createMatchElement(hoabun, "hoabun");
-        const engl = this.createMatchElement(definition, "definition");
+        const poju = this.createMatchElement(pojUnicodePossibleMatch, "poj-unicode");
+        const hoab = this.createMatchElement(hoabunPossibleMatch, "hoabun");
+        const engl = this.createMatchElement(definitionPossibleMatch, "definition");
 
 
         return (

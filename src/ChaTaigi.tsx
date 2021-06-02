@@ -7,7 +7,7 @@ import EntryContainer from "./components/EntryContainer";
 import type {DBName, PerDictResults} from "./types/dbTypes";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
-import getDebugConsole from "./getDebugConsole";
+import getDebugConsole, {getDebugConsoleBasedOnQueryString, StubConsole} from "./getDebugConsole";
 
 import SearchResultsHolder from "./SearchResultsHolder";
 import {DATABASES} from "./searchSettings";
@@ -15,10 +15,9 @@ import {DATABASES} from "./searchSettings";
 import SearchController from "./SearchController";
 
 import {runningInJest} from "./utils";
+import ChaTaigiOptions from "./ChaTaigiOptions";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
-// TODO(urgent): either remove DEBUG_MODE and pass debug everywhere, or fix it
-// TODO(urgent): integration tests
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(urgent): find how to create unit tests in js, and create them
 // TODO(high): give some visual indication that DBs are loading, even in search mode
@@ -139,36 +138,41 @@ import {runningInJest} from "./utils";
 //      6) test performance
 //      7) create settings page with language toggle?
 
-let queryStringHandler = new QueryStringHandler();
-let options = queryStringHandler.parse();
 
-const debugConsole = getDebugConsole(options.debug);
-debugConsole.time("initToAllDB");
+// TODO: debugConsole log initToAllDB
+
+const importConsole = getDebugConsoleBasedOnQueryString();
+importConsole.timeLog("initToAllDB");
+
+const queryStringHandler = new QueryStringHandler();
 
 export interface ChaTaigiState {
+    options: ChaTaigiOptions,
     resultsHolder: SearchResultsHolder,
     loadedDBs: Map<DBName, boolean>,
 }
 
 export interface ChaTaigiStateArgs {
+    options?: ChaTaigiOptions,
     resultsHolder?: SearchResultsHolder,
     loadedDBs?: Map<DBName, boolean>,
 }
 
 export class ChaTaigi extends React.Component<any, any> {
     searchBar: React.RefObject<SearchBar>;
-    query = options.query;
+    console: StubConsole;
 
     searchController: SearchController;
-
 
     constructor(props: any) {
         super(props);
         this.state = {
-            mode: options.mainMode,
+            options: this.props.options ?? new ChaTaigiOptions(),
             loadedDBs: new Map(),
             resultsHolder: new SearchResultsHolder(),
         };
+
+        this.console = getDebugConsole(this.state.options.debug);
 
         DATABASES.forEach((_, dbName) => {this.state.loadedDBs.set(dbName, false)});
 
@@ -190,7 +194,7 @@ export class ChaTaigi extends React.Component<any, any> {
 
         // Initialize the search controller with callbacks for passing information/state
         // back and forth with the main component.
-        this.searchController = new SearchController(options.debug,
+        this.searchController = new SearchController(this.state.options.debug,
             this.addResultsCallback,
             this.addDBLoadedCallback,
             this.checkIfAllDBLoadedCallback,
@@ -215,8 +219,10 @@ export class ChaTaigi extends React.Component<any, any> {
     }
 
     componentDidMount() {
-        debugConsole.timeLog("initToAllDB", "componentDidMount");
-        this.updateSearchBar();
+        const {options} = this.getStateTyped();
+        this.console.timeLog("initToAllDB", "componentDidMount");
+        // TODO: does this need to happen here? can we just start a search?
+        this.updateSearchBar(options.query);
 
         if (!runningInJest()) {
             this.searchController.startWorkersAndListener(options.searcherType);
@@ -227,27 +233,26 @@ export class ChaTaigi extends React.Component<any, any> {
     }
 
     hashChange(_e: HashChangeEvent) {
-        const options = new QueryStringHandler().parse();
+        const oldOptions = this.getStateTyped().options;
+        const newOptions = queryStringHandler.parse();
 
-        // TODO: move query to options? rename it context?
-        if (this.query !== options.query) {
-            this.updateSearchBar();
-            this.searchQuery(options.query);
+        if (newOptions.query !== oldOptions.query) {
+            this.updateSearchBar(newOptions.query);
+            this.searchQuery(newOptions.query);
         }
 
-        if (this.state.mode !== options.mainMode) {
-            this.setState({mode: options.mainMode});
-        }
+        this.setStateTyped({options: newOptions});
     }
 
-    // Note that we don't need to update state here - the hash change does that for us.
+    // NOTE: we don't need to update state here - the hash change does that for us.
     setMode(mode: MainDisplayAreaMode) {
+        const queryStringHandler = new QueryStringHandler();
         queryStringHandler.updateMode(mode);
     }
 
-    updateSearchBar() {
+    updateSearchBar(query: string) {
         if (this.searchBar.current) {
-            this.searchBar.current.updateAndFocus(this.query);
+            this.searchBar.current.updateAndFocus(query);
         }
     }
 
@@ -265,11 +270,11 @@ export class ChaTaigi extends React.Component<any, any> {
     }
 
     checkIfAllDBLoadedCallback(): boolean {
-        return Array.from(this.state.loadedDBs.values()).every(x => x);
+        return Array.from(this.getStateTyped().loadedDBs.values()).every(x => x);
     }
 
     getCurrentQueryCallback(): string {
-        return this.query;
+        return this.getStateTyped().options.query;
     }
 
     onSearchBarChange(e: any) {
@@ -281,7 +286,7 @@ export class ChaTaigi extends React.Component<any, any> {
     }
 
     updateQuery(query: string) {
-        this.query = query;
+        this.setStateTyped((state) => ({options: {...state.options, query: query}}));
         queryStringHandler.updateQuery(query);
     }
 
@@ -292,7 +297,7 @@ export class ChaTaigi extends React.Component<any, any> {
     }
 
     getEntries(): JSX.Element {
-        const {resultsHolder} = this.getStateTyped();
+        const {resultsHolder, options} = this.getStateTyped();
         const entries = resultsHolder.getAllResults();
 
         const entryContainers = entries.map((entry) => <EntryContainer debug={options.debug} entry={entry} key={entry.key} />);
@@ -315,7 +320,7 @@ export class ChaTaigi extends React.Component<any, any> {
 
     // TODO: create a HomePage element
     mainAreaHomeView() {
-        const {loadedDBs} = this.getStateTyped();
+        const {loadedDBs, options} = this.getStateTyped();
         if (options.debug) {
             return <>
                 <DebugArea loadedDBs={loadedDBs} />
@@ -327,18 +332,12 @@ export class ChaTaigi extends React.Component<any, any> {
 
     render() {
         const {onSearchBarChange} = this;
-        const {modeOverride} = this.props;
-        const options = queryStringHandler.parse();
-
-        let mainDisplayAreaMode = options.mainMode;
-        if (modeOverride !== undefined) {
-            mainDisplayAreaMode = modeOverride;
-        }
+        const {options} = this.getStateTyped();
 
         return (
             <div className="ChaTaigi">
                 <SearchBar ref={this.searchBar} onChange={onSearchBarChange} />
-                {this.mainDisplayArea(mainDisplayAreaMode)}
+                {this.mainDisplayArea(options.mainMode)}
             </div>
         );
         // TODO: place a filler element inside SelectBar with the same height, at the bottom of the page

@@ -56,11 +56,11 @@ export function parseFuzzySortResultsForRender(
             const pojUnicodePossiblePreHLMatch = fuzzysortResult[DEFAULT_POJ_UNICODE_INDEX];
             const hoabunPossiblePreHLMatch = fuzzysortResult[DEFAULT_HOABUN_INDEX];
 
-            const pojNormalized = fuzzySortHighlight(pojNormalizedPossiblePreHLMatch, null);
-            const pojInput = fuzzySortHighlight(pojInputPossiblePreHLMatch, null);
-            const definition = fuzzySortHighlight(definitionPossiblePreHLMatch, obj.e);
-            const pojUnicode = fuzzySortHighlight(pojUnicodePossiblePreHLMatch, pojUnicodeText);
-            const hoabun = fuzzySortHighlight(hoabunPossiblePreHLMatch, obj.h);
+            const pojNormalizedPossibleMatch = fuzzySortHighlight(pojNormalizedPossiblePreHLMatch, null);
+            const pojInputPossibleMatch = fuzzySortHighlight(pojInputPossiblePreHLMatch, null);
+            const definitionPossibleMatch = fuzzySortHighlight(definitionPossiblePreHLMatch, obj.e);
+            const pojUnicodePossibleMatch = fuzzySortHighlight(pojUnicodePossiblePreHLMatch, pojUnicodeText);
+            const hoabunPossibleMatch = fuzzySortHighlight(hoabunPossiblePreHLMatch, obj.h);
 
             return {
                 key: dbName + "-" + rowID,
@@ -68,11 +68,11 @@ export function parseFuzzySortResultsForRender(
                 dbName,
                 dbSearchRanking: fuzzysortResult.score,
                 pojUnicodeText,
-                pojUnicode,
-                pojInput,
-                hoabun,
-                pojNormalized,
-                definition,
+                pojUnicodePossibleMatch,
+                pojInputPossibleMatch,
+                hoabunPossibleMatch,
+                pojNormalizedPossibleMatch,
+                definitionPossibleMatch,
             } as SearchResultEntry;
         })
     return currentResultsElements;
@@ -99,10 +99,10 @@ function convertRawJSONEntryToFuzzySortPrepared(
     return rawJSONEntry as FuzzyPreparedSearchableEntry;
 }
 
-function fuzzySortHighlight(
+function fuzzySortHighlight<T>(
     possibleMatch: FuzzyKeyResult | null,
-    defaultDisplay: string | null,
-): string | null {
+    defaultDisplay: string | T,
+): string | T {
     // NOTE: fuzzysort.highlight actually accepts null, but its type signature is wrong
     if (possibleMatch === null) {return defaultDisplay;}
     return fuzzysort.highlight(possibleMatch, "<mark>", "</mark>") || defaultDisplay;

@@ -2,19 +2,35 @@ import { render, screen } from '@testing-library/react';
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {ChaTaigi} from './ChaTaigi';
 import {PerDictResults, SearchResultEntry} from './types/dbTypes';
+import ChaTaigiOptions from './ChaTaigiOptions';
+
+// TODO(low): figure out how to run componentDidMount
+
+test('render searchbar by default', () => {
+    render(<ChaTaigi />);
+    const searchBar = screen.getByPlaceholderText(/Search.../);
+    expect(searchBar).toBeInTheDocument();
+    expect(searchBar).toBeEmptyDOMElement();
+    expect(searchBar).toHaveFocus();
+});
 
 test('render single entry via override', () => {
+    let options = new ChaTaigiOptions();
+    options.mainMode = MainDisplayAreaMode.SEARCH;
+
+    const dbName = "malee";
+    const dbID = 1;
     let res1 = {
-        key: "malee-1",
-        dbID: 0,
-        dbName: "malee",
+        key: `${dbName}-${dbID}`,
+        dbID,
+        dbName,
         dbSearchRanking: -3,
         pojUnicodeText: "hoat-lu̍t",
-        pojUnicode: "hoat-lu̍t",
-        pojInput: "hoat-lut8",
-        hoabun: "法律",
-        pojNormalized: "hoat-lut",
-        definition: "the law",
+        pojUnicodePossibleMatch: "hoat-lu̍t",
+        pojInputPossibleMatch: "hoat-lut8",
+        hoabunPossibleMatch: "法律",
+        pojNormalizedPossibleMatch: "hoat-lut",
+        definitionPossibleMatch: "the law",
     } as SearchResultEntry;
 
     let perDictRes = {
@@ -22,7 +38,7 @@ test('render single entry via override', () => {
         results: [res1],
     } as PerDictResults;
 
-    render(<ChaTaigi mockResults={perDictRes} modeOverride={MainDisplayAreaMode.SEARCH} />);
+    render(<ChaTaigi options={options} mockResults={perDictRes} />);
 
     const hoabun = screen.getByText(/法律/i);
     expect(hoabun).toBeInTheDocument();
@@ -32,4 +48,7 @@ test('render single entry via override', () => {
     expect(eng).toBeInTheDocument();
     const db = screen.getByText(/malee/i);
     expect(db).toBeInTheDocument();
+    const searchBar = screen.getByPlaceholderText(/Search.../);
+    expect(searchBar).toBeInTheDocument();
+
 });

@@ -1,7 +1,7 @@
 export enum MainDisplayAreaMode {
-    HOME,
-    SEARCH,
-    ABOUT,
-    CONTACT,
-    SETTINGS,
+    HOME = "HOME",
+    SEARCH = "SEARCH",
+    ABOUT = "ABOUT",
+    CONTACT = "CONTACT",
+    SETTINGS = "SETTINGS",
 }
