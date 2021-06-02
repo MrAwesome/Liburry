@@ -106,6 +106,7 @@ class SearchWorkerHelper {
                 if (ongoingSearch instanceof OngoingSearch) {
                     const originalState = this.state;
                     this.state = {...originalState, init: WorkerInitState.SEARCHING, ogs: ongoingSearch, searchID};
+                    console.log(ongoingSearch.parsePromise);
                     ongoingSearch.parsePromise?.then((results) => {
                         if (ongoingSearch.wasCanceled) {
                             this.console.log("Parse promise completed on canceled search:", ongoingSearch)

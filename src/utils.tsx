@@ -13,17 +13,14 @@ export function runningInJest() {
 export function makeCancelable<T>(promise: Promise<T>): CancelablePromise<T> {
     let isCanceled = false;
 
-    const wrappedPromise =
+    const wrappedPromise: Partial<CancelablePromise<T>> =
         new Promise((resolve, reject) => {
             promise
                 .then((val) => (isCanceled ? reject({isCanceled}) : resolve(val)))
                 .catch((error) => (isCanceled ? reject({isCanceled}) : reject(error)));
         });
 
-    return {
-        ...wrappedPromise,
-        cancel() {
-            isCanceled = true;
-        },
-    } as CancelablePromise<T>;
+     wrappedPromise.cancel = () => { isCanceled = true; };
+
+    return wrappedPromise as CancelablePromise<T>;
 }
