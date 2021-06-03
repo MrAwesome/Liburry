@@ -34,6 +34,7 @@ export default class SearchWorkerManager {
     }
 
     async init(searcherType: SearcherType, searchWorkerReplyHandler: (e: MessageEvent<SearchWorkerResponseMessage>) => Promise<void>) {
+        // Import is here so that the import of worker code doesn't break Jest testing elsewhere.
         import("worker-loader!./search.worker").then((worker) => {
 
             for (let [dbName, langDB] of DATABASES) {
@@ -50,7 +51,10 @@ export default class SearchWorkerManager {
             }
 
         });
+    }
 
+    async stopAll() {
+        this.searchWorkers.forEach((worker, _) => worker.terminate());
     }
 
     changeAllSearcherTypes(searcherType: SearcherType) {

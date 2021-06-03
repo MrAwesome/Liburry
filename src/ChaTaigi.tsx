@@ -17,10 +17,12 @@ import SearchController from "./SearchController";
 import {runningInJest} from "./utils";
 import ChaTaigiOptions from "./ChaTaigiOptions";
 
+// TODO(urgent): hunt down memory leaks (find why workers are being started on every app update refresh)
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(urgent): find how to create unit tests in js, and create them
 // TODO(high): switch from manually-generated json to tagged csv using papa
+// TODO(high): more evenly spread work among the workers (giku is much smaller than mk, etc)
 // TODO(high): allow for 404s instead of always loading /
 // TODO(high): give some visual indication that DBs are loading, even in search mode
 // TODO(high): implement select bar (note the way it squishes on very narrow screen - create space under it?)
@@ -246,6 +248,7 @@ export class ChaTaigi extends React.Component<any, any> {
     componentWillUnmount() {
         this.mountedState = MountedState.UNMOUNTED;
         window.removeEventListener("hashchange", this.hashChange);
+        this.searchController.handleUnmount();
     }
 
     hashChange(_e: HashChangeEvent) {

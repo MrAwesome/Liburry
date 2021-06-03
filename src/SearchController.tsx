@@ -47,6 +47,10 @@ export default class SearchController {
         this.searchWorkerManager.init(searcherType, this.searchWorkerReplyHandler);
     }
 
+    async handleUnmount() {
+        this.searchWorkerManager.stopAll();
+    }
+
     async search(query: string) {
         // Invalidate the previous search, so any lingering results don't pollute the current view
         this.validity.invalidate();
