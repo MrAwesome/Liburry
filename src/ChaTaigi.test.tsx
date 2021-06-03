@@ -4,6 +4,7 @@ import {ChaTaigi} from './ChaTaigi';
 import {PerDictResults, SearchResultEntry} from './types/dbTypes';
 import ChaTaigiOptions from './ChaTaigiOptions';
 
+// TODO(high): test basic worker search behavior (probably not possible from jest?)
 // TODO(low): figure out how to run componentDidMount
 
 test('render searchbar by default', () => {
@@ -50,5 +51,4 @@ test('render single entry via override', () => {
     expect(db).toBeInTheDocument();
     const searchBar = screen.getByPlaceholderText(/Search.../);
     expect(searchBar).toBeInTheDocument();
-
 });

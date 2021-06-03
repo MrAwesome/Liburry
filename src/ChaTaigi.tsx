@@ -20,6 +20,8 @@ import ChaTaigiOptions from "./ChaTaigiOptions";
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(urgent): find how to create unit tests in js, and create them
+// TODO(high): switch from manually-generated json to tagged csv using papa
+// TODO(high): allow for 404s instead of always loading /
 // TODO(high): give some visual indication that DBs are loading, even in search mode
 // TODO(high): implement select bar (note the way it squishes on very narrow screen - create space under it?)
 // TODO(high): debug and address firefox flash of blankness during font load
