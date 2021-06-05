@@ -108,7 +108,7 @@ export default class SearchController {
                 this.console.timeEnd("dbLoadRender-" + dbName);
                 const query = this.getCurrentQueryCallback();
 
-                // There is a small mild condition here where typing before DB load
+                // There is a small mild race condition here where typing before DB load
                 // can mean a search for the same string can be interrupted. It would
                 // already be invalidated, so there's not really any harm besides wasted cycles.
                 const initialID = this.validity.initialSearchID;

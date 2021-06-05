@@ -40,6 +40,12 @@ export class SearchBar extends React.PureComponent<any, any> {
     }
 }
 
+export function DebugArea({loadedDBs}: {loadedDBs: Map<DBName, boolean>}) {
+    return <div className="debug-area">
+        <DBLoadedState loadedDBs={loadedDBs} />
+    </div>
+}
+
 function DBLoadedState({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
     let states: JSX.Element[] = [];
     loadedDBs.forEach((db, dbName) => {
@@ -86,15 +92,6 @@ export class SelectBar extends React.PureComponent<any, any> {
             );
         });
         return <div className="select-bar">{links}</div>
-    }
-}
-
-export class DebugArea extends React.PureComponent<any, {loadedDBs: Map<DBName, boolean>}> {
-    render() {
-        const {loadedDBs} = this.props;
-        return <div className="debug-area">
-            <DBLoadedState loadedDBs={loadedDBs} />
-        </div>
     }
 }
 

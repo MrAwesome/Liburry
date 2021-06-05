@@ -109,6 +109,7 @@ import ChaTaigiOptions from "./ChaTaigiOptions";
 // TODO(later): accessibility? what needs to be done? link to POJ screen readers?
 // TODO(later): store options between sessions
 // TODO(later): run a spellchecker on "english"
+// TODO(later): WASM fast search
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
 // TODO(watch): keep an eye out for 200% CPU util. infinite search loop?
@@ -171,26 +172,28 @@ export class ChaTaigi extends React.Component<any, any> {
 
     constructor(props: any) {
         super(props);
+
         this.state = {
             options: this.props.options ?? new ChaTaigiOptions(),
             loadedDBs: new Map(),
             resultsHolder: new SearchResultsHolder(),
         };
-
-        this.console = getDebugConsole(this.state.options.debug);
-
         DATABASES.forEach((_, dbName) => {this.state.loadedDBs.set(dbName, false)});
 
+        this.console = getDebugConsole(this.state.options.debug);
         this.searchBar = React.createRef();
 
         this.getStateTyped = this.getStateTyped.bind(this);
+        this.setStateTyped = this.setStateTyped.bind(this);
+
         this.hashChange = this.hashChange.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
         this.onSearchBarChange = this.onSearchBarChange.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
-        this.setStateTyped = this.setStateTyped.bind(this);
         this.updateQuery = this.updateQuery.bind(this);
         this.updateSearchBar = this.updateSearchBar.bind(this);
+
+        // Interfaces for the search controller to use to communicate changes back to the component.
         this.addResultsCallback = this.addResultsCallback.bind(this);
         this.addDBLoadedCallback = this.addDBLoadedCallback.bind(this);
         this.getCurrentQueryCallback = this.getCurrentQueryCallback.bind(this);
@@ -209,6 +212,7 @@ export class ChaTaigi extends React.Component<any, any> {
             }
         );
 
+        // Allow for overriding results from Jest.
         if (runningInJest()) {
             const {mockResults} = this.props;
             if (mockResults !== undefined) {
@@ -309,13 +313,15 @@ export class ChaTaigi extends React.Component<any, any> {
         queryStringHandler.updateQuery(query);
     }
 
+    // TODO: add a timer which only completes successfully when all DBs
+    //       have returned results (or canceled/etc) (will require timeout)
     searchQuery(query: string) {
         this.searchController.search(query);
         this.updateQuery(query);
         this.setMode(MainDisplayAreaMode.SEARCH);
     }
 
-    getEntries(): JSX.Element {
+    getEntryComponents(): JSX.Element {
         const {resultsHolder, options} = this.getStateTyped();
         const entries = resultsHolder.getAllResults();
 
@@ -327,7 +333,7 @@ export class ChaTaigi extends React.Component<any, any> {
     mainDisplayArea(mode: MainDisplayAreaMode): JSX.Element {
         switch (mode) {
             case MainDisplayAreaMode.SEARCH:
-                return this.getEntries();
+                return this.getEntryComponents();
             case MainDisplayAreaMode.ABOUT:
                 return <AboutPage />;
             case MainDisplayAreaMode.SETTINGS:
@@ -337,7 +343,7 @@ export class ChaTaigi extends React.Component<any, any> {
         }
     }
 
-    // TODO: create a HomePage element
+    // TODO: create a HomePage element, and/or just generally clear this up
     mainAreaHomeView() {
         const {loadedDBs, options} = this.getStateTyped();
         if (options.debug) {
