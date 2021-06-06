@@ -68,7 +68,7 @@ export default class SearchInvalidationAndRetryManager {
     }
 
     // Check if the named DB can retry for the named searchID
-    acquireRetry(dbName: DBName, searchID: number) {
+    acquireRetry(dbName: DBName, searchID: number): boolean {
         const currentAttempt = this.getSearch(searchID).retries;
         const retries = currentAttempt.get(dbName);
         if (retries === undefined) {
@@ -84,11 +84,20 @@ export default class SearchInvalidationAndRetryManager {
         }
     }
 
+    retriesRemaining(dbName: DBName, searchID: number): number {
+        const currentAttempt = this.getSearch(searchID).retries;
+        const retries = currentAttempt.get(dbName);
+        return retries ?? RETRY_ATTEMPTS;
+    }
+
     checkAllSearchesCompleted(searchID: number): boolean {
         const completions = this.getSearch(searchID).completionStatus;
 
-        // eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]
-        for (const [_dbName, isCompleted] of completions) {
+        // This odd-looking construction is because:
+        // 1) We want to bail early, so we can't use Map.forEach
+        // 2) eslint won't play ball on using an underscore to ignore a var here
+        for (const kv of completions) {
+            const isCompleted = kv[1];
             if (!isCompleted) {
                 return false;
             }
@@ -116,5 +125,4 @@ export default class SearchInvalidationAndRetryManager {
             this.console.log(`"Search "${query}"(${searchID}) finished successfully. Slowest DB: "${dbName}"`);
         }
     }
-
 }

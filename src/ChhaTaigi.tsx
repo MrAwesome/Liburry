@@ -17,7 +17,6 @@ import SearchController from "./SearchController";
 import {runningInJest} from "./utils";
 import ChhaTaigiOptions from "./ChhaTaigiOptions";
 
-// TODO(urgent): hunt down memory leaks (find why workers are being started on every app update refresh)
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(urgent): find how to create unit tests in js, and create them
@@ -77,7 +76,8 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 // TODO(low): notify when DBs fail to load
 // TODO(low): radio buttons of which text to search
 // TODO(low): hoabun text click should copy hoabun?
-// TODO(low): title
+// TODO(low): link preview image
+// TODO(low): title/main page
 // TODO(low): copyright, links, etc
 // TODO(low): settings
 // TODO(low): fix the default/preview text
