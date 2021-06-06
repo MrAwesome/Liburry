@@ -1,5 +1,5 @@
 import qs from "qs";
-import ChaTaigiOptions from "./ChaTaigiOptions";
+import ChhaTaigiOptions from "./ChhaTaigiOptions";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
 // HACK to allow web worker loader to work:
@@ -68,8 +68,8 @@ export default class QueryStringParser {
         }
     }
 
-    parse(): ChaTaigiOptions {
-        let options = new ChaTaigiOptions();
+    parse(): ChhaTaigiOptions {
+        let options = new ChhaTaigiOptions();
         const parsed = this.parseInternal();
         const q = parsed[QUERY];
         const mode = parsed[MAIN_MODE];

@@ -1,9 +1,9 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
 
-import {ChaTaigi} from "./ChaTaigi";
+import {ChhaTaigi} from "./ChhaTaigi";
 
-import "./ChaTaigi.css";
+import "./ChhaTaigi.css";
 import getDebugConsole from "./getDebugConsole";
 import "./pages.css";
 import QueryStringHandler from "./QueryStringHandler";
@@ -19,7 +19,7 @@ debugConsole.time("initToAllDB");
 const rootElement = document.getElementById("root");
 ReactDOM.render(
     <React.StrictMode>
-        <ChaTaigi options={options}/>
+        <ChhaTaigi options={options}/>
     </React.StrictMode>, rootElement);
 
 serviceWorkerRegistration.register();

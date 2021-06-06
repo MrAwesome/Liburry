@@ -1,14 +1,14 @@
 import { render, screen } from '@testing-library/react';
 import {MainDisplayAreaMode} from "./types/displayTypes";
-import {ChaTaigi} from './ChaTaigi';
+import {ChhaTaigi} from './ChhaTaigi';
 import {PerDictResults, SearchResultEntry} from './types/dbTypes';
-import ChaTaigiOptions from './ChaTaigiOptions';
+import ChhaTaigiOptions from './ChhaTaigiOptions';
 
 // TODO(high): test basic worker search behavior (probably not possible from jest?)
 // TODO(low): figure out how to run componentDidMount
 
 test('render searchbar by default', () => {
-    render(<ChaTaigi />);
+    render(<ChhaTaigi />);
     const searchBar = screen.getByPlaceholderText(/Search.../);
     expect(searchBar).toBeInTheDocument();
     expect(searchBar).toBeEmptyDOMElement();
@@ -16,7 +16,7 @@ test('render searchbar by default', () => {
 });
 
 test('render single entry via override', () => {
-    let options = new ChaTaigiOptions();
+    let options = new ChhaTaigiOptions();
     options.mainMode = MainDisplayAreaMode.SEARCH;
 
     const dbName = "malee";
@@ -39,7 +39,7 @@ test('render single entry via override', () => {
         results: [res1],
     } as PerDictResults;
 
-    render(<ChaTaigi options={options} mockResults={perDictRes} />);
+    render(<ChhaTaigi options={options} mockResults={perDictRes} />);
 
     const hoabun = screen.getByText(/法律/i);
     expect(hoabun).toBeInTheDocument();

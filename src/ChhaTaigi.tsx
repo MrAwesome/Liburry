@@ -15,7 +15,7 @@ import {DATABASES} from "./searchSettings";
 import SearchController from "./SearchController";
 
 import {runningInJest} from "./utils";
-import ChaTaigiOptions from "./ChaTaigiOptions";
+import ChhaTaigiOptions from "./ChhaTaigiOptions";
 
 // TODO(urgent): hunt down memory leaks (find why workers are being started on every app update refresh)
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
@@ -38,7 +38,7 @@ import ChaTaigiOptions from "./ChaTaigiOptions";
 // TODO(high): asynchronous font loading: https://css-tricks.com/the-best-font-loading-strategies-and-how-to-execute-them/
 // TODO(high): let hyphens and spaces be interchangeable in search
 // TODO(high): come up with a more elegant/extensible way of transforming a db entry into elements to be displayed
-// TODO(high): change name to chaa5_taigi (chhâ)
+// TODO(high): change repo name to ChhaTaigi
 // TODO(high): determine why duplicate search results are sometimes returned (see "a" results for giku)
 // TODO(high): fix icon sizes/manifest: https://github.com/facebook/create-react-app/blob/master/packages/cra-template/template/public/manifest.json (both ico and icon)
 // TODO(high): handle alternate spellings / parentheticals vs separate fields
@@ -72,7 +72,6 @@ import ChaTaigiOptions from "./ChaTaigiOptions";
 // TODO(low): locally-stored settings, or users
 // TODO(low): abstract away searching logic to avoid too much fuzzysort-specific code
 // TODO(low): configurable searches (exact search, slow but better search, etc)
-// TODO(low): move to camelCase variable names
 // TODO(low): move to camelCase repository name
 // TODO(low): notify when DBs fail to load
 // TODO(low): radio buttons of which text to search
@@ -145,14 +144,14 @@ import ChaTaigiOptions from "./ChaTaigiOptions";
 
 const queryStringHandler = new QueryStringHandler();
 
-export interface ChaTaigiState {
-    options: ChaTaigiOptions,
+export interface ChhaTaigiState {
+    options: ChhaTaigiOptions,
     resultsHolder: SearchResultsHolder,
     loadedDBs: Map<DBName, boolean>,
 }
 
-export interface ChaTaigiStateArgs {
-    options?: ChaTaigiOptions,
+export interface ChhaTaigiStateArgs {
+    options?: ChhaTaigiOptions,
     resultsHolder?: SearchResultsHolder,
     loadedDBs?: Map<DBName, boolean>,
 }
@@ -163,7 +162,7 @@ enum MountedState {
     UNMOUNTED = "UNMOUNTED",
 }
 
-export class ChaTaigi extends React.Component<any, any> {
+export class ChhaTaigi extends React.Component<any, any> {
     mountedState = MountedState.INIT;
     searchBar: React.RefObject<SearchBar>;
     console: StubConsole;
@@ -174,7 +173,7 @@ export class ChaTaigi extends React.Component<any, any> {
         super(props);
 
         this.state = {
-            options: this.props.options ?? new ChaTaigiOptions(),
+            options: this.props.options ?? new ChhaTaigiOptions(),
             loadedDBs: new Map(),
             resultsHolder: new SearchResultsHolder(),
         };
@@ -221,7 +220,7 @@ export class ChaTaigi extends React.Component<any, any> {
         }
     }
 
-    setStateTyped(state: ChaTaigiStateArgs | ((prevState: ChaTaigiState) => any)) {
+    setStateTyped(state: ChhaTaigiStateArgs | ((prevState: ChhaTaigiState) => any)) {
         // TODO: Restructure callbacks such that they don't live on the component?
         if (this.mountedState !== MountedState.MOUNTED) {
             this.console.warn("Attempting to change state after unmount! MountedState: ", this.mountedState, "State: ", state);
@@ -230,8 +229,8 @@ export class ChaTaigi extends React.Component<any, any> {
         }
     }
 
-    getStateTyped(): ChaTaigiState {
-        return this.state as ChaTaigiState;
+    getStateTyped(): ChhaTaigiState {
+        return this.state as ChhaTaigiState;
     }
 
     componentDidMount() {
@@ -360,7 +359,7 @@ export class ChaTaigi extends React.Component<any, any> {
         const {options} = this.getStateTyped();
 
         return (
-            <div className="ChaTaigi">
+            <div className="ChhaTaigi">
                 <SearchBar ref={this.searchBar} onChange={onSearchBarChange} />
                 {this.mainDisplayArea(options.mainMode)}
             </div>
