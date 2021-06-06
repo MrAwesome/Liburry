@@ -29,7 +29,7 @@ export default class SearchController {
     ) {
         this.console = getDebugConsole(debug);
         this.searchWorkerManager = new SearchWorkerManager(debug);
-        this.validity = new SearchValidityManager();
+        this.validity = new SearchValidityManager(debug);
 
         this.addResultsCallback = callbacks.addResultsCallback;
         this.addDBLoadedCallback = callbacks.addDBLoadedCallback;
@@ -59,8 +59,9 @@ export default class SearchController {
             this.clearResultsCallback();
         } else {
             const activeDBs = this.searchWorkerManager.getAllActiveDBs();
+            const searchID = this.validity.currentSearchID;
             this.validity.startSearches(activeDBs);
-            this.searchWorkerManager.searchAll(query, this.validity.currentSearchID);
+            this.searchWorkerManager.searchAll(query, searchID);
             this.validity.bump();
         }
     }
@@ -81,8 +82,7 @@ export default class SearchController {
                     this.addResultsCallback(results);
                     this.validity.markSearchCompleted(dbName, searchID);
                     if (this.validity.checkAllSearchesCompleted(searchID)) {
-                        // TODO: add timer (but also time on canceled/failure/etc?)
-                        this.console.log(`Search finished! Search "${dbName}"/"${searchID}"/"${query}" finished.`);
+                        this.console.log(`Search "${searchID}"/"${query}" finished successfully. Slowest DB: "${dbName}"`);
                     }
                 }
 

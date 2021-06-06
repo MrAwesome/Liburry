@@ -1,3 +1,4 @@
+import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {RETRY_ATTEMPTS} from "./searchSettings";
 import {DBName} from "./types/dbTypes";
 import {mod} from "./utils";
@@ -29,6 +30,11 @@ export default class SearchInvalidationAndRetryManager {
 //    private searchInvalidations: Array<boolean> = Array.from({length: this.bufLen}).map(_ => false);
 
     private searches: Array<SearchContext> = Array.from({length: this.bufLen}).map(_ => new SearchContext());
+    private console: StubConsole;
+
+    constructor(debug: boolean) {
+        this.console = getDebugConsole(debug);
+    }
 
     initialSearchID: number = 0;
     currentSearchID: number = this.initialSearchID;
@@ -56,6 +62,7 @@ export default class SearchInvalidationAndRetryManager {
     invalidate() {
         const index = mod(this.currentSearchID - 1, this.bufLen);
         this.getSearch(index).invalidate();
+        this.console.timeEnd(`search-${index}`);
     }
 
     // Check if the named DB can retry for the named searchID
@@ -77,20 +84,22 @@ export default class SearchInvalidationAndRetryManager {
 
     checkAllSearchesCompleted(searchID: number): boolean {
         const completions = this.getSearch(searchID).completionStatus;
+
+        // eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]
         for (const [_dbName, isCompleted] of completions) {
             if (!isCompleted) {
                 return false;
             }
         }
+        this.console.timeEnd(`search-${searchID}`);
         return true;
     }
 
     // NOTE: could check here if search was already started, but as long
     //       as we're always clearing it shouldn't be a problem
     startSearches(dbNames: DBName[]) {
-        for (const dbName in dbNames) {
-            this.getCurrentSearch().completionStatus.set(dbName, false)
-        }
+        this.console.time(`search-${this.currentSearchID}`);
+        dbNames.forEach((dbName) => this.getCurrentSearch().completionStatus.set(dbName, false))
     }
 
     markSearchCompleted(dbName: DBName, searchID: number) {
