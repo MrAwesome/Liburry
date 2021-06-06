@@ -19,7 +19,6 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 
 // TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
-// TODO(urgent): find how to create unit tests in js, and create them
 // TODO(high): search without diacritics, spaces, or hyphens, then remove duplicates?
 // TODO(high): fix link preview on LINE
 // TODO(high): switch from manually-generated json to tagged csv using papa
@@ -72,7 +71,6 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 // TODO(low): locally-stored settings, or users
 // TODO(low): abstract away searching logic to avoid too much fuzzysort-specific code
 // TODO(low): configurable searches (exact search, slow but better search, etc)
-// TODO(low): move to camelCase repository name
 // TODO(low): notify when DBs fail to load
 // TODO(low): radio buttons of which text to search
 // TODO(low): hoabun text click should copy hoabun?
@@ -202,15 +200,13 @@ export class ChhaTaigi extends React.Component<any, any> {
 
         // Initialize the search controller with callbacks for passing information/state
         // back and forth with the main component.
-        this.searchController = new SearchController(this.state.options.debug,
-            {
-                addResultsCallback: this.addResultsCallback,
-                addDBLoadedCallback: this.addDBLoadedCallback,
-                checkIfAllDBLoadedCallback: this.checkIfAllDBLoadedCallback,
-                getCurrentQueryCallback: this.getCurrentQueryCallback,
-                clearResultsCallback: this.clearResultsCallback,
-            }
-        );
+        this.searchController = new SearchController(this.state.options.debug, {
+            addResultsCallback: this.addResultsCallback,
+            addDBLoadedCallback: this.addDBLoadedCallback,
+            checkIfAllDBLoadedCallback: this.checkIfAllDBLoadedCallback,
+            getCurrentQueryCallback: this.getCurrentQueryCallback,
+            clearResultsCallback: this.clearResultsCallback,
+        });
 
         // Allow for overriding results from Jest.
         if (runningInJest()) {
@@ -243,9 +239,7 @@ export class ChhaTaigi extends React.Component<any, any> {
         // TODO: does this need to happen here? can we just start a search?
         this.updateSearchBar(options.query);
 
-        if (!runningInJest()) {
-            this.searchController.startWorkersAndListener(options.searcherType);
-        }
+        this.searchController.startWorkersAndListener(options.searcherType);
 
         window.addEventListener("hashchange", this.hashChange);
     }

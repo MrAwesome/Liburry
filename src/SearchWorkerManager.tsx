@@ -7,6 +7,7 @@ import {DBName} from "./types/dbTypes";
 import {SearchWorkerCommandMessage, SearchWorkerCommandType, SearchWorkerResponseMessage} from "./search.worker";
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {SearcherType} from "./search";
+import {runningInJest} from "./utils";
 
 export default class SearchWorkerManager {
     private searchWorkers: Map<DBName, Worker> = new Map();
@@ -35,22 +36,23 @@ export default class SearchWorkerManager {
 
     async init(searcherType: SearcherType, searchWorkerReplyHandler: (e: MessageEvent<SearchWorkerResponseMessage>) => Promise<void>) {
         // Import is here so that the import of worker code doesn't break Jest testing elsewhere.
-        import("worker-loader!./search.worker").then((worker) => {
+        if (!runningInJest()) {
+            import("worker-loader!./search.worker").then((worker) => {
 
-            for (let [dbName, langDB] of DATABASES) {
+                for (let [dbName, langDB] of DATABASES) {
 
-                const searchWorker = new worker.default();
-                this.searchWorkers.set(
-                    dbName,
-                    searchWorker,
-                );
+                    const searchWorker = new worker.default();
+                    this.searchWorkers.set(
+                        dbName,
+                        searchWorker,
+                    );
 
-                searchWorker.onmessage = searchWorkerReplyHandler;
+                    searchWorker.onmessage = searchWorkerReplyHandler;
 
-                this.sendCommand(dbName, searchWorker, {command: SearchWorkerCommandType.INIT, payload: {dbName, langDB, debug: this.debug, searcherType}});
-            }
-
-        });
+                    this.sendCommand(dbName, searchWorker, {command: SearchWorkerCommandType.INIT, payload: {dbName, langDB, debug: this.debug, searcherType}});
+                }
+            });
+        }
     }
 
     async stopAll() {
