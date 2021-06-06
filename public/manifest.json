@@ -1,10 +1,10 @@
 {
-    "name": "Cha Tâi-gí!",
-    "short_name": "Cha Tâi-gí!",
+    "name": "Chhâ Tâi-gí!",
+    "short_name": "Chhâ Tâi-gí!",
     "description": "",
     "start_url": "/?utm_source=web_app_manifest",
     "manifest_version": 2,
-    "version": "0.3",
+    "version": "0.4",
     "icons": [
         {
             "src": "/icons/tw-flag-32.png",
