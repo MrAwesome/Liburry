@@ -9,7 +9,7 @@ import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {SearcherType} from "./search";
 
 export default class SearchWorkerManager {
-    private searchWorkers: Map<string, Worker> = new Map();
+    private searchWorkers: Map<DBName, Worker> = new Map();
     private debug: boolean;
     private console: StubConsole;
 
@@ -77,5 +77,9 @@ export default class SearchWorkerManager {
 
     searchAll(query: string, searchID: number) {
         this.sendAll({command: SearchWorkerCommandType.SEARCH, payload: {query, searchID}});
+    }
+
+    getAllActiveDBs(): DBName[] {
+        return Array.from(this.searchWorkers.keys());
     }
 }

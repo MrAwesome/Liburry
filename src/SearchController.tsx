@@ -1,6 +1,5 @@
 import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.worker";
 
-// TODO: check workers
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import SearchWorkerManager from "./SearchWorkerManager";
 import SearchValidityManager from "./SearchValidityManager";
@@ -59,6 +58,8 @@ export default class SearchController {
             this.searchWorkerManager.cancelAllCurrent();
             this.clearResultsCallback();
         } else {
+            const activeDBs = this.searchWorkerManager.getAllActiveDBs();
+            this.validity.startSearches(activeDBs);
             this.searchWorkerManager.searchAll(query, this.validity.currentSearchID);
             this.validity.bump();
         }
@@ -73,14 +74,18 @@ export default class SearchController {
             }
                 break;
             case SearchWorkerResponseType.SEARCH_SUCCESS: {
-                let {results, dbName, searchID} = message.payload;
-                this.console.time("searchRender-" + dbName);
+                let {results, dbName, searchID, query} = message.payload;
 
                 const wasInvalidated = this.validity.isInvalidated(searchID);
                 if (!wasInvalidated) {
                     this.addResultsCallback(results);
+                    this.validity.markSearchCompleted(dbName, searchID);
+                    if (this.validity.checkAllSearchesCompleted(searchID)) {
+                        // TODO: add timer (but also time on canceled/failure/etc?)
+                        this.console.log(`Search finished! Search "${dbName}"/"${searchID}"/"${query}" finished.`);
+                    }
                 }
-                this.console.timeEnd("searchRender-" + dbName);
+
             }
                 break;
             case SearchWorkerResponseType.SEARCH_FAILURE: {
@@ -111,6 +116,8 @@ export default class SearchController {
                 // There is a small mild race condition here where typing before DB load
                 // can mean a search for the same string can be interrupted. It would
                 // already be invalidated, so there's not really any harm besides wasted cycles.
+                //
+                // TODO: Add to validity.searchCompletionStatus here
                 const initialID = this.validity.initialSearchID;
                 if (query && !this.validity.isInvalidated(initialID)) {
                     this.searchWorkerManager.searchSpecificDB(dbName, query, initialID);
