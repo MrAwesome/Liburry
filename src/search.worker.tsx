@@ -13,22 +13,10 @@ export type SearchWorkerCommandMessage =
     {command: SearchWorkerCommandType.CHANGE_SEARCHER, payload: {searcherType: SearcherType}};
 
 export type SearchWorkerResponseMessage =
-    {
-        resultType: SearchWorkerResponseType.CANCELED,
-        payload: {dbName: DBName, query: string, searchID: number}
-    } |
-    {
-        resultType: SearchWorkerResponseType.SEARCH_SUCCESS,
-        payload: {dbName: DBName, query: string, results: PerDictResults, searchID: number}
-    } |
-    {
-        resultType: SearchWorkerResponseType.SEARCH_FAILURE,
-        payload: {dbName: DBName, query: string, searchID: number, failure: SearchFailure}
-    } |
-    {
-        resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS,
-        payload: {dbName: DBName}
-    };
+    { resultType: SearchWorkerResponseType.CANCELED, payload: {dbName: DBName, query: string, searchID: number} } |
+    { resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {dbName: DBName, query: string, results: PerDictResults, searchID: number} } |
+    { resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {dbName: DBName, query: string, searchID: number, failure: SearchFailure} } |
+    { resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbName: DBName} };
 
 type WorkerInitializedState =
     {init: WorkerInitState.UNINITIALIZED} |

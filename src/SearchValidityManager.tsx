@@ -4,11 +4,13 @@ import {DBName} from "./types/dbTypes";
 import {mod} from "./utils";
 
 class SearchContext {
+    query: string = "";
     invalidated: boolean = false;
     completionStatus: Map<DBName, boolean> = new Map();
     retries: Map<DBName, number> = new Map();
 
     clear() {
+        this.query = "";
         this.invalidated = false;
         this.completionStatus.clear();
         this.retries.clear();
@@ -91,19 +93,28 @@ export default class SearchInvalidationAndRetryManager {
                 return false;
             }
         }
-        this.console.timeEnd(`search-${searchID}`);
         return true;
     }
 
     // NOTE: could check here if search was already started, but as long
     //       as we're always clearing it shouldn't be a problem
-    startSearches(dbNames: DBName[]) {
+    startSearches(query: string, dbNames: DBName[]) {
+        this.getCurrentSearch().query = query;
+
         this.console.time(`search-${this.currentSearchID}`);
         dbNames.forEach((dbName) => this.getCurrentSearch().completionStatus.set(dbName, false))
     }
 
     markSearchCompleted(dbName: DBName, searchID: number) {
         this.getSearch(searchID).completionStatus.set(dbName, true)
+
+        if (this.checkAllSearchesCompleted(searchID)) {
+            this.console.timeEnd(`search-${searchID}`);
+
+            const query = this.getSearch(searchID).query;
+            // NOTE: you can have this object store the query and print it here, if you want.
+            this.console.log(`"Search "${query}"(${searchID}) finished successfully. Slowest DB: "${dbName}"`);
+        }
     }
 
 }

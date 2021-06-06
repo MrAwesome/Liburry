@@ -60,7 +60,7 @@ export default class SearchController {
         } else {
             const activeDBs = this.searchWorkerManager.getAllActiveDBs();
             const searchID = this.validity.currentSearchID;
-            this.validity.startSearches(activeDBs);
+            this.validity.startSearches(query, activeDBs);
             this.searchWorkerManager.searchAll(query, searchID);
             this.validity.bump();
         }
@@ -75,15 +75,12 @@ export default class SearchController {
             }
                 break;
             case SearchWorkerResponseType.SEARCH_SUCCESS: {
-                let {results, dbName, searchID, query} = message.payload;
+                let {results, dbName, searchID} = message.payload;
 
                 const wasInvalidated = this.validity.isInvalidated(searchID);
                 if (!wasInvalidated) {
                     this.addResultsCallback(results);
                     this.validity.markSearchCompleted(dbName, searchID);
-                    if (this.validity.checkAllSearchesCompleted(searchID)) {
-                        this.console.log(`Search "${searchID}"/"${query}" finished successfully. Slowest DB: "${dbName}"`);
-                    }
                 }
 
             }
