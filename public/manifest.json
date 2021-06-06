@@ -4,7 +4,7 @@
     "description": "",
     "start_url": "/?utm_source=web_app_manifest",
     "manifest_version": 2,
-    "version": "0.4",
+    "version": "0.5",
     "icons": [
         {
             "src": "/icons/tw-flag-32.png",
