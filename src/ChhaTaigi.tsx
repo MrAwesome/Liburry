@@ -22,6 +22,7 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(urgent): find how to create unit tests in js, and create them
 // TODO(high): search without diacritics, spaces, or hyphens, then remove duplicates?
+// TODO(high): fix link preview on LINE
 // TODO(high): switch from manually-generated json to tagged csv using papa
 // TODO(high): more evenly spread work among the workers (giku is much smaller than mk, etc)
 // TODO(high): allow for 404s instead of always loading /
