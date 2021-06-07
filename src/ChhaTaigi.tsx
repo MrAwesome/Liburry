@@ -18,7 +18,6 @@ import {runningInJest} from "./utils";
 import ChhaTaigiOptions from "./ChhaTaigiOptions";
 
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
-// TODO(high): test that important functions are called in mount/unmount on main element
 // TODO(high): search without diacritics, spaces, or hyphens, then remove duplicates?
 // TODO(high): fix link preview on LINE
 // TODO(high): switch from manually-generated json to tagged csv using papa
@@ -187,6 +186,8 @@ export class ChhaTaigi extends React.Component<any, any> {
         this.setStateTyped = this.setStateTyped.bind(this);
 
         this.hashChange = this.hashChange.bind(this);
+        this.subscribeHash = this.subscribeHash.bind(this);
+        this.unsubscribeHash = this.unsubscribeHash.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
         this.onSearchBarChange = this.onSearchBarChange.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
@@ -242,14 +243,21 @@ export class ChhaTaigi extends React.Component<any, any> {
         this.updateSearchBar(options.query);
 
         this.searchController.startWorkersAndListener(options.searcherType);
-
-        window.addEventListener("hashchange", this.hashChange);
+        this.subscribeHash();
     }
 
     componentWillUnmount() {
         this.mountedState = MountedState.UNMOUNTED;
+        this.unsubscribeHash();
+        this.searchController.cleanup();
+    }
+
+    subscribeHash() {
+        window.addEventListener("hashchange", this.hashChange);
+    }
+
+    unsubscribeHash() {
         window.removeEventListener("hashchange", this.hashChange);
-        this.searchController.handleUnmount();
     }
 
     hashChange(_e: HashChangeEvent) {

@@ -46,7 +46,7 @@ export default class SearchController {
         this.searchWorkerManager.init(searcherType, this.searchWorkerReplyHandler);
     }
 
-    async handleUnmount() {
+    async cleanup() {
         this.searchWorkerManager.stopAll();
     }
 
