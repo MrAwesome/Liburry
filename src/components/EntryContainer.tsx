@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import * as React from "react";
 
 import {REPO_LINK} from "../constants";
@@ -106,9 +107,10 @@ export default class EntryContainer extends React.PureComponent<any, any> {
         return altTextContainers;
     }
 
-    // FIXME(https://github.com/farzher/fuzzysort/issues/66)
     createMatchElement(inputText: string, className: string): JSX.Element {
-        const rawHtml = {__html: inputText};
+        // NOTE: https://github.com/farzher/fuzzysort/issues/66
+        var clean = DOMPurify.sanitize(inputText, {ALLOWED_TAGS: ['mark']});
+        const rawHtml = {__html: clean};
         return <span className={className} dangerouslySetInnerHTML={rawHtml}></span>;
 
     }

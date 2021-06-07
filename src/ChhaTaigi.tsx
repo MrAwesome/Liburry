@@ -17,8 +17,8 @@ import SearchController from "./SearchController";
 import {runningInJest} from "./utils";
 import ChhaTaigiOptions from "./ChhaTaigiOptions";
 
-// TODO(urgent): use delimiters instead of dangerouslySetInnerHTML
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
+// TODO(high): test that important functions are called in mount/unmount on main element
 // TODO(high): search without diacritics, spaces, or hyphens, then remove duplicates?
 // TODO(high): fix link preview on LINE
 // TODO(high): switch from manually-generated json to tagged csv using papa
@@ -65,6 +65,8 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 // TODO(mid): move search bar to middle of page when no results and no search yet
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
+// TODO(low): localization for links, about section, etc
+// TODO(low): localization for og:description etc, and/or alternates
 // TODO(low): better color for manifest.json theme
 // TODO(low): in db load indicator, have a separate icon for downloading and loading
 // TODO(low): font size button
