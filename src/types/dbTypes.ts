@@ -10,6 +10,7 @@ export type ShortNameToPreppedNameMapping = Map<JSONDBKey, SearchPreppedKey>;
 
 export interface LangDB {
     dbFilename: DBFilename,
+    dbFilenameFuzzyPrepped: DBFilename,
     shortNameToPreppedNameMapping: ShortNameToPreppedNameMapping,
     searchKeys: Array<SearchPreppedKey>,
     fuzzyOpts: FuzzyKeysOptions,

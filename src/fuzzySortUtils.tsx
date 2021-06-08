@@ -9,6 +9,34 @@ import {SearchFailure, OngoingSearch} from "./search";
 import getDebugConsole from "./getDebugConsole";
 import {makeCancelable} from "./utils";
 
+// TODO: continue testing performance
+export async function fuzzySortFetchPrePrepared(
+    dbName: string,
+    langDB: LangDB,
+    debug: boolean,
+): Promise<FuzzySearchableDict> {
+    const debugConsole = getDebugConsole(debug);
+    const {dbFilenameFuzzyPrepped} = langDB;
+    debugConsole.time("total-" + dbName);
+    debugConsole.time("fetch-" + dbName);
+    return fetch(dbFilenameFuzzyPrepped)
+        .then((response: Response) => {
+            return response.text();
+        })
+        .then((text: string) => {
+            debugConsole.timeEnd("fetch-" + dbName);
+            debugConsole.time("jsonConvertPrePrepped-" + dbName);
+            const searchableEntries: FuzzyPreparedSearchableEntry[] = JSON.parse(text);
+            debugConsole.timeEnd("jsonConvertPrePrepped-" + dbName);
+            debugConsole.timeEnd("total-" + dbName);
+
+            return {
+                dbName,
+                searchableEntries,
+            } as FuzzySearchableDict;
+        });
+}
+
 export async function fuzzySortFetchAndPrepare(
     dbName: string,
     langDB: LangDB,
@@ -16,18 +44,23 @@ export async function fuzzySortFetchAndPrepare(
 ): Promise<FuzzySearchableDict> {
     const debugConsole = getDebugConsole(debug);
     const {dbFilename, shortNameToPreppedNameMapping} = langDB;
+    debugConsole.time("total-" + dbName);
     debugConsole.time("fetch-" + dbName);
     return fetch(dbFilename)
         .then((response: Response) => {
-            debugConsole.timeEnd("fetch-" + dbName);
-            debugConsole.time("jsonConvert-" + dbName);
-            return response.json();
+            return response.text();
         })
-        .then((prePreparedData: RawJSONEntry[]) => {
+        .then((text: string) => {
+            debugConsole.timeEnd("fetch-" + dbName);
+
+            debugConsole.time("jsonConvert-" + dbName);
+            const prePreparedData: RawJSONEntry[] = JSON.parse(text);
             debugConsole.timeEnd("jsonConvert-" + dbName);
+
             debugConsole.time("prepareSlow-" + dbName);
             const data = prePreparedData.map((d) => convertRawJSONEntryToFuzzySortPrepared(shortNameToPreppedNameMapping, d));
             debugConsole.timeEnd("prepareSlow-" + dbName);
+            debugConsole.timeEnd("total-" + dbName);
 
             return {
                 dbName,
@@ -82,7 +115,7 @@ export function parseFuzzySortResultsForRender(
 // Prepare a fast search version of each searchable key.
 // NOTE: this modifies the object and returns it as a type
 //       which is a superset of its original type.
-function convertRawJSONEntryToFuzzySortPrepared(
+export function convertRawJSONEntryToFuzzySortPrepared(
     shortNameToPreppedNameMapping: ShortNameToPreppedNameMapping,
     rawJSONEntry: RawJSONEntry,
 ) {

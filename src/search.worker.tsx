@@ -74,8 +74,8 @@ class SearchWorkerHelper {
         searcher.prepare().then(() => {
             this.state = {searcher, dbName, langDB, init: WorkerInitState.LOADED};
             this.sendResponse({resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbName}});
-        }).catch(() => {
-            console.warn("DB preparation failure!", this);
+        }).catch((err) => {
+            console.warn("DB preparation failure!", this, err);
             this.state = {dbName, langDB, init: WorkerInitState.FAILED_TO_PREPARE};
         });
     }

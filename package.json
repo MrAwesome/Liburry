@@ -34,7 +34,10 @@
     "webfontloader": "^1.6.28",
     "worker-loader": "^3.0.8"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "webpack-cli": "^4.7.2",
+    "webpack-node-externals": "^3.0.0"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

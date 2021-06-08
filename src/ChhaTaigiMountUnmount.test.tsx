@@ -1,6 +1,10 @@
+import * as React from 'react';
 import {ChhaTaigi} from './ChhaTaigi';
 import { render } from '@testing-library/react';
 import SearchController from './SearchController';
+
+// NOTE: just used to silence errors in node TSC.
+React.version;
 
 test('test SearchController start/cleanup', () => {
     let startW = jest.spyOn(SearchController.prototype, 'startWorkersAndListener');

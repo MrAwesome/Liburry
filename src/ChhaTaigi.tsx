@@ -17,8 +17,11 @@ import SearchController from "./SearchController";
 import {runningInJest} from "./utils";
 import ChhaTaigiOptions from "./ChhaTaigiOptions";
 
+// TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`
+// TODO(urgent): compress/decompress prepped dbs?
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(high): search without diacritics, spaces, or hyphens, then remove duplicates?
+// TODO(high): test performance of compressing/decompressing json files
 // TODO(high): fix link preview on LINE
 // TODO(high): switch from manually-generated json to tagged csv using papa
 // TODO(high): more evenly spread work among the workers (giku is much smaller than mk, etc)

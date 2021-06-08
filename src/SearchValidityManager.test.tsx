@@ -23,7 +23,7 @@ test('search retry', () => {
 
 test('search completion', () => {
     const query = "fakesearch";
-    const dbs = ["mk", "emb", "gik"];
+    const dbs = ["fake_mk", "fake_emb", "fake_gik"];
     const vman = new SearchValidityManager(true);
     const searchID = vman.currentSearchID;
     vman.startSearches(query, dbs);
