@@ -2,6 +2,7 @@ import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {DBName, LangDB, PerDictResults} from "./types/dbTypes";
 import {CancelablePromise} from "./types/general";
 import FuzzySortSearcher from "./FuzzySortSearcher";
+import {LunrSearcher} from "./search/lunr";
 
 export interface Searcher {
     searcherType: SearcherType;
@@ -13,13 +14,17 @@ export interface Searcher {
 }
 
 export enum SearcherType {
-    FuzzySort = "FuzzySort"
+    FUZZYSORT = "FUZZYSORT",
+    LUNR = "LUNR"
 }
 
 export function getSearcher(searcherType: SearcherType, dbName: DBName, langDB: LangDB, debug: boolean): Searcher {
     switch (searcherType) {
-        case SearcherType.FuzzySort:
+        case SearcherType.FUZZYSORT:
             return new FuzzySortSearcher(dbName, langDB, debug);
+        case SearcherType.LUNR:
+            // TODO: implement for lunr
+            return new LunrSearcher(dbName, langDB, debug);
     }
 }
 
@@ -27,7 +32,7 @@ export enum SearchFailure {
     FuzzyNoSearchableDict = "FuzzyNoSearchableDict",
     FuzzyFailedToLoadLangDB = "FuzzyFailedToLoadLangDB",
     FuzzyParsePromiseFailed = "FuzzyParsePromiseFailed",
-    FuzzySearchedBeforePrepare = "FuzzySearchedBeforePrepare",
+    SearchedBeforePrepare = "SearchedBeforePrepare",
 }
 
 // TODO: type promises

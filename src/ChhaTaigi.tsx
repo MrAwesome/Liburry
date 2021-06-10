@@ -17,13 +17,15 @@ import SearchController from "./SearchController";
 import {runningInJest} from "./utils";
 import ChhaTaigiOptions from "./ChhaTaigiOptions";
 
+// TODO(urgent): switch from manually-generated json to tagged csv using papa
+//          TODO(after): add to lunr, use https://lunrjs.com/guides/index_prebuilding.html
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`
 // TODO(urgent): compress/decompress prepped dbs?
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
+// TODO(high): more evenly split the work between large/small databases, and possibly return results immediately and batch renders
 // TODO(high): search without diacritics, spaces, or hyphens, then remove duplicates?
 // TODO(high): test performance of compressing/decompressing json files
 // TODO(high): fix link preview on LINE
-// TODO(high): switch from manually-generated json to tagged csv using papa
 // TODO(high): more evenly spread work among the workers (giku is much smaller than mk, etc)
 // TODO(high): allow for 404s instead of always loading /
 // TODO(high): give some visual indication that DBs are loading, even in search mode
@@ -120,7 +122,7 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 //      1) DONE: create a Searcher interface to abstract away the direct reliance on fuzzysort in the workers
 //      2) find a suitably simple alternative to test, and implement Searcher for it
 //      3) remove remaining reliance on fuzzy variables (note debug mode score threshold)
-//      4) test out lovefield
+//      4) test out lovefield, lunr.js, and js-search
 //
 // Project: Integration tests
 //      1) Determine how to mock
@@ -339,6 +341,8 @@ export class ChhaTaigi extends React.Component<any, any> {
 
     mainDisplayArea(mode: MainDisplayAreaMode): JSX.Element {
         switch (mode) {
+            case MainDisplayAreaMode.TESTLUNR:
+                return <></>;
             case MainDisplayAreaMode.SEARCH:
                 return this.getEntryComponents();
             case MainDisplayAreaMode.ABOUT:

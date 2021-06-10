@@ -1,5 +1,6 @@
 import qs from "qs";
 import ChhaTaigiOptions from "./ChhaTaigiOptions";
+import {SearcherType} from "./search";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
 // HACK to allow web worker loader to work:
@@ -11,6 +12,7 @@ import {MainDisplayAreaMode} from "./types/displayTypes";
 const QUERY = "q";
 const DEBUG = "debug";
 const MAIN_MODE = "mode";
+const SEARCHER = "searcher";
 
 const QS_SORT_FN = (a: string, b: string) => {
     if (a === b) {
@@ -73,6 +75,7 @@ export default class QueryStringParser {
         const parsed = this.parseInternal();
         const q = parsed[QUERY];
         const mode = parsed[MAIN_MODE];
+        const searcher = parsed[SEARCHER];
 
         options.debug = parsed[DEBUG] !== undefined;
         if (typeof q === "string") {
@@ -83,6 +86,13 @@ export default class QueryStringParser {
             const modeUpper = mode.toUpperCase();
             if (modeUpper in MainDisplayAreaMode) {
                 options.mainMode = MainDisplayAreaMode[modeUpper as keyof typeof MainDisplayAreaMode];
+            }
+        }
+
+        if (typeof searcher === "string") {
+            const searcherUpper = searcher.toUpperCase();
+            if (searcherUpper in SearcherType) {
+                options.searcherType = SearcherType[searcherUpper as keyof typeof SearcherType];
             }
         }
 

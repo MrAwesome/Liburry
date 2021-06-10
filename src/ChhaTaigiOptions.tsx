@@ -3,7 +3,7 @@ import {MainDisplayAreaMode} from "./types/displayTypes";
 
 export default class ChhaTaigiOptions {
     mainMode: MainDisplayAreaMode = MainDisplayAreaMode.HOME;
-    searcherType: SearcherType = SearcherType.FuzzySort;
+    searcherType: SearcherType = SearcherType.FUZZYSORT;
     query: string = "";
     debug: boolean = false;
 }

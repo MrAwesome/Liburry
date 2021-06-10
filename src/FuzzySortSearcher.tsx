@@ -4,12 +4,12 @@ import {OngoingSearch, Searcher, SearcherType, SearchFailure} from "./search";
 import {DBName, LangDB} from "./types/dbTypes";
 
 export default class FuzzySortSearcher implements Searcher {
-    searcherType = SearcherType.FuzzySort;
+    searcherType = SearcherType.FUZZYSORT;
     dbName: DBName;
     langDB: LangDB;
     debug: boolean;
 
-    private fuzzyDict?: FuzzySearchableDict = undefined;
+    private fuzzyDict?: FuzzySearchableDict;
 
     constructor(dbName: DBName, langDB: LangDB, debug: boolean) {
         this.dbName = dbName;
@@ -26,7 +26,7 @@ export default class FuzzySortSearcher implements Searcher {
     search(query: string): OngoingSearch | SearchFailure {
         if (this.fuzzyDict === undefined) {
             console.warn("Tried to search before preparation: ", this);
-            return SearchFailure.FuzzySearchedBeforePrepare;
+            return SearchFailure.SearchedBeforePrepare;
         } else {
             return fuzzySortSearch(this.fuzzyDict, query, this.debug)
         }
