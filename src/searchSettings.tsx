@@ -53,13 +53,16 @@ function getFuzzyOpts(searchKeys: Array<string> = DEFAULT_SEARCH_KEYS): FuzzyKey
     };
 }
 
+// TODO: dynamically generate filenames etc
 const CTD = "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/blob/master/README.md";
 export const DATABASES: Map<string, LangDB> = makeNameToObjMapping([
     {
         name: "maryknoll",
         dbFilename: "/db/maryknoll.json",
         dbFilenameFuzzyPrepped: "/db/maryknollPrepped.json",
-        dbCSV: "ChhoeTaigi_MaryknollTaiengSutian.csv",
+        upstreamCSV: "ChhoeTaigi_MaryknollTaiengSutian.csv",
+        localCSV: "maryknoll.csv",
+        localLunr: "maryknoll.lunr.json",
         dbFullname: "ChhoeTaigi_MaryknollTaiengSutian",
         dbDescLink: `${CTD}#3-1976-maryknoll%E5%8F%B0%E8%8B%B1%E8%BE%AD%E5%85%B8`,
         shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,
@@ -71,7 +74,9 @@ export const DATABASES: Map<string, LangDB> = makeNameToObjMapping([
         name: "embree",
         dbFilename: "/db/embree.json",
         dbFilenameFuzzyPrepped: "/db/embreePrepped.json",
-        dbCSV: "ChhoeTaigi_EmbreeTaiengSutian.csv",
+        upstreamCSV: "ChhoeTaigi_EmbreeTaiengSutian.csv",
+        localCSV: "embree.csv",
+        localLunr: "embree.lunr.json",
         dbFullname: "ChhoeTaigi_EmbreeTaiengSutian",
         dbDescLink: `${CTD}#4-1973-embree%E5%8F%B0%E8%8B%B1%E8%BE%AD%E5%85%B8`,
         shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,
@@ -83,7 +88,9 @@ export const DATABASES: Map<string, LangDB> = makeNameToObjMapping([
         name: "giku",
         dbFilename: "/db/giku.json",
         dbFilenameFuzzyPrepped: "/db/gikuPrepped.json",
-        dbCSV: "ChhoeTaigi_TaioanPehoeKichhooGiku.csv",
+        upstreamCSV: "ChhoeTaigi_TaioanPehoeKichhooGiku.csv",
+        localCSV: "giku.csv",
+        localLunr: "giku.lunr.json",
         dbFullname: "ChhoeTaigi_TaioanPehoeKichhooGiku",
         dbDescLink: `${CTD}#8-1956-%E5%8F%B0%E7%81%A3%E7%99%BD%E8%A9%B1%E5%9F%BA%E7%A4%8E%E8%AA%9E%E5%8F%A5`,
         shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,

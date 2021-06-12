@@ -9,9 +9,12 @@ export type DBSearchRanking = number;
 export type ShortNameToPreppedNameMapping = Map<JSONDBKey, SearchPreppedKey>;
 
 export interface LangDB {
+    name: DBName,
     dbFilename: DBFilename,
     dbFilenameFuzzyPrepped: DBFilename,
-    dbCSV: DBFilename,
+    upstreamCSV: DBFilename,
+    localCSV: DBFilename,
+    localLunr: DBFilename,
     shortNameToPreppedNameMapping: ShortNameToPreppedNameMapping,
     searchKeys: Array<SearchPreppedKey>,
     fuzzyOpts: FuzzyKeysOptions,
