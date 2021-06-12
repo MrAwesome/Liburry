@@ -60,10 +60,10 @@ export class LunrSearcher implements Searcher {
     // TODO: continue testing performance
     async prepare(): Promise<void> {
         const dbName = this.dbName;
-        const {dbFilename} = this.langDB;
+        const {dbCSV} = this.langDB;
         this.console.time("lunr-total-" + dbName);
         this.console.time("lunr-fetch-" + dbName);
-        return fetch(dbFilename)
+        return fetch(dbCSV)
             .then((response: Response) => {
                 return response.text();
             })

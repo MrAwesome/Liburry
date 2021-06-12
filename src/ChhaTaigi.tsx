@@ -23,6 +23,7 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 // TODO(urgent): compress/decompress prepped dbs?
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(high): more evenly split the work between large/small databases, and possibly return results immediately and batch renders
+// TODO(high): spyon test that console.log isn't called in an integration test
 // TODO(high): search without diacritics, spaces, or hyphens, then remove duplicates?
 // TODO(high): test performance of compressing/decompressing json files
 // TODO(high): fix link preview on LINE
@@ -380,4 +381,3 @@ export class ChhaTaigi extends React.Component<any, any> {
         //{options.debug ? <SelectBar /> : null}
     }
 }
-

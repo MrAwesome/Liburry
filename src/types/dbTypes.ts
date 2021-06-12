@@ -11,9 +11,27 @@ export type ShortNameToPreppedNameMapping = Map<JSONDBKey, SearchPreppedKey>;
 export interface LangDB {
     dbFilename: DBFilename,
     dbFilenameFuzzyPrepped: DBFilename,
+    dbCSV: DBFilename,
     shortNameToPreppedNameMapping: ShortNameToPreppedNameMapping,
     searchKeys: Array<SearchPreppedKey>,
     fuzzyOpts: FuzzyKeysOptions,
+    //fields: Array<LangField>,
+}
+
+export interface LangField {
+    name: string,
+    lang: Langs,
+    area: string, // perhaps style directly instead?
+    priority: number,
+}
+
+export enum Langs {
+    POJ,
+    KIP,
+    ENGLISH,
+    MANDO,
+    POJ_TYPING_INPUT,
+    POJ_NORMALIZED
 }
 
 // NOTE: The keys for searchable text are so small to reduce the

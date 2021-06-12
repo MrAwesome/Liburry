@@ -24,3 +24,10 @@ export function makeCancelable<T>(promise: Promise<T>): CancelablePromise<T> {
 
     return wrappedPromise as CancelablePromise<T>;
 }
+
+interface HasName {name: string}
+
+export function makeNameToObjMapping<Obj extends HasName>(fields: Obj[]): Map<string, Obj> {
+    const nameToFields: [string, Obj][] = fields.map((field) => ([field.name, field]));
+    return new Map(nameToFields);
+}
