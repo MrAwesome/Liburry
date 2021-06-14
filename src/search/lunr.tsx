@@ -66,6 +66,9 @@ export class LunrSearcher implements Searcher {
                         const id = parseInt(lunrRes.ref);
                         const entry = entries[id - 1];
                         this.console.log("Found entry with ID:", id, entry);
+                        if (entry === undefined) {
+                            this.console.log(this);
+                        }
                         return vanillaDBEntryToResult(dbName, entry, lunrRes);
                     });
                     this.console.timeEnd("lunr-getEntries-" + dbName);
