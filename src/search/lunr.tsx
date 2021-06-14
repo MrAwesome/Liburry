@@ -1,17 +1,21 @@
 import lunr from "lunr";
 
-//import type {DBName, PerDictResults, SearchResultEntry, LangDB, RawJSONEntry, ShortNameToPreppedNameMapping} from "../types/dbTypes";
-import type {DBName, LangDB, RawJSONEntry} from "../types/dbTypes";
+import type {DBName, LangDB, PerDictResults} from "../types/dbTypes";
 
-// TODO: remove when there are other types of search
-//import {DATABASES, DISPLAY_RESULTS_LIMIT} from "../searchSettings";
-//import {SearchFailure, OngoingSearch} from "./search";
+import {DISPLAY_RESULTS_LIMIT} from "../searchSettings";
 import getDebugConsole, {StubConsole} from "../getDebugConsole";
 import {OngoingSearch, Searcher, SearcherType, SearchFailure} from "../search";
 import {makeCancelable} from "../utils";
-//import {makeCancelable} from "./utils";
+import {getEntriesFromPreparedCSV} from "../common/csvUtils";
+import {DBEntry} from "../common/dbTypes";
+import {vanillaDBEntryToResult} from "./lunrUtils";
 
 // TODO: include list of objects to index into for search results
+// TODO: include match data?
+// TODO: pull in lunr index
+// TODO: pull in CSV with papaparse
+// TODO: error handling in case ids are out of order in DB? hash of ids?
+// TODO: limit number of results
 
 export class LunrSearcher implements Searcher {
     searcherType: SearcherType = SearcherType.LUNR;
@@ -21,6 +25,7 @@ export class LunrSearcher implements Searcher {
 
     private console: StubConsole;
     private idx?: lunr.Index;
+    private entries?: DBEntry[];
 
     constructor(dbName: DBName, langDB: LangDB, debug: boolean) {
         this.dbName = dbName;
@@ -38,14 +43,45 @@ export class LunrSearcher implements Searcher {
                 return SearchFailure.SearchedBeforePrepare;
             } else {
                 this.console.time("lunr-search-" + dbName);
-                const search = this.idx.search(query);
+                const searchResults = this.idx.search(query);
                 this.console.timeEnd("lunr-search-" + dbName);
-                console.log(query, search);
-                this.console.timeEnd("lunr-total-" + dbName);
-                // XXX TODO: return here
-                return SearchFailure.FuzzyFailedToLoadLangDB;
+                return searchResults;
             }
         };
+
+        const cancelableSearchPromise = makeCancelable(searchResultPromise());
+
+        const parsePromise = cancelableSearchPromise.then(results => {
+            if ((results as lunr.Index.Result[]).length !== undefined) {
+                if (this.entries !== undefined) {
+                    const searchResults = results as lunr.Index.Result[];
+                    this.console.time("lunr-getEntries-" + dbName);
+
+                    // NOTE: Clipping results to display limit here, Lunr doesn't seem to have a built-in limit
+                    const clippedSearchResults = searchResults.slice(0, DISPLAY_RESULTS_LIMIT);
+
+                    const entries = this.entries;
+                    const matchingEntries = clippedSearchResults.map((lunrRes) => {
+                        // TODO: less danger-prone / more future-proof indexing
+                        const id = parseInt(lunrRes.ref);
+                        const entry = entries[id - 1];
+                        return vanillaDBEntryToResult(dbName, entry, lunrRes);
+                    });
+                    this.console.timeEnd("lunr-getEntries-" + dbName);
+                    return {
+                        dbName,
+                        results: matchingEntries,
+                    } as PerDictResults;
+                } else {
+                    return SearchFailure.SearchedBeforePrepare;
+                }
+            } else {
+                return results as SearchFailure;
+            }
+        });
+
+        const cancelableParsePromise = makeCancelable(parsePromise);
+
 
         // TODO: add search promise
         // TODO: add parse promise
@@ -53,53 +89,57 @@ export class LunrSearcher implements Searcher {
             dbName,
             query,
             this.debug,
-            makeCancelable(searchResultPromise()),
+            cancelableSearchPromise,
+            cancelableParsePromise,
         );
     }
 
     // TODO: continue testing performance
     async prepare(): Promise<void> {
         const dbName = this.dbName;
-        const {upstreamCSV} = this.langDB;
+        const {localCSV, localLunr} = this.langDB;
         this.console.time("lunr-total-" + dbName);
-        this.console.time("lunr-fetch-" + dbName);
-        return fetch(upstreamCSV)
+
+        this.console.time("lunr-total-entries-" + dbName);
+        this.console.time("lunr-fetch-entries-" + dbName);
+        const entriesFetchAndLoad = fetch(localCSV)
             .then((response: Response) => {
                 return response.text();
             })
             .then((text: string) => {
-                this.console.timeEnd("lunr-fetch-" + dbName);
-                this.console.time("lunr-jsonConvertPrePrepped-" + dbName);
-                const searchableEntries: RawJSONEntry[] = JSON.parse(text);
-                this.console.timeEnd("lunr-jsonConvertPrePrepped-" + dbName);
-                this.console.time("lunr-index-" + dbName);
-                //
-                /// XXX : TODO : offload this work to Node.
-                // TODO: use enum/var names
-                this.idx = lunr(function () {
-                    this.ref("d");
-                    this.field("e");
-                    this.field("p");
-                    this.field("n");
-                    this.field("h");
-                    this.field("i");
+                this.console.timeEnd("lunr-fetch-entries-" + dbName);
 
-                    searchableEntries.forEach((entry) => {
-                        this.add(entry)
-                    }, this)
-                });
-                this.console.timeEnd("lunr-index-" + dbName);
-                /// XXX XXX
-//                this.console.log(this.idx);
-//                const FUCK = JSON.stringify(this.idx);
-//                console.log("FUCK", FUCK);
-//                console.time("FUCKFUCK");
-//                const obj = JSON.parse(FUCK);
-//                console.timeEnd("FUCKFUCK");
-//                console.time("FUCKFUCK2");
-//                const indx = lunr.Index.load(obj);
-//                console.timeEnd("FUCKFUCK2");
+                this.console.time("lunr-loadfromcsv-" + dbName);
+                const searchableEntries: DBEntry[] = getEntriesFromPreparedCSV(text);
+                this.entries = searchableEntries;
+                this.console.timeEnd("lunr-loadfromcsv-" + dbName);
+
+                this.console.timeEnd("lunr-total-entries-" + dbName);
             });
+
+        this.console.time("lunr-total-index-" + dbName);
+        this.console.time("lunr-fetch-index-" + dbName);
+        const indexFetchAndLoad = fetch(localLunr)
+            .then((response: Response) => {
+                return response.text();
+            })
+            .then((text: string) => {
+                this.console.timeEnd("lunr-fetch-index-" + dbName);
+
+                this.console.time("lunr-index-parsejson-" + dbName);
+                const obj = JSON.parse(text);
+                this.console.time("lunr-index-parsejson-" + dbName);
+
+                this.console.time("lunr-index-load-" + dbName);
+                const idx = lunr.Index.load(obj);
+                this.idx = idx;
+                this.console.timeEnd("lunr-index-load-" + dbName);
+                this.console.timeEnd("lunr-total-index-" + dbName);
+            });
+
+        return Promise.all([entriesFetchAndLoad, indexFetchAndLoad]).then(() => {
+            this.console.timeEnd("lunr-total-" + dbName);
+        });
     }
 
 }

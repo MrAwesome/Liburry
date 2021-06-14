@@ -128,11 +128,10 @@ export default class EntryContainer extends React.PureComponent<any, any> {
         return <div className="searchscore-container">
             Score:&nbsp;
             <div className="searchscore" style={style}>
-                {score}
+                {score.toFixed(4)}
             </div>
         </div>
     }
-
 
     getDBID(): JSX.Element {
         const {dbID} = this.getEntry();
@@ -180,7 +179,6 @@ export default class EntryContainer extends React.PureComponent<any, any> {
         const poju = this.createMatchElement(pojUnicodePossibleMatch, "poj-unicode");
         const hoab = this.createMatchElement(hoabunPossibleMatch, "hoabun");
         const engl = this.createMatchElement(definitionPossibleMatch, "definition");
-
 
         return (
             // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj

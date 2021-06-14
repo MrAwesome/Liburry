@@ -17,6 +17,7 @@ import SearchController from "./SearchController";
 import {runningInJest} from "./utils";
 import ChhaTaigiOptions from "./ChhaTaigiOptions";
 
+// TODO(urgent): see why double-search is happening locally
 // TODO(urgent): switch from manually-generated json to tagged csv using papa
 //          TODO(after): add to lunr, use https://lunrjs.com/guides/index_prebuilding.html
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`

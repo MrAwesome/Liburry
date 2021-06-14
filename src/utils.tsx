@@ -1,4 +1,4 @@
-import {CancelablePromise} from "./types/general";
+import type {CancelablePromise} from "./types/general";
 
 // Wow.
 export function mod(n: number, m: number) {

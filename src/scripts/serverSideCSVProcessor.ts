@@ -5,6 +5,7 @@ import papaparse from "papaparse";
 import fetch from "node-fetch";
 import {LangDB} from '../types/dbTypes';
 import {DATABASES} from "../searchSettings";
+import type {DBEntry, UnpreparedDBEntry} from "../common/dbTypes";
 
 // TODO: type "any" usage below
 
@@ -29,17 +30,20 @@ function writeFileErrHandler(err: any) {
   }
 }
 
-function processCSV(text: string) {
+function processCSV(text: string): DBEntry[] {
   text = text.replace(/^\uFEFF/, "");
-  const csv = papaparse.parse<any>(text, {header: true, skipEmptyLines: true});
+  const csv = papaparse.parse<UnpreparedDBEntry>(text, {header: true, skipEmptyLines: true});
   csv.data.forEach((entry, index) => {
-    csv.data[index].poj_normalized = fromPojUnicodeToPojNormalized(entry.poj_unicode);
+    const pojNormalized =  fromPojUnicodeToPojNormalized(entry.poj_unicode);
+    csv.data[index] = {poj_normalized: pojNormalized, ...csv.data[index]} as DBEntry;
   });
 
-  return csv.data;
+  const processed = csv.data as DBEntry[];
+
+  return processed;
 }
 
-function writeLunrIndex(langDB: LangDB, entries: any) {
+function writeLunrIndex(langDB: LangDB, entries: DBEntry[]) {
   const idx = lunr(function () {
     this.ref("id");
     this.field("english");
@@ -48,7 +52,7 @@ function writeLunrIndex(langDB: LangDB, entries: any) {
     this.field("hoabun");
     this.field("poj_input");
 
-    entries.forEach((entry: any) => {
+    entries.forEach((entry: DBEntry) => {
       this.add(entry)
     }, this)
   });
@@ -57,7 +61,7 @@ function writeLunrIndex(langDB: LangDB, entries: any) {
   console.log(`Wrote out Lunr index for: "${langDB.name}"`);
 }
 
-function writeFile(langDB: LangDB, entries: any[]) {
+function writeFile(langDB: LangDB, entries: DBEntry[]) {
   const newCSVText = papaparse.unparse(entries, {header: true});
 
   fs.writeFile(`${OUTPUT_PREFIX}/${langDB.localCSV}`, newCSVText, writeFileErrHandler);

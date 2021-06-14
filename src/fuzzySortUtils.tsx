@@ -192,7 +192,7 @@ export function fuzzySortSearch(
     ).catch(
         (reason) => {
             debugConsole.log(searchableDict.dbName, reason);
-            return SearchFailure.FuzzyParsePromiseFailed;
+            return SearchFailure.ParsePromiseFailed;
         }
     ));
 

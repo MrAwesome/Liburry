@@ -31,7 +31,7 @@ export function getSearcher(searcherType: SearcherType, dbName: DBName, langDB: 
 export enum SearchFailure {
     FuzzyNoSearchableDict = "FuzzyNoSearchableDict",
     FuzzyFailedToLoadLangDB = "FuzzyFailedToLoadLangDB",
-    FuzzyParsePromiseFailed = "FuzzyParsePromiseFailed",
+    ParsePromiseFailed = "FuzzyParsePromiseFailed",
     SearchedBeforePrepare = "SearchedBeforePrepare",
 }
 
