@@ -23,6 +23,7 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`
 // TODO(urgent): compress/decompress prepped dbs?
 // TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
+// TODO(high): 404 page, better support for 404s on json/csv
 // TODO(high): more evenly split the work between large/small databases, and possibly return results immediately and batch renders
 // TODO(high): spyon test that console.log isn't called in an integration test
 // TODO(high): search without diacritics, spaces, or hyphens, then remove duplicates?

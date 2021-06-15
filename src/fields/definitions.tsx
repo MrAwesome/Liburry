@@ -39,7 +39,7 @@ const pojNormalized = {
 let gikuFake = makeNameToObjMapping([pojUnicode, pojInput, pojNormalized]);
 
 //export const PojNormalized: TextEntryTag = class {
-//    
+// 
 //}
 //
 //type AltText = PojTypingInput | PojNormalized;

@@ -10,12 +10,18 @@ import {getEntriesFromPreparedCSV} from "../common/csvUtils";
 import {DBEntry} from "../common/dbTypes";
 import {vanillaDBEntryToResult} from "./lunrUtils";
 
+// TODO(urgent): find out why on reload fuzzy json is being loaded in lunr mode
+// TODO(urgent): find out why double-loads are happening / timers are running twice but not showing up
+// TODO(high): show match (use matchdata.metadata, for each key show each field)
 // TODO: include list of objects to index into for search results
+// TODO: catch errors on searches like "chines~"
 // TODO: include match data?
 // TODO: pull in lunr index
 // TODO: pull in CSV with papaparse
 // TODO: error handling in case ids are out of order in DB? hash of ids?
 // TODO: limit number of results
+//
+// DOC: does not support chinese characters in search strings
 
 export class LunrSearcher implements Searcher {
     searcherType: SearcherType = SearcherType.LUNR;
@@ -65,10 +71,6 @@ export class LunrSearcher implements Searcher {
                         // TODO: less danger-prone / more future-proof indexing
                         const id = parseInt(lunrRes.ref);
                         const entry = entries[id - 1];
-                        this.console.log("Found entry with ID:", id, entry);
-                        if (entry === undefined) {
-                            this.console.log(this);
-                        }
                         return vanillaDBEntryToResult(dbName, entry, lunrRes);
                     });
                     this.console.timeEnd("lunr-getEntries-" + dbName);
@@ -132,6 +134,7 @@ export class LunrSearcher implements Searcher {
 
                 this.console.time("lunr-index-parsejson-" + dbName);
                 const obj = JSON.parse(text);
+
                 this.console.time("lunr-index-parsejson-" + dbName);
 
                 this.console.time("lunr-index-load-" + dbName);
