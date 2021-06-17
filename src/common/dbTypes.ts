@@ -7,11 +7,6 @@ export interface UnpreparedDBEntry {
     hoabun: string,
 }
 
-export interface DBEntry {
-    id: number,
-    poj_unicode: string,
+export interface DBEntry extends UnpreparedDBEntry {
     poj_normalized: string,
-    poj_input: string,
-    english: string,
-    hoabun: string,
 }

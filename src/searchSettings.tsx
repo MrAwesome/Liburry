@@ -1,4 +1,4 @@
-import {JSONDBKey, LangDB, SearchPreppedKey} from "./types/dbTypes";
+import {LangDB, SearchPreppedKey} from "./types/dbTypes";
 import type {FuzzyKeysOptions} from "./types/fuzzySortTypes";
 import {makeNameToObjMapping} from "./utils";
 
@@ -18,22 +18,23 @@ const POJ_INPUT_PREPPED_KEY = "poj_input_prepped";
 const DEFINITION_PREPPED_KEY = "def_prepped";
 const HOABUN_PREPPED_KEY = "hoa_prepped";
 
-const POJ_UNICODE_SHORTNAME: JSONDBKey = "p";
-const POJ_NORMALIZED_SHORTNAME: JSONDBKey = "n";
-const POJ_INPUT_SHORTNAME: JSONDBKey = "i";
-const DEFINITION_SHORTNAME: JSONDBKey = "e";
-const HOABUN_SHORTNAME: JSONDBKey = "h";
+const POJ_UNICODE_CSV_KEY = "poj_unicode";
+const POJ_NORMALIZED_CSV_KEY = "poj_normalized";
+const POJ_INPUT_CSV_KEY = "poj_input";
+const DEFINITION_CSV_KEY = "english";
+const HOABUN_CSV_KEY = "hoabun";
 
-const DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING: Map<string, string> = new Map([
-    [POJ_UNICODE_SHORTNAME, POJ_UNICODE_PREPPED_KEY],
-    [POJ_NORMALIZED_SHORTNAME, POJ_NORMALIZED_PREPPED_KEY],
-    [POJ_INPUT_SHORTNAME, POJ_INPUT_PREPPED_KEY],
-    [DEFINITION_SHORTNAME, DEFINITION_PREPPED_KEY],
-    [HOABUN_SHORTNAME, HOABUN_PREPPED_KEY],
+// TODO: generate the keys automatically by just appending "_fpz"?
+const DEFAULT_CSV_KEY_TO_PREPPED_NAME_MAPPING: Map<string, string> = new Map([
+    [POJ_UNICODE_CSV_KEY, POJ_UNICODE_PREPPED_KEY],
+    [POJ_NORMALIZED_CSV_KEY, POJ_NORMALIZED_PREPPED_KEY],
+    [POJ_INPUT_CSV_KEY, POJ_INPUT_PREPPED_KEY],
+    [DEFINITION_CSV_KEY, DEFINITION_PREPPED_KEY],
+    [HOABUN_CSV_KEY, HOABUN_PREPPED_KEY],
 ]);
 
 // TODO:::: XXX: remove this, let above order be correct order and use .keys below
-const DEFAULT_SEARCH_KEYS: Array<SearchPreppedKey> = Array.from(DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING.values());
+const DEFAULT_SEARCH_KEYS: Array<SearchPreppedKey> = Array.from(DEFAULT_CSV_KEY_TO_PREPPED_NAME_MAPPING.values());
 
 // NOTE(@MrAwesome): per-db mapping of db -> keys -> displaycard element
 export const DEFAULT_POJ_NORMALIZED_INDEX = DEFAULT_SEARCH_KEYS.indexOf(POJ_NORMALIZED_PREPPED_KEY);
@@ -65,7 +66,7 @@ export const DATABASES: Map<string, LangDB> = makeNameToObjMapping([
         localLunr: "/db/maryknoll.lunr.json",
         dbFullname: "ChhoeTaigi_MaryknollTaiengSutian",
         dbDescLink: `${CTD}#3-1976-maryknoll%E5%8F%B0%E8%8B%B1%E8%BE%AD%E5%85%B8`,
-        shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,
+        shortNameToPreppedNameMapping: DEFAULT_CSV_KEY_TO_PREPPED_NAME_MAPPING,
         searchKeys: DEFAULT_SEARCH_KEYS,
         fuzzyOpts: getFuzzyOpts(),
         //fields: defaultFields,
@@ -79,7 +80,7 @@ export const DATABASES: Map<string, LangDB> = makeNameToObjMapping([
         localLunr: "/db/embree.lunr.json",
         dbFullname: "ChhoeTaigi_EmbreeTaiengSutian",
         dbDescLink: `${CTD}#4-1973-embree%E5%8F%B0%E8%8B%B1%E8%BE%AD%E5%85%B8`,
-        shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,
+        shortNameToPreppedNameMapping: DEFAULT_CSV_KEY_TO_PREPPED_NAME_MAPPING,
         searchKeys: DEFAULT_SEARCH_KEYS,
         fuzzyOpts: getFuzzyOpts(),
         //fields: defaultFields,
@@ -93,7 +94,7 @@ export const DATABASES: Map<string, LangDB> = makeNameToObjMapping([
         localLunr: "/db/giku.lunr.json",
         dbFullname: "ChhoeTaigi_TaioanPehoeKichhooGiku",
         dbDescLink: `${CTD}#8-1956-%E5%8F%B0%E7%81%A3%E7%99%BD%E8%A9%B1%E5%9F%BA%E7%A4%8E%E8%AA%9E%E5%8F%A5`,
-        shortNameToPreppedNameMapping: DEFAULT_SHORTNAME_TO_PREPPED_NAME_MAPPING,
+        shortNameToPreppedNameMapping: DEFAULT_CSV_KEY_TO_PREPPED_NAME_MAPPING,
         searchKeys: DEFAULT_SEARCH_KEYS,
         fuzzyOpts: getFuzzyOpts(),
         //fields: defaultFields,

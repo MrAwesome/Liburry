@@ -1,13 +1,15 @@
 import fuzzysort from "fuzzysort";
-import type {DBName, PerDictResults, SearchResultEntry, LangDB, RawJSONEntry, ShortNameToPreppedNameMapping} from "./types/dbTypes";
+import type {DBName, PerDictResults, SearchResultEntry, LangDB, EntryFieldNameToPreppedNameMapping} from "./types/dbTypes";
 
-import type {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedSearchableEntry, FuzzySearchableDict} from "./types/fuzzySortTypes";
+import type {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedDBEntry, FuzzySearchableDict} from "./types/fuzzySortTypes";
 
 // TODO: remove when there are other types of search
 import {DATABASES, DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./searchSettings";
 import {SearchFailure, OngoingSearch} from "./search";
 import getDebugConsole from "./getDebugConsole";
 import {makeCancelable} from "./utils";
+import {getEntriesFromPreparedCSV} from "./common/csvUtils";
+import {DBEntry} from "./common/dbTypes";
 
 // TODO: continue testing performance
 export async function fuzzySortFetchPrePrepared(
@@ -26,7 +28,7 @@ export async function fuzzySortFetchPrePrepared(
         .then((text: string) => {
             debugConsole.timeEnd("fetch-" + dbName);
             debugConsole.time("jsonConvertPrePrepped-" + dbName);
-            const searchableEntries: FuzzyPreparedSearchableEntry[] = JSON.parse(text);
+            const searchableEntries: FuzzyPreparedDBEntry[] = JSON.parse(text);
             debugConsole.timeEnd("jsonConvertPrePrepped-" + dbName);
             debugConsole.timeEnd("total-" + dbName);
 
@@ -43,22 +45,22 @@ export async function fuzzySortFetchAndPrepare(
     debug: boolean,
 ): Promise<FuzzySearchableDict> {
     const debugConsole = getDebugConsole(debug);
-    const {dbFilename, shortNameToPreppedNameMapping} = langDB;
+    const {localCSV, shortNameToPreppedNameMapping} = langDB;
     debugConsole.time("total-" + dbName);
     debugConsole.time("fetch-" + dbName);
-    return fetch(dbFilename)
+    return fetch(localCSV)
         .then((response: Response) => {
             return response.text();
         })
         .then((text: string) => {
             debugConsole.timeEnd("fetch-" + dbName);
 
-            debugConsole.time("jsonConvert-" + dbName);
-            const prePreparedData: RawJSONEntry[] = JSON.parse(text);
-            debugConsole.timeEnd("jsonConvert-" + dbName);
+            debugConsole.time("csvConvertPrePrepped-" + dbName);
+            const searchableEntries: DBEntry[] = getEntriesFromPreparedCSV(text);
+            debugConsole.timeEnd("csvConvertPrePrepped-" + dbName);
 
             debugConsole.time("prepareSlow-" + dbName);
-            const data = prePreparedData.map((d) => convertRawJSONEntryToFuzzySortPrepared(shortNameToPreppedNameMapping, d));
+            const data = searchableEntries.map((d) => convertDBEntryToFuzzySortPrepared(shortNameToPreppedNameMapping, d));
             debugConsole.timeEnd("prepareSlow-" + dbName);
             debugConsole.timeEnd("total-" + dbName);
 
@@ -77,8 +79,8 @@ export function parseFuzzySortResultsForRender(
         .slice(0, DISPLAY_RESULTS_LIMIT)
         .map((fuzzysortResult: FuzzyKeyResults, _: number) => {
             const obj = fuzzysortResult.obj;
-            const pojUnicodeText = obj.p;
-            const rowID = obj.d;
+            const pojUnicodeText = obj.poj_unicode;
+            const rowID = obj.id;
 
             // NOTE: This odd indexing is necessary because of how fuzzysort returns results. To see:
             //       console.log(fuzzysortResult)
@@ -92,9 +94,9 @@ export function parseFuzzySortResultsForRender(
 
             const pojNormalizedPossibleMatch = fuzzySortHighlight(pojNormalizedPossiblePreHLMatch, null);
             const pojInputPossibleMatch = fuzzySortHighlight(pojInputPossiblePreHLMatch, null);
-            const definitionPossibleMatch = fuzzySortHighlight(definitionPossiblePreHLMatch, obj.e);
+            const definitionPossibleMatch = fuzzySortHighlight(definitionPossiblePreHLMatch, obj.english);
             const pojUnicodePossibleMatch = fuzzySortHighlight(pojUnicodePossiblePreHLMatch, pojUnicodeText);
-            const hoabunPossibleMatch = fuzzySortHighlight(hoabunPossiblePreHLMatch, obj.h);
+            const hoabunPossibleMatch = fuzzySortHighlight(hoabunPossiblePreHLMatch, obj.hoabun);
 
             return {
                 key: dbName + "-" + rowID,
@@ -115,9 +117,9 @@ export function parseFuzzySortResultsForRender(
 // Prepare a fast search version of each searchable key.
 // NOTE: this modifies the object and returns it as a type
 //       which is a superset of its original type.
-export function convertRawJSONEntryToFuzzySortPrepared(
-    shortNameToPreppedNameMapping: ShortNameToPreppedNameMapping,
-    rawJSONEntry: RawJSONEntry,
+export function convertDBEntryToFuzzySortPrepared(
+    shortNameToPreppedNameMapping: EntryFieldNameToPreppedNameMapping,
+    rawJSONEntry: DBEntry,
 ) {
     shortNameToPreppedNameMapping.forEach(
         (preppedKey, shortName) => {
@@ -130,7 +132,7 @@ export function convertRawJSONEntryToFuzzySortPrepared(
                     (rawJSONEntry[shortName]);
         });
 
-    return rawJSONEntry as FuzzyPreparedSearchableEntry;
+    return rawJSONEntry as FuzzyPreparedDBEntry;
 }
 
 function fuzzySortHighlight<T>(
@@ -171,10 +173,10 @@ export function fuzzySortSearch(
             // TODO: Find out why this doesn't prevent the flash of warning text from react
             const seen = new Set();
             const res = rawResults.filter(({obj}) => {
-                if (seen.has(obj.d)) {
+                if (seen.has(obj.id)) {
                     return false;
                 }
-                seen.add(obj.d);
+                seen.add(obj.id);
                 return true;
             });
 

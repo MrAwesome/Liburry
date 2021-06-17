@@ -6,7 +6,7 @@ export type DBFilename = string;
 export type JSONDBKey = string;
 export type SearchPreppedKey = string;
 export type DBSearchRanking = number;
-export type ShortNameToPreppedNameMapping = Map<JSONDBKey, SearchPreppedKey>;
+export type EntryFieldNameToPreppedNameMapping = Map<JSONDBKey, SearchPreppedKey>;
 
 export interface LangDB {
     name: DBName,
@@ -15,7 +15,7 @@ export interface LangDB {
     upstreamCSV: DBFilename,
     localCSV: DBFilename,
     localLunr: DBFilename,
-    shortNameToPreppedNameMapping: ShortNameToPreppedNameMapping,
+    shortNameToPreppedNameMapping: EntryFieldNameToPreppedNameMapping,
     searchKeys: Array<SearchPreppedKey>,
     fuzzyOpts: FuzzyKeysOptions,
     //fields: Array<LangField>,

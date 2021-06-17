@@ -1,24 +1,18 @@
+import {DBEntry} from "../common/dbTypes";
 import {DBName} from "./dbTypes";
 
 export interface FuzzySearchableDict {
     dbName: DBName,
-    searchableEntries: Array<FuzzyPreparedSearchableEntry>,
+    searchableEntries: Array<FuzzyPreparedDBEntry>,
 }
 
-export interface FuzzyPreparedSearchableEntry extends Object {
-    readonly e: string,
+// TODO: why does this extend Object?
+export interface FuzzyPreparedDBEntry extends DBEntry {
     engPrepped: FuzzyPrepared,
-    readonly p: string,
     pojPrepped: FuzzyPrepared,
-    readonly n: string,
     pojNormalizedPrepped: FuzzyPrepared,
-    readonly h: string,
     hoaPrepped: FuzzyPrepared,
-
-    readonly i: string,
     inputCharsPrepped: FuzzyPrepared,
-
-    readonly d: number,
 
     // Ideal:
     //    readonly [POJ_UNICODE_SHORTNAME: string]: string,
@@ -38,12 +32,12 @@ interface FuzzyResult {
 }
 
 export interface FuzzyKeyResult extends FuzzyResult {
-    readonly obj: FuzzyPreparedSearchableEntry,
+    readonly obj: FuzzyPreparedDBEntry,
 }
 
 export interface FuzzyKeyResults extends ReadonlyArray<FuzzyKeyResult> {
     readonly score: number,
-    readonly obj: FuzzyPreparedSearchableEntry,
+    readonly obj: FuzzyPreparedDBEntry,
 }
 
 interface FuzzyOptions {
