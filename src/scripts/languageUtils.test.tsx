@@ -1,6 +1,6 @@
 import {fromPojUnicodeToPojNormalized} from "./languageUtils";
 
-test('test normalization', () => {
+test('normalization', () => {
     const matches: [string, string][] = [
         ["tîn-hiuⁿ hoa̍t", "tin-hiu hoat"],
         ["ngó͘-ho̍k", "ngo-hok"],

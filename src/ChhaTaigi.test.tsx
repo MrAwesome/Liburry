@@ -4,9 +4,10 @@ import {ChhaTaigi} from './ChhaTaigi';
 import {PerDictResults, SearchResultEntry} from './types/dbTypes';
 import ChhaTaigiOptions from './ChhaTaigiOptions';
 import * as React from 'react';
+import {noop} from './utils';
 
 // NOTE: just used to silence errors in node TSC.
-React.version;
+noop(React.version);
 
 // TODO(high): test basic worker search behavior (probably not possible from jest?)
 // TODO(low): figure out how to run componentDidMount

@@ -1,5 +1,7 @@
 import type {CancelablePromise} from "./types/general";
 
+export function noop(_: any) {}
+
 // Wow.
 export function mod(n: number, m: number) {
     return ((n % m) + m) % m;

@@ -2,11 +2,12 @@ import * as React from 'react';
 import {ChhaTaigi} from './ChhaTaigi';
 import { render } from '@testing-library/react';
 import SearchController from './SearchController';
+import {noop} from './utils';
 
 // NOTE: just used to silence errors in node TSC.
-React.version;
+noop(React.version);
 
-test('test SearchController start/cleanup', () => {
+test('SearchController start/cleanup', () => {
     let startW = jest.spyOn(SearchController.prototype, 'startWorkersAndListener');
     let endW = jest.spyOn(SearchController.prototype, 'cleanup');
     let x = render(<ChhaTaigi />);
@@ -17,7 +18,7 @@ test('test SearchController start/cleanup', () => {
     expect(endW).toHaveBeenCalledTimes(1);
 });
 
-test('test hashchange listen/end', () => {
+test('hashchange listen/end', () => {
     let startH = jest.spyOn(ChhaTaigi.prototype, 'subscribeHash');
     let endH = jest.spyOn(ChhaTaigi.prototype, 'unsubscribeHash');
     let x = render(<ChhaTaigi />);
