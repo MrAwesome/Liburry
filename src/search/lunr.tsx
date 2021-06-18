@@ -12,6 +12,8 @@ import {vanillaDBEntryToResult} from "./lunrUtils";
 
 // TODO(urgent): find out why on reload fuzzy json is being loaded in lunr mode
 // TODO(urgent): find out why double-loads are happening / timers are running twice but not showing up
+// TODO(urgent): brotli-compress lunr.json files, since AWS will not automatically gzip files above 10M
+//              https://serviceworke.rs/cache-from-zip_worker_doc.html
 // TODO(high): show match (use matchdata.metadata, for each key show each field)
 // TODO: include list of objects to index into for search results
 // TODO: catch errors on searches like "chines~"

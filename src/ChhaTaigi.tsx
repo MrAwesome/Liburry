@@ -17,20 +17,17 @@ import SearchController from "./SearchController";
 import {runningInJest} from "./utils";
 import ChhaTaigiOptions from "./ChhaTaigiOptions";
 
+// TODO(urgent): clean up remnants of old JSON method, design and implement more extensible data structure (for e.g. taibun, soatbeng, etc)
 // TODO(urgent): see why double-search is happening locally
-// TODO(urgent): switch from manually-generated json to tagged csv using papa
-//          TODO(after): add to lunr, use https://lunrjs.com/guides/index_prebuilding.html
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`
-// TODO(urgent): compress/decompress prepped dbs?
-// TODO(urgent): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(high): 404 page, better support for 404s on json/csv
 // TODO(high): more evenly split the work between large/small databases, and possibly return results immediately and batch renders
 // TODO(high): spyon test that console.log isn't called in an integration test
 // TODO(high): search without diacritics, spaces, or hyphens, then remove duplicates?
-// TODO(high): test performance of compressing/decompressing json files
+// TODO(high): test performance of compressing/decompressing json/csv files
 // TODO(high): fix link preview on LINE
 // TODO(high): more evenly spread work among the workers (giku is much smaller than mk, etc)
-// TODO(high): allow for 404s instead of always loading /
+//             have generated CSVs include the dbname for each entry? or set it when pulling in from papaparse?
 // TODO(high): give some visual indication that DBs are loading, even in search mode
 // TODO(high): implement select bar (note the way it squishes on very narrow screen - create space under it?)
 // TODO(high): debug and address firefox flash of blankness during font load
@@ -43,8 +40,6 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 // TODO(high): make fonts bigger across the board
 // TODO(high): asynchronous font loading: https://css-tricks.com/the-best-font-loading-strategies-and-how-to-execute-them/
 // TODO(high): let hyphens and spaces be interchangeable in search
-// TODO(high): come up with a more elegant/extensible way of transforming a db entry into elements to be displayed
-// TODO(high): change repo name to ChhaTaigi
 // TODO(high): determine why duplicate search results are sometimes returned (see "a" results for giku)
 // TODO(high): fix icon sizes/manifest: https://github.com/facebook/create-react-app/blob/master/packages/cra-template/template/public/manifest.json (both ico and icon)
 // TODO(high): handle alternate spellings / parentheticals vs separate fields
@@ -93,12 +88,14 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 // TODO(low): replicate "cannot read property dbName" of null race condition
 // TODO(low): install button in settings page
 // TODO(low): incorrect behavior of search box when using back/forward in browser
+// TODO(low): have display results limit be part of options, and pass it around for use where it's needed
 // TODO(low): take a nap
 // TODO(wishlist): "add to desktop" shortcut
 // TODO(wishlist): non-javascript support?
 // TODO(wishlist): dark and light themes
 // TODO(wishlist): engaging buttons - random words, random search, etc
 // TODO(wishlist): typing / sentence construction mode. clicking a sentence/word adds it to a list, and clicking on it in that list deletes it (or selects it for replacement?)
+// TODO(wishlist): "lite" version speaking out to server for searches (AbortController to help with cancelation)
 // TODO(later): homepage
 // TODO(later): homepage WOTD
 // TODO(later): download CSVs, do initial processing via js, store in service worker (if possible?)
@@ -117,6 +114,7 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 // TODO(later): store options between sessions
 // TODO(later): run a spellchecker on "english"
 // TODO(later): WASM fast search
+// TODO(later): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
 // TODO(watch): keep an eye out for 200% CPU util. infinite search loop?

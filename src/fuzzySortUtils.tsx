@@ -1,13 +1,10 @@
 import fuzzysort from "fuzzysort";
-import type {DBName, PerDictResults, SearchResultEntry, EntryFieldNameToPreppedNameMapping} from "./types/dbTypes";
+import type {DBName, SearchResultEntry, EntryFieldNameToPreppedNameMapping} from "./types/dbTypes";
 
 import type {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedDBEntry} from "./types/fuzzySortTypes";
 
 // TODO: remove when there are other types of search
-import {DATABASES, DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./searchSettings";
-import {SearchFailure, OngoingSearch} from "./search";
-import getDebugConsole from "./getDebugConsole";
-import {makeCancelable} from "./utils";
+import {DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./searchSettings";
 import {DBEntry} from "./common/dbTypes";
 
 export function parseFuzzySortResultsForRender(
@@ -25,8 +22,8 @@ function fuzzySortResultToSearchResultEntry(dbName: DBName, fuzzysortResult: Fuz
     const pojUnicodeText = obj.poj_unicode;
     const rowID = obj.id;
 
-    // NOTE: This odd indexing is necessary because of how fuzzysort returns results. To see:
     // TODO: per-db indexing
+    // NOTE: This odd indexing is necessary because of how fuzzysort returns results.
     const pojNormalizedPossiblePreHLMatch = fuzzysortResult[DEFAULT_POJ_NORMALIZED_INDEX];
     const pojInputPossiblePreHLMatch = fuzzysortResult[DEFAULT_POJ_INPUT_INDEX];
     const definitionPossiblePreHLMatch = fuzzysortResult[DEFAULT_DEFINITION_INDEX];

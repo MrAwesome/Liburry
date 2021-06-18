@@ -24,6 +24,7 @@
     "fuse.js": "3.2.1",
     "fuzzysort": "^1.1.4",
     "lunr": "^2.3.9",
+    "lunr-languages": "^1.7.0",
     "node-fetch": "^2.6.1",
     "normalize-diacritics": "^2.13.2",
     "papaparse": "^5.3.1",
