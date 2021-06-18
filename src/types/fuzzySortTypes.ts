@@ -1,10 +1,4 @@
 import {DBEntry} from "../common/dbTypes";
-import {DBName} from "./dbTypes";
-
-export interface FuzzySearchableDict {
-    dbName: DBName,
-    searchableEntries: Array<FuzzyPreparedDBEntry>,
-}
 
 // TODO: why does this extend Object?
 export interface FuzzyPreparedDBEntry extends DBEntry {
@@ -35,6 +29,7 @@ export interface FuzzyKeyResult extends FuzzyResult {
     readonly obj: FuzzyPreparedDBEntry,
 }
 
+// This odd name comes from upstream.
 export interface FuzzyKeyResults extends ReadonlyArray<FuzzyKeyResult> {
     readonly score: number,
     readonly obj: FuzzyPreparedDBEntry,

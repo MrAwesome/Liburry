@@ -59,8 +59,6 @@ const CTD = "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/blob/master/README
 export const DATABASES: Map<string, LangDB> = makeNameToObjMapping([
     {
         name: "maryknoll",
-        dbFilename: "/db/maryknoll.json",
-        dbFilenameFuzzyPrepped: "/db/maryknollPrepped.json",
         upstreamCSV: "ChhoeTaigi_MaryknollTaiengSutian.csv",
         localCSV: "/db/maryknoll.csv",
         localLunr: "/db/maryknoll.lunr.json",
@@ -73,8 +71,6 @@ export const DATABASES: Map<string, LangDB> = makeNameToObjMapping([
     },
     {
         name: "embree",
-        dbFilename: "/db/embree.json",
-        dbFilenameFuzzyPrepped: "/db/embreePrepped.json",
         upstreamCSV: "ChhoeTaigi_EmbreeTaiengSutian.csv",
         localCSV: "/db/embree.csv",
         localLunr: "/db/embree.lunr.json",
@@ -87,8 +83,6 @@ export const DATABASES: Map<string, LangDB> = makeNameToObjMapping([
     },
     {
         name: "giku",
-        dbFilename: "/db/giku.json",
-        dbFilenameFuzzyPrepped: "/db/gikuPrepped.json",
         upstreamCSV: "ChhoeTaigi_TaioanPehoeKichhooGiku.csv",
         localCSV: "/db/giku.csv",
         localLunr: "/db/giku.lunr.json",
