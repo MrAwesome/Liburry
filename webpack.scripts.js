@@ -1,7 +1,7 @@
 const path = require("path");
 const nodeExternals = require("webpack-node-externals");
 
-const entry = { server: "./src/generateFuzzyPrepped.ts" };
+const entry = { server: "./src/scripts/serverSideCSVProcessor.ts" };
 const tsConfigLocation = "tsconfig.scripts.json";
 
 module.exports = {

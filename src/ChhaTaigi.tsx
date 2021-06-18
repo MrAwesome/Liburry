@@ -20,6 +20,7 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 // TODO(urgent): clean up remnants of old JSON method, design and implement more extensible data structure (for e.g. taibun, soatbeng, etc)
 // TODO(urgent): see why double-search is happening locally
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`
+// TODO(high): different debug levels, possibly use an upstream lib for logging
 // TODO(high): 404 page, better support for 404s on json/csv
 // TODO(high): more evenly split the work between large/small databases, and possibly return results immediately and batch renders
 // TODO(high): spyon test that console.log isn't called in an integration test

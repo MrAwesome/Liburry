@@ -1,5 +1,3 @@
-import lunr from "lunr";
-
 import type {DBName, LangDB, PerDictResults} from "../types/dbTypes";
 
 import {DISPLAY_RESULTS_LIMIT} from "../searchSettings";
@@ -9,6 +7,11 @@ import {makeCancelable} from "../utils";
 import {getEntriesFromPreparedCSV} from "../common/csvUtils";
 import {DBEntry} from "../common/dbTypes";
 import {vanillaDBEntryToResult} from "./lunrUtils";
+
+import lunr from "lunr";
+require("lunr-languages/lunr.stemmer.support")(lunr);
+require("lunr-languages/lunr.zh")(lunr);
+
 
 // TODO(urgent): find out why on reload fuzzy json is being loaded in lunr mode
 // TODO(urgent): find out why double-loads are happening / timers are running twice but not showing up
