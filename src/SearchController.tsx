@@ -5,42 +5,62 @@ import SearchWorkerManager from "./SearchWorkerManager";
 import SearchValidityManager from "./SearchValidityManager";
 import {DBName, PerDictResults} from "./types/dbTypes";
 import {SearcherType} from "./search";
+import {GetMainState, SetMainState} from "./types/mainAppState";
+
+// TODO: write tests for this, which ensure the correct messages are sent and callbacks are called
 
 export default class SearchController {
     private searchWorkerManager: SearchWorkerManager;
     private validity: SearchValidityManager;
     private console: StubConsole;
 
-    addResultsCallback: (results: PerDictResults) => Promise<void>;
-    addDBLoadedCallback: (dbName: DBName) => Promise<void>;
-    checkIfAllDBLoadedCallback: () => boolean;
-    getCurrentQueryCallback: () => string;
-    clearResultsCallback: () => Promise<void>;
+    getStateTyped: GetMainState;
+    setStateTyped: SetMainState;
 
     constructor(
         debug: boolean,
-        callbacks: {
-            addResultsCallback: (results: PerDictResults) => Promise<void>,
-            addDBLoadedCallback: (dbName: DBName) => Promise<void>,
-            clearResultsCallback: () => Promise<void>,
-            checkIfAllDBLoadedCallback: () => boolean,
-            getCurrentQueryCallback: () => string,
-        }
+        getStateTyped: GetMainState,
+        setStateTyped: SetMainState,
     ) {
         this.console = getDebugConsole(debug);
         this.searchWorkerManager = new SearchWorkerManager(debug);
         this.validity = new SearchValidityManager(debug);
 
-        this.addResultsCallback = callbacks.addResultsCallback;
-        this.addDBLoadedCallback = callbacks.addDBLoadedCallback;
-        this.checkIfAllDBLoadedCallback = callbacks.checkIfAllDBLoadedCallback;
-        this.getCurrentQueryCallback = callbacks.getCurrentQueryCallback;
-        this.clearResultsCallback = callbacks.clearResultsCallback;
+        this.getStateTyped = getStateTyped;
+        this.setStateTyped = setStateTyped;
+
+        // Callbacks for the search controller to use to communicate changes back to the main component.
+        this.addResultsCallback = this.addResultsCallback.bind(this);
+        this.addDBLoadedCallback = this.addDBLoadedCallback.bind(this);
+        this.getCurrentQueryCallback = this.getCurrentQueryCallback.bind(this);
+        this.checkIfAllDBLoadedCallback = this.checkIfAllDBLoadedCallback.bind(this);
+        this.clearResultsCallback = this.clearResultsCallback.bind(this);
 
         this.search = this.search.bind(this);
         this.searchWorkerReplyHandler = this.searchWorkerReplyHandler.bind(this);
         this.startWorkersAndListener = this.startWorkersAndListener.bind(this);
     }
+
+    async addResultsCallback(results: PerDictResults) {
+        this.setStateTyped((state) => state.resultsHolder.addResults(results));
+    }
+
+    async addDBLoadedCallback(dbName: DBName) {
+        this.setStateTyped((state) => state.loadedDBs.set(dbName, true));
+    }
+
+    async clearResultsCallback() {
+        this.setStateTyped((state) => state.resultsHolder.clear());
+    }
+
+    checkIfAllDBLoadedCallback(): boolean {
+        return Array.from(this.getStateTyped().loadedDBs.values()).every(x => x);
+    }
+
+    getCurrentQueryCallback(): string {
+        return this.getStateTyped().options.query;
+    }
+
 
     async startWorkersAndListener(searcherType: SearcherType) {
         this.searchWorkerManager.init(searcherType, this.searchWorkerReplyHandler);
@@ -122,7 +142,7 @@ export default class SearchController {
 
                 if (this.checkIfAllDBLoadedCallback()) {
                     this.console.log("All databases loaded!");
-                    this.console.timeEnd("initToAllDB");
+                    this.console.timeEnd("mountToAllDB");
                 }
             }
                 break;

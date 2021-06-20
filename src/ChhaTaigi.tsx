@@ -4,7 +4,6 @@ import QueryStringHandler from "./QueryStringHandler";
 
 import {AboutPage, DebugArea, SearchBar} from "./components/components";
 import EntryContainer from "./components/EntryContainer";
-import type {DBName, PerDictResults} from "./types/dbTypes";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
@@ -16,6 +15,7 @@ import SearchController from "./SearchController";
 
 import {runningInJest} from "./utils";
 import ChhaTaigiOptions from "./ChhaTaigiOptions";
+import {ChhaTaigiState} from "./types/mainAppState";
 
 // TODO(urgent): clean up remnants of old JSON method, design and implement more extensible data structure (for e.g. taibun, soatbeng, etc)
 // TODO(urgent): see why double-search is happening locally
@@ -154,18 +154,6 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 
 const queryStringHandler = new QueryStringHandler();
 
-export interface ChhaTaigiState {
-    options: ChhaTaigiOptions,
-    resultsHolder: SearchResultsHolder,
-    loadedDBs: Map<DBName, boolean>,
-}
-
-export interface ChhaTaigiStateArgs {
-    options?: ChhaTaigiOptions,
-    resultsHolder?: SearchResultsHolder,
-    loadedDBs?: Map<DBName, boolean>,
-}
-
 enum MountedState {
     INIT = "INIT",
     MOUNTED = "MOUNTED",
@@ -182,46 +170,44 @@ export class ChhaTaigi extends React.Component<any, any> {
     constructor(props: any) {
         super(props);
 
+        // State initialization
+        const initialDBLoadedMapping: [string, boolean][] =
+            Array.from(DATABASES.keys()).map((k) => [k, false]);
         this.state = {
             options: this.props.options ?? new ChhaTaigiOptions(),
-            loadedDBs: new Map(),
+            loadedDBs: new Map(initialDBLoadedMapping),
             resultsHolder: new SearchResultsHolder(),
         };
-        DATABASES.forEach((_, dbName) => {this.state.loadedDBs.set(dbName, false)});
 
+        // Miscellaneous object initialization
         this.console = getDebugConsole(this.state.options.debug);
         this.searchBar = React.createRef();
 
+        // Bind functions
         this.getStateTyped = this.getStateTyped.bind(this);
-        this.setStateTyped = this.setStateTyped.bind(this);
-
         this.hashChange = this.hashChange.bind(this);
-        this.subscribeHash = this.subscribeHash.bind(this);
-        this.unsubscribeHash = this.unsubscribeHash.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
         this.onSearchBarChange = this.onSearchBarChange.bind(this);
+        this.overrideResultsForTests = this.overrideResultsForTests.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
+        this.setStateTyped = this.setStateTyped.bind(this);
+        this.subscribeHash = this.subscribeHash.bind(this);
+        this.unsubscribeHash = this.unsubscribeHash.bind(this);
         this.updateQuery = this.updateQuery.bind(this);
         this.updateSearchBar = this.updateSearchBar.bind(this);
 
-        // Interfaces for the search controller to use to communicate changes back to the component.
-        this.addResultsCallback = this.addResultsCallback.bind(this);
-        this.addDBLoadedCallback = this.addDBLoadedCallback.bind(this);
-        this.getCurrentQueryCallback = this.getCurrentQueryCallback.bind(this);
-        this.checkIfAllDBLoadedCallback = this.checkIfAllDBLoadedCallback.bind(this);
-        this.clearResultsCallback = this.clearResultsCallback.bind(this);
-
-        // Initialize the search controller with callbacks for passing information/state
-        // back and forth with the main component.
-        this.searchController = new SearchController(this.state.options.debug, {
-            addResultsCallback: this.addResultsCallback,
-            addDBLoadedCallback: this.addDBLoadedCallback,
-            checkIfAllDBLoadedCallback: this.checkIfAllDBLoadedCallback,
-            getCurrentQueryCallback: this.getCurrentQueryCallback,
-            clearResultsCallback: this.clearResultsCallback,
-        });
+        // Start the search controller, and allow it to send/receive changes to the state of this element
+        this.searchController = new SearchController(
+            this.state.options.debug,
+            this.getStateTyped,
+            this.setStateTyped,
+        );
 
         // Allow for overriding results from Jest.
+        this.overrideResultsForTests();
+    }
+
+    overrideResultsForTests() {
         if (runningInJest()) {
             const {mockResults} = this.props;
             if (mockResults !== undefined) {
@@ -230,10 +216,13 @@ export class ChhaTaigi extends React.Component<any, any> {
         }
     }
 
-    setStateTyped(state: ChhaTaigiStateArgs | ((prevState: ChhaTaigiState) => any)) {
-        // TODO: Restructure callbacks such that they don't live on the component?
+    setStateTyped(state: Partial<ChhaTaigiState> | ((prevState: ChhaTaigiState) => any)) {
         if (this.mountedState !== MountedState.MOUNTED) {
-            this.console.warn("Attempting to change state after unmount! MountedState: ", this.mountedState, "State: ", state);
+            this.console.warn(
+                "Attempting to change state after unmount!",
+                "MountedState: ", this.mountedState,
+                "State: ", state
+            );
         } else {
             this.setState(state)
         }
@@ -247,7 +236,7 @@ export class ChhaTaigi extends React.Component<any, any> {
         this.mountedState = MountedState.MOUNTED;
 
         const {options} = this.getStateTyped();
-        this.console.timeLog("initToAllDB", "componentDidMount");
+        this.console.time("mountToAllDB");
 
         // TODO: does this need to happen here? can we just start a search?
         this.updateSearchBar(options.query);
@@ -294,26 +283,6 @@ export class ChhaTaigi extends React.Component<any, any> {
         }
     }
 
-    async addResultsCallback(results: PerDictResults) {
-        this.setStateTyped((state) => state.resultsHolder.addResults(results));
-    }
-
-    async addDBLoadedCallback(dbName: DBName) {
-        this.setStateTyped((state) => state.loadedDBs.set(dbName, true));
-    }
-
-    async clearResultsCallback() {
-        this.setStateTyped((state) => state.resultsHolder.clear());
-    }
-
-    checkIfAllDBLoadedCallback(): boolean {
-        return Array.from(this.getStateTyped().loadedDBs.values()).every(x => x);
-    }
-
-    getCurrentQueryCallback(): string {
-        return this.getStateTyped().options.query;
-    }
-
     onSearchBarChange(e: any) {
         const {target = {}} = e;
         const {value = ""} = target;
@@ -327,8 +296,6 @@ export class ChhaTaigi extends React.Component<any, any> {
         queryStringHandler.updateQuery(query);
     }
 
-    // TODO: add a timer which only completes successfully when all DBs
-    //       have returned results (or canceled/etc) (will require timeout)
     searchQuery(query: string) {
         this.searchController.search(query);
         this.updateQuery(query);

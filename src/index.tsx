@@ -4,7 +4,6 @@ import ReactDOM from "react-dom";
 import {ChhaTaigi} from "./ChhaTaigi";
 
 import "./ChhaTaigi.css";
-import getDebugConsole from "./getDebugConsole";
 import "./pages.css";
 import QueryStringHandler from "./QueryStringHandler";
 
@@ -13,8 +12,6 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
 const queryStringHandler = new QueryStringHandler();
 const options = queryStringHandler.parse();
-const debugConsole = getDebugConsole(options.debug);
-debugConsole.time("initToAllDB");
 
 const rootElement = document.getElementById("root");
 ReactDOM.render(

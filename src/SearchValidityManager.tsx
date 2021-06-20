@@ -27,11 +27,8 @@ class SearchContext {
 
 export default class SearchInvalidationAndRetryManager {
     private bufLen: number = 10;
-//    private searchCompletionStatus: Array<Map<DBName, boolean>> = Array.from({length: this.bufLen}).map(_ => new Map());
-//    private retries: Array<Map<DBName, number>> = Array.from({length: this.bufLen}).map(_ => new Map());
-//    private searchInvalidations: Array<boolean> = Array.from({length: this.bufLen}).map(_ => false);
-
-    private searches: Array<SearchContext> = Array.from({length: this.bufLen}).map(_ => new SearchContext());
+    private searches: Array<SearchContext> = 
+        Array.from({length: this.bufLen}).map(_ => new SearchContext());
     private console: StubConsole;
 
     constructor(debug: boolean) {
@@ -93,7 +90,7 @@ export default class SearchInvalidationAndRetryManager {
     checkAllSearchesCompleted(searchID: number): boolean {
         const completions = this.getSearch(searchID).completionStatus;
 
-        // This odd-looking construction is because:
+        // This odd-looking construction exists because:
         // 1) We want to bail early, so we can't use Map.forEach
         // 2) eslint won't play ball on using an underscore to ignore a var here
         for (const kv of completions) {
@@ -121,7 +118,6 @@ export default class SearchInvalidationAndRetryManager {
             this.console.timeEnd(`search-${searchID}`);
 
             const query = this.getSearch(searchID).query;
-            // NOTE: you can have this object store the query and print it here, if you want.
             this.console.log(`"Search "${query}"(${searchID}) finished successfully. Slowest DB: "${dbName}"`);
         }
     }
