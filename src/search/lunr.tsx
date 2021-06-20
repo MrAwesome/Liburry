@@ -18,6 +18,7 @@ require("lunr-languages/lunr.zh")(lunr);
 // TODO(urgent): brotli-compress lunr.json files, since AWS will not automatically gzip files above 10M
 //              https://serviceworke.rs/cache-from-zip_worker_doc.html
 // TODO(high): show match (use matchdata.metadata, for each key show each field)
+// TODO(high): document the search symbols (hyphen, in particular, is confusing)
 // TODO: include list of objects to index into for search results
 // TODO: catch errors on searches like "chines~"
 // TODO: include match data?

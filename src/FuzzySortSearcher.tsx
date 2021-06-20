@@ -9,6 +9,8 @@ import {getEntriesFromPreparedCSV} from "./common/csvUtils";
 import {makeCancelable} from "./utils";
 import {convertDBEntryToFuzzySortPrepared, parseFuzzySortResultsForRender} from "./fuzzySortUtils";
 
+// TODO: give slight preference for poj-unicode/poj-normalized in fuzzy settings, so that e.g. "iong" will show up first in a search for itself
+
 export default class FuzzySortSearcher implements Searcher {
     searcherType = SearcherType.FUZZYSORT;
     dbName: DBName;

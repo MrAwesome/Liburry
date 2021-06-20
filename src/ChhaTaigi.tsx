@@ -21,6 +21,7 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 // TODO(urgent): see why double-search is happening locally
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`
 // TODO(high): different debug levels, possibly use an upstream lib for logging
+// TODO(high): always change url to be unicoded, so e.g. google meet won't butcher https://taigi.us/#mode=SEARCH;q=chhù-chú
 // TODO(high): 404 page, better support for 404s on json/csv
 // TODO(high): more evenly split the work between large/small databases, and possibly return results immediately and batch renders
 // TODO(high): spyon test that console.log isn't called in an integration test
@@ -119,6 +120,8 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
 // TODO(watch): keep an eye out for 200% CPU util. infinite search loop?
+//
+// https://twblg.dict.edu.tw/holodict_new/mobile/result_detail.jsp?n_no=11235&curpage=1&sample=%E9%A4%85&radiobutton=1&querytarget=1&limit=50&pagenum=1&rowcount=25
 //
 // Project: non-fuzzysort search
 //      1) DONE: create a Searcher interface to abstract away the direct reliance on fuzzysort in the workers
