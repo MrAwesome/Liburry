@@ -27,7 +27,7 @@ class SearchContext {
 
 export default class SearchInvalidationAndRetryManager {
     private bufLen: number = 10;
-    private searches: Array<SearchContext> = 
+    private searches: Array<SearchContext> =
         Array.from({length: this.bufLen}).map(_ => new SearchContext());
     private console: StubConsole;
 

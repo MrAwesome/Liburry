@@ -125,9 +125,9 @@ import {ChhaTaigiState} from "./types/mainAppState";
 //
 // Project: non-fuzzysort search
 //      1) DONE: create a Searcher interface to abstract away the direct reliance on fuzzysort in the workers
-//      2) find a suitably simple alternative to test, and implement Searcher for it
-//      3) remove remaining reliance on fuzzy variables (note debug mode score threshold)
-//      4) test out lovefield, lunr.js, and js-search
+//      2) DONE: find a suitably simple alternative to test, and implement Searcher for it
+//      3) remove remaining reliance on fuzzy variables (note debug mode score threshold - which is hard for lunr, since BM25 is not normalized)
+//      4) test out lovefield, lunr.js [DONE], and js-search
 //
 // Project: Integration tests
 //      1) Determine how to mock

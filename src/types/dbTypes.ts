@@ -40,7 +40,10 @@ export interface PerDictResults {
     results: Array<SearchResultEntry>,
 }
 
-// NOTE: This type is passed back from web workers.
+// NOTE: This type is passed back from web workers. It's okay to store
+// a fair amount of information here, since these are only created for
+// relevant results (not every entry in the DBs)
+//
 // TODO: add type of search which produced this?
 export interface SearchResultEntry {
     key: string;
