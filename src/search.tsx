@@ -1,8 +1,9 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {DBName, LangDB, PerDictResults} from "./types/dbTypes";
 import {CancelablePromise} from "./types/general";
-import FuzzySortSearcher from "./FuzzySortSearcher";
-import {LunrSearcher} from "./search/lunr";
+import FuzzySortSearcher from "./search/FuzzySortSearcher";
+import LunrSearcher from "./search/LunrSearcher";
+import {FUZZY_SCORE_LOWER_THRESHOLD} from "./searchSettings";
 
 export interface Searcher {
     searcherType: SearcherType;
@@ -16,6 +17,23 @@ export interface Searcher {
 export enum SearcherType {
     FUZZYSORT = "FUZZYSORT",
     LUNR = "LUNR"
+}
+
+export interface DBSearchRanking {
+    searcherType: SearcherType;
+    score: number;
+}
+
+// TODO: store this information further away from this module, closer to where searchers are defined
+//       (would be easiest with an abstract static, but those don't seem to exist in typescript right now)
+export function getMaxScore(searcherType: SearcherType): number {
+    switch (searcherType) {
+        case SearcherType.FUZZYSORT:
+            return FUZZY_SCORE_LOWER_THRESHOLD;
+        case SearcherType.LUNR:
+            // TODO: some normalized value for this
+            return 25;
+    }
 }
 
 export function getSearcher(searcherType: SearcherType, dbName: DBName, langDB: LangDB, debug: boolean): Searcher {

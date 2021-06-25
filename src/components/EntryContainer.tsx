@@ -2,7 +2,7 @@ import DOMPurify from "dompurify";
 import * as React from "react";
 
 import {REPO_LINK} from "../constants";
-import {FUZZY_SCORE_LOWER_THRESHOLD} from "../searchSettings";
+import {getMaxScore, SearcherType} from "../search";
 import {SearchResultEntry} from "../types/dbTypes";
 
 enum ClickedOrder {
@@ -115,14 +115,28 @@ export default class EntryContainer extends React.PureComponent<any, any> {
 
     }
 
-    // TODO: remove reliance on fuzzysort
+    // TODO: unit test the scoring color selection logic, move somewhere further away
     getSearchScore(): JSX.Element {
         const {dbSearchRanking} = this.getEntry();
 
-        const score = dbSearchRanking;
-        const worst = FUZZY_SCORE_LOWER_THRESHOLD;
-        const green = (1 - (score / worst)) * 255;
-        const red = (score / worst) * 255;
+        let score = dbSearchRanking.score;
+        const max = getMaxScore(dbSearchRanking.searcherType);
+
+        let green = 0;
+        let red = 0;
+        const colorAmplitude = (score / max) * 255;
+        const inverseColorAmp = 255 - colorAmplitude;
+        switch (dbSearchRanking.searcherType) {
+            case SearcherType.LUNR:
+                green = colorAmplitude;
+                red = inverseColorAmp;
+            break;
+            case SearcherType.FUZZYSORT:
+                red = colorAmplitude;
+                green = inverseColorAmp;
+            break;
+        }
+
         const style = {"color": `rgb(${red}, ${green}, 0)`};
 
         return <div className="searchscore-container">
@@ -149,7 +163,7 @@ export default class EntryContainer extends React.PureComponent<any, any> {
     clickReport(e: React.MouseEvent) {
         e.preventDefault();
 
-        const {dbName,dbID,pojUnicodeText} = this.getEntry();
+        const {dbName, dbID, pojUnicodeText} = this.getEntry();
         const pojUnicodeCSV = pojUnicodeText.replace(/"/g, '""');
         const csvReportSkeleton = `"${dbName}","${dbID}","${pojUnicodeCSV}",`;
         navigator.clipboard.writeText(csvReportSkeleton).then(() =>

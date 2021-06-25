@@ -1,15 +1,16 @@
 import fuzzysort from "fuzzysort";
 
-import {FuzzyPreparedDBEntry} from "./types/fuzzySortTypes";
-import {OngoingSearch, Searcher, SearcherType, SearchFailure} from "./search";
-import {DBName, LangDB, PerDictResults} from "./types/dbTypes";
-import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import {DBEntry} from "./common/dbTypes";
-import {getEntriesFromPreparedCSV} from "./common/csvUtils";
-import {makeCancelable} from "./utils";
-import {convertDBEntryToFuzzySortPrepared, parseFuzzySortResultsForRender} from "./fuzzySortUtils";
+import {FuzzyPreparedDBEntry} from "../types/fuzzySortTypes";
+import {OngoingSearch, Searcher, SearcherType, SearchFailure} from "../search";
+import {DBName, LangDB, PerDictResults} from "../types/dbTypes";
+import getDebugConsole, {StubConsole} from "../getDebugConsole";
+import {DBEntry} from "../common/dbTypes";
+import {getEntriesFromPreparedCSV} from "../common/csvUtils";
+import {makeCancelable} from "../utils";
+import {convertDBEntryToFuzzySortPrepared, parseFuzzySortResultsForRender} from "../fuzzySortUtils";
 
 // TODO: give slight preference for poj-unicode/poj-normalized in fuzzy settings, so that e.g. "iong" will show up first in a search for itself
+// TODO: handle hyphens vs spaces
 
 export default class FuzzySortSearcher implements Searcher {
     searcherType = SearcherType.FUZZYSORT;

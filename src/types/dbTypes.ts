@@ -1,10 +1,10 @@
+import {DBSearchRanking} from "../search";
 import type {FuzzyKeysOptions} from "./fuzzySortTypes";
 
 export type DBIdentifier = number;
 export type DBName = string;
 export type DBFilename = string;
 export type SearchPreppedKey = string;
-export type DBSearchRanking = number;
 export type EntryFieldNameToPreppedNameMapping = Map<string, SearchPreppedKey>;
 
 export interface LangDB {

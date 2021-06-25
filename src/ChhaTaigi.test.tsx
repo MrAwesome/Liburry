@@ -5,6 +5,7 @@ import {PerDictResults, SearchResultEntry} from './types/dbTypes';
 import ChhaTaigiOptions from './ChhaTaigiOptions';
 import * as React from 'react';
 import {noop} from './utils';
+import {DBSearchRanking, SearcherType} from './search';
 
 // NOTE: just used to silence errors in node TSC.
 noop(React.version);
@@ -26,11 +27,13 @@ test('render single entry via override', () => {
 
     const dbName = "malee";
     const dbID = 1;
+
+    const dbSearchRanking = {searcherType: SearcherType.LUNR, score: -3} as DBSearchRanking;
     let res1 = {
         key: `${dbName}-${dbID}`,
         dbID,
         dbName,
-        dbSearchRanking: -3,
+        dbSearchRanking,
         pojUnicodeText: "hoat-lu̍t",
         pojUnicodePossibleMatch: "hoat-lu̍t",
         pojInputPossibleMatch: "hoat-lut8",

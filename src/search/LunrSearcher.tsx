@@ -2,11 +2,11 @@ import type {DBName, LangDB, PerDictResults} from "../types/dbTypes";
 
 import {DISPLAY_RESULTS_LIMIT} from "../searchSettings";
 import getDebugConsole, {StubConsole} from "../getDebugConsole";
-import {OngoingSearch, Searcher, SearcherType, SearchFailure} from "../search";
+import {DBSearchRanking, OngoingSearch, Searcher, SearcherType, SearchFailure} from "../search";
 import {makeCancelable} from "../utils";
 import {getEntriesFromPreparedCSV} from "../common/csvUtils";
 import {DBEntry} from "../common/dbTypes";
-import {vanillaDBEntryToResult} from "./lunrUtils";
+import {vanillaDBEntryToResult} from "./utils";
 
 import lunr from "lunr";
 require("lunr-languages/lunr.stemmer.support")(lunr);
@@ -19,17 +19,14 @@ require("lunr-languages/lunr.zh")(lunr);
 //              https://serviceworke.rs/cache-from-zip_worker_doc.html
 // TODO(high): show match (use matchdata.metadata, for each key show each field)
 // TODO(high): document the search symbols (hyphen, in particular, is confusing)
+// TODO(mid): include <match></match>
+// TODO(mid): indexing via ref that doesn't rely on the ID being set correctly.
+//            error handling in case ids are out of order in DB? hash of ids?
 // TODO: include list of objects to index into for search results
 // TODO: catch errors on searches like "chines~"
-// TODO: include match data?
-// TODO: pull in lunr index
-// TODO: pull in CSV with papaparse
-// TODO: error handling in case ids are out of order in DB? hash of ids?
-// TODO: limit number of results
-//
-// DOC: does not support chinese characters in search strings
+// TODO: limit number of results from the search itself? ever necessary?
 
-export class LunrSearcher implements Searcher {
+export default class LunrSearcher implements Searcher {
     searcherType: SearcherType = SearcherType.LUNR;
     dbName: string;
     langDB: LangDB;
@@ -66,24 +63,7 @@ export class LunrSearcher implements Searcher {
         const parsePromise = cancelableSearchPromise.then(results => {
             if ((results as lunr.Index.Result[]).length !== undefined) {
                 if (this.entries !== undefined) {
-                    const searchResults = results as lunr.Index.Result[];
-                    this.console.time("lunr-getEntries-" + dbName);
-
-                    // NOTE: Clipping results to display limit here, Lunr doesn't seem to have a built-in limit
-                    const clippedSearchResults = searchResults.slice(0, DISPLAY_RESULTS_LIMIT);
-
-                    const entries = this.entries;
-                    const matchingEntries = clippedSearchResults.map((lunrRes) => {
-                        // TODO: less danger-prone / more future-proof indexing
-                        const id = parseInt(lunrRes.ref);
-                        const entry = entries[id - 1];
-                        return vanillaDBEntryToResult(dbName, entry, lunrRes);
-                    });
-                    this.console.timeEnd("lunr-getEntries-" + dbName);
-                    return {
-                        dbName,
-                        results: matchingEntries,
-                    } as PerDictResults;
+                    return this.searchInternal(results as lunr.Index.Result[], this.entries);
                 } else {
                     return SearchFailure.SearchedBeforePrepare;
                 }
@@ -94,9 +74,6 @@ export class LunrSearcher implements Searcher {
 
         const cancelableParsePromise = makeCancelable(parsePromise);
 
-
-        // TODO: add search promise
-        // TODO: add parse promise
         return new OngoingSearch(
             dbName,
             query,
@@ -104,6 +81,33 @@ export class LunrSearcher implements Searcher {
             cancelableSearchPromise,
             cancelableParsePromise,
         );
+    }
+
+    private searchInternal(
+        results: lunr.Index.Result[],
+        entries: DBEntry[],
+    ): PerDictResults {
+        const dbName = this.dbName;
+        const searchResults = results as lunr.Index.Result[];
+        this.console.time("lunr-getEntries-" + dbName);
+
+        // NOTE: Clipping results to display limit here, Lunr doesn't seem to have a built-in limit
+        const clippedSearchResults = searchResults.slice(0, DISPLAY_RESULTS_LIMIT);
+
+        const matchingEntries = clippedSearchResults.map((lunrRes) => {
+            const id = parseInt(lunrRes.ref);
+            const entry = entries[id - 1];
+            const dbSearchRanking = {
+                searcherType: SearcherType.LUNR,
+                score: lunrRes.score
+            } as DBSearchRanking;
+            return vanillaDBEntryToResult(dbName, entry, dbSearchRanking);
+        });
+        this.console.timeEnd("lunr-getEntries-" + dbName);
+        return {
+            dbName,
+            results: matchingEntries,
+        } as PerDictResults;
     }
 
     // TODO: continue testing performance

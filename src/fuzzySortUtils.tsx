@@ -3,9 +3,12 @@ import type {DBName, SearchResultEntry, EntryFieldNameToPreppedNameMapping} from
 
 import type {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedDBEntry} from "./types/fuzzySortTypes";
 
+import {SearcherType} from "./search";
+
 // TODO: remove when there are other types of search
 import {DEFAULT_DEFINITION_INDEX, DEFAULT_HOABUN_INDEX, DEFAULT_POJ_INPUT_INDEX, DEFAULT_POJ_NORMALIZED_INDEX, DEFAULT_POJ_UNICODE_INDEX, DISPLAY_RESULTS_LIMIT} from "./searchSettings";
 import {DBEntry} from "./common/dbTypes";
+import {DBSearchRanking} from "./search";
 
 export function parseFuzzySortResultsForRender(
     dbName: DBName,
@@ -36,11 +39,16 @@ function fuzzySortResultToSearchResultEntry(dbName: DBName, fuzzysortResult: Fuz
     const pojUnicodePossibleMatch = fuzzySortHighlight(pojUnicodePossiblePreHLMatch, pojUnicodeText);
     const hoabunPossibleMatch = fuzzySortHighlight(hoabunPossiblePreHLMatch, obj.hoabun);
 
+    const dbSearchRanking = {
+        searcherType: SearcherType.FUZZYSORT,
+        score: fuzzysortResult.score
+    } as DBSearchRanking;
+
     return {
         key: dbName + "-" + rowID,
         dbID: rowID,
         dbName,
-        dbSearchRanking: fuzzysortResult.score,
+        dbSearchRanking,
         pojUnicodeText,
         pojUnicodePossibleMatch,
         pojInputPossibleMatch,

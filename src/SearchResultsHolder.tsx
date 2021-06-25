@@ -34,7 +34,7 @@ export default class SearchResultsHolder {
         });
 
         // TODO: Sort on add? Sort first in worker? Store all results flat and just sort as they come in?
-        entries.sort((a, b) => b.dbSearchRanking - a.dbSearchRanking);
+        entries.sort((a, b) => b.dbSearchRanking.score - a.dbSearchRanking.score);
 
         return entries;
     }
