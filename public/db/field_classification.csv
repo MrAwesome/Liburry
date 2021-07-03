@@ -1,0 +1,133 @@
+db,field,type,lang,delim,max_length,status,notes,DONE
+ChhoeTaigi_BanglooMuitheSekin,id,id,,,,,,DONE
+ChhoeTaigi_BanglooMuitheSekin,poj_unicode,vocab,poj,,long,,,DONE
+ChhoeTaigi_BanglooMuitheSekin,poj_input,input,poj,,long,,,DONE
+ChhoeTaigi_BanglooMuitheSekin,kip_unicode,vocab,kip,,long,,,DONE
+ChhoeTaigi_BanglooMuitheSekin,kip_input,input,kip,,long,,,DONE
+ChhoeTaigi_BanglooMuitheSekin,hanlo_taibun_poj,vocab,taibun_poj,,long,,,DONE
+ChhoeTaigi_BanglooMuitheSekin,hanlo_taibun_kip,vocab,taibun_kip,,long,,,DONE
+ChhoeTaigi_BanglooMuitheSekin,hoabun,definition,hoabun,,long,,,DONE
+ChhoeTaigi_BanglooMuitheSekin,english,definition,english,,,blank,,DONE
+ChhoeTaigi_BanglooMuitheSekin,poochhiong_chuliau,see_also,poj/taibun_poj,,long,sparse,,DONE
+ChhoeTaigi_BanglooMuitheSekin,muithe_miachheng,channel_name,hoabun,,short,,,DONE
+ChhoeTaigi_BanglooMuitheSekin,hongsang_jitki,date_YYYY.MM.DD,,,short,,,DONE
+ChhoeTaigi_BanglooMuitheSekin,liankiat,link,,,short,,,DONE
+ChhoeTaigi_EmbreeTaiengSutian,id,id,,,,,,DONE
+ChhoeTaigi_EmbreeTaiengSutian,poj_unicode,vocab,poj,/,long,,,DONE
+ChhoeTaigi_EmbreeTaiengSutian,poj_input,input,poj,/,long,,,DONE
+ChhoeTaigi_EmbreeTaiengSutian,kip_unicode,vocab,kip,/,long,,,DONE
+ChhoeTaigi_EmbreeTaiengSutian,kip_input,input,kip,/,long,,,DONE
+ChhoeTaigi_EmbreeTaiengSutian,abbreviations,pos_classification,,,med,,,DONE
+ChhoeTaigi_EmbreeTaiengSutian,noun_classifiers,measure_word,poj,/,single,sparse,,DONE
+ChhoeTaigi_EmbreeTaiengSutian,reduplication,vocab_other,poj,/,med,sparse,,DONE
+ChhoeTaigi_EmbreeTaiengSutian,hoabun,definition,hoabun,,med,,,DONE
+ChhoeTaigi_EmbreeTaiengSutian,english,definition,english,,long,,,DONE
+ChhoeTaigi_EmbreeTaiengSutian,synonym,synonym,poj,/,short,sparse,,DONE
+ChhoeTaigi_EmbreeTaiengSutian,cf,opposite,poj,/,short,sparse,,DONE
+ChhoeTaigi_EmbreeTaiengSutian,page_number,page_number,,,,,,DONE
+ChhoeTaigi_iTaigiHoataiTuichiautian,id,id,,,,,,DONE
+ChhoeTaigi_iTaigiHoataiTuichiautian,poj_unicode,vocab,poj,/,long,,,DONE
+ChhoeTaigi_iTaigiHoataiTuichiautian,poj_input,input,poj,/,long,,,DONE
+ChhoeTaigi_iTaigiHoataiTuichiautian,kip_unicode,vocab,kip,/,long,,,DONE
+ChhoeTaigi_iTaigiHoataiTuichiautian,kip_input,input,kip,/,long,,,DONE
+ChhoeTaigi_iTaigiHoataiTuichiautian,hanlo_taibun_poj,vocab,taibun_poj,,med,,,DONE
+ChhoeTaigi_iTaigiHoataiTuichiautian,hanlo_taibun_kip,vocab,taibun_kip,,med,,,DONE
+ChhoeTaigi_iTaigiHoataiTuichiautian,hoabun,definition,hoabun,,med,,Some english in the hoabun field.,DONE
+ChhoeTaigi_iTaigiHoataiTuichiautian,from,contributor,,,short,,,DONE
+ChhoeTaigi_KamJitian,id,id,,,,,,DONE
+ChhoeTaigi_KamJitian,poj_unicode,vocab,poj,,single,,This DB consists entirely of single-character entries.,DONE
+ChhoeTaigi_KamJitian,poj_input,input,poj,,single,,,DONE
+ChhoeTaigi_KamJitian,hanji_taibun,vocab,taibun_hanji,,single,,"Inconsistent use of ""-"" and ""?"" for blank/unknown.",DONE
+ChhoeTaigi_KamJitian,poj_bunim_unicode,other,poj,sparse,single,,,DONE
+ChhoeTaigi_KamJitian,poj_bunim_input,other_input,poj,sparse,single,,,DONE
+ChhoeTaigi_KamJitian,poj_kaisoeh,definition,poj,,long,,,DONE
+ChhoeTaigi_KamJitian,hanlo_taibun_kaisoeh_poj,definition,taibun_poj,,long,,,DONE
+ChhoeTaigi_KamJitian,kip_unicode,vocab,kip,,single,,,DONE
+ChhoeTaigi_KamJitian,kip_input,input,kip,,single,,,DONE
+ChhoeTaigi_KamJitian,kip_bunim_unicode,other,kip,sparse,single,,,DONE
+ChhoeTaigi_KamJitian,kip_bunim_input,other_input,kip,sparse,single,,,DONE
+ChhoeTaigi_KamJitian,kip_kaisoeh,definition,kip,,long,,,DONE
+ChhoeTaigi_KamJitian,page_number,page_number,,,,,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,id,id,,,,,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,poj_unicode,vocab,poj,/,med,,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,poj_unicode_other,vocab_other,poj,/,med,sparse,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,poj_input,input,poj,/,med,,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,poj_input_other,input_other,poj,/,med,,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,kip_unicode,vocab,kip,/,med,,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,kip_unicode_other,vocab_other,kip,/,med,,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,kip_input,input,kip,/,med,,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,kip_input_other,input_other,kip,/,med,sparse,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,hanji_taibun,vocab,taibun_hanji,,med,,Delimiter could be 、,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,hanji_taibun_other,vocab_other,taibun_hanji,,med,sparse,Delimiter could be 、,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,word_property,class,hoabun,,short,sparse,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,word_bunpeh_property,UNKNOWN,unknown,/,med,sparse,"TODO: determine purpose, and language/meaning of symbols",INCOMPLETE
+ChhoeTaigi_KauiokpooTaigiSutian,other_word_bunpeh_property,UNKNOWN,unknown,/,med,sparse,"TODO: determine purpose, and language/meaning of symbols",INCOMPLETE
+ChhoeTaigi_KauiokpooTaigiSutian,hoabun,definition,hoabun,,med,,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,descriptions_poj,definition,poj/taibun_poj/hoabun,,very_long,,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,descriptions_kip,definition,kip/taibun_kip/hoabun,,very_long,,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,dialects_kip,vocab_other,kip/taibun_kip/hoabun,,very_long,sparse,,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,synonym,synonym,hoabun,,med,sparse,Delimiter could be 、,DONE
+ChhoeTaigi_KauiokpooTaigiSutian,opposite,opposite,hoabun,,med,sparse,Delimiter could be 、,DONE
+ChhoeTaigi_MaryknollTaiengSutian,id,id,,,,,,DONE
+ChhoeTaigi_MaryknollTaiengSutian,poj_unicode,vocab,poj,INCONSISTENT,long,,,DONE
+ChhoeTaigi_MaryknollTaiengSutian,poj_input,input,poj,INCONSISTENT,long,,,DONE
+ChhoeTaigi_MaryknollTaiengSutian,kip_unicode,vocab,kip,INCONSISTENT,long,,,DONE
+ChhoeTaigi_MaryknollTaiengSutian,kip_input,input,kip,INCONSISTENT,long,,,DONE
+ChhoeTaigi_MaryknollTaiengSutian,hoabun,definition,hoabun,,long,,,DONE
+ChhoeTaigi_MaryknollTaiengSutian,english,definition,english,,long,,,DONE
+ChhoeTaigi_MaryknollTaiengSutian,page_number,page_number,,,,blank,,DONE
+ChhoeTaigi_TaihoaSoanntengTuichiautian,id,id,,,,,,DONE
+ChhoeTaigi_TaihoaSoanntengTuichiautian,poj_unicode,vocab,poj,/,short,,,DONE
+ChhoeTaigi_TaihoaSoanntengTuichiautian,poj_unicode_other,vocab_other,poj,/,,sparse,"No examples of split, but assuming /.",DONE
+ChhoeTaigi_TaihoaSoanntengTuichiautian,poj_input,input,poj,/,,,,DONE
+ChhoeTaigi_TaihoaSoanntengTuichiautian,poj_input_other,input_other,poj,/,,sparse,"No examples of split, but assuming /.",DONE
+ChhoeTaigi_TaihoaSoanntengTuichiautian,hanlo_taibun_poj,vocab,taibun_poj,,,,,DONE
+ChhoeTaigi_TaihoaSoanntengTuichiautian,kip_unicode,vocab,kip,/,,,,DONE
+ChhoeTaigi_TaihoaSoanntengTuichiautian,kip_unicode_other,vocab_other,kip,/,,sparse,"No examples of split, but assuming /.",DONE
+ChhoeTaigi_TaihoaSoanntengTuichiautian,kip_input,input,kip,/,,,,DONE
+ChhoeTaigi_TaihoaSoanntengTuichiautian,kip_input_other,input_other,kip,/,,sparse,"No examples of split, but assuming /.",DONE
+ChhoeTaigi_TaihoaSoanntengTuichiautian,hanlo_taibun_kip,vocab,taibun_kip,,,,,DONE
+ChhoeTaigi_TaihoaSoanntengTuichiautian,hoabun,definition,hoabun,,,,,DONE
+ChhoeTaigi_TaijitToaSutian,id,id,,,,,,DONE
+ChhoeTaigi_TaijitToaSutian,poj_unicode,vocab,poj,/,med,,,DONE
+ChhoeTaigi_TaijitToaSutian,poj_unicode_other,vocab_other,poj,/,med,sparse,"TODO: determine meaning of symbols, classify lang accordingly",INCOMPLETE
+ChhoeTaigi_TaijitToaSutian,poj_input,input,poj,/,med,,,DONE
+ChhoeTaigi_TaijitToaSutian,poj_input_other,input_other,poj,/,med,sparse,"TODO: determine meaning of symbols, classify lang accordingly",INCOMPLETE
+ChhoeTaigi_TaijitToaSutian,hanlo_taibun_poj,vocab,taibun_poj,/,med,,14 entries missing this.,DONE
+ChhoeTaigi_TaijitToaSutian,hanlo_taibun_kaisoeh_poj,definition,taibun_poj,,long,sparse,806 missing this.,DONE
+ChhoeTaigi_TaijitToaSutian,hanlo_taibun_leku_poj,example,taibun_poj,,long,sparse,"Delimiter possibly "";""",DONE
+ChhoeTaigi_TaijitToaSutian,kip_unicode,vocab,kip,/,med,,,DONE
+ChhoeTaigi_TaijitToaSutian,kip_unicode_other,vocab_other,kip,/,med,sparse,,DONE
+ChhoeTaigi_TaijitToaSutian,kip_input,input,kip,/,med,,,DONE
+ChhoeTaigi_TaijitToaSutian,kip_input_other,input_other,kip,/,med,sparse,,DONE
+ChhoeTaigi_TaijitToaSutian,hanlo_taibun_kip,vocab,taibun_kip,/,med,,14 entries missing this.,DONE
+ChhoeTaigi_TaijitToaSutian,hanlo_taibun_kaisoeh_kip,definition,taibun_kip,,long,sparse,806 missing this.,DONE
+ChhoeTaigi_TaijitToaSutian,hanlo_taibun_leku_kip,example,taibun_kip,,long,sparse,,DONE
+ChhoeTaigi_TaijitToaSutian,page_number,page_number,,,med,,Format like: B0780/B0783/etc,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,id,id,,,,,,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,poj_unicode,vocab,poj,,med,,,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,poj_unicode_other,vocab_other,poj,,med,,,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,poj_input,input,poj,,med,,,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,poj_input_other,input_other,poj,,med,,,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,kip_unicode,vocab,kip,,med,,,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,kip_unicode_other,vocab_other,kip,,med,,,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,kip_input,input,kip,,med,,,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,kip_input_other,input_other,kip,,med,,,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,hoabun,definition,hoabun,,med,sparse,Some entries have english_soatbeng but not hoabun or english.,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,english,definition,english,,long,sparse,Some entries have english_soatbeng but not hoabun or english.,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,english_soatbeng,explanation,english,,very_long,sparse,,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,noun_classifiers,measure_word,poj,/,short,sparse,,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,example_su,example_phrase,poj,/,long,sparse,Small phrases.,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,opposite,opposite,poj,/,short,sparse,,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,example_ku_taibun_poj,matched_example,poj,/,long,sparse,"NOTE: Although the field name says taibun_poj, it appears to be POJ only!",DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,example_ku_english,matched_example,english,\,long,sparse,NOTE: Backslashes as delimiters!,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,example_ku_hoabun,matched_example,hoabun,/,long,sparse,NOTE: Some hoabun/poj/english definitions have the incorrect language.,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,from_su,base_phrase,poj,,short,sparse,NOTE: some parens.,DONE
+ChhoeTaigi_TaioanPehoeKichhooGiku,page_number,page_number,,,,,,DONE
+ChhoeTaigi_TaioanSitbutMialui,id,id,,,,,,DONE
+ChhoeTaigi_TaioanSitbutMialui,poj_unicode,vocab,poj,,short,,,DONE
+ChhoeTaigi_TaioanSitbutMialui,poj_input,input,poj,,short,,,DONE
+ChhoeTaigi_TaioanSitbutMialui,kip_unicode,vocab,kip,,short,,,DONE
+ChhoeTaigi_TaioanSitbutMialui,kip_input,input,kip,,short,,,DONE
+ChhoeTaigi_TaioanSitbutMialui,hanji_taibun,definition,taibun,,short,,,DONE
+ChhoeTaigi_TaioanSitbutMialui,page_number,page_number,,,,,,DONE
