@@ -3,7 +3,6 @@ import * as React from "react";
 import QueryStringHandler from "./QueryStringHandler";
 
 import {AboutPage, DebugArea, SearchBar} from "./components/components";
-import EntryContainer from "./components/EntryContainer";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
@@ -17,7 +16,13 @@ import {runningInJest} from "./utils";
 import ChhaTaigiOptions from "./ChhaTaigiOptions";
 import {ChhaTaigiState} from "./types/mainAppState";
 
-// TODO(urgent): clean up remnants of old JSON method, design and implement more extensible data structure (for e.g. taibun, soatbeng, etc)
+import FieldClassificationHandler from "./search/FieldClassificationHandler";
+import EntryContainer from "./components/EntryContainer";
+import {PerDictResults} from "./types/dbTypes";
+//import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
+
+
+// TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
 // TODO(urgent): see why double-search is happening locally
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`
 // TODO(high): different debug levels, possibly use an upstream lib for logging
@@ -160,7 +165,10 @@ enum MountedState {
     UNMOUNTED = "UNMOUNTED",
 }
 
-export class ChhaTaigi extends React.Component<any, any> {
+export class ChhaTaigi extends React.Component<Partial<{
+    options: ChhaTaigiOptions,
+    mockResults: PerDictResults,
+}>, any> {
     mountedState = MountedState.INIT;
     searchBar: React.RefObject<SearchBar>;
     console: StubConsole;
@@ -177,6 +185,7 @@ export class ChhaTaigi extends React.Component<any, any> {
             options: this.props.options ?? new ChhaTaigiOptions(),
             loadedDBs: new Map(initialDBLoadedMapping),
             resultsHolder: new SearchResultsHolder(),
+            fieldClassifier: null,
         };
 
         // Miscellaneous object initialization
@@ -184,6 +193,7 @@ export class ChhaTaigi extends React.Component<any, any> {
         this.searchBar = React.createRef();
 
         // Bind functions
+        this.getEntryComponents = this.getEntryComponents.bind(this);
         this.getStateTyped = this.getStateTyped.bind(this);
         this.hashChange = this.hashChange.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
@@ -243,6 +253,11 @@ export class ChhaTaigi extends React.Component<any, any> {
 
         this.searchController.startWorkersAndListener(options.searcherType);
         this.subscribeHash();
+
+        FieldClassificationHandler.fetch().then((h) => {
+            this.setStateTyped((state) => {state.fieldHandler = h})
+        });
+
     }
 
     componentWillUnmount() {
@@ -299,22 +314,45 @@ export class ChhaTaigi extends React.Component<any, any> {
     searchQuery(query: string) {
         this.searchController.search(query);
         this.updateQuery(query);
+
         this.setMode(MainDisplayAreaMode.SEARCH);
     }
 
+    // TODO: don't even try to display anything until the classifiers are loaded
+    //       once classifiers are loaded, trigger a state update from a classifier callback
+    // TODO: replace uses of DBFullName with something like LangDB?
+
     getEntryComponents(): JSX.Element {
-        const {resultsHolder, options} = this.getStateTyped();
+        const {resultsHolder, options, fieldHandler} = this.getStateTyped();
         const entries = resultsHolder.getAllResults();
 
-        const entryContainers = entries.map((entry) => <EntryContainer debug={options.debug} entry={entry} key={entry.key} />);
+        if (fieldHandler !== null) {
+            const entryContainers = entries.map((entry) =>
+                <EntryContainer
+                    debug={options.debug}
+                    //fieldHandler={fieldHandler}
+                    entryData={entry}
+                    key={entry.key}
+                />
 
-        return <>{entryContainers}</>;
+                // <AgnosticEntryContainer
+                //         debug={options.debug}
+                //         //langOptions={langOptions}
+                //         fieldHandler={fieldHandler}
+                //         entry={entry}
+                //         key={entry.key} />
+            );
+
+            return <>{entryContainers}</>;
+        } else {
+            // TODO: handle this
+            return <>Loading...</>;
+        }
+
     }
 
     mainDisplayArea(mode: MainDisplayAreaMode): JSX.Element {
         switch (mode) {
-            case MainDisplayAreaMode.TESTLUNR:
-                return <></>;
             case MainDisplayAreaMode.SEARCH:
                 return this.getEntryComponents();
             case MainDisplayAreaMode.ABOUT:

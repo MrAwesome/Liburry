@@ -1,21 +1,21 @@
-import type {DBName, LangDB, PerDictResults} from "../types/dbTypes";
+import type {DBName, DBRow, LangDB, PerDictResults} from "../types/dbTypes";
 
 import {DISPLAY_RESULTS_LIMIT} from "../searchSettings";
 import getDebugConsole, {StubConsole} from "../getDebugConsole";
 import {DBSearchRanking, OngoingSearch, Searcher, SearcherType, SearchFailure} from "../search";
 import {makeCancelable} from "../utils";
 import {getEntriesFromPreparedCSV} from "../common/csvUtils";
-import {DBEntry} from "../common/dbTypes";
 import {vanillaDBEntryToResult} from "./utils";
 
 import lunr from "lunr";
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
 
+function FixDBRowUsage() {}
 
 // TODO(urgent): find out why on reload fuzzy json is being loaded in lunr mode
 // TODO(urgent): find out why double-loads are happening / timers are running twice but not showing up
-// TODO(urgent): brotli-compress lunr.json files, since AWS will not automatically gzip files above 10M
+// TODO(urgent): brotli-compress (or split) lunr.json files, since AWS will not automatically gzip files above 10M
 //              https://serviceworke.rs/cache-from-zip_worker_doc.html
 // TODO(high): show match (use matchdata.metadata, for each key show each field)
 // TODO(high): document the search symbols (hyphen, in particular, is confusing)
@@ -34,7 +34,7 @@ export default class LunrSearcher implements Searcher {
 
     private console: StubConsole;
     private idx?: lunr.Index;
-    private entries?: DBEntry[];
+    private entries?: DBRow[];
 
     constructor(dbName: DBName, langDB: LangDB, debug: boolean) {
         this.dbName = dbName;
@@ -85,7 +85,7 @@ export default class LunrSearcher implements Searcher {
 
     private searchInternal(
         results: lunr.Index.Result[],
-        entries: DBEntry[],
+        entries: DBRow[],
     ): PerDictResults {
         const dbName = this.dbName;
         const searchResults = results as lunr.Index.Result[];
@@ -101,7 +101,7 @@ export default class LunrSearcher implements Searcher {
                 searcherType: SearcherType.LUNR,
                 score: lunrRes.score
             } as DBSearchRanking;
-            return vanillaDBEntryToResult(dbName, entry, dbSearchRanking);
+            return vanillaDBEntryToResult(dbName, this.langDB.fullName, entry, dbSearchRanking);
         });
         this.console.timeEnd("lunr-getEntries-" + dbName);
         return {
@@ -126,7 +126,7 @@ export default class LunrSearcher implements Searcher {
                 this.console.timeEnd("lunr-fetch-entries-" + dbName);
 
                 this.console.time("lunr-loadfromcsv-" + dbName);
-                const searchableEntries: DBEntry[] = getEntriesFromPreparedCSV(text);
+                const searchableEntries: DBRow[] = getEntriesFromPreparedCSV(text);
                 this.entries = searchableEntries;
                 this.console.timeEnd("lunr-loadfromcsv-" + dbName);
 

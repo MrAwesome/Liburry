@@ -1,4 +1,4 @@
-db,field,type,lang,delim,max_length,status,notes,DONE
+db,field,type,lang,delim,max_length,status,notes,done
 ChhoeTaigi_BanglooMuitheSekin,id,id,,,,,,DONE
 ChhoeTaigi_BanglooMuitheSekin,poj_unicode,vocab,poj,,long,,,DONE
 ChhoeTaigi_BanglooMuitheSekin,poj_input,input,poj,,long,,,DONE

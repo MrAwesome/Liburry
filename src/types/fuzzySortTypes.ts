@@ -1,19 +1,10 @@
-import {DBEntry} from "../common/dbTypes";
-
-// TODO: why does this extend Object?
-export interface FuzzyPreparedDBEntry extends DBEntry {
-    engPrepped: FuzzyPrepared,
-    pojPrepped: FuzzyPrepared,
-    pojNormalizedPrepped: FuzzyPrepared,
-    hoaPrepped: FuzzyPrepared,
-    inputCharsPrepped: FuzzyPrepared,
-
-    // Ideal:
-    //    readonly [POJ_UNICODE_SHORTNAME: string]: string,
-    //    [POJ_UNICODE_PREPPED_KEY as string]: Prepared,
+type FuzzyResUnion = FuzzyKeyResult | string;
+export interface FuzzyPreparedDBEntry {
+    id: string,
+    [s: string]: FuzzyResUnion,
 }
 
-interface FuzzyPrepared {
+export interface FuzzyPrepared {
     // Original target string
     readonly target: string
 }
@@ -26,11 +17,12 @@ interface FuzzyResult {
 }
 
 export interface FuzzyKeyResult extends FuzzyResult {
+    readonly score: number,
     readonly obj: FuzzyPreparedDBEntry,
 }
 
 // This odd name comes from upstream.
-export interface FuzzyKeyResults extends ReadonlyArray<FuzzyKeyResult> {
+export interface FuzzyKeyResults extends ReadonlyArray<FuzzyKeyResult | null> {
     readonly score: number,
     readonly obj: FuzzyPreparedDBEntry,
 }

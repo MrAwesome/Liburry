@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {ChhaTaigi} from './ChhaTaigi';
-import {PerDictResults, SearchResultEntry} from './types/dbTypes';
+import {PerDictResults, SearchResultEntryData} from './types/dbTypes';
 import ChhaTaigiOptions from './ChhaTaigiOptions';
 import * as React from 'react';
 import {noop} from './utils';
@@ -28,19 +28,43 @@ test('render single entry via override', () => {
     const dbName = "malee";
     const dbID = 1;
 
+    const marked = "hoat-<mark>lu̍t</mark>";
+
     const dbSearchRanking = {searcherType: SearcherType.LUNR, score: -3} as DBSearchRanking;
     let res1 = {
         key: `${dbName}-${dbID}`,
         dbID,
         dbName,
         dbSearchRanking,
-        pojUnicodeText: "hoat-lu̍t",
-        pojUnicodePossibleMatch: "hoat-lu̍t",
-        pojInputPossibleMatch: "hoat-lut8",
-        hoabunPossibleMatch: "法律",
-        pojNormalizedPossibleMatch: "hoat-lut",
-        definitionPossibleMatch: "the law",
-    } as SearchResultEntry;
+        fields: [
+            {
+                colName: "poj_unicode",
+                value: "hoat-lu̍t",
+                matched: true,
+                displayValOverride: marked,
+            },
+            {
+                colName: "poj_input",
+                value: "hoat-lut8",
+                matched: false,
+            },
+            {
+                colName: "hoabun",
+                value: "法律",
+                matched: false,
+            },
+            {
+                colName: "poj_normalized",
+                value: "hoat-lut",
+                matched: false,
+            },
+            {
+                colName: "english",
+                value: "the law",
+                matched: false,
+            },
+        ],
+    } as SearchResultEntryData;
 
     let perDictRes = {
         dbName: "malee",
@@ -51,8 +75,13 @@ test('render single entry via override', () => {
 
     const hoabun = screen.getByText(/法律/i);
     expect(hoabun).toBeInTheDocument();
-    const poj = screen.getByText(/hoat-lu̍t/i);
+    // TODO: find mark, etc
+    const poj = screen.getByText(/lu̍t/i);
     expect(poj).toBeInTheDocument();
+
+    //const pojNoMatch = screen.getByText(/hoat-lu̍t/i);
+    //expect(pojNoMatch).not.toBeInTheDocument();
+
     const eng = screen.getByText(/the law/i);
     expect(eng).toBeInTheDocument();
     const db = screen.getByText(/malee/i);

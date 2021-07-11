@@ -1,9 +1,8 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {DBName, LangDB, PerDictResults} from "./types/dbTypes";
 import {CancelablePromise} from "./types/general";
-import FuzzySortSearcher from "./search/FuzzySortSearcher";
+import FuzzySortSearcher, {FUZZY_SCORE_LOWER_THRESHOLD} from "./search/FuzzySortSearcher";
 import LunrSearcher from "./search/LunrSearcher";
-import {FUZZY_SCORE_LOWER_THRESHOLD} from "./searchSettings";
 
 export interface Searcher {
     searcherType: SearcherType;

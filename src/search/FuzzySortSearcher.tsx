@@ -1,16 +1,31 @@
 import fuzzysort from "fuzzysort";
 
-import {FuzzyPreparedDBEntry} from "../types/fuzzySortTypes";
+import {FuzzyKeysOptions, FuzzyPreparedDBEntry} from "../types/fuzzySortTypes";
 import {OngoingSearch, Searcher, SearcherType, SearchFailure} from "../search";
-import {DBName, LangDB, PerDictResults} from "../types/dbTypes";
+import {DBName, DBRow, LangDB, PerDictResults} from "../types/dbTypes";
 import getDebugConsole, {StubConsole} from "../getDebugConsole";
-import {DBEntry} from "../common/dbTypes";
 import {getEntriesFromPreparedCSV} from "../common/csvUtils";
 import {makeCancelable} from "../utils";
-import {convertDBEntryToFuzzySortPrepared, parseFuzzySortResultsForRender} from "../fuzzySortUtils";
+import {convertDBRowToFuzzySortPrepared, parseFuzzySortResultsForRender} from "../fuzzySortUtils";
+import {FIELDS_TO_SEARCH, SEARCH_RESULTS_LIMIT} from "../searchSettings";
 
 // TODO: give slight preference for poj-unicode/poj-normalized in fuzzy settings, so that e.g. "iong" will show up first in a search for itself
 // TODO: handle hyphens vs spaces
+
+export const FUZZY_SCORE_LOWER_THRESHOLD = -1000;
+export const PREPPED_KEY_SUFFIX = "_zzprepped"
+
+function getFuzzyOpts(searchKeys: Array<string> = FIELDS_TO_SEARCH): FuzzyKeysOptions {
+    const keys = searchKeys.map((k) => k + PREPPED_KEY_SUFFIX);
+
+    return {
+        keys,
+        allowTypo: false,
+        limit: SEARCH_RESULTS_LIMIT,
+        threshold: FUZZY_SCORE_LOWER_THRESHOLD,
+    };
+}
+
 
 export default class FuzzySortSearcher implements Searcher {
     searcherType = SearcherType.FUZZYSORT;
@@ -73,17 +88,17 @@ class FuzzyPreparer {
 
     convertCSVToFuzzySearchableDict(text: string): FuzzySearchableDict {
         const langDB = this.langDB;
-        const {shortNameToPreppedNameMapping} = langDB;
+        const searchableFields = FIELDS_TO_SEARCH;
         const dbName = langDB.name;
         this.console.timeEnd("fetch-" + dbName);
 
         this.console.time("csvConvertPrePrepped-" + dbName);
-        const nonFuzzyPreppedEntries: DBEntry[] = getEntriesFromPreparedCSV(text);
+        const nonFuzzyPreppedEntries: DBRow[] = getEntriesFromPreparedCSV(text);
         this.console.timeEnd("csvConvertPrePrepped-" + dbName);
 
         this.console.time("prepareSlow-" + dbName);
         const searchableEntries = nonFuzzyPreppedEntries.map(
-            (d) => convertDBEntryToFuzzySortPrepared(shortNameToPreppedNameMapping, d));
+            (d) => convertDBRowToFuzzySortPrepared(d, searchableFields));
         this.console.timeEnd("prepareSlow-" + dbName);
         this.console.timeEnd("total-" + dbName);
 
@@ -112,7 +127,7 @@ class FuzzySearchableDict {
         const langDB = this.langDB;
         const dbName = langDB.name;
 
-        const {fuzzyOpts} = langDB;
+        const fuzzyOpts = getFuzzyOpts();
         const cancelableSearchPromise = fuzzysort.goAsync(
             query,
             this.searchableEntries,
@@ -135,6 +150,7 @@ class FuzzySearchableDict {
                 ongoingSearch.markCompleted();
                 const results = parseFuzzySortResultsForRender(
                     dbName,
+                    langDB.fullName,
                     // @ts-ignore Deal with lack of fuzzysort interfaces
                     res,
                 );

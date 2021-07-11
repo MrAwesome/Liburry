@@ -1,5 +1,5 @@
 import {typeGuard} from "./typeguard";
-import {DBName, PerDictResults, SearchResultEntry} from "./types/dbTypes";
+import {DBName, PerDictResults, SearchResultEntryData} from "./types/dbTypes";
 
 export default class SearchResultsHolder {
     currentResults: Map<DBName, PerDictResults> = new Map();
@@ -21,15 +21,15 @@ export default class SearchResultsHolder {
         return this.numResults;
     }
 
-    getAllResults(): SearchResultEntry[] {
+    getAllResults(): SearchResultEntryData[] {
         let allPerDictRes = Array.from(this.currentResults.values()).filter(typeGuard) as PerDictResults[];
 
-        let entries: SearchResultEntry[] = [];
+        let entries: SearchResultEntryData[] = [];
 
         // Flatten out all results
         allPerDictRes.forEach((perDict: PerDictResults) => {
-            perDict.results.forEach((entry: SearchResultEntry) => {
-                entries.push(entry);
+            perDict.results.forEach((rawEntry: SearchResultEntryData) => {
+                entries.push(rawEntry);
             });
         });
 

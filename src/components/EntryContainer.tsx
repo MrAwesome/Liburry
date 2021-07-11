@@ -3,7 +3,7 @@ import * as React from "react";
 
 import {REPO_LINK} from "../constants";
 import {getMaxScore, SearcherType} from "../search";
-import {SearchResultEntry} from "../types/dbTypes";
+import {SearchResultEntry, SearchResultEntryData} from "../types/dbTypes";
 
 enum ClickedOrder {
     NORMAL,
@@ -24,12 +24,20 @@ const FADING_STYLE = {
     //"transform": "perspective(400px) translate3d(0em, 0em, -60px)",
 }
 
-export default class EntryContainer extends React.PureComponent<any, any> {
+export default class EntryContainer extends React.PureComponent<{
+    debug: boolean,
+    entryData: SearchResultEntryData,
+}
+, any> {
+
+    entry: SearchResultEntry;
     constructor(props: any) {
         super(props);
         this.state = {
             clicked: ClickedOrder.NORMAL,
         }
+
+        this.entry = SearchResultEntry.from(this.props.entryData);
         this.clickedNotif = this.clickedNotif.bind(this);
         this.createMatchElement = this.createMatchElement.bind(this);
         this.fadeClicked = this.fadeClicked.bind(this);
@@ -42,7 +50,7 @@ export default class EntryContainer extends React.PureComponent<any, any> {
     }
 
     getEntry(): SearchResultEntry {
-        return this.props.entry;
+        return this.entry;
     }
 
     getClicked(): ClickedOrder {
@@ -52,9 +60,9 @@ export default class EntryContainer extends React.PureComponent<any, any> {
     myOnClick(e: React.MouseEvent) {
         e.preventDefault();
 
-        const {pojUnicodeText} = this.getEntry();
+        const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("poj_unicode");
         // TODO: wrap in a try/catch for situations where clipboard isn't accessible (http, etc)
-        navigator.clipboard.writeText(pojUnicodeText);
+        navigator.clipboard.writeText(pojUnicode!.value);
         this.setState({clicked: ClickedOrder.CLICKED});
         setTimeout(this.fadeClicked, 500);
     }
@@ -85,7 +93,10 @@ export default class EntryContainer extends React.PureComponent<any, any> {
     }
 
     getAltTextContainers(): JSX.Element[] {
-        const {pojNormalizedPossibleMatch, pojInputPossibleMatch} = this.getEntry();
+        const pojNormalized = this.getEntry().getFieldByNameDEPRECATED("poj_normalized");
+        const pojInput = this.getEntry().getFieldByNameDEPRECATED("poj_input");
+        const pojInputPossibleMatch = pojInput!.displayValOverride ?? null;
+        const pojNormalizedPossibleMatch = pojNormalized!.displayValOverride ?? null;
         let altTextContainers = [];
 
         if (pojInputPossibleMatch !== null) {
@@ -117,7 +128,7 @@ export default class EntryContainer extends React.PureComponent<any, any> {
 
     // TODO: unit test the scoring color selection logic, move somewhere further away
     getSearchScore(): JSX.Element {
-        const {dbSearchRanking} = this.getEntry();
+        const dbSearchRanking = this.getEntry().getRanking();
 
         let score = dbSearchRanking.score;
         const max = getMaxScore(dbSearchRanking.searcherType);
@@ -148,7 +159,7 @@ export default class EntryContainer extends React.PureComponent<any, any> {
     }
 
     getDBID(): JSX.Element {
-        const {dbID} = this.getEntry();
+        const dbID = this.getEntry().getDBID();
 
         return <div className="dbid-container">
             ID:&nbsp;
@@ -163,7 +174,10 @@ export default class EntryContainer extends React.PureComponent<any, any> {
     clickReport(e: React.MouseEvent) {
         e.preventDefault();
 
-        const {dbName, dbID, pojUnicodeText} = this.getEntry();
+        const dbName = this.getEntry().getDBName();
+        const dbID = this.getEntry().getDBID();
+        const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("poj_unicode");
+        const pojUnicodeText = pojUnicode!.value;
         const pojUnicodeCSV = pojUnicodeText.replace(/"/g, '""');
         const csvReportSkeleton = `"${dbName}","${dbID}","${pojUnicodeCSV}",`;
         navigator.clipboard.writeText(csvReportSkeleton).then(() =>
@@ -187,7 +201,14 @@ export default class EntryContainer extends React.PureComponent<any, any> {
 
     render() {
         const {debug} = this.props;
-        const {pojUnicodePossibleMatch, definitionPossibleMatch, hoabunPossibleMatch, dbName} = this.getEntry();
+        const dbName = this.getEntry().getDBName();
+
+        const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("poj_unicode");
+        const definition = this.getEntry().getFieldByNameDEPRECATED("english");
+        const hoabun = this.getEntry().getFieldByNameDEPRECATED("hoabun");
+        const pojUnicodePossibleMatch = pojUnicode!.displayValOverride ?? pojUnicode!.value;
+        const definitionPossibleMatch = definition!.displayValOverride ?? definition!.value;
+        const hoabunPossibleMatch = hoabun!.displayValOverride ?? hoabun!.value;
         const clicked = this.getClicked();
 
         const poju = this.createMatchElement(pojUnicodePossibleMatch, "poj-unicode");

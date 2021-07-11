@@ -4,5 +4,4 @@ export enum MainDisplayAreaMode {
     ABOUT = "ABOUT",
     CONTACT = "CONTACT",
     SETTINGS = "SETTINGS",
-    TESTLUNR = "TESTLUNR",
 }
