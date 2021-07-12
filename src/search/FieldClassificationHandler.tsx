@@ -1,5 +1,7 @@
 import papaparse from "papaparse";
-import {DBName, DisplayReadyField, SearchResultEntry} from "../types/dbTypes";
+import {DBColName, DBFullName, DBName, DisplayReadyField, SearchResultEntry} from "../types/dbTypes";
+
+const UNKNOWN_FIELDTYPE: DBColType = "unknown";
 
 type DBColType = string;
 type DBLangType = string;
@@ -59,7 +61,7 @@ export default class FieldClassificationHandler {
         return this.get(entry.getDBName());
     }
 
-    getAllLangs(dbName: DBName): DBLangType[] {
+    getAllLangs(dbName: DBFullName): DBLangType[] {
         const langs: Set<DBLangType> = new Set();
         this.get(dbName).forEach((col) => langs.add(col.lang));
         return Array.from(langs);
@@ -71,6 +73,21 @@ export default class FieldClassificationHandler {
             (field) => colsOfType.find(
                 (col) => col.type === field.colName
         ));
+    }
+
+    getTypeOfField(dbName: DBFullName, colName: DBColName): DBColType {
+        if (colName === "poj_normalized") {
+            return "normalized";
+        }
+
+        const foundField = this.get(dbName).find((field) => field.field === colName);
+        if (foundField !== undefined) {
+            // XXX TODO: add to classification sheet
+            return foundField.type;
+        } else {
+            return UNKNOWN_FIELDTYPE;
+        }
+
     }
 
     // TODO: classify poj_normalized, and use col.type in (input + typing + normalized + alternate) as alttext

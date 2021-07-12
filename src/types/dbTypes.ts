@@ -63,11 +63,9 @@ export interface SearchResultEntryData {
 }
 
 export class SearchResultEntry {
-    readonly key;
     private constructor(
         private e: SearchResultEntryData,
     ) {
-        this.key = e.key;
         this.getDisplayKey = this.getDisplayKey.bind(this);
         this.getFieldByNameDEPRECATED = this.getFieldByNameDEPRECATED.bind(this);
     }
@@ -91,6 +89,10 @@ export class SearchResultEntry {
 
     getDBID(): DBIdentifier {
         return this.e.dbID;
+    }
+
+    getDBFullName(): DBFullName {
+        return this.e.dbFullName;
     }
 
     getRanking(): DBSearchRanking {

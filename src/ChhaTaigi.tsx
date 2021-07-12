@@ -19,15 +19,16 @@ import {ChhaTaigiState} from "./types/mainAppState";
 import FieldClassificationHandler from "./search/FieldClassificationHandler";
 import EntryContainer from "./components/EntryContainer";
 import {PerDictResults} from "./types/dbTypes";
-//import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
+import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 
 
-// TODO(urgent): see if poj_normalized can be committed upstream
+// TODO(urgent): see if poj_normalized can be committed upstream, add it to classification either way
 // TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
 // TODO(urgent): see why double-search is happening locally
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`
 // TODO(high): look into strange behavior of fuzzysort mark generation (did it work before and broke recently, or was it always broken? - try "alexander")
 // TODO(high): different debug levels, possibly use an upstream lib for logging
+// TODO(high): remember to handle "unknown" field type (and anything else) in display rules
 // TODO(high): always change url to be unicoded, so e.g. google meet won't butcher https://taigi.us/#mode=SEARCH;q=chhù-chú
 // TODO(high): 404 page, better support for 404s on json/csv
 // TODO(high): more evenly split the work between large/small databases, and possibly return results immediately and batch renders
@@ -333,21 +334,23 @@ export class ChhaTaigi extends React.Component<Partial<{
         const entries = resultsHolder.getAllResults();
 
         if (fieldHandler) {
-            const entryContainers = entries.map((entry) =>
-                <EntryContainer
-                    debug={options.debug}
-                    fieldHandler={fieldHandler}
-                    entryData={entry}
-                    key={entry.key}
-                />
-
-                // <AgnosticEntryContainer
-                //         debug={options.debug}
-                //         //langOptions={langOptions}
-                //         fieldHandler={fieldHandler}
-                //         entry={entry}
-                //         key={entry.key} />
-            );
+            const entryContainers = entries.map((entryData) => {
+                if (options.agnostic) {
+                    return <AgnosticEntryContainer
+                        debug={options.debug}
+                        //langOptions={langOptions}
+                        fieldHandler={fieldHandler}
+                        entryData={entryData}
+                        key={entryData.key} />;
+                } else {
+                    return <EntryContainer
+                        debug={options.debug}
+                        fieldHandler={fieldHandler}
+                        entryData={entryData}
+                        key={entryData.key}
+                    />;
+                }
+            });
 
             return <>{entryContainers}</>;
         } else {

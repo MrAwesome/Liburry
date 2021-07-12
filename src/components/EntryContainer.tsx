@@ -1,7 +1,7 @@
-import DOMPurify from "dompurify";
 import * as React from "react";
 
 import {REPO_LINK} from "../constants";
+import {createMatchElement} from "../fuzzySortUtils";
 import {getMaxScore, SearcherType} from "../search";
 import FieldClassificationHandler from "../search/FieldClassificationHandler";
 import {SearchResultEntry, SearchResultEntryData} from "../types/dbTypes";
@@ -41,7 +41,6 @@ export default class EntryContainer extends React.PureComponent<{
 
         this.entry = SearchResultEntry.from(this.props.entryData);
         this.clickedNotif = this.clickedNotif.bind(this);
-        this.createMatchElement = this.createMatchElement.bind(this);
         this.fadeClicked = this.fadeClicked.bind(this);
         this.getAltTextContainers = this.getAltTextContainers.bind(this);
         this.getDBID = this.getDBID.bind(this);
@@ -101,7 +100,7 @@ export default class EntryContainer extends React.PureComponent<{
 
         altTextFields.forEach((field) => {
             if (field.matched) {
-                const inner = this.createMatchElement(field.displayValOverride ?? field.value, "alt-text");
+                const inner = createMatchElement(field.displayValOverride ?? field.value, "alt-text");
                 const container = <div className="alt-text-container">
                     ({inner})
                 </div>;
@@ -110,14 +109,6 @@ export default class EntryContainer extends React.PureComponent<{
         });
 
         return altTextContainers;
-    }
-
-    createMatchElement(inputText: string, className: string): JSX.Element {
-        // NOTE: https://github.com/farzher/fuzzysort/issues/66
-        var clean = DOMPurify.sanitize(inputText, {ALLOWED_TAGS: ['mark']});
-        const rawHtml = {__html: clean};
-        return <span className={className} dangerouslySetInnerHTML={rawHtml}></span>;
-
     }
 
     // TODO: unit test the scoring color selection logic, move somewhere further away
@@ -205,9 +196,9 @@ export default class EntryContainer extends React.PureComponent<{
         const hoabunPossibleMatch = hoabun!.displayValOverride ?? hoabun!.value;
         const clicked = this.getClicked();
 
-        const poju = this.createMatchElement(pojUnicodePossibleMatch, "poj-unicode");
-        const hoab = this.createMatchElement(hoabunPossibleMatch, "hoabun");
-        const engl = this.createMatchElement(definitionPossibleMatch, "definition");
+        const poju = createMatchElement(pojUnicodePossibleMatch, "poj-unicode");
+        const hoab = createMatchElement(hoabunPossibleMatch, "hoabun");
+        const engl = createMatchElement(definitionPossibleMatch, "definition");
 
         return (
             // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj

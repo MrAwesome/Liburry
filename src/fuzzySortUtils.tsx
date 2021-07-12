@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import fuzzysort from "fuzzysort";
 import type {DBName, SearchResultEntryData, DBFullName, DisplayReadyField, DBRow} from "./types/dbTypes";
 
@@ -29,40 +30,12 @@ function fuzzySortResultToSearchResultEntry(dbName: DBName, dbFullName: DBFullNa
     const obj = fuzzysortResult.obj;
     const rowID = obj.id;
 
-    let fields = Object.getOwnPropertyNames(obj)
-        .filter((key) => key.endsWith(PREPPED_KEY_SUFFIX))
-        .map((key) => {
-            const colName = key.replace(PREPPED_KEY_SUFFIX, '');
-            const value = obj[colName] as string;
-
-            // If the field was empty, fuzzysort doesn't generate the result object
-            const fuzzyRes = obj[key] as FuzzyKeyResult | undefined;
-
-            // NOTE: each matched field has its own score,
-            //       which could be used to more strongly highlight the matched field
-            let matched = false;
-            if (fuzzyRes !== undefined) {
-                if (fuzzyRes.score !== null) {
-                    matched = true;
-                }
-            }
-
-            let displayValOverride = null;
-            if (matched) {
-                displayValOverride = fuzzysort.highlight(fuzzyRes, "<mark>", "</mark>");
-            }
-            return {
-                colName,
-                value,
-                matched,
-                displayValOverride,
-            } as DisplayReadyField;
-        })
-
     const dbSearchRanking = {
         searcherType: SearcherType.FUZZYSORT,
         score: fuzzysortResult.score
     } as DBSearchRanking;
+
+    const fields = getFields(obj);
 
     return {
         key: dbName + "-" + rowID,
@@ -72,6 +45,53 @@ function fuzzySortResultToSearchResultEntry(dbName: DBName, dbFullName: DBFullNa
         dbSearchRanking,
         fields,
     } as SearchResultEntryData;
+}
+
+function getFields(obj: FuzzyPreparedDBEntry): DisplayReadyField[] {
+    const knownKeys = Object.getOwnPropertyNames(obj);
+    const fields = knownKeys.map((key) => {
+        if (key.endsWith(PREPPED_KEY_SUFFIX)) {
+            return handleFuzzyPreppedKey(obj, key);
+        } else {
+            // NOTE: this can be more efficient, although a DB is unlikely to have enough keys
+            if (!knownKeys.includes(key + PREPPED_KEY_SUFFIX)) {
+                return {
+                    colName: key,
+                    value: obj[key],
+                    matched: false,
+                } as DisplayReadyField;
+            }
+        }
+    });
+    return fields.filter((f) => f !== undefined) as DisplayReadyField[];
+}
+
+function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string) {
+    const colName = key.replace(PREPPED_KEY_SUFFIX, '');
+    const value = obj[colName] as string;
+
+    // If the field was empty, fuzzysort doesn't generate the result object
+    const fuzzyRes = obj[key] as FuzzyKeyResult | undefined;
+
+    // NOTE: each matched field has its own score,
+    //       which could be used to more strongly highlight the matched field
+    let matched = false;
+    if (fuzzyRes !== undefined) {
+        if (fuzzyRes.score !== null) {
+            matched = true;
+        }
+    }
+
+    let displayValOverride = null;
+    if (matched) {
+        displayValOverride = fuzzysort.highlight(fuzzyRes, "<mark>", "</mark>");
+    }
+    return {
+        colName,
+        value,
+        matched,
+        displayValOverride,
+    } as DisplayReadyField;
 }
 
 // Prepare a fast search version of each searchable key.
@@ -90,4 +110,11 @@ export function convertDBRowToFuzzySortPrepared(
         });
 
     return unpreparedEntry as FuzzyPreparedDBEntry;
+}
+
+export function createMatchElement(inputText: string, className: string): JSX.Element {
+    // NOTE: https://github.com/farzher/fuzzysort/issues/66
+    var clean = DOMPurify.sanitize(inputText, {ALLOWED_TAGS: ['mark']});
+    const rawHtml = {__html: clean};
+    return <span className={className} dangerouslySetInnerHTML={rawHtml}></span>;
 }

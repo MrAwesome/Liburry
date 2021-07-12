@@ -6,4 +6,5 @@ export default class ChhaTaigiOptions {
     searcherType: SearcherType = SearcherType.FUZZYSORT;
     query: string = "";
     debug: boolean = false;
+    agnostic: boolean = false;
 }
