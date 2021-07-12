@@ -49,6 +49,7 @@ export interface DisplayReadyField {
     colName: DBColName;
     value: DBColVal;
     matched: boolean;
+    // TODO: static/associated function to do displayValOverride ?? value
     displayValOverride?: string;
 }
 

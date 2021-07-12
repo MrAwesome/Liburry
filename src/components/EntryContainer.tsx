@@ -3,6 +3,7 @@ import * as React from "react";
 
 import {REPO_LINK} from "../constants";
 import {getMaxScore, SearcherType} from "../search";
+import FieldClassificationHandler from "../search/FieldClassificationHandler";
 import {SearchResultEntry, SearchResultEntryData} from "../types/dbTypes";
 
 enum ClickedOrder {
@@ -27,6 +28,7 @@ const FADING_STYLE = {
 export default class EntryContainer extends React.PureComponent<{
     debug: boolean,
     entryData: SearchResultEntryData,
+    fieldHandler: FieldClassificationHandler,
 }
 , any> {
 
@@ -93,27 +95,19 @@ export default class EntryContainer extends React.PureComponent<{
     }
 
     getAltTextContainers(): JSX.Element[] {
-        const pojNormalized = this.getEntry().getFieldByNameDEPRECATED("poj_normalized");
-        const pojInput = this.getEntry().getFieldByNameDEPRECATED("poj_input");
-        const pojInputPossibleMatch = pojInput!.displayValOverride ?? null;
-        const pojNormalizedPossibleMatch = pojNormalized!.displayValOverride ?? null;
-        let altTextContainers = [];
+        const {fieldHandler} = this.props;
+        const altTextFields = fieldHandler.getAltTextsINCOMPLETE(this.getEntry());
+        let altTextContainers: JSX.Element[] = [];
 
-        if (pojInputPossibleMatch !== null) {
-            const poji = this.createMatchElement(pojInputPossibleMatch, "poj-input");
-            const pojic = <div className="poj-input-container">
-                ({poji})
-            </div>;
-            altTextContainers.push(pojic);
-        }
-
-        if (pojNormalizedPossibleMatch !== null) {
-            const pojn = this.createMatchElement(pojNormalizedPossibleMatch, "poj-normalized");
-            const pojnc = <div className="poj-normalized-container">
-                ({pojn})
+        altTextFields.forEach((field) => {
+            if (field.matched) {
+                const inner = this.createMatchElement(field.displayValOverride ?? field.value, "alt-text");
+                const container = <div className="alt-text-container">
+                    ({inner})
                 </div>;
-            altTextContainers.push(pojnc);
-        }
+                altTextContainers.push(container);
+            }
+        });
 
         return altTextContainers;
     }
@@ -235,7 +229,7 @@ export default class EntryContainer extends React.PureComponent<{
                 </div>
 
                 <div className="entry-sidebox">
-                    <div className="alt-text-container">
+                    <div className="all-alt-text-container">
                         {this.getAltTextContainers()}
                     </div>
 

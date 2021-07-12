@@ -22,9 +22,11 @@ import {PerDictResults} from "./types/dbTypes";
 //import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 
 
+// TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
 // TODO(urgent): see why double-search is happening locally
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`
+// TODO(high): look into strange behavior of fuzzysort mark generation (did it work before and broke recently, or was it always broken? - try "alexander")
 // TODO(high): different debug levels, possibly use an upstream lib for logging
 // TODO(high): always change url to be unicoded, so e.g. google meet won't butcher https://taigi.us/#mode=SEARCH;q=chhù-chú
 // TODO(high): 404 page, better support for 404s on json/csv
@@ -150,10 +152,9 @@ import {PerDictResults} from "./types/dbTypes";
 //
 // Project: Taibun definitions
 //      1) DONE: generalize "english" to definition
-//      2) solidify transitional schema (soatbeng? or save that for later?) (hoabun vs hanlo_taibun_poj?)
-//      3) modify build script to generate json files
-//      4) create schemas under current model
-//      5) modify containers if needed
+//      2) DONE: create more flexible data structure
+//      3) handle poj_normalized
+//      4) note which text an alt text is for?
 //      6) test performance
 //      7) create settings page with language toggle?
 
@@ -330,7 +331,7 @@ export class ChhaTaigi extends React.Component<Partial<{
             const entryContainers = entries.map((entry) =>
                 <EntryContainer
                     debug={options.debug}
-                    //fieldHandler={fieldHandler}
+                    fieldHandler={fieldHandler}
                     entryData={entry}
                     key={entry.key}
                 />

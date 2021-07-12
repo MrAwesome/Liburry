@@ -1,7 +1,6 @@
 import papaparse from "papaparse";
 import {DBName, DisplayReadyField, SearchResultEntry} from "../types/dbTypes";
 
-
 type DBColType = string;
 type DBLangType = string;
 export interface DBColMetadata {
@@ -15,7 +14,6 @@ export interface DBColMetadata {
     notes: string,
     done: string,
 }
-
 
 const DEFAULT_FIELD_CLASSIFICATION_DB = "db/field_classification.csv";
 
@@ -47,6 +45,10 @@ export default class FieldClassificationHandler {
         }
     }
 
+    getFromEntry(entry: SearchResultEntry): DBColMetadata[] {
+        return this.get(entry.getDBName());
+    }
+
     getAllLangs(dbName: DBName): DBLangType[] {
         const langs: Set<DBLangType> = new Set();
         this.get(dbName).forEach((col) => langs.add(col.lang));
@@ -54,11 +56,16 @@ export default class FieldClassificationHandler {
     }
 
     getFieldsOfType(entry: SearchResultEntry, type: DBColType): DisplayReadyField[] {
-        const colsOfType: DBColMetadata[] = this.get(entry.getDBName()).filter((col) => col.type === type);
+        const colsOfType: DBColMetadata[] = this.getFromEntry(entry).filter((col) => col.type === type);
         return entry.getFields().filter(
             (field) => colsOfType.find(
                 (col) => col.type === field.colName
         ));
+    }
+
+    // TODO: classify poj_normalized, and use col.type in (input + typing + normalized + alternate) as alttext
+    getAltTextsINCOMPLETE(entry: SearchResultEntry): DisplayReadyField[] {
+        return entry.getFields().filter((field) => (field.colName === "poj_input" || field.colName === "poj_normalized"));
     }
 }
 

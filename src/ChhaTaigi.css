@@ -211,7 +211,7 @@ mark {
     user-select: text;
 }
 
-.alt-text-container {
+.all-alt-text-container {
     /* TODO: determine if float or absolute is better for these (see dbname below) */
     padding-right: 2px;
     padding-top: 2px;
@@ -222,12 +222,11 @@ mark {
     user-select: none;
 }
 
-
-.poj-normalized-container, .poj-input-container {
+.alt-text-container {
     text-align: right;
 }
 
-.poj-normalized, .poj-input {
+.alt-text {
     user-select: text;
     text-align: right;
 }
