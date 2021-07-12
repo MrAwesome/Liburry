@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { render, screen } from '@testing-library/react';
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {ChhaTaigi} from './ChhaTaigi';
@@ -6,6 +7,7 @@ import ChhaTaigiOptions from './ChhaTaigiOptions';
 import * as React from 'react';
 import {noop} from './utils';
 import {DBSearchRanking, SearcherType} from './search';
+import FieldClassificationHandler, {DEFAULT_FIELD_CLASSIFICATION_DB} from './search/FieldClassificationHandler';
 
 // NOTE: just used to silence errors in node TSC.
 noop(React.version);
@@ -21,7 +23,11 @@ test('render searchbar by default', () => {
     expect(searchBar).toHaveFocus();
 });
 
-test('render single entry via override', () => {
+test('render single entry via override', async () => {
+    // TODO: simplify this
+    const classificationText = fs.readFileSync("public/" + DEFAULT_FIELD_CLASSIFICATION_DB);
+    const fieldHandlerPromise = FieldClassificationHandler.fromText(classificationText.toString());
+
     let options = new ChhaTaigiOptions();
     options.mainMode = MainDisplayAreaMode.SEARCH;
 
@@ -71,7 +77,8 @@ test('render single entry via override', () => {
         results: [res1],
     } as PerDictResults;
 
-    render(<ChhaTaigi options={options} mockResults={perDictRes} />);
+    const fieldHandler = await fieldHandlerPromise;
+    render(<ChhaTaigi options={options} mockResults={perDictRes} overrideFieldHandler={fieldHandler} />);
 
     const hoabun = screen.getByText(/法律/i);
     expect(hoabun).toBeInTheDocument();

@@ -169,6 +169,7 @@ enum MountedState {
 export class ChhaTaigi extends React.Component<Partial<{
     options: ChhaTaigiOptions,
     mockResults: PerDictResults,
+    overrideFieldHandler: FieldClassificationHandler,
 }>, any> {
     mountedState = MountedState.INIT;
     searchBar: React.RefObject<SearchBar>;
@@ -182,11 +183,12 @@ export class ChhaTaigi extends React.Component<Partial<{
         // State initialization
         const initialDBLoadedMapping: [string, boolean][] =
             Array.from(DATABASES.keys()).map((k) => [k, false]);
+
         this.state = {
             options: this.props.options ?? new ChhaTaigiOptions(),
             loadedDBs: new Map(initialDBLoadedMapping),
             resultsHolder: new SearchResultsHolder(),
-            fieldClassifier: null,
+            fieldHandler: this.props.overrideFieldHandler ?? null,
         };
 
         // Miscellaneous object initialization
@@ -246,7 +248,7 @@ export class ChhaTaigi extends React.Component<Partial<{
     componentDidMount() {
         this.mountedState = MountedState.MOUNTED;
 
-        const {options} = this.getStateTyped();
+        const {options, fieldHandler} = this.getStateTyped();
         this.console.time("mountToAllDB");
 
         // TODO: does this need to happen here? can we just start a search?
@@ -255,9 +257,11 @@ export class ChhaTaigi extends React.Component<Partial<{
         this.searchController.startWorkersAndListener(options.searcherType);
         this.subscribeHash();
 
-        FieldClassificationHandler.fetch().then((h) => {
-            this.setStateTyped((state) => {state.fieldHandler = h})
-        });
+        if (!fieldHandler) {
+            FieldClassificationHandler.fetch().then((h) => {
+                this.setStateTyped((state) => {state.fieldHandler = h})
+            });
+        }
 
     }
 
@@ -265,6 +269,7 @@ export class ChhaTaigi extends React.Component<Partial<{
         this.mountedState = MountedState.UNMOUNTED;
         this.unsubscribeHash();
         this.searchController.cleanup();
+        // TODO: unmount fieldhandler?
     }
 
     subscribeHash() {
@@ -327,7 +332,7 @@ export class ChhaTaigi extends React.Component<Partial<{
         const {resultsHolder, options, fieldHandler} = this.getStateTyped();
         const entries = resultsHolder.getAllResults();
 
-        if (fieldHandler !== null) {
+        if (fieldHandler) {
             const entryContainers = entries.map((entry) =>
                 <EntryContainer
                     debug={options.debug}

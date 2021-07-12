@@ -15,7 +15,13 @@ export interface DBColMetadata {
     done: string,
 }
 
-const DEFAULT_FIELD_CLASSIFICATION_DB = "db/field_classification.csv";
+const PAPAOPTS = {
+    worker: true,
+    header: true,
+    skipEmptyLines: true,
+};
+
+export const DEFAULT_FIELD_CLASSIFICATION_DB = "db/field_classification.csv";
 
 export default class FieldClassificationHandler {
     private readonly classificationsMap: Map<DBName, DBColMetadata[]>;
@@ -33,6 +39,10 @@ export default class FieldClassificationHandler {
     // TODO: catch error
     static async fetch(url: string = DEFAULT_FIELD_CLASSIFICATION_DB): Promise<FieldClassificationHandler> {
         return papaParsePromise(url).then((res) => new FieldClassificationHandler(res.data));
+    }
+
+    static async fromText(text: string): Promise<FieldClassificationHandler> {
+        return papaTextPromise(text).then((res) => new FieldClassificationHandler(res.data));
     }
 
     get(dbName: DBName): DBColMetadata[] {
@@ -73,15 +83,15 @@ export default class FieldClassificationHandler {
 async function papaParsePromise(url: string): Promise<papaparse.ParseResult<DBColMetadata>> {
     return fetch(url).then((resp) => {
         return resp.text();
-    }).then((csvText) => {
-        return new Promise(function (complete, error) {
-            papaparse.parse<DBColMetadata>(csvText, {
-                worker: true,
-                header: true,
-                skipEmptyLines: true,
-                complete,
-                error,
-            });
+    }).then(papaTextPromise);
+}
+
+async function papaTextPromise(csvText: string): Promise<papaparse.ParseResult<DBColMetadata>> {
+    return new Promise(function (complete, error) {
+        papaparse.parse<DBColMetadata>(csvText, {
+            ...PAPAOPTS,
+            complete,
+            error,
         });
     });
 }
