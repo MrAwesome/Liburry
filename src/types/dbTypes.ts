@@ -12,7 +12,9 @@ export interface LangDB {
     fullName: DBFullName,
     upstreamCSV: DBFilename,
     localCSV: DBFilename,
+    localCSVVersion: number,
     localLunr: DBFilename,
+    localLunrVersion: number,
 }
 
 export interface LangField {
@@ -53,6 +55,7 @@ export interface DisplayReadyField {
     displayValOverride?: string;
 }
 
+// NOTE: this class is passed from workers back to the main thread.
 export interface SearchResultEntryData {
     key: string;
     dbID: DBIdentifier;

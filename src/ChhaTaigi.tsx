@@ -62,6 +62,7 @@ import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): keyboard shortcuts
 // TODO(mid): with fuzzysort, just ignore dashes and spaces? or search once with them included and once without?
+// TODO(mid): try out https://github.com/nol13/fuzzball.js
 // TODO(mid): show bottom bar with links to different modes
 // TODO(mid): exit behavior on multiple presses of back in app mode? exit button? can you make it such that hash changes don't count as page loads?
 // TODO(mid): ensure that any navigational links include characters/POJ (or have a fast language switch)

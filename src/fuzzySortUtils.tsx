@@ -34,7 +34,7 @@ function fuzzySortResultToSearchResultEntry(dbName: DBName, dbFullName: DBFullNa
         score: fuzzysortResult.score
     } as DBSearchRanking;
 
-    const fields = getFields(obj);
+    const fields = getDisplayReadyFieldObjects(obj);
 
     return {
         key: dbName + "-" + rowID,
@@ -46,7 +46,7 @@ function fuzzySortResultToSearchResultEntry(dbName: DBName, dbFullName: DBFullNa
     } as SearchResultEntryData;
 }
 
-function getFields(obj: FuzzyPreparedDBEntry): DisplayReadyField[] {
+function getDisplayReadyFieldObjects(obj: FuzzyPreparedDBEntry): DisplayReadyField[] {
     const knownKeys = Object.getOwnPropertyNames(obj);
     const fields = knownKeys.map((key) => {
         if (key.endsWith(PREPPED_KEY_SUFFIX)) {
@@ -72,21 +72,25 @@ function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string) {
     const value = obj[colName] as string;
 
     // If the field was empty, fuzzysort doesn't generate the result object
+    // (which is why we use obj[colName] directly instead of fuzzyRes.target)
     const fuzzyRes = obj[key] as FuzzyKeyResult | undefined;
 
     // NOTE: each matched field has its own score,
     //       which could be used to more strongly highlight the matched field
     let matched = false;
+        let displayValOverride = null;
     if (fuzzyRes !== undefined) {
         if (fuzzyRes.score !== null) {
             matched = true;
         }
+
+        if (matched) {
+            // NOTE: this leaves behind "artifact" matches on fuzzyRes, which lives around
+            //       after the search is over. To fix this, clear the score and index fields.
+            displayValOverride = fuzzysort.highlight(fuzzyRes, "<mark>", "</mark>");
+        }
     }
 
-    let displayValOverride = null;
-    if (matched) {
-        displayValOverride = fuzzysort.highlight(fuzzyRes, "<mark>", "</mark>");
-    }
     return {
         colName,
         value,

@@ -75,11 +75,15 @@ class FuzzyPreparer {
     }
 
     async fetchAndPrepare(): Promise<FuzzySearchableDict> {
-        const {name, localCSV} = this.langDB;
+        const {name, localCSV, localCSVVersion} = this.langDB;
         const dbName = name;
         this.console.time("total-" + dbName);
         this.console.time("fetch-" + dbName);
-        return fetch(localCSV)
+        let versionString = "";
+        if (localCSVVersion) {
+            versionString = `?v=${localCSVVersion}`;
+        }
+        return fetch(localCSV + versionString)
             .then((response: Response) => {
                 return response.text();
             })

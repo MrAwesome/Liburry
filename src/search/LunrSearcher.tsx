@@ -113,7 +113,7 @@ export default class LunrSearcher implements Searcher {
     // TODO: continue testing performance
     async prepare(): Promise<void> {
         const dbName = this.dbName;
-        const {localCSV, localLunr} = this.langDB;
+        const {localCSV, localLunr, localLunrVersion} = this.langDB;
         this.console.time("lunr-total-" + dbName);
 
         this.console.time("lunr-total-entries-" + dbName);
@@ -135,7 +135,11 @@ export default class LunrSearcher implements Searcher {
 
         this.console.time("lunr-total-index-" + dbName);
         this.console.time("lunr-fetch-index-" + dbName);
-        const indexFetchAndLoad = fetch(localLunr)
+        let versionString = "";
+        if (localLunrVersion) {
+            versionString = `?v=${localLunrVersion}`;
+        }
+        const indexFetchAndLoad = fetch(localLunr + versionString)
             .then((response: Response) => {
                 return response.text();
             })
