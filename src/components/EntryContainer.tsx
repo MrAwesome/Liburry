@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import {REPO_LINK} from "../constants";
-import {createMatchElement} from "../fuzzySortUtils";
+import {createMatchElement} from "../fuzzySortReactUtils";
 import {getMaxScore, SearcherType} from "../search";
 import FieldClassificationHandler from "../search/FieldClassificationHandler";
 import {SearchResultEntry, SearchResultEntryData} from "../types/dbTypes";

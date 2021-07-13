@@ -1,5 +1,5 @@
 import * as React from "react";
-import {createMatchElement} from "../fuzzySortUtils";
+import {createMatchElement} from "../fuzzySortReactUtils";
 import FieldClassificationHandler from "../search/FieldClassificationHandler";
 import {SearchResultEntry, SearchResultEntryData} from "../types/dbTypes";
 

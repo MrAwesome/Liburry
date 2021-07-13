@@ -3,13 +3,14 @@ import papaparse from "papaparse";
 import fetch from "node-fetch";
 import {LangDB, DBRow} from '../types/dbTypes';
 import {DATABASES} from "../searchSettings";
-import {fromPojUnicodeToPojNormalized} from './languageUtils';
+import {fromKipUnicodeToKipNormalized, fromPojUnicodeToPojNormalized} from './languageUtils';
 
 import lunr from 'lunr';
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
 require("lunr-languages/lunr.multi")(lunr);
 
+// NOTE: You can run this code using: `yarn run webpack --config webpack.scripts.js && node build/server.js`
 // TODO: type "any" usage below
 
 //const langUtils = require("./languageUtils");
@@ -35,7 +36,8 @@ function processCSV(text: string): DBRow[] {
     csv.data.forEach((entry, index) => {
         // TODO: fail if entry doesn't have poj_unicode?
         const pojNormalized = fromPojUnicodeToPojNormalized(entry["poj_unicode"]);
-        csv.data[index] = {...csv.data[index], poj_normalized: pojNormalized} as DBRow;
+        const kipNormalized = fromKipUnicodeToKipNormalized(entry["kip_unicode"]);
+        csv.data[index] = {...csv.data[index], poj_normalized: pojNormalized, kip_normalized: kipNormalized} as DBRow;
     });
 
     const processed = csv.data as DBRow[];

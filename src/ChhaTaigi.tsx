@@ -21,7 +21,6 @@ import EntryContainer from "./components/EntryContainer";
 import {PerDictResults} from "./types/dbTypes";
 import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 
-
 // TODO(urgent): see if poj_normalized can be committed upstream, add it to classification either way
 // TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
 // TODO(urgent): see why double-search is happening locally
@@ -154,10 +153,12 @@ import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 // Project: Taibun definitions
 //      1) DONE: generalize "english" to definition
 //      2) DONE: create more flexible data structure
-//      3) handle poj_normalized
-//      4) note which text an alt text is for?
-//      6) test performance
-//      7) create settings page with language toggle?
+//      3) handle poj_normalized and kip_normalized
+//      4) create a better config format (yaml?)
+//      5) note (in configuration) which text an alt text is for?
+//      6) regenerate fuzzy index (and lunr?) on the fly when objects change
+//      7) test performance
+//      8) create settings page with language toggle?
 
 const queryStringHandler = new QueryStringHandler();
 

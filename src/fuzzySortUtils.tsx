@@ -1,4 +1,3 @@
-import DOMPurify from "dompurify";
 import fuzzysort from "fuzzysort";
 import type {DBName, SearchResultEntryData, DBFullName, DisplayReadyField, DBRow} from "./types/dbTypes";
 
@@ -53,13 +52,15 @@ function getFields(obj: FuzzyPreparedDBEntry): DisplayReadyField[] {
         if (key.endsWith(PREPPED_KEY_SUFFIX)) {
             return handleFuzzyPreppedKey(obj, key);
         } else {
-            // NOTE: this can be more efficient, although a DB is unlikely to have enough keys
+            // NOTE: this can be more efficient, although a DB is unlikely to have enough keys for it to matter, and this is only run on returned results.
             if (!knownKeys.includes(key + PREPPED_KEY_SUFFIX)) {
                 return {
                     colName: key,
                     value: obj[key],
                     matched: false,
                 } as DisplayReadyField;
+            } else {
+                return undefined;
             }
         }
     });
@@ -110,11 +111,4 @@ export function convertDBRowToFuzzySortPrepared(
         });
 
     return unpreparedEntry as FuzzyPreparedDBEntry;
-}
-
-export function createMatchElement(inputText: string, className: string): JSX.Element {
-    // NOTE: https://github.com/farzher/fuzzysort/issues/66
-    var clean = DOMPurify.sanitize(inputText, {ALLOWED_TAGS: ['mark']});
-    const rawHtml = {__html: clean};
-    return <span className={className} dangerouslySetInnerHTML={rawHtml}></span>;
 }

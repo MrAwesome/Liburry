@@ -76,13 +76,13 @@ export default class FieldClassificationHandler {
     }
 
     getTypeOfField(dbName: DBFullName, colName: DBColName): DBColType {
-        if (colName === "poj_normalized") {
+        // XXX TODO: add to classification sheet
+        if (colName === "poj_normalized" || colName === "kip_normalized") {
             return "normalized";
         }
 
         const foundField = this.get(dbName).find((field) => field.field === colName);
         if (foundField !== undefined) {
-            // XXX TODO: add to classification sheet
             return foundField.type;
         } else {
             return UNKNOWN_FIELDTYPE;
