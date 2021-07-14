@@ -8,6 +8,7 @@ import * as React from 'react';
 import {noop} from './utils';
 import {DBSearchRanking, SearcherType} from './search';
 import FieldClassificationHandler, {DEFAULT_FIELD_CLASSIFICATION_DB} from './search/FieldClassificationHandler';
+import {MATCH_HTML_TAG} from './constants';
 
 // NOTE: just used to silence errors in node TSC.
 noop(React.version);
@@ -34,7 +35,7 @@ test('render single entry via override', async () => {
     const dbName = "malee";
     const dbID = 1;
 
-    const marked = "hoat-<mark>lu̍t</mark>";
+    const marked = `hoat-<${MATCH_HTML_TAG}>lu̍t</${MATCH_HTML_TAG}>`;
 
     const dbSearchRanking = {searcherType: SearcherType.LUNR, score: -3} as DBSearchRanking;
     let res1 = {

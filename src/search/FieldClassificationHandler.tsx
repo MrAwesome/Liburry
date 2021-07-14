@@ -38,7 +38,7 @@ export default class FieldClassificationHandler {
         });
     }
 
-    // TODO: catch error
+    // TODO: handle error?
     static async fetch(url: string = DEFAULT_FIELD_CLASSIFICATION_DB): Promise<FieldClassificationHandler> {
         return papaParsePromise(url).then((res) => new FieldClassificationHandler(res.data));
     }
@@ -50,8 +50,8 @@ export default class FieldClassificationHandler {
     get(dbName: DBName): DBColMetadata[] {
         const res = this.classificationsMap.get(dbName);
         if (res === undefined) {
-            // XXX
-            throw `Unknown DB: ${dbName}`;
+            // TODO: Handle this more gracefully?
+            throw new Error(`Unknown DB: ${dbName}`);
         } else {
             return res;
         }

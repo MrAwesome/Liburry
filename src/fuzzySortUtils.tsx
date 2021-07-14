@@ -9,6 +9,7 @@ import {SearcherType} from "./search";
 import {DISPLAY_RESULTS_LIMIT} from "./searchSettings";
 import {DBSearchRanking} from "./search";
 import {PREPPED_KEY_SUFFIX} from "./search/FuzzySortSearcher";
+import {MATCH_HTML_TAG} from "./constants";
 
 // TODO: find out why "      " matches "chúi-pho 波紋 水波" on the "l" in "ripples"
 
@@ -87,7 +88,7 @@ function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string) {
         if (matched) {
             // NOTE: this leaves behind "artifact" matches on fuzzyRes, which lives around
             //       after the search is over. To fix this, clear the score and index fields.
-            displayValOverride = fuzzysort.highlight(fuzzyRes, "<mark>", "</mark>");
+            displayValOverride = fuzzysort.highlight(fuzzyRes, `<${MATCH_HTML_TAG}>`, `</${MATCH_HTML_TAG}>`);
         }
     }
 
