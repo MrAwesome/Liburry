@@ -2,7 +2,7 @@ import fs from 'fs';
 import { render, screen } from '@testing-library/react';
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {ChhaTaigi} from './ChhaTaigi';
-import {PerDictResults, SearchResultEntryData} from './types/dbTypes';
+import {PerDictResultsRaw, SearchResultEntryRaw} from './types/dbTypes';
 import ChhaTaigiOptions from './ChhaTaigiOptions';
 import * as React from 'react';
 import {noop} from './utils';
@@ -71,12 +71,12 @@ test('render single entry via override', async () => {
                 matched: false,
             },
         ],
-    } as SearchResultEntryData;
+    } as SearchResultEntryRaw;
 
     let perDictRes = {
         dbName: "malee",
         results: [res1],
-    } as PerDictResults;
+    } as PerDictResultsRaw;
 
     const fieldHandler = await fieldHandlerPromise;
     render(<ChhaTaigi options={options} mockResults={perDictRes} overrideFieldHandler={fieldHandler} />);

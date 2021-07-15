@@ -1,4 +1,4 @@
-import type {DBName, DBRow, LangDB, PerDictResults} from "../types/dbTypes";
+import type {DBName, DBRow, LangDB, PerDictResultsRaw} from "../types/dbTypes";
 
 import {DISPLAY_RESULTS_LIMIT} from "../searchSettings";
 import getDebugConsole, {StubConsole} from "../getDebugConsole";
@@ -86,7 +86,7 @@ export default class LunrSearcher implements Searcher {
     private searchInternal(
         results: lunr.Index.Result[],
         entries: DBRow[],
-    ): PerDictResults {
+    ): PerDictResultsRaw {
         const dbName = this.dbName;
         const searchResults = results as lunr.Index.Result[];
         this.console.time("lunr-getEntries-" + dbName);
@@ -107,7 +107,7 @@ export default class LunrSearcher implements Searcher {
         return {
             dbName,
             results: matchingEntries,
-        } as PerDictResults;
+        } as PerDictResultsRaw;
     }
 
     // TODO: continue testing performance

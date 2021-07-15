@@ -16,12 +16,12 @@ import {runningInJest} from "./utils";
 import ChhaTaigiOptions from "./ChhaTaigiOptions";
 import {ChhaTaigiState} from "./types/mainAppState";
 
-import FieldClassificationHandler from "./search/FieldClassificationHandler";
+import FieldClassificationHandler, {PromHolder} from "./search/FieldClassificationHandler";
 import EntryContainer from "./components/EntryContainer";
-import {PerDictResults} from "./types/dbTypes";
+import {PerDictResultsRaw} from "./types/dbTypes";
 import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 
-// TODO(urgent): see if poj_normalized can be committed upstream, add it to classification either way
+// TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
 // TODO(urgent): see why double-search is happening locally
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`
@@ -171,9 +171,9 @@ enum MountedState {
 
 export class ChhaTaigi extends React.Component<Partial<{
     options: ChhaTaigiOptions,
-    mockResults: PerDictResults,
+    mockResults: PerDictResultsRaw,
     overrideFieldHandler: FieldClassificationHandler,
-}>, any> {
+}>, ChhaTaigiState> {
     mountedState = MountedState.INIT;
     searchBar: React.RefObject<SearchBar>;
     console: StubConsole;
@@ -187,12 +187,16 @@ export class ChhaTaigi extends React.Component<Partial<{
         const initialDBLoadedMapping: [string, boolean][] =
             Array.from(DATABASES.keys()).map((k) => [k, false]);
 
-        this.state = {
+        const fieldHandlerProm = new PromHolder(this.props.overrideFieldHandler ?? null);
+
+        const state = {
             options: this.props.options ?? new ChhaTaigiOptions(),
             loadedDBs: new Map(initialDBLoadedMapping),
             resultsHolder: new SearchResultsHolder(),
-            fieldHandler: this.props.overrideFieldHandler ?? null,
+            fieldHandlerProm,
         };
+
+        this.state = state;
 
         // Miscellaneous object initialization
         this.console = getDebugConsole(this.state.options.debug);
@@ -217,6 +221,7 @@ export class ChhaTaigi extends React.Component<Partial<{
             this.state.options.debug,
             this.getStateTyped,
             this.setStateTyped,
+            this.state.fieldHandlerProm,
         );
 
         // Allow for overriding results from Jest.
@@ -225,9 +230,11 @@ export class ChhaTaigi extends React.Component<Partial<{
 
     overrideResultsForTests() {
         if (runningInJest()) {
-            const {mockResults} = this.props;
+            const {mockResults, overrideFieldHandler} = this.props;
             if (mockResults !== undefined) {
-                this.state.resultsHolder.addResults(mockResults);
+                if (overrideFieldHandler !== undefined) {
+                    this.state.resultsHolder.addResults(mockResults, overrideFieldHandler);
+                }
             }
         }
     }
@@ -240,6 +247,7 @@ export class ChhaTaigi extends React.Component<Partial<{
                 "State: ", state
             );
         } else {
+            // @ts-ignore - Partial seems to work fine, why does Typescript complain?
             this.setState(state)
         }
     }
@@ -251,7 +259,7 @@ export class ChhaTaigi extends React.Component<Partial<{
     componentDidMount() {
         this.mountedState = MountedState.MOUNTED;
 
-        const {options, fieldHandler} = this.getStateTyped();
+        const {options, fieldHandlerProm} = this.getStateTyped();
         this.console.time("mountToAllDB");
 
         // TODO: does this need to happen here? can we just start a search?
@@ -260,11 +268,7 @@ export class ChhaTaigi extends React.Component<Partial<{
         this.searchController.startWorkersAndListener(options.searcherType);
         this.subscribeHash();
 
-        if (!fieldHandler) {
-            FieldClassificationHandler.fetch().then((h) => {
-                this.setStateTyped((state) => {state.fieldHandler = h})
-            });
-        }
+        fieldHandlerProm.setPromise(FieldClassificationHandler.fetch())
 
     }
 
@@ -332,24 +336,25 @@ export class ChhaTaigi extends React.Component<Partial<{
     // TODO: replace uses of DBFullName with something like LangDB?
 
     getEntryComponents(): JSX.Element {
-        const {resultsHolder, options, fieldHandler} = this.getStateTyped();
+        const {resultsHolder, options, fieldHandlerProm} = this.getStateTyped();
         const entries = resultsHolder.getAllResults();
 
-        if (fieldHandler) {
-            const entryContainers = entries.map((entryData) => {
+        const fieldHandler = fieldHandlerProm.getValue();
+        if (fieldHandler !== null) {
+            const entryContainers = entries.map((entry) => {
                 if (options.agnostic) {
                     return <AgnosticEntryContainer
                         debug={options.debug}
                         //langOptions={langOptions}
                         fieldHandler={fieldHandler}
-                        entryData={entryData}
-                        key={entryData.key} />;
+                        entry={entry}
+                        key={entry.getDisplayKey()} />;
                 } else {
                     return <EntryContainer
                         debug={options.debug}
                         fieldHandler={fieldHandler}
-                        entryData={entryData}
-                        key={entryData.key}
+                        entry={entry}
+                        key={entry.getDisplayKey()}
                     />;
                 }
             });

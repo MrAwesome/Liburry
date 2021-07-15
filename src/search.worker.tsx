@@ -1,6 +1,9 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import type {LangDB, DBName, PerDictResults} from "./types/dbTypes";
+import type {LangDB, DBName, PerDictResultsRaw} from "./types/dbTypes";
 import {getSearcher, OngoingSearch, Searcher, SearcherType, SearchFailure} from "./search";
+
+// TODO(wishlist): ensure that objects passed to/from the worker are simple objects (interface, not class)
+//                 and/or translate from simple objects to full classes (with methods) before/after message
 
 // eslint-disable-next-line no-restricted-globals
 const ctx: Worker = self as any;
@@ -12,9 +15,10 @@ export type SearchWorkerCommandMessage =
     {command: SearchWorkerCommandType.LOG, payload?: null} |
     {command: SearchWorkerCommandType.CHANGE_SEARCHER, payload: {searcherType: SearcherType}};
 
+export type SearchSuccessPayload = {dbName: DBName, query: string, results: PerDictResultsRaw, searchID: number};
 export type SearchWorkerResponseMessage =
     { resultType: SearchWorkerResponseType.CANCELED, payload: {dbName: DBName, query: string, searchID: number} } |
-    { resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {dbName: DBName, query: string, results: PerDictResults, searchID: number} } |
+    { resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: SearchSuccessPayload } |
     { resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {dbName: DBName, query: string, searchID: number, failure: SearchFailure} } |
     { resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbName: DBName} };
 
@@ -95,8 +99,8 @@ class SearchWorkerHelper {
                     ongoingSearch.parsePromise?.then((results) => {
 
                         // TODO: XXX: find a better way to assert enum type. (I'm on a plane and don't know TS. Forgive me.)
-                        if ((results as PerDictResults).results !== undefined) {
-                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results: results as PerDictResults, dbName, searchID}});
+                        if ((results as PerDictResultsRaw).results !== undefined) {
+                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results: results as PerDictResultsRaw, dbName, searchID}});
                         } else {
                             this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbName, searchID, failure: results as SearchFailure}});
                         }

@@ -1,12 +1,14 @@
+import FieldClassificationHandler from "./search/FieldClassificationHandler";
 import {typeGuard} from "./typeguard";
-import {DBName, PerDictResults, SearchResultEntryData} from "./types/dbTypes";
+import {DBName, PerDictResults, PerDictResultsRaw, SearchResultEntry} from "./types/dbTypes";
 
 export default class SearchResultsHolder {
     currentResults: Map<DBName, PerDictResults> = new Map();
     numResults: number = 0;
 
-    addResults(res: PerDictResults): this {
-        this.currentResults.set(res.dbName, res);
+    addResults(res: PerDictResultsRaw, fieldHandler: FieldClassificationHandler): this {
+        const parsedRes = PerDictResults.from(res, fieldHandler)
+        this.currentResults.set(res.dbName, parsedRes);
         this.numResults += res.results.length;
         return this;
     }
@@ -21,20 +23,21 @@ export default class SearchResultsHolder {
         return this.numResults;
     }
 
-    getAllResults(): SearchResultEntryData[] {
+    getAllResults(): SearchResultEntry[] {
         let allPerDictRes = Array.from(this.currentResults.values()).filter(typeGuard) as PerDictResults[];
 
-        let entries: SearchResultEntryData[] = [];
+        // NOTE: this could be cached, and only updated/sorted on add.
+        let entries: SearchResultEntry[] = [];
 
         // Flatten out all results
         allPerDictRes.forEach((perDict: PerDictResults) => {
-            perDict.results.forEach((rawEntry: SearchResultEntryData) => {
+            perDict.getResults().forEach((rawEntry: SearchResultEntry) => {
                 entries.push(rawEntry);
             });
         });
 
         // TODO: Sort on add? Sort first in worker? Store all results flat and just sort as they come in?
-        entries.sort((a, b) => b.dbSearchRanking.score - a.dbSearchRanking.score);
+        entries.sort((a, b) => b.getRanking().score - a.getRanking().score);
 
         return entries;
     }

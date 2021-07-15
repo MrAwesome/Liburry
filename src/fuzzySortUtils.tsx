@@ -1,5 +1,5 @@
 import fuzzysort from "fuzzysort";
-import type {DBName, SearchResultEntryData, DBFullName, DisplayReadyField, DBRow} from "./types/dbTypes";
+import type {DBName, SearchResultEntryRaw, DBFullName, DisplayReadyFieldRaw, DBRow} from "./types/dbTypes";
 
 import type {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedDBEntry} from "./types/fuzzySortTypes";
 
@@ -18,7 +18,7 @@ export function parseFuzzySortResultsForRender(
     dbName: DBName,
     dbFullName: DBFullName,
     rawResults: FuzzyKeyResults[]
-): SearchResultEntryData[] {
+): SearchResultEntryRaw[] {
     const currentResultsElements = rawResults
         .slice(0, DISPLAY_RESULTS_LIMIT)
         .map((res) => fuzzySortResultToSearchResultEntry(dbName, dbFullName, res));
@@ -44,10 +44,10 @@ function fuzzySortResultToSearchResultEntry(dbName: DBName, dbFullName: DBFullNa
         dbFullName,
         dbSearchRanking,
         fields,
-    } as SearchResultEntryData;
+    } as SearchResultEntryRaw;
 }
 
-function getDisplayReadyFieldObjects(obj: FuzzyPreparedDBEntry): DisplayReadyField[] {
+function getDisplayReadyFieldObjects(obj: FuzzyPreparedDBEntry): DisplayReadyFieldRaw[] {
     const knownKeys = Object.getOwnPropertyNames(obj);
     const fields = knownKeys.map((key) => {
         if (key.endsWith(PREPPED_KEY_SUFFIX)) {
@@ -59,13 +59,13 @@ function getDisplayReadyFieldObjects(obj: FuzzyPreparedDBEntry): DisplayReadyFie
                     colName: key,
                     value: obj[key],
                     matched: false,
-                } as DisplayReadyField;
+                } as DisplayReadyFieldRaw;
             } else {
                 return undefined;
             }
         }
     });
-    return fields.filter((f) => f !== undefined) as DisplayReadyField[];
+    return fields.filter((f) => f !== undefined) as DisplayReadyFieldRaw[];
 }
 
 function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string) {
@@ -79,7 +79,7 @@ function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string) {
     // NOTE: each matched field has its own score,
     //       which could be used to more strongly highlight the matched field
     let matched = false;
-        let displayValOverride = null;
+    let displayValOverride = null;
     if (fuzzyRes !== undefined) {
         if (fuzzyRes.score !== null) {
             matched = true;
@@ -97,7 +97,7 @@ function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string) {
         value,
         matched,
         displayValOverride,
-    } as DisplayReadyField;
+    } as DisplayReadyFieldRaw;
 }
 
 // Prepare a fast search version of each searchable key.
@@ -110,9 +110,9 @@ export function convertDBRowToFuzzySortPrepared(
     searchableKeys.forEach(
         (key) => {
             unpreparedEntry[key + PREPPED_KEY_SUFFIX] = fuzzysort
-                    // @ts-ignore  prepareSlow does exist
-                    .prepareSlow
-                    (unpreparedEntry[key]);
+                // @ts-ignore  prepareSlow does exist
+                .prepareSlow
+                (unpreparedEntry[key]);
         });
 
     return unpreparedEntry as FuzzyPreparedDBEntry;

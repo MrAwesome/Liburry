@@ -2,7 +2,7 @@ import fuzzysort from "fuzzysort";
 
 import {FuzzyKeysOptions, FuzzyPreparedDBEntry} from "../types/fuzzySortTypes";
 import {OngoingSearch, Searcher, SearcherType, SearchFailure} from "../search";
-import {DBName, DBRow, LangDB, PerDictResults} from "../types/dbTypes";
+import {DBName, DBRow, LangDB, PerDictResultsRaw} from "../types/dbTypes";
 import getDebugConsole, {StubConsole} from "../getDebugConsole";
 import {getEntriesFromPreparedCSV} from "../common/csvUtils";
 import {makeCancelable} from "../utils";
@@ -161,7 +161,7 @@ class FuzzySearchableDict {
                 return {
                     dbName,
                     results
-                } as PerDictResults;
+                } as PerDictResultsRaw;
             }
         ).catch(
             (reason) => {

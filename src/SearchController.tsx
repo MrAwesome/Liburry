@@ -1,11 +1,12 @@
-import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.worker";
+import {SearchSuccessPayload, SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.worker";
 
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import SearchWorkerManager from "./SearchWorkerManager";
 import SearchValidityManager from "./SearchValidityManager";
-import {DBName, PerDictResults} from "./types/dbTypes";
+import {DBName, PerDictResultsRaw} from "./types/dbTypes";
 import {SearcherType} from "./search";
 import {GetMainState, SetMainState} from "./types/mainAppState";
+import FieldClassificationHandler, {PromHolder} from "./search/FieldClassificationHandler";
 
 // TODO: write tests for this, which ensure the correct messages are sent and callbacks are called
 
@@ -14,20 +15,15 @@ export default class SearchController {
     private validity: SearchValidityManager;
     private console: StubConsole;
 
-    getStateTyped: GetMainState;
-    setStateTyped: SetMainState;
-
     constructor(
         debug: boolean,
-        getStateTyped: GetMainState,
-        setStateTyped: SetMainState,
+        private getStateTyped: GetMainState,
+        private setStateTyped: SetMainState,
+        private eventuallyFieldHandler: PromHolder<FieldClassificationHandler>,
     ) {
         this.console = getDebugConsole(debug);
         this.searchWorkerManager = new SearchWorkerManager(debug);
         this.validity = new SearchValidityManager(debug);
-
-        this.getStateTyped = getStateTyped;
-        this.setStateTyped = setStateTyped;
 
         // Callbacks for the search controller to use to communicate changes back to the main component.
         this.addResultsCallback = this.addResultsCallback.bind(this);
@@ -41,8 +37,8 @@ export default class SearchController {
         this.startWorkersAndListener = this.startWorkersAndListener.bind(this);
     }
 
-    async addResultsCallback(results: PerDictResults) {
-        this.setStateTyped((state) => state.resultsHolder.addResults(results));
+    async addResultsCallback(results: PerDictResultsRaw, fieldHandler: FieldClassificationHandler) {
+        this.setStateTyped((state) => state.resultsHolder.addResults(results, fieldHandler));
     }
 
     async addDBLoadedCallback(dbName: DBName) {
@@ -86,27 +82,49 @@ export default class SearchController {
         }
     }
 
+    doSearch(payload: SearchSuccessPayload, fieldHandler: FieldClassificationHandler) {
+        const {results, dbName, searchID} = payload;
+
+        const wasInvalidated = this.validity.isInvalidated(searchID);
+        if (!wasInvalidated) {
+            this.addResultsCallback(results, fieldHandler);
+            this.validity.markSearchCompleted(dbName, searchID);
+        }
+    }
+
     async searchWorkerReplyHandler(messageEvent: MessageEvent<SearchWorkerResponseMessage>) {
         const message = messageEvent.data;
         switch (message.resultType) {
             case SearchWorkerResponseType.CANCELED: {
-                let {query, dbName, searchID} = message.payload;
+                const {query, dbName, searchID} = message.payload;
                 this.console.log(`Canceled search "${query}" with searchID "${searchID}" on db "${dbName}".`);
             }
                 break;
             case SearchWorkerResponseType.SEARCH_SUCCESS: {
-                let {results, dbName, searchID} = message.payload;
+                const fh = this.eventuallyFieldHandler;
 
-                const wasInvalidated = this.validity.isInvalidated(searchID);
-                if (!wasInvalidated) {
-                    this.addResultsCallback(results);
-                    this.validity.markSearchCompleted(dbName, searchID);
+                switch (fh.state.state) {
+                    case "uninitialized": {
+                        this.console.log("Attempted to use field handler before promise added.");
+                    }
+                        break;
+                    case "loading": {
+                        this.console.log("Attempted to use field handler while promise is loading.");
+                        const prom = fh.state.promise;
+                        prom.then((fieldHandler) => this.doSearch(message.payload, fieldHandler))
+                    }
+                        break;
+                    case "loaded": {
+                        const value = fh.state.value;
+                        this.doSearch(message.payload, value);
+                    }
+                        break;
+
                 }
-
             }
                 break;
             case SearchWorkerResponseType.SEARCH_FAILURE: {
-                let {query, dbName, searchID, failure} = message.payload;
+                const {query, dbName, searchID, failure} = message.payload;
 
                 // TODO: use a brief setTimeout here?
                 // TODO: can these even be invalidated?
@@ -124,7 +142,7 @@ export default class SearchController {
             }
                 break;
             case SearchWorkerResponseType.DB_LOAD_SUCCESS: {
-                let {dbName} = message.payload;
+                const {dbName} = message.payload;
                 this.console.time("dbLoadRender-" + dbName);
                 this.addDBLoadedCallback(dbName);
                 this.console.timeEnd("dbLoadRender-" + dbName);

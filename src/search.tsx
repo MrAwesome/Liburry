@@ -1,5 +1,5 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import {DBName, LangDB, PerDictResults} from "./types/dbTypes";
+import {DBName, LangDB, PerDictResultsRaw} from "./types/dbTypes";
 import {CancelablePromise} from "./types/general";
 import FuzzySortSearcher, {FUZZY_SCORE_LOWER_THRESHOLD} from "./search/FuzzySortSearcher";
 import LunrSearcher from "./search/LunrSearcher";
@@ -18,6 +18,7 @@ export enum SearcherType {
     LUNR = "LUNR"
 }
 
+// TODO: make a helper function to compare two search results, and use in SearchResultsHolder
 export interface DBSearchRanking {
     searcherType: SearcherType;
     score: number;
@@ -57,7 +58,7 @@ export class OngoingSearch {
     dbName: DBName;
     query: string;
     searchPromise?: CancelablePromise<any>;
-    parsePromise?: CancelablePromise<PerDictResults | SearchFailure>;
+    parsePromise?: CancelablePromise<PerDictResultsRaw | SearchFailure>;
     completed: boolean;
     wasCanceled: boolean = false;
     console: StubConsole;
@@ -67,7 +68,7 @@ export class OngoingSearch {
         query: string = "",
         debug: boolean,
         searchPromise?: CancelablePromise<any>,
-        parsePromise?: CancelablePromise<PerDictResults | SearchFailure>,
+        parsePromise?: CancelablePromise<PerDictResultsRaw | SearchFailure>,
     ) {
         this.console = getDebugConsole(debug);
         this.console.time("asyncSearch-" + dbName);

@@ -4,7 +4,7 @@ import {REPO_LINK} from "../constants";
 import {createMatchElement} from "../fuzzySortReactUtils";
 import {getMaxScore, SearcherType} from "../search";
 import FieldClassificationHandler from "../search/FieldClassificationHandler";
-import {SearchResultEntry, SearchResultEntryData} from "../types/dbTypes";
+import {SearchResultEntry} from "../types/dbTypes";
 
 enum ClickedOrder {
     NORMAL,
@@ -27,19 +27,16 @@ const FADING_STYLE = {
 
 export default class EntryContainer extends React.PureComponent<{
     debug: boolean,
-    entryData: SearchResultEntryData,
+    entry: SearchResultEntry,
     fieldHandler: FieldClassificationHandler,
 }
 , any> {
-
-    entry: SearchResultEntry;
     constructor(props: any) {
         super(props);
         this.state = {
             clicked: ClickedOrder.NORMAL,
         }
 
-        this.entry = SearchResultEntry.from(this.props.entryData);
         this.clickedNotif = this.clickedNotif.bind(this);
         this.fadeClicked = this.fadeClicked.bind(this);
         this.getAltTextContainers = this.getAltTextContainers.bind(this);
@@ -51,7 +48,7 @@ export default class EntryContainer extends React.PureComponent<{
     }
 
     getEntry(): SearchResultEntry {
-        return this.entry;
+        return this.props.entry;
     }
 
     getClicked(): ClickedOrder {
@@ -63,7 +60,7 @@ export default class EntryContainer extends React.PureComponent<{
 
         const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("poj_unicode");
         // TODO: wrap in a try/catch for situations where clipboard isn't accessible (http, etc)
-        navigator.clipboard.writeText(pojUnicode!.value);
+        navigator.clipboard.writeText(pojUnicode!.getOriginalValue());
         this.setState({clicked: ClickedOrder.CLICKED});
         setTimeout(this.fadeClicked, 500);
     }
@@ -99,8 +96,8 @@ export default class EntryContainer extends React.PureComponent<{
         let altTextContainers: JSX.Element[] = [];
 
         altTextFields.forEach((field) => {
-            if (field.matched) {
-                const inner = createMatchElement(field.displayValOverride ?? field.value, "alt-text");
+            if (field.wasMatched()) {
+                const inner = createMatchElement(field.getDisplayValue(), "alt-text");
                 const container = <div className="alt-text-container">
                     ({inner})
                 </div>;
@@ -162,7 +159,7 @@ export default class EntryContainer extends React.PureComponent<{
         const dbName = this.getEntry().getDBName();
         const dbID = this.getEntry().getDBID();
         const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("poj_unicode");
-        const pojUnicodeText = pojUnicode!.value;
+        const pojUnicodeText = pojUnicode!.getOriginalValue();
         const pojUnicodeCSV = pojUnicodeText.replace(/"/g, '""');
         const csvReportSkeleton = `"${dbName}","${dbID}","${pojUnicodeCSV}",`;
         navigator.clipboard.writeText(csvReportSkeleton).then(() =>
@@ -191,9 +188,9 @@ export default class EntryContainer extends React.PureComponent<{
         const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("poj_unicode");
         const definition = this.getEntry().getFieldByNameDEPRECATED("english");
         const hoabun = this.getEntry().getFieldByNameDEPRECATED("hoabun");
-        const pojUnicodePossibleMatch = pojUnicode!.displayValOverride ?? pojUnicode!.value;
-        const definitionPossibleMatch = definition!.displayValOverride ?? definition!.value;
-        const hoabunPossibleMatch = hoabun!.displayValOverride ?? hoabun!.value;
+        const pojUnicodePossibleMatch = pojUnicode!.getDisplayValue();
+        const definitionPossibleMatch = definition!.getDisplayValue();
+        const hoabunPossibleMatch = hoabun!.getDisplayValue();
         const clicked = this.getClicked();
 
         const poju = createMatchElement(pojUnicodePossibleMatch, "poj-unicode");
