@@ -270,7 +270,7 @@ mark {
     text-align: right;
 }
 
-.dbid-container {
+.rowid-container {
     font-size: 8px;
     color: #555555;
 
@@ -279,7 +279,7 @@ mark {
 /*    bottom: 16px;*/
 }
 
-.dbid {
+.rowid {
     display: inline-block;
     text-align: right;
 }

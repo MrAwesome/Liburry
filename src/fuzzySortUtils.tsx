@@ -39,7 +39,7 @@ function fuzzySortResultToSearchResultEntry(dbName: DBName, dbFullName: DBFullNa
 
     return {
         key: dbName + "-" + rowID,
-        dbID: parseInt(rowID),
+        rowID: parseInt(rowID),
         dbName,
         dbFullName,
         dbSearchRanking,

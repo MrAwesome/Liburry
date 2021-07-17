@@ -3,7 +3,7 @@ import FieldClassificationHandler, {DBColType, DBColumnMetadata} from "../search
 
 // TODO: move the code here that isn't type-only somewhere else
 
-export type DBIdentifier = number;
+export type RowIdentifier = number;
 export type DBName = string;
 export type DBFullName = string;
 export type DBFilename = string;
@@ -128,7 +128,7 @@ export class DisplayReadyField {
 // NOTE: this class is passed from workers back to the main thread, hence interface instead of class.
 export interface SearchResultEntryRaw {
     readonly key: string;
-    readonly dbID: DBIdentifier;
+    readonly rowID: RowIdentifier;
     readonly dbName: DBName;
     readonly dbFullName: DBFullName;
     readonly dbSearchRanking: DBSearchRanking;
@@ -144,7 +144,7 @@ export class SearchResultEntry {
         this.getFieldByNameDEPRECATED = this.getFieldByNameDEPRECATED.bind(this);
 
         this.getDBName = this.getDBName.bind(this);
-        this.getDBID = this.getDBID.bind(this);
+        this.getRowID = this.getRowID.bind(this);
         this.getDBFullName = this.getDBFullName.bind(this);
         this.getRanking = this.getRanking.bind(this);
         this.getFields = this.getFields.bind(this);
@@ -175,8 +175,8 @@ export class SearchResultEntry {
     getDBName(): DBName {
         return this.e.dbName;
     }
-    getDBID(): DBIdentifier {
-        return this.e.dbID;
+    getRowID(): RowIdentifier {
+        return this.e.rowID;
     }
 
     getDBFullName(): DBFullName {

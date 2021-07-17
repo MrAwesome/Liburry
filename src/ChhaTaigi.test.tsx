@@ -2,7 +2,6 @@ import fs from 'fs';
 import { render, screen } from '@testing-library/react';
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {ChhaTaigi} from './ChhaTaigi';
-import {PerDictResultsRaw, SearchResultEntryRaw} from './types/dbTypes';
 import ChhaTaigiOptions from './ChhaTaigiOptions';
 import * as React from 'react';
 import {noop} from './utils';
@@ -12,6 +11,9 @@ import {MATCH_HTML_TAG} from './constants';
 
 // NOTE: just used to silence errors in node TSC.
 noop(React.version);
+
+// NOTE: this is a pretty full integration test, which relies on the content of the field classification database
+//       the contents of it can be mocked out and tested, at some inconvenience
 
 // TODO(high): test basic worker search behavior (probably not possible from jest?)
 // TODO(low): figure out how to run componentDidMount
@@ -32,16 +34,18 @@ test('render single entry via override', async () => {
     let options = new ChhaTaigiOptions();
     options.mainMode = MainDisplayAreaMode.SEARCH;
 
-    const dbName = "malee";
-    const dbID = 1;
+    const dbName = "maryknoll";
+    const dbFullName = "ChhoeTaigi_TaioanPehoeKichhooGiku";
+    const rowID = 1;
 
     const marked = `hoat-<${MATCH_HTML_TAG}>lu̍t</${MATCH_HTML_TAG}>`;
 
     const dbSearchRanking = {searcherType: SearcherType.LUNR, score: -3} as DBSearchRanking;
     let res1 = {
-        key: `${dbName}-${dbID}`,
-        dbID,
+        key: `${dbName}-${rowID}`,
+        rowID,
         dbName,
+        dbFullName,
         dbSearchRanking,
         fields: [
             {
@@ -71,12 +75,12 @@ test('render single entry via override', async () => {
                 matched: false,
             },
         ],
-    } as SearchResultEntryRaw;
+    };
 
     let perDictRes = {
-        dbName: "malee",
+        dbName: "ChhoeTaigi_TaioanPehoeKichhooGiku",
         results: [res1],
-    } as PerDictResultsRaw;
+    };
 
     const fieldHandler = await fieldHandlerPromise;
     render(<ChhaTaigi options={options} mockResults={perDictRes} overrideFieldHandler={fieldHandler} />);
@@ -92,7 +96,7 @@ test('render single entry via override', async () => {
 
     const eng = screen.getByText(/the law/i);
     expect(eng).toBeInTheDocument();
-    const db = screen.getByText(/malee/i);
+    const db = screen.getByText(/maryknoll/i);
     expect(db).toBeInTheDocument();
     const searchBar = screen.getByPlaceholderText(/Search.../);
     expect(searchBar).toBeInTheDocument();

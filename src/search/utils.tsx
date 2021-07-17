@@ -20,7 +20,7 @@ export function vanillaDBEntryToResult(
 
     return {
         key: dbName + "-" + rowID,
-        dbID: parseInt(row.id),
+        rowID: parseInt(row.id),
         dbName,
         dbFullName,
         dbSearchRanking,

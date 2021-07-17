@@ -40,7 +40,7 @@ export default class EntryContainer extends React.PureComponent<{
         this.clickedNotif = this.clickedNotif.bind(this);
         this.fadeClicked = this.fadeClicked.bind(this);
         this.getAltTextContainers = this.getAltTextContainers.bind(this);
-        this.getDBID = this.getDBID.bind(this);
+        this.getRowIdentifier = this.getRowIdentifier.bind(this);
         this.getSearchScore = this.getSearchScore.bind(this);
         this.myOnClick = this.myOnClick.bind(this);
         this.resetClicked = this.resetClicked.bind(this);
@@ -140,13 +140,13 @@ export default class EntryContainer extends React.PureComponent<{
         </div>
     }
 
-    getDBID(): JSX.Element {
-        const dbID = this.getEntry().getDBID();
+    getRowIdentifier(): JSX.Element {
+        const rowID = this.getEntry().getRowID();
 
-        return <div className="dbid-container">
+        return <div className="rowid-container">
             ID:&nbsp;
-            <div className="dbid">
-                {dbID}
+            <div className="rowid">
+                {rowID}
             </div>
         </div>
 
@@ -157,11 +157,11 @@ export default class EntryContainer extends React.PureComponent<{
         e.preventDefault();
 
         const dbName = this.getEntry().getDBName();
-        const dbID = this.getEntry().getDBID();
+        const rowID = this.getEntry().getRowID();
         const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("poj_unicode");
         const pojUnicodeText = pojUnicode!.getOriginalValue();
         const pojUnicodeCSV = pojUnicodeText.replace(/"/g, '""');
-        const csvReportSkeleton = `"${dbName}","${dbID}","${pojUnicodeCSV}",`;
+        const csvReportSkeleton = `"${dbName}","${rowID}","${pojUnicodeCSV}",`;
         navigator.clipboard.writeText(csvReportSkeleton).then(() =>
             window.open(`${REPO_LINK}/edit/main/misc/incorrect_entries.csv`)
         );
@@ -177,7 +177,7 @@ export default class EntryContainer extends React.PureComponent<{
                 Report
             </button>
 
-            {this.getDBID()}
+            {this.getRowIdentifier()}
         </div>
     }
 
