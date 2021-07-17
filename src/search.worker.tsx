@@ -1,5 +1,5 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import type {LangDB, DBName, PerDictResultsRaw} from "./types/dbTypes";
+import type {LangDB, DBShortName, PerDictResultsRaw} from "./types/dbTypes";
 import {getSearcher, OngoingSearch, Searcher, SearcherType, SearchFailure} from "./search";
 
 // TODO(wishlist): ensure that objects passed to/from the worker are simple objects (interface, not class)
@@ -9,25 +9,25 @@ import {getSearcher, OngoingSearch, Searcher, SearcherType, SearchFailure} from 
 const ctx: Worker = self as any;
 
 export type SearchWorkerCommandMessage =
-    {command: SearchWorkerCommandType.INIT, payload: {dbName: DBName, langDB: LangDB, debug: boolean, searcherType: SearcherType}} |
+    {command: SearchWorkerCommandType.INIT, payload: {dbName: DBShortName, langDB: LangDB, debug: boolean, searcherType: SearcherType}} |
     {command: SearchWorkerCommandType.SEARCH, payload: {query: string, searchID: number}} |
     {command: SearchWorkerCommandType.CANCEL, payload?: null} |
     {command: SearchWorkerCommandType.LOG, payload?: null} |
     {command: SearchWorkerCommandType.CHANGE_SEARCHER, payload: {searcherType: SearcherType}};
 
-export type SearchSuccessPayload = {dbName: DBName, query: string, results: PerDictResultsRaw, searchID: number};
+export type SearchSuccessPayload = {dbName: DBShortName, query: string, results: PerDictResultsRaw, searchID: number};
 export type SearchWorkerResponseMessage =
-    { resultType: SearchWorkerResponseType.CANCELED, payload: {dbName: DBName, query: string, searchID: number} } |
+    { resultType: SearchWorkerResponseType.CANCELED, payload: {dbName: DBShortName, query: string, searchID: number} } |
     { resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: SearchSuccessPayload } |
-    { resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {dbName: DBName, query: string, searchID: number, failure: SearchFailure} } |
-    { resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbName: DBName} };
+    { resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {dbName: DBShortName, query: string, searchID: number, failure: SearchFailure} } |
+    { resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbName: DBShortName} };
 
 type WorkerInitializedState =
     {init: WorkerInitState.UNINITIALIZED} |
-    {init: WorkerInitState.FAILED_TO_PREPARE, dbName: DBName, langDB: LangDB} |
-    {init: WorkerInitState.LOADING, dbName: DBName, langDB: LangDB, searcher: Searcher} |
-    {init: WorkerInitState.LOADED, dbName: DBName, langDB: LangDB, searcher: Searcher} |
-    {init: WorkerInitState.SEARCHING, dbName: DBName, langDB: LangDB, searcher: Searcher, ogs: OngoingSearch, searchID: number};
+    {init: WorkerInitState.FAILED_TO_PREPARE, dbName: DBShortName, langDB: LangDB} |
+    {init: WorkerInitState.LOADING, dbName: DBShortName, langDB: LangDB, searcher: Searcher} |
+    {init: WorkerInitState.LOADED, dbName: DBShortName, langDB: LangDB, searcher: Searcher} |
+    {init: WorkerInitState.SEARCHING, dbName: DBShortName, langDB: LangDB, searcher: Searcher, ogs: OngoingSearch, searchID: number};
 
 enum WorkerInitState {
     UNINITIALIZED = "UNINITIALIZED",
@@ -69,7 +69,7 @@ class SearchWorkerHelper {
         ctx.postMessage(message);
     }
 
-    start(dbName: DBName, langDB: LangDB, debug: boolean, searcherType: SearcherType) {
+    start(dbName: DBShortName, langDB: LangDB, debug: boolean, searcherType: SearcherType) {
         this.debug = debug;
         this.console = getDebugConsole(debug);
         const searcher = getSearcher(searcherType, dbName, langDB, this.debug);

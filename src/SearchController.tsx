@@ -3,7 +3,7 @@ import {SearchSuccessPayload, SearchWorkerResponseMessage, SearchWorkerResponseT
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import SearchWorkerManager from "./SearchWorkerManager";
 import SearchValidityManager from "./SearchValidityManager";
-import {DBName, PerDictResultsRaw} from "./types/dbTypes";
+import {DBShortName, PerDictResultsRaw} from "./types/dbTypes";
 import {SearcherType} from "./search";
 import {GetMainState, SetMainState} from "./types/mainAppState";
 import FieldClassificationHandler, {PromHolder} from "./search/FieldClassificationHandler";
@@ -41,7 +41,7 @@ export default class SearchController {
         this.setStateTyped((state) => state.resultsHolder.addResults(results, fieldHandler));
     }
 
-    async addDBLoadedCallback(dbName: DBName) {
+    async addDBLoadedCallback(dbName: DBShortName) {
         this.setStateTyped((state) => state.loadedDBs.set(dbName, true));
     }
 

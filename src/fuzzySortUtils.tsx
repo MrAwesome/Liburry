@@ -1,5 +1,5 @@
 import fuzzysort from "fuzzysort";
-import type {DBName, SearchResultEntryRaw, DBFullName, DisplayReadyFieldRaw, DBRow} from "./types/dbTypes";
+import type {DBShortName, SearchResultEntryRaw, DBFullName, DisplayReadyFieldRaw, DBRow} from "./types/dbTypes";
 
 import type {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedDBEntry} from "./types/fuzzySortTypes";
 
@@ -15,7 +15,7 @@ import {MATCH_HTML_TAG} from "./constants";
 
 
 export function parseFuzzySortResultsForRender(
-    dbName: DBName,
+    dbName: DBShortName,
     dbFullName: DBFullName,
     rawResults: FuzzyKeyResults[]
 ): SearchResultEntryRaw[] {
@@ -26,7 +26,7 @@ export function parseFuzzySortResultsForRender(
 }
 
 // TODO: Unit test!
-function fuzzySortResultToSearchResultEntry(dbName: DBName, dbFullName: DBFullName, fuzzysortResult: FuzzyKeyResults) {
+function fuzzySortResultToSearchResultEntry(dbName: DBShortName, dbFullName: DBFullName, fuzzysortResult: FuzzyKeyResults) {
     const obj = fuzzysortResult.obj;
     const rowID = obj.id;
 

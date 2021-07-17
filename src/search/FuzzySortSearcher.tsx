@@ -2,7 +2,7 @@ import fuzzysort from "fuzzysort";
 
 import {FuzzyKeysOptions, FuzzyPreparedDBEntry} from "../types/fuzzySortTypes";
 import {OngoingSearch, Searcher, SearcherType, SearchFailure} from "../search";
-import {DBName, DBRow, LangDB, PerDictResultsRaw} from "../types/dbTypes";
+import {DBShortName, DBRow, LangDB, PerDictResultsRaw} from "../types/dbTypes";
 import getDebugConsole, {StubConsole} from "../getDebugConsole";
 import {getEntriesFromPreparedCSV} from "../common/csvUtils";
 import {makeCancelable} from "../utils";
@@ -29,13 +29,13 @@ function getFuzzyOpts(searchKeys: Array<string> = FIELDS_TO_SEARCH): FuzzyKeysOp
 
 export default class FuzzySortSearcher implements Searcher {
     searcherType = SearcherType.FUZZYSORT;
-    dbName: DBName;
+    dbName: DBShortName;
     langDB: LangDB;
     debug: boolean;
 
     private fuzzyDict?: FuzzySearchableDict;
 
-    constructor(dbName: DBName, langDB: LangDB, debug: boolean) {
+    constructor(dbName: DBShortName, langDB: LangDB, debug: boolean) {
         this.dbName = dbName;
         this.langDB = langDB;
         this.debug = debug;
@@ -75,7 +75,7 @@ class FuzzyPreparer {
     }
 
     async fetchAndPrepare(): Promise<FuzzySearchableDict> {
-        const {name, localCSV, localCSVVersion} = this.langDB;
+        const {shortName: name, localCSV, localCSVVersion} = this.langDB;
         const dbName = name;
         this.console.time("total-" + dbName);
         this.console.time("fetch-" + dbName);
@@ -93,7 +93,7 @@ class FuzzyPreparer {
     convertCSVToFuzzySearchableDict(text: string): FuzzySearchableDict {
         const langDB = this.langDB;
         const searchableFields = FIELDS_TO_SEARCH;
-        const dbName = langDB.name;
+        const dbName = langDB.shortName;
         this.console.timeEnd("fetch-" + dbName);
 
         this.console.time("csvConvertPrePrepped-" + dbName);
@@ -129,7 +129,7 @@ class FuzzySearchableDict {
         query: string,
     ): OngoingSearch | SearchFailure {
         const langDB = this.langDB;
-        const dbName = langDB.name;
+        const dbName = langDB.shortName;
 
         const fuzzyOpts = getFuzzyOpts();
         const cancelableSearchPromise = fuzzysort.goAsync(

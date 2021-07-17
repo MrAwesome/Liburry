@@ -1,10 +1,10 @@
 import {DBSearchRanking} from "../search";
-import {DBName, DBFullName, DBRow, getDBRowKeys, SearchResultEntryRaw} from "../types/dbTypes";
+import {DBShortName, DBFullName, DBRow, getDBRowKeys, SearchResultEntryRaw} from "../types/dbTypes";
 
 // TODO: have DBName be replaced with an enum, and match here to determine how definitions/etc should be displayed?
 //          or finally just have multiple definitions, and display them appropriately?
 export function vanillaDBEntryToResult(
-    dbName: DBName,
+    dbName: DBShortName,
     dbFullName: DBFullName,
     row: DBRow,
     dbSearchRanking: DBSearchRanking

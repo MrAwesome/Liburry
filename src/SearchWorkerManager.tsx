@@ -3,14 +3,14 @@ import {DATABASES} from "./searchSettings";
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import type Worker from "worker-loader!./search.worker";
 
-import {DBName} from "./types/dbTypes";
+import {DBShortName} from "./types/dbTypes";
 import {SearchWorkerCommandMessage, SearchWorkerCommandType, SearchWorkerResponseMessage} from "./search.worker";
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {SearcherType} from "./search";
 import {runningInJest} from "./utils";
 
 export default class SearchWorkerManager {
-    private searchWorkers: Map<DBName, Worker> = new Map();
+    private searchWorkers: Map<DBShortName, Worker> = new Map();
     private debug: boolean;
     private console: StubConsole;
 
@@ -25,7 +25,7 @@ export default class SearchWorkerManager {
         this.sendCommand = this.sendCommand.bind(this);
     }
 
-    private sendCommand(dbName: DBName, worker: Worker, command: SearchWorkerCommandMessage) {
+    private sendCommand(dbName: DBShortName, worker: Worker, command: SearchWorkerCommandMessage) {
         this.console.log(`Sending command to "${dbName}:`, command);
         worker.postMessage(command);
     }
@@ -68,7 +68,7 @@ export default class SearchWorkerManager {
         this.sendAll({command: SearchWorkerCommandType.CANCEL});
     }
 
-    searchSpecificDB(dbName: DBName, query: string, searchID: number) {
+    searchSpecificDB(dbName: DBShortName, query: string, searchID: number) {
         const worker = this.searchWorkers.get(dbName);
         if (worker !== undefined) {
             this.sendCommand(dbName, worker, {command: SearchWorkerCommandType.SEARCH, payload: {query, searchID}});
@@ -81,7 +81,7 @@ export default class SearchWorkerManager {
         this.sendAll({command: SearchWorkerCommandType.SEARCH, payload: {query, searchID}});
     }
 
-    getAllActiveDBs(): DBName[] {
+    getAllActiveDBs(): DBShortName[] {
         return Array.from(this.searchWorkers.keys());
     }
 }

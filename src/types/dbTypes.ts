@@ -4,27 +4,20 @@ import FieldClassificationHandler, {DBColType, DBColumnMetadata} from "../search
 // TODO: move the code here that isn't type-only somewhere else
 
 export type RowIdentifier = number;
-export type DBName = string;
+export type DBShortName = string;
 export type DBFullName = string;
 export type DBFilename = string;
 export type SearchPreppedKey = string;
 export type EntryFieldNameToPreppedNameMapping = Map<string, SearchPreppedKey>;
 
 export interface LangDB {
-    name: DBName,
+    shortName: DBShortName,
     fullName: DBFullName,
     upstreamCSV: DBFilename,
     localCSV: DBFilename,
     localCSVVersion: number,
     localLunr: DBFilename,
     localLunrVersion: number,
-}
-
-export interface LangField {
-    name: string,
-    lang: Langs,
-    area: string, // perhaps style directly instead?
-    priority: number,
 }
 
 export enum Langs {
@@ -38,13 +31,13 @@ export enum Langs {
 
 // NOTE: This type is passed back from web workers.
 export interface PerDictResultsRaw {
-    dbName: DBName,
+    dbName: DBShortName,
     results: Array<SearchResultEntryRaw>,
 }
 
 export class PerDictResults {
     private constructor(
-        private dbName: DBName,
+        private dbName: DBShortName,
         private results: SearchResultEntry[],
     ) {
     }
@@ -54,7 +47,7 @@ export class PerDictResults {
         return new PerDictResults(allRes.dbName, results);
     }
 
-    getDBName(): DBName {
+    getDBName(): DBShortName {
         return this.dbName;
     }
 
@@ -84,7 +77,7 @@ export interface DisplayReadyFieldRaw {
 export class DisplayReadyField {
     private constructor(
         private d: DisplayReadyFieldRaw,
-        private dbName: DBName,
+        private dbName: DBShortName,
         private metadata: DBColumnMetadata,
     ){
         this.hasValue = this.hasValue.bind(this);
@@ -92,7 +85,7 @@ export class DisplayReadyField {
         this.getColumnName = this.getColumnName.bind(this);
     }
 
-    static from(d: DisplayReadyFieldRaw, dbName: DBName, metadata: DBColumnMetadata) {
+    static from(d: DisplayReadyFieldRaw, dbName: DBShortName, metadata: DBColumnMetadata) {
         return new DisplayReadyField(d, dbName, metadata);
     }
 
@@ -120,7 +113,7 @@ export class DisplayReadyField {
         return this.metadata.getDataType();
     }
 
-    getDBName(): DBName {
+    getDBName(): DBShortName {
         return this.dbName;
     }
 }
@@ -129,7 +122,7 @@ export class DisplayReadyField {
 export interface SearchResultEntryRaw {
     readonly key: string;
     readonly rowID: RowIdentifier;
-    readonly dbName: DBName;
+    readonly dbName: DBShortName;
     readonly dbFullName: DBFullName;
     readonly dbSearchRanking: DBSearchRanking;
     readonly fields: DisplayReadyFieldRaw[];
@@ -172,7 +165,7 @@ export class SearchResultEntry {
         return this.e.key;
     }
 
-    getDBName(): DBName {
+    getDBName(): DBShortName {
         return this.e.dbName;
     }
     getRowID(): RowIdentifier {

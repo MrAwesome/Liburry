@@ -25,34 +25,33 @@ export const FIELDS_TO_SEARCH = [
 const CTD = "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/blob/master/README.md";
 export const DATABASES: Map<string, LangDB> = makeNameToObjMapping([
     {
-        name: "maryknoll",
-        upstreamCSV: "ChhoeTaigi_MaryknollTaiengSutian.csv",
+        shortName: "maryknoll",
+        fullName: "ChhoeTaigi_MaryknollTaiengSutian",
         localCSV: "/db/maryknoll.csv",
         localCSVVersion: 2,
         localLunr: "/db/maryknoll.lunr.json",
         localLunrVersion: 3,
-        fullName: "ChhoeTaigi_MaryknollTaiengSutian",
+        upstreamCSV: "ChhoeTaigi_MaryknollTaiengSutian.csv",
         dbDescLink: `${CTD}#3-1976-maryknoll%E5%8F%B0%E8%8B%B1%E8%BE%AD%E5%85%B8`,
     },
     {
-        name: "embree",
-        upstreamCSV: "ChhoeTaigi_EmbreeTaiengSutian.csv",
+        shortName: "embree",
+        fullName: "ChhoeTaigi_EmbreeTaiengSutian",
         localCSV: "/db/embree.csv",
         localCSVVersion: 2,
         localLunr: "/db/embree.lunr.json",
         localLunrVersion: 3,
-        fullName: "ChhoeTaigi_EmbreeTaiengSutian",
+        upstreamCSV: "ChhoeTaigi_EmbreeTaiengSutian.csv",
         dbDescLink: `${CTD}#4-1973-embree%E5%8F%B0%E8%8B%B1%E8%BE%AD%E5%85%B8`,
     },
     {
-        name: "giku",
-        upstreamCSV: "ChhoeTaigi_TaioanPehoeKichhooGiku.csv",
+        shortName: "giku",
+        fullName: "ChhoeTaigi_TaioanPehoeKichhooGiku",
         localCSV: "/db/giku.csv",
         localCSVVersion: 2,
         localLunr: "/db/giku.lunr.json",
         localLunrVersion: 3,
-        fullName: "ChhoeTaigi_TaioanPehoeKichhooGiku",
+        upstreamCSV: "ChhoeTaigi_TaioanPehoeKichhooGiku.csv",
         dbDescLink: `${CTD}#8-1956-%E5%8F%B0%E7%81%A3%E7%99%BD%E8%A9%B1%E5%9F%BA%E7%A4%8E%E8%AA%9E%E5%8F%A5`,
     },
-]
-);
+]);

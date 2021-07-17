@@ -27,9 +27,10 @@ export function makeCancelable<T>(promise: Promise<T>): CancelablePromise<T> {
     return wrappedPromise as CancelablePromise<T>;
 }
 
-interface HasName {name: string}
+// TODO: make this more generic for places where it's needed
+interface HasName {shortName: string}
 
 export function makeNameToObjMapping<Obj extends HasName>(fields: Obj[]): Map<string, Obj> {
-    const nameToFields: [string, Obj][] = fields.map((field) => ([field.name, field]));
+    const nameToFields: [string, Obj][] = fields.map((field) => ([field.shortName, field]));
     return new Map(nameToFields);
 }

@@ -1,5 +1,5 @@
 import * as React from "react";
-import {DBName} from "../types/dbTypes";
+import {DBShortName} from "../types/dbTypes";
 import {MainDisplayAreaMode} from "../types/displayTypes";
 import QueryStringHandler from "../QueryStringHandler";
 import {REPO_LINK} from "../constants";
@@ -40,7 +40,7 @@ export class SearchBar extends React.PureComponent<any, any> {
     }
 }
 
-export function DebugArea({loadedDBs}: {loadedDBs: Map<DBName, boolean>}) {
+export function DebugArea({loadedDBs}: {loadedDBs: Map<DBShortName, boolean>}) {
     return <div className="debug-area">
         <DBLoadedState loadedDBs={loadedDBs} />
     </div>

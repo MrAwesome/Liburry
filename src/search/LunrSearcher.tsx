@@ -1,4 +1,4 @@
-import type {DBName, DBRow, LangDB, PerDictResultsRaw} from "../types/dbTypes";
+import type {DBShortName, DBRow, LangDB, PerDictResultsRaw} from "../types/dbTypes";
 
 import {DISPLAY_RESULTS_LIMIT} from "../searchSettings";
 import getDebugConsole, {StubConsole} from "../getDebugConsole";
@@ -36,7 +36,7 @@ export default class LunrSearcher implements Searcher {
     private idx?: lunr.Index;
     private entries?: DBRow[];
 
-    constructor(dbName: DBName, langDB: LangDB, debug: boolean) {
+    constructor(dbName: DBShortName, langDB: LangDB, debug: boolean) {
         this.dbName = dbName;
         this.langDB = langDB;
         this.debug = debug;

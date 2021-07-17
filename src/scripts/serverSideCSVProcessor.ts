@@ -12,6 +12,8 @@ require("lunr-languages/lunr.multi")(lunr);
 
 // NOTE: You can run this code using: `yarn run webpack --config webpack.scripts.js && node build/server.js`
 // TODO: type "any" usage below
+//
+// TODO: unit test?
 
 //const langUtils = require("./languageUtils");
 //const {DATABASES} = require("../searchSettings");
@@ -64,7 +66,7 @@ function writeLunrIndex(langDB: LangDB, entries: DBRow[]) {
     fs.writeFile(
         `${OUTPUT_PREFIX}${langDB.localLunr}`,
         jsonText,
-        writeFileErrHandler(`Wrote out Lunr index for: "${langDB.name}"`
+        writeFileErrHandler(`Wrote out Lunr index for: "${langDB.shortName}"`
         ));
 }
 
@@ -74,19 +76,19 @@ function writeFile(langDB: LangDB, entries: DBRow[]) {
     fs.writeFile(
         `${OUTPUT_PREFIX}${langDB.localCSV}`,
         newCSVText,
-        writeFileErrHandler(`Wrote out local CSV for: "${langDB.name}"`
+        writeFileErrHandler(`Wrote out local CSV for: "${langDB.shortName}"`
         ));
 
 }
 
 
 DATABASES.forEach(async (langDB: LangDB) => {
-    console.log("Started: ", langDB.name);
+    console.log("Started: ", langDB.shortName);
     const url = URL_PREFIX + langDB.upstreamCSV;
 
     fetch(url).then((resp) => {
         resp.text().then((text) => {
-            console.log("Successfully fetched: ", langDB.name);
+            console.log("Successfully fetched: ", langDB.shortName);
             const entries = processCSV(text);
             writeFile(langDB, entries);
             writeLunrIndex(langDB, entries);

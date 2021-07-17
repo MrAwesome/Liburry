@@ -1,12 +1,12 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import {DBName, LangDB, PerDictResultsRaw} from "./types/dbTypes";
+import {DBShortName, LangDB, PerDictResultsRaw} from "./types/dbTypes";
 import {CancelablePromise} from "./types/general";
 import FuzzySortSearcher, {FUZZY_SCORE_LOWER_THRESHOLD} from "./search/FuzzySortSearcher";
 import LunrSearcher from "./search/LunrSearcher";
 
 export interface Searcher {
     searcherType: SearcherType;
-    dbName: DBName;
+    dbName: DBShortName;
     langDB: LangDB;
     debug: boolean;
     prepare(): Promise<void>;
@@ -36,7 +36,7 @@ export function getMaxScore(searcherType: SearcherType): number {
     }
 }
 
-export function getSearcher(searcherType: SearcherType, dbName: DBName, langDB: LangDB, debug: boolean): Searcher {
+export function getSearcher(searcherType: SearcherType, dbName: DBShortName, langDB: LangDB, debug: boolean): Searcher {
     switch (searcherType) {
         case SearcherType.FUZZYSORT:
             return new FuzzySortSearcher(dbName, langDB, debug);
@@ -55,7 +55,7 @@ export enum SearchFailure {
 
 // TODO: type promises
 export class OngoingSearch {
-    dbName: DBName;
+    dbName: DBShortName;
     query: string;
     searchPromise?: CancelablePromise<any>;
     parsePromise?: CancelablePromise<PerDictResultsRaw | SearchFailure>;
@@ -64,7 +64,7 @@ export class OngoingSearch {
     console: StubConsole;
 
     constructor(
-        dbName: DBName,
+        dbName: DBShortName,
         query: string = "",
         debug: boolean,
         searchPromise?: CancelablePromise<any>,

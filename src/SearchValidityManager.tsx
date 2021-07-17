@@ -1,13 +1,13 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {RETRY_ATTEMPTS} from "./searchSettings";
-import {DBName} from "./types/dbTypes";
+import {DBShortName} from "./types/dbTypes";
 import {mod} from "./utils";
 
 class SearchContext {
     query: string = "";
     invalidated: boolean = false;
-    completionStatus: Map<DBName, boolean> = new Map();
-    retries: Map<DBName, number> = new Map();
+    completionStatus: Map<DBShortName, boolean> = new Map();
+    retries: Map<DBShortName, number> = new Map();
 
     clear() {
         this.query = "";
@@ -65,7 +65,7 @@ export default class SearchInvalidationAndRetryManager {
     }
 
     // Check if the named DB can retry for the named searchID
-    acquireRetry(dbName: DBName, searchID: number): boolean {
+    acquireRetry(dbName: DBShortName, searchID: number): boolean {
         const currentAttempt = this.getSearch(searchID).retries;
         const retries = currentAttempt.get(dbName);
         if (retries === undefined) {
@@ -81,7 +81,7 @@ export default class SearchInvalidationAndRetryManager {
         }
     }
 
-    retriesRemaining(dbName: DBName, searchID: number): number {
+    retriesRemaining(dbName: DBShortName, searchID: number): number {
         const currentAttempt = this.getSearch(searchID).retries;
         const retries = currentAttempt.get(dbName);
         return retries ?? RETRY_ATTEMPTS;
@@ -104,14 +104,14 @@ export default class SearchInvalidationAndRetryManager {
 
     // NOTE: could check here if search was already started, but as long
     //       as we're always clearing it shouldn't be a problem
-    startSearches(query: string, dbNames: DBName[]) {
+    startSearches(query: string, dbNames: DBShortName[]) {
         this.getCurrentSearch().query = query;
 
         this.console.time(`search-${this.currentSearchID}`);
         dbNames.forEach((dbName) => this.getCurrentSearch().completionStatus.set(dbName, false))
     }
 
-    markSearchCompleted(dbName: DBName, searchID: number) {
+    markSearchCompleted(dbName: DBShortName, searchID: number) {
         this.getSearch(searchID).completionStatus.set(dbName, true)
 
         if (this.checkAllSearchesCompleted(searchID)) {

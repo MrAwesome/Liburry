@@ -1,9 +1,9 @@
 import FieldClassificationHandler from "./search/FieldClassificationHandler";
 import {typeGuard} from "./typeguard";
-import {DBName, PerDictResults, PerDictResultsRaw, SearchResultEntry} from "./types/dbTypes";
+import {DBShortName, PerDictResults, PerDictResultsRaw, SearchResultEntry} from "./types/dbTypes";
 
 export default class SearchResultsHolder {
-    currentResults: Map<DBName, PerDictResults> = new Map();
+    currentResults: Map<DBShortName, PerDictResults> = new Map();
     numResults: number = 0;
 
     addResults(res: PerDictResultsRaw, fieldHandler: FieldClassificationHandler): this {
