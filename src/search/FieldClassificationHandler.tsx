@@ -1,11 +1,11 @@
 import papaparse from "papaparse";
-import {DBColName, DBFullName, DBName, DisplayReadyField, SearchResultEntry} from "../types/dbTypes";
+import {DBColName, DBFullName, DisplayReadyField, SearchResultEntry} from "../types/dbTypes";
 
 export type DBColType = string;
 export type DBLangType = string;
 
 export interface DBColumnMetadataRaw {
-    db: DBName,
+    db: DBFullName,
     field: DBColName,
     type: DBColType,
     lang: DBLangType,
@@ -23,7 +23,7 @@ export class DBColumnMetadata {
         return new DBColumnMetadata(r);
     }
 
-    getDBName(): DBName {
+    getDBFullName(): DBFullName {
         return this.r.db;
     }
 
@@ -130,19 +130,17 @@ export class PromHolder<T extends NotAPromise> {
 //       maps of hotField -> DBColumnMetadata[] can be created for each DB
 export default class FieldClassificationHandler {
     isReal = true;
-    private readonly classificationsMap: Map<DBName, DBColumnMetadata[]>;
+    private readonly classificationsMap: Map<DBFullName, DBColumnMetadata[]>;
 
     private constructor(classifications: DBColumnMetadataRaw[]) {
         this.classificationsMap = new Map();
 
         classifications.forEach((cRaw) => {
             const meta = DBColumnMetadata.from(cRaw);
-            const dbName = meta.getDBName();
-            let dbCols = this.classificationsMap.get(dbName) ?? [];
-            this.classificationsMap.set(dbName, [...dbCols, meta]);
+            const dbFullName = meta.getDBFullName();
+            let dbCols = this.classificationsMap.get(dbFullName) ?? [];
+            this.classificationsMap.set(dbFullName, [...dbCols, meta]);
         });
-
-        this.getAllColumnMetadataFromEntry = this.getAllColumnMetadataFromEntry.bind(this);
     }
 
     // TODO: handle error?
@@ -154,39 +152,36 @@ export default class FieldClassificationHandler {
         return papaTextPromise(text).then((res) => new FieldClassificationHandler(res.data));
     }
 
-    get(dbName: DBName): DBColumnMetadata[] {
-        const res = this.classificationsMap.get(dbName);
+    get(dbFullName: DBFullName): DBColumnMetadata[] {
+        const res = this.classificationsMap.get(dbFullName);
         if (res === undefined) {
             // TODO: Handle this more gracefully?
-            throw new Error(`Unknown DB: ${dbName}`);
+            throw new Error(`Unknown DB: ${dbFullName}`);
         } else {
             return res;
         }
     }
 
-    getAllColumnMetadataFromEntry(entry: SearchResultEntry): DBColumnMetadata[] {
-        return this.get(entry.getDBFullName());
-    }
-
-    getColumnMetadata(dbName: DBFullName, colName: DBColName): DBColumnMetadata {
-        const allCols = this.get(dbName);
+    getColumnMetadata(dbFullName: DBFullName, colName: DBColName): DBColumnMetadata {
+        const allCols = this.get(dbFullName);
         const meta = allCols.find((c) => c.getColumnName() === colName);
 
         if (meta !== undefined) {
             return meta;
         } else {
-            throw new Error(`No metadata for field "${colName}" in DB "${dbName}"!`);
+            throw new Error(`No metadata for field "${colName}" in DB "${dbFullName}"!`);
         }
     }
 
-    getAllLangs(dbName: DBFullName): DBLangType[] {
+    getAllLangs(entry: SearchResultEntry): DBLangType[] {
         const langs: Set<DBLangType> = new Set();
-        this.get(dbName).forEach((col) => langs.add(col.getLanguage()));
+        this.get(entry.getDBFullName()).forEach((col) => langs.add(col.getLanguage()));
         return Array.from(langs);
     }
 
     getFieldsOfType(entry: SearchResultEntry, type: DBColType): DisplayReadyField[] {
-        const colsOfType: DBColumnMetadata[] = this.getAllColumnMetadataFromEntry(entry).filter((col) => col.getDataType() === type);
+        const dbFullName = entry.getDBFullName();
+        const colsOfType: DBColumnMetadata[] = this.get(dbFullName).filter((col) => col.getDataType() === type);
         return entry.getFields().filter(
             (field) => colsOfType.find(
                 (col) => col.getColumnName() === field.getColumnName()
