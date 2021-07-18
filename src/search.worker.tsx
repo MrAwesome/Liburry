@@ -17,10 +17,10 @@ export type SearchWorkerCommandMessage =
 
 export type SearchSuccessPayload = {dbName: DBShortName, query: string, results: PerDictResultsRaw, searchID: number};
 export type SearchWorkerResponseMessage =
-    { resultType: SearchWorkerResponseType.CANCELED, payload: {dbName: DBShortName, query: string, searchID: number} } |
-    { resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: SearchSuccessPayload } |
-    { resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {dbName: DBShortName, query: string, searchID: number, failure: SearchFailure} } |
-    { resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbName: DBShortName} };
+    {resultType: SearchWorkerResponseType.CANCELED, payload: {dbName: DBShortName, query: string, searchID: number}} |
+    {resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: SearchSuccessPayload} |
+    {resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {dbName: DBShortName, query: string, searchID: number, failure: SearchFailure}} |
+    {resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbName: DBShortName}};
 
 type WorkerInitializedState =
     {init: WorkerInitState.UNINITIALIZED} |
@@ -52,6 +52,9 @@ export enum SearchWorkerResponseType {
     SEARCH_SUCCESS = "SEARCH_SUCCESS",
 }
 
+function isResults(results: any): results is PerDictResultsRaw {
+    return 'results' in results;
+}
 
 class SearchWorkerHelper {
     state: WorkerInitializedState = {init: WorkerInitState.UNINITIALIZED};
@@ -96,13 +99,11 @@ class SearchWorkerHelper {
                 if (ongoingSearch instanceof OngoingSearch) {
                     const originalState = this.state;
                     this.state = {...originalState, init: WorkerInitState.SEARCHING, ogs: ongoingSearch, searchID};
-                    ongoingSearch.parsePromise?.then((results) => {
-
-                        // TODO: XXX: find a better way to assert enum type. (I'm on a plane and don't know TS. Forgive me.)
-                        if ((results as PerDictResultsRaw).results !== undefined) {
-                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results: results as PerDictResultsRaw, dbName, searchID}});
+                    ongoingSearch.parsePromise?.then((resultsOrFailure) => {
+                        if (isResults(resultsOrFailure)) {
+                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results: resultsOrFailure, dbName, searchID}});
                         } else {
-                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbName, searchID, failure: results as SearchFailure}});
+                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbName, searchID, failure: resultsOrFailure}});
                         }
                         this.state = originalState;
                     });

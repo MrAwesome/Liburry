@@ -57,6 +57,10 @@ interface NotAPromise {
     isReal: boolean,
 }
 
+function isMyNotAPromise(obj: any): obj is NotAPromise {
+    return 'isReal' in obj;
+}
+
 export type PromHolderState<T> =
     { state: "uninitialized" } |
     { state: "loading", promise: Promise<T> } |
@@ -71,8 +75,7 @@ export class PromHolder<T extends NotAPromise> {
         this.setValue = this.setValue.bind(this);
         if (val === null) {
             this.state = { state: "uninitialized" }
-        // TODO: better typecasting (once again, I am on a plane)
-        } else if ((val as T).isReal === false) {
+        } else if (!isMyNotAPromise(val)) {
             const promise = val as Promise<T>
             this.state = { state: "loading", promise };
             promise.then((value) => this.setValue(value));
