@@ -1,4 +1,5 @@
 import {SearcherType} from "./search";
+import type {DBLangType} from "./search/FieldClassificationHandler";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
 export default class ChhaTaigiOptions {
@@ -7,4 +8,5 @@ export default class ChhaTaigiOptions {
     query: string = "";
     debug: boolean = false;
     agnostic: boolean = false;
+    languageTEMPORARY: DBLangType = "poj";
 }

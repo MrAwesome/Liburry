@@ -131,6 +131,8 @@ export class PromHolder<T extends NotAPromise> {
 
 // NOTE: in the unlikely event that all of the finding this class does becomes a performance hit (it is O(N)),
 //       maps of hotField -> DBColumnMetadata[] can be created for each DB
+// NOTE: this class is quite brittle, and could probably be well served by being replaced by a collection library
+// TODO: this class is doing far too much - it should just return the data, and let any filtering on metadata happen downstream in another class
 export default class FieldClassificationHandler {
     isReal = true;
     private readonly classificationsMap: Map<DBFullName, DBColumnMetadata[]>;
@@ -191,6 +193,27 @@ export default class FieldClassificationHandler {
             (field) => colsOfType.find(
                 (col) => col.getColumnName() === field.getColumnName()
             ));
+    }
+
+    getFieldsOfLang(entry: SearchResultEntry, needles: DBLangType | DBLangType[]): DisplayReadyField[] {
+        let langs = Array.isArray(needles) ? needles : [needles];
+        const dbFullName = entry.getDBFullName();
+        const colsOfType: DBColumnMetadata[] = this.get(dbFullName).filter(
+            (col) => langs.includes(col.getLanguage()));
+        return entry.getFields().filter(
+            (field) => colsOfType.find(
+                (col) => col.getColumnName() === field.getColumnName()
+            ));
+    }
+
+    getFieldsOfTypeAndLang(
+        entry: SearchResultEntry,
+        unspType: DBColType | DBColType[],
+        lang: DBLangType,
+    ): DisplayReadyField[] {
+        const ofLang = this.getFieldsOfLang(entry, lang);
+        const ofType = this.getFieldsOfType(entry, unspType);
+        return ofLang.filter((r) => ofType.includes(r));
     }
 
     // TODO: store these in yaml/etc (probably per-db, or at least with the option of override), instead of here

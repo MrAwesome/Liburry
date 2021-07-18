@@ -1,5 +1,5 @@
 import {DBSearchRanking} from "../search";
-import FieldClassificationHandler, {DBColType, DBColumnMetadata} from "../search/FieldClassificationHandler";
+import FieldClassificationHandler, {DBColType, DBColumnMetadata, DBLangType} from "../search/FieldClassificationHandler";
 
 // TODO: move the code here that isn't type-only somewhere else
 
@@ -111,6 +111,10 @@ export class DisplayReadyField {
 
     getDataType(): DBColType {
         return this.metadata.getDataType();
+    }
+
+    getLanguage(): DBLangType {
+        return this.metadata.getLanguage();
     }
 
     getDBName(): DBShortName {

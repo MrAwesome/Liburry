@@ -1,10 +1,11 @@
 import * as React from "react";
 import {createMatchElement} from "../fuzzySortReactUtils";
-import FieldClassificationHandler from "../search/FieldClassificationHandler";
+import FieldClassificationHandler, {DBLangType} from "../search/FieldClassificationHandler";
 import {SearchResultEntry} from "../types/dbTypes";
 
 type AECProps = {
     debug: boolean,
+    lang: DBLangType,
     //langOptions={langOptions}
     fieldHandler: FieldClassificationHandler,
     entry: SearchResultEntry,

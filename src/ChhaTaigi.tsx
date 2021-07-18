@@ -162,6 +162,11 @@ import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 //      6) regenerate fuzzy index (and lunr?) on the fly when objects change
 //      7) test performance
 //      8) create settings page with language toggle?
+//
+// Project: multi-language interface
+//      1) add a yaml with internationalizations
+//      2) populate it entirely with english for now, but pull in text for components from it
+//      3) create a selectable option for interface language
 
 const queryStringHandler = new QueryStringHandler();
 
@@ -346,6 +351,7 @@ export class ChhaTaigi extends React.Component<Partial<{
                 if (options.agnostic) {
                     return <AgnosticEntryContainer
                         debug={options.debug}
+                        lang={options.languageTEMPORARY}
                         //langOptions={langOptions}
                         fieldHandler={fieldHandler}
                         entry={entry}
