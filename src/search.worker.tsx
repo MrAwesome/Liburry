@@ -53,7 +53,7 @@ export enum SearchWorkerResponseType {
 }
 
 function isResults(results: any): results is PerDictResultsRaw {
-    return 'results' in results;
+    return (results as PerDictResultsRaw).results !== undefined;
 }
 
 class SearchWorkerHelper {

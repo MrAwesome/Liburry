@@ -58,7 +58,7 @@ interface NotAPromise {
 }
 
 function isMyNotAPromise(obj: any): obj is NotAPromise {
-    return 'isReal' in obj;
+    return (obj as NotAPromise).isReal !== undefined;
 }
 
 export type PromHolderState<T> =
@@ -155,10 +155,10 @@ export default class FieldClassificationHandler {
         return papaTextPromise(text).then((res) => new FieldClassificationHandler(res.data));
     }
 
+    // TODO: Handle error more gracefully?
     get(dbFullName: DBFullName): DBColumnMetadata[] {
         const res = this.classificationsMap.get(dbFullName);
         if (res === undefined) {
-            // TODO: Handle this more gracefully?
             throw new Error(`Unknown DB: ${dbFullName}`);
         } else {
             return res;

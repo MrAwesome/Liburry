@@ -23,7 +23,6 @@ import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 
 // TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
-// TODO(urgent): see why double-search is happening locally
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`
 // TODO(high): look into strange behavior of fuzzysort mark generation (did it work before and broke recently, or was it always broken? - try "alexander")
 // TODO(high): different debug levels, possibly use an upstream lib for logging
@@ -61,6 +60,7 @@ import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 // TODO(high): investigate more performant search solutions (lunr, jssearch, etc)
 // TODO(high): benchmark, evaluate search/render perf, especially with multiple databases
 // TODO(high): keyboard shortcuts
+// TODO(mid): see why double-search is happening locally (most likely safemode)
 // TODO(mid): with fuzzysort, just ignore dashes and spaces? or search once with them included and once without?
 // TODO(mid): try out https://github.com/nol13/fuzzball.js
 // TODO(mid): show bottom bar with links to different modes
@@ -135,14 +135,14 @@ import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 //      1) DONE: create a Searcher interface to abstract away the direct reliance on fuzzysort in the workers
 //      2) DONE: find a suitably simple alternative to test, and implement Searcher for it
 //      3) remove remaining reliance on fuzzy variables (note debug mode score threshold - which is hard for lunr, since BM25 is not normalized)
-//      4) test out lovefield, lunr.js [DONE], and js-search
+//      4) test out lovefield, lunr.js [DONE], fuzzball, and js-search
 //
 // Project: Integration tests
-//      1) Determine how to mock
-//      2) Mock out calls to search worker initialization
-//      3) Simulate worker responses, if possible. If not, set fake results directly.
+//      1) DONE: Determine how to mock
+//      2) DONE: Mock out calls to search worker initialization
+//      3) DONE: Simulate worker responses, if possible. If not, set fake results directly.
 //      4) Test for the display of:
-//          a) entries, when results are populated
+//          a) DONE: entries, when results are populated
 //          b) about/contact/etc pages, when appropriate MainDisplayAreaMode is set
 //          c) inverse when above aren't true
 //
@@ -154,8 +154,10 @@ import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 // Project: Taibun definitions
 //      1) DONE: generalize "english" to definition
 //      2) DONE: create more flexible data structure
-//      3) handle poj_normalized and kip_normalized
-//      4) create a better config format (yaml?)
+//      3) DONE(ish): handle poj_normalized and kip_normalized
+//
+//      4) Add configuration for all
+//         4) create a better config format (yaml?)
 //      5) note (in configuration) which text an alt text is for?
 //      6) regenerate fuzzy index (and lunr?) on the fly when objects change
 //      7) test performance
