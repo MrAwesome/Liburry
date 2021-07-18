@@ -229,13 +229,12 @@ export class ChhaTaigi extends React.Component<Partial<{
     }
 
     overrideResultsForTests() {
-        if (runningInJest()) {
-            const {mockResults, overrideFieldHandler} = this.props;
-            if (mockResults !== undefined) {
-                if (overrideFieldHandler !== undefined) {
-                    this.state.resultsHolder.addResults(mockResults, overrideFieldHandler);
-                }
-            }
+        const {mockResults, overrideFieldHandler} = this.props;
+        if (runningInJest() &&
+            mockResults !== undefined &&
+            overrideFieldHandler !== undefined
+        ) {
+            this.state.resultsHolder.addResults(mockResults, overrideFieldHandler);
         }
     }
 
