@@ -1,7 +1,7 @@
 import SearchValidityManager from "./SearchValidityManager";
 
 test('search validity', () => {
-    const vman = new SearchValidityManager(true);
+    const vman = new SearchValidityManager(false);
     const searchID = vman.currentSearchID;
     vman.bump();
     expect(vman.isInvalidated(searchID)).toBe(false);
@@ -11,7 +11,7 @@ test('search validity', () => {
 
 test('search retry', () => {
     const dbName = "fakedb";
-    const vman = new SearchValidityManager(true);
+    const vman = new SearchValidityManager(false);
     const searchID = vman.currentSearchID;
 
     const numRetries = vman.retriesRemaining(dbName, searchID);
@@ -24,7 +24,7 @@ test('search retry', () => {
 test('search completion', () => {
     const query = "fakesearch";
     const dbs = ["fake_mk", "fake_emb", "fake_gik"];
-    const vman = new SearchValidityManager(true);
+    const vman = new SearchValidityManager(false);
     const searchID = vman.currentSearchID;
     vman.startSearches(query, dbs);
     expect(vman.checkAllSearchesCompleted(searchID)).toBe(false);
