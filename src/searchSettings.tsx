@@ -54,4 +54,15 @@ export const DATABASES: Map<string, LangDB> = makeNameToObjMapping([
         upstreamCSV: "ChhoeTaigi_TaioanPehoeKichhooGiku.csv",
         dbDescLink: `${CTD}#8-1956-%E5%8F%B0%E7%81%A3%E7%99%BD%E8%A9%B1%E5%9F%BA%E7%A4%8E%E8%AA%9E%E5%8F%A5`,
     },
+    {
+        shortName: "sekin",
+        fullName: "ChhoeTaigi_BanglooMuitheSekin",
+        localCSV: "/db/sekin.csv",
+        localCSVVersion: 1,
+        localLunr: "/db/sekin.lunr.json",
+        localLunrVersion: 1,
+        upstreamCSV: "ChhoeTaigi_BanglooMuitheSekin.csv",
+        ///XXX TODO: add
+        dbDescLink: `${CTD}`
+    },
 ]);
