@@ -12,7 +12,6 @@ require("lunr-languages/lunr.multi")(lunr);
 
 // NOTE: You can run this code using: `yarn run webpack --config webpack.scripts.js && node build/server.js`
 // TODO: type "any" usage below
-//
 // TODO: unit test?
 
 //const langUtils = require("./languageUtils");

@@ -7,6 +7,7 @@ export function fromPojUnicodeToPojNormalized(pojUnicode: string) {
     return converted;
 }
 
+// NOTE: "nn" can be removed here, a kip user may know a preference.
 export function fromKipUnicodeToKipNormalized(kipUnicode: string) {
     const noBars = removeBars(kipUnicode);
     const converted = normalizeSync(noBars);

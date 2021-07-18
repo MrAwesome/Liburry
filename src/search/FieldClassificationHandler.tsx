@@ -62,9 +62,9 @@ function isMyNotAPromise(obj: any): obj is NotAPromise {
 }
 
 export type PromHolderState<T> =
-    { state: "uninitialized" } |
-    { state: "loading", promise: Promise<T> } |
-    { state: "loaded", value: T };
+    {state: "uninitialized"} |
+    {state: "loading", promise: Promise<T>} |
+    {state: "loaded", value: T};
 
 export class PromHolder<T extends NotAPromise> {
     state: PromHolderState<T>;
@@ -74,23 +74,23 @@ export class PromHolder<T extends NotAPromise> {
         this.setPromise = this.setPromise.bind(this);
         this.setValue = this.setValue.bind(this);
         if (val === null) {
-            this.state = { state: "uninitialized" }
+            this.state = {state: "uninitialized"}
         } else if (!isMyNotAPromise(val)) {
             const promise = val as Promise<T>
-            this.state = { state: "loading", promise };
+            this.state = {state: "loading", promise};
             promise.then((value) => this.setValue(value));
         } else {
-            this.state = { state: "loaded", value: val as T };
+            this.state = {state: "loaded", value: val as T};
         }
     }
 
     setPromise(promise: Promise<T>) {
-        this.state = { state: "loading", promise };
+        this.state = {state: "loading", promise};
         promise.then((value) => this.setValue(value));
     }
 
     setValue(value: T) {
-        this.state = { state: "loaded", value };
+        this.state = {state: "loaded", value};
     }
 
     isLoaded(): boolean {
@@ -182,19 +182,20 @@ export default class FieldClassificationHandler {
         return Array.from(langs);
     }
 
-    getFieldsOfType(entry: SearchResultEntry, type: DBColType): DisplayReadyField[] {
+    getFieldsOfType(entry: SearchResultEntry, unspType: DBColType | DBColType[]): DisplayReadyField[] {
+        let dataTypes = Array.isArray(unspType) ? unspType : [unspType];
         const dbFullName = entry.getDBFullName();
-        const colsOfType: DBColumnMetadata[] = this.get(dbFullName).filter((col) => col.getDataType() === type);
+        const colsOfType: DBColumnMetadata[] = this.get(dbFullName).filter(
+            (col) => dataTypes.includes(col.getDataType()));
         return entry.getFields().filter(
             (field) => colsOfType.find(
                 (col) => col.getColumnName() === field.getColumnName()
-        ));
+            ));
     }
 
-    // TODO: classify poj_normalized, and use col.type in (input + typing + normalized + alternate) as alttext
-    // XXX XXX
+    // TODO: store these in yaml/etc (probably per-db, or at least with the option of override), instead of here
     getAltTextsINCOMPLETE(entry: SearchResultEntry): DisplayReadyField[] {
-        return entry.getFields().filter((field) => (field.getColumnName() === "poj_input" || field.getColumnName() === "poj_normalized"));
+        return this.getFieldsOfType(entry, ["input", "normalized"]);
     }
 }
 
