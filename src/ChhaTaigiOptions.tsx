@@ -8,5 +8,6 @@ export default class ChhaTaigiOptions {
     query: string = "";
     debug: boolean = false;
     agnostic: boolean = false;
+    playground: boolean = false;
     languageTEMPORARY: DBLangType = "poj";
 }

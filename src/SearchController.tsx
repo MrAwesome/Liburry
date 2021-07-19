@@ -104,9 +104,8 @@ export default class SearchController {
                 const fh = this.eventuallyFieldHandler;
 
                 switch (fh.state.state) {
-                    case "uninitialized": {
+                    case "uninitialized": 
                         this.console.log("Attempted to use field handler before promise added.");
-                    }
                         break;
                     case "loading": {
                         this.console.log("Attempted to use field handler while promise is loading.");

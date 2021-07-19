@@ -1,7 +1,13 @@
-import type {DBShortName} from "./dbTypes";
+import type {DBShortName, PerDictResultsRaw} from "./dbTypes";
 import type ChhaTaigiOptions from "../ChhaTaigiOptions";
 import type SearchResultsHolder from "../SearchResultsHolder";
 import FieldClassificationHandler, {PromHolder} from "../search/FieldClassificationHandler";
+
+export type ChhaTaigiProps = Partial<{
+    options: ChhaTaigiOptions,
+    mockResults: PerDictResultsRaw,
+    overrideFieldHandler: FieldClassificationHandler,
+}>
 
 export interface ChhaTaigiState {
     options: ChhaTaigiOptions,

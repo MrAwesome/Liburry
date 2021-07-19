@@ -14,6 +14,7 @@ const DEBUG = "debug";
 const MAIN_MODE = "mode";
 const SEARCHER = "searcher";
 const AGNOSTIC = "agnostic";
+const PLAYGROUND = "playground";
 
 const QS_SORT_FN = (a: string, b: string) => {
     if (a === b) {
@@ -82,8 +83,10 @@ export default class QueryStringParser {
             options.query = q;
         }
 
+        // TODO: abstract away this process
         options.debug = parsed[DEBUG] !== undefined;
         options.agnostic = parsed[AGNOSTIC] !== undefined;
+        options.playground = parsed[PLAYGROUND] !== undefined;
 
         if (typeof mode === "string") {
             const modeUpper = mode.toUpperCase();

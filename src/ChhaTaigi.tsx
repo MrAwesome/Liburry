@@ -14,14 +14,14 @@ import SearchController from "./SearchController";
 
 import {runningInJest} from "./utils";
 import ChhaTaigiOptions from "./ChhaTaigiOptions";
-import {ChhaTaigiState} from "./types/mainAppState";
+import {ChhaTaigiProps, ChhaTaigiState} from "./types/mainAppState";
 
 import FieldClassificationHandler, {PromHolder} from "./search/FieldClassificationHandler";
 import EntryContainer from "./components/EntryContainer";
-import {PerDictResultsRaw} from "./types/dbTypes";
 import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 
 // TODO(urgent): see if poj_normalized can be committed upstream
+// TODO(urgent): only change hashtag on submit
 // TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`
 // TODO(high): look into strange behavior of fuzzysort mark generation (did it work before and broke recently, or was it always broken? - try "alexander")
@@ -125,6 +125,7 @@ import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 // TODO(later): run a spellchecker on "english"
 // TODO(later): WASM fast search
 // TODO(later): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
+// TODO(maybe): install a router library for handling e.g. playground
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
 // TODO(watch): keep an eye out for 200% CPU util. infinite search loop?
@@ -176,18 +177,14 @@ enum MountedState {
     UNMOUNTED = "UNMOUNTED",
 }
 
-export class ChhaTaigi extends React.Component<Partial<{
-    options: ChhaTaigiOptions,
-    mockResults: PerDictResultsRaw,
-    overrideFieldHandler: FieldClassificationHandler,
-}>, ChhaTaigiState> {
+export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     mountedState = MountedState.INIT;
     searchBar: React.RefObject<SearchBar>;
     console: StubConsole;
 
     searchController: SearchController;
 
-    constructor(props: any) {
+    constructor(props: ChhaTaigiProps) {
         super(props);
 
         // State initialization
@@ -258,6 +255,7 @@ export class ChhaTaigi extends React.Component<Partial<{
         }
     }
 
+    // TODO: get rid of this now that state is typed?
     getStateTyped(): ChhaTaigiState {
         return this.state as ChhaTaigiState;
     }
