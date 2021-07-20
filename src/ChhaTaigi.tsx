@@ -23,7 +23,8 @@ import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 // TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): only change hashtag on submit
 // TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
-// TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js`
+// TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js` - let different parts of the build process be run separately, and standardize/document what is run
+// TODO(high): loading bar for initial load, and for ongoing search (size of per-db bar based on number of entries, if known (can be generated during build process))
 // TODO(high): look into strange behavior of fuzzysort mark generation (did it work before and broke recently, or was it always broken? - try "alexander")
 // TODO(high): different debug levels, possibly use an upstream lib for logging
 // TODO(high): remember to handle "unknown" field type (and anything else) in display rules
@@ -165,7 +166,7 @@ import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
 //      8) create settings page with language toggle?
 //
 // Project: multi-language interface
-//      1) add a yaml with internationalizations
+//      1) add a yaml with internationalizations (start is in ~/ChhaTaigi/public/interface_text/main.yml)
 //      2) populate it entirely with english for now, but pull in text for components from it
 //      3) create a selectable option for interface language
 

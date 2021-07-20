@@ -1,0 +1,11 @@
+## TODO: double-check these
+## TODO: use correct language code, if exists?
+loading:
+  eng: "Loading..."
+  hoa: "進行..."
+  poj: "Chìn-hêng..."
+  kip: "Tsìn-hîng..."
+  taibun: "進行..."
+  taibun-poj: "進行..."
+  taibun-kip: "進行..."
+

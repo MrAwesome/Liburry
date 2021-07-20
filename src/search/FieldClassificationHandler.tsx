@@ -148,6 +148,7 @@ export default class FieldClassificationHandler {
         });
     }
 
+    // TODO: move csv file to yml, and include a version (in js) that can be bumped to force new classification
     // TODO: handle error?
     static async fetch(url: string = DEFAULT_FIELD_CLASSIFICATION_DB): Promise<FieldClassificationHandler> {
         return papaParsePromise(url).then((res) => new FieldClassificationHandler(res.data));

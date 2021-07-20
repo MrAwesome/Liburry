@@ -16,7 +16,6 @@ const options = queryStringHandler.parse();
 
 let app: JSX.Element;
 
-console.log(options);
 if (options.playground) {
     app = <ChhaTaigiPlayground options={options}/>;
 } else {
