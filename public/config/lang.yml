@@ -1,0 +1,12 @@
+eng:
+  displayName: "English"
+
+hoabun: 
+  displayName: "華文"
+
+poj:
+  displayName: "Pe̍h-ōe-jī"
+
+# TODO: check the actual name used
+kip:
+  displayName: "Kàu-io̍k-pōo"

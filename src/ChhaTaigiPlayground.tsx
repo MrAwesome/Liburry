@@ -1,7 +1,7 @@
 import * as React from "react";
-import yaml from "yaml";
 
 import ChhaTaigiOptions from "./ChhaTaigiOptions";
+import ConfigHandler from "./configHandler/ConfigHandler";
 
 // TODO: add yaml to service worker! (? - worth it for speed? does complicate config changes)
 // TODO: determine format/location (probably local userstorage) for user config
@@ -27,18 +27,15 @@ export class ChhaTaigiPlayground extends React.Component<ChhaTaigiPlaygroundProp
             output: "",
         }
     }
-    
+
     componentDidMount() {
-        fetch("TEST_YAML.yml").then((resp) => resp.text()).then((yamlText) => {
-            const muh = yaml.parse(yamlText);
-            console.log(muh);
-        });
+        const configHandler = new ConfigHandler(this.props.options.appName);
+        configHandler.loadLanguageConfigs().then((conf) => console.log(conf));
     }
 
     render() {
         const output = this.state.output;
         return <div>{output}</div>;
-        
     }
 }
 
