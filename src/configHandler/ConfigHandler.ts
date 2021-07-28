@@ -2,7 +2,7 @@ import fs from 'fs';
 import yaml from "yaml";
 import {AppName} from "../ChhaTaigiOptions";
 import {promisify} from 'util';
-import {FieldDisplayType} from '../types/displayTypes';
+import {AllDBConfig, AppConfig, LanguageConfig} from '../types/config';
 
 const PUBLIC_PREFIX = "public/";
 
@@ -10,8 +10,7 @@ const CONFIG_FILENAME_LANG = "lang";
 const CONFIG_FILENAME_APP = "app";
 const CONFIG_FILENAME_DB = "db";
 
-// TODO: Unit test!!
-
+// TODO: determine how to force strong typing at load time
 export default class ConfigHandler {
     constructor(
         private appName: AppName,
@@ -44,48 +43,6 @@ export default class ConfigHandler {
         });
     }
     // TODO: consider having multiple files for language, since it can get rather large?
-}
-
-interface LanguageConfig {
-    [langName: string]: {
-        displayName: string
-    }
-}
-
-interface AppConfig {
-    name: string,
-    displayName: string,
-    interfaceLangs: string[],
-}
-
-interface AllDBConfig {
-    [dbName: string]: DBConfig,
-}
-
-interface DBConfig {
-   fullIdentifier: string,
-   shortNameForDisplay: string,
-
-    // TODO: strongly type these, and enforce type conformance
-   loadInfo: {
-       format: string,
-       location: string,
-    }
-
-    // TODO: ensure only valid langs
-    vocabLangs: string[],
-
-    fields: FieldConfig,
-
-    otherMetadata: {
-       [s: string]: any,
-    }
-}
-
-interface FieldConfig {
-    name: string,
-    displayType: FieldDisplayType,
-    delimiter?: string,
 }
 
 async function loadYaml<T>(url: string, localMode: boolean): Promise<T> {

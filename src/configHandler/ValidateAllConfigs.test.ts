@@ -26,4 +26,4 @@ test('app configs', async () => {
 test('db configs', async () => {
     const ch = new ConfigHandler("taigi.us", true);
     const configs = await ch.loadDBConfig();
-}
+});

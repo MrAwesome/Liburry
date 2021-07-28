@@ -1,0 +1,17 @@
+giku:
+  fullIdentifier: "ChhoeTaigi_TaioanPehoeKichhooGiku"
+  displayShortName: "giku"
+
+  loadInfo:
+    format: "local_csv"
+    location: "/db/giku.csv"
+
+  vocabLangs:
+    - tw_kip
+    - tw_poj
+
+  definitionLangs:
+    - english
+    - mandarin
+
+  fields: FieldConfig,

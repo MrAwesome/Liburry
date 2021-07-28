@@ -6,7 +6,16 @@ export enum MainDisplayAreaMode {
     SETTINGS = "SETTINGS",
 }
 
-export type FieldDisplayType =
+export type KnownDisplayTypeEntry =
+    { appType: "dictionary", fieldType: DictionaryFieldDisplayType};
+
+export interface HasFieldDisplayTypeToAreaMapping<FT, DA> {
+    fieldDisplayTypeToDisplayRule(fieldDisplayType: FT): DA;
+}
+
+// NOTE: this are still somewhat specific to taigi.us - can they be abstracted per-app?
+// NOTE: for perf, this can/could be an enum (doubtful that it will matter for a long, long time)
+export type DictionaryFieldDisplayType =
     "base_phrase" |
     "channel_name" |
     "class" |
@@ -24,8 +33,8 @@ export type FieldDisplayType =
     "measure_word" |
     "normalized" |
     "opposite" |
-    "other" |
-    "other_input" |
+    "other" | // TODO: more specific name for what this corresponds to (other versions of vocab)
+    "other_input" | // TODO: same
     "page_number" |
     "pos_classification" |
     "see_also" |
