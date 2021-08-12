@@ -50,7 +50,7 @@ const PAPAOPTS = {
     skipEmptyLines: true,
 };
 
-export const DEFAULT_FIELD_CLASSIFICATION_DB = "db/field_classification.csv";
+export const DEFAULT_FIELD_CLASSIFICATION_DB = "db/field_classification.csv?v=2";
 
 
 interface NotAPromise {
