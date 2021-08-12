@@ -4,6 +4,9 @@
 
 }
 
+
+/* TODO: set border box sizing by default */
+
 :root {
     --container-bg-color: #fff1e5;
     --container-light-color: #66605c;

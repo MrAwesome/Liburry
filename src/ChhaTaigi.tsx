@@ -17,8 +17,8 @@ import ChhaTaigiOptions from "./ChhaTaigiOptions";
 import {ChhaTaigiProps, ChhaTaigiState} from "./types/mainAppState";
 
 import FieldClassificationHandler, {PromHolder} from "./search/FieldClassificationHandler";
-import EntryContainer from "./components/EntryContainer";
-import AgnosticEntryContainer from "./components/AgnosticEntryContainer";
+import EntryContainer from "./entry_containers/EntryContainer";
+import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
 
 // TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): only change hashtag on submit
@@ -194,14 +194,13 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         const fieldHandlerProm = new PromHolder(this.props.overrideFieldHandler ?? null);
 
-        const state = {
+        this.state = {
             options: this.props.options ?? new ChhaTaigiOptions(),
             loadedDBs: new Map(initialDBLoadedMapping),
             resultsHolder: new SearchResultsHolder(),
             fieldHandlerProm,
         };
 
-        this.state = state;
 
         // Miscellaneous object initialization
         this.console = getDebugConsole(this.state.options.debug);

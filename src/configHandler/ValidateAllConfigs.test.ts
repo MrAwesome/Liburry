@@ -1,16 +1,16 @@
 import ConfigHandler from "./ConfigHandler";
 
-test('language configs', async () => {
-    // TODO: walk config directory, see all configs
-    const ch = new ConfigHandler("taigi.us", true);
-    const configs = await ch.loadLanguageConfigs();
-
-    // TODO: have yaml fail if doesn't match cast type
-    // TODO: for now, hardcode expected schema
-    for (const langKey in configs) {
-        expect(configs[langKey]).toHaveProperty("displayName");
-    }
-});
+//test('language configs', async () => {
+//    // TODO: walk config directory, see all configs
+//    const ch = new ConfigHandler("taigi.us", true);
+//    const configs = await ch.loadLanguageConfigs();
+//
+//    // TODO: have yaml fail if doesn't match cast type
+//    // TODO: for now, hardcode expected schema
+//    for (const langKey in configs) {
+//        expect(configs[langKey]).toHaveProperty("displayName");
+//    }
+//});
 
 test('app configs', async () => {
     const ch = new ConfigHandler("taigi.us", true);

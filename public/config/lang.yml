@@ -1,12 +1,46 @@
-eng:
-  displayName: "English"
+languageGroups:
+  english:
+    defaultDialect: eng_us
+    displayNames:
+      eng_us: "English"
+      tw_poj: "Eng-gí"
 
-hoabun: 
-  displayName: "華文"
+  taiwanese:
+    defaultDialect: tw_poj
+    displayNames:
+      english: "Taiwanese"
+      tw_poj: "Tâi-oân-ōe"
+    allowedTags:
+      representation:
+        - poj
+        - kip
+        - taibun
 
-poj:
-  displayName: "Pe̍h-ōe-jī"
+dialects:
+  tw_poj:
+    displayName: "Pe̍h-oē-jī"
+    displayNames:
+      eng_us: "Taiwanese (POJ)"
+      tw_poj: "Pe̍h-uē-jī"
+    parentGroups:
+      - taiwanese
+    tags:
+      representation: poj
 
-# TODO: check the actual name used
-kip:
-  displayName: "Kàu-io̍k-pōo"
+  tw_kip:
+    displayName: "Tâi-lô"
+    displayNames:
+      eng_us: "Taiwanese (KIP)"
+      tw_poj: "Pe̍h-uē-jī"
+    parentGroups:
+      - taiwanese
+    tags:
+      representation: kip
+
+  eng_us:
+    displayName: "English (US)"
+    displayNames:
+      tw_poj: "Eng-gí (Bí-kok)"
+      tw_kip: "Ing-gí (Bí-kok)"
+    parentGroups:
+      - english

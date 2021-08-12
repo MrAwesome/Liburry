@@ -1,0 +1,19 @@
+.agnostic-container {
+    border: 2px black solid;
+    display: absolute;
+}
+
+.agnostic-container-title-element {
+    padding-left: 4px;
+    border: 1px blue solid;
+}
+
+.agnostic-container-other_info {
+    display: relative;
+    float: bottom;
+}
+
+.agnostic-container-other_info-element {
+    border: 1px green solid;
+    padding-left: 32px;
+}

@@ -61,7 +61,7 @@ export default class LunrSearcher implements Searcher {
         const cancelableSearchPromise = makeCancelable(searchResultPromise());
 
         const parsePromise = cancelableSearchPromise.then(results => {
-            if ((results as lunr.Index.Result[]).length !== undefined) {
+            if ((results as lunr.Index.Result[]).reduce !== undefined) {
                 if (this.entries !== undefined) {
                     return this.searchInternal(results as lunr.Index.Result[], this.entries);
                 } else {

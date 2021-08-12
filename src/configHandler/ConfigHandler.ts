@@ -1,10 +1,6 @@
-import fs from 'fs';
-import yaml from "yaml";
 import {AppName} from "../ChhaTaigiOptions";
-import {promisify} from 'util';
 import {AllDBConfig, AppConfig, LanguageConfig} from '../types/config';
-
-const PUBLIC_PREFIX = "public/";
+import {loadYaml} from "../utils/yaml";
 
 const CONFIG_FILENAME_LANG = "lang";
 const CONFIG_FILENAME_APP = "app";
@@ -43,24 +39,4 @@ export default class ConfigHandler {
         });
     }
     // TODO: consider having multiple files for language, since it can get rather large?
-}
-
-async function loadYaml<T>(url: string, localMode: boolean): Promise<T> {
-    const textProm = loadYamlText(url, localMode);
-    return textProm.then((yamlText) => parseYaml(yamlText));
-}
-
-function loadYamlText(url: string, localMode: boolean) {
-    let prom: Promise<string>;
-    if (localMode) {
-        const readFile = promisify(fs.readFile);
-        prom = readFile(PUBLIC_PREFIX + url, null).then((r) => r.toString());
-    } else {
-        prom = fetch(url).then((r) => r.text());
-    }
-    return prom;
-}
-
-function parseYaml<T>(yamlText: string): T {
-    return yaml.parse(yamlText);
 }

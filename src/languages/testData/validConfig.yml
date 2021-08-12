@@ -1,0 +1,56 @@
+#languageGroups:
+#  fake1:
+#    defaultDialect: fake1_dialect1
+#    nameInDefaultDialect: "FAKE 1"
+#
+#  fake2:
+#    defaultDialect: fake2_dialect1
+#    nameInDefaultDialect: "FAKO 1"
+
+#allowedTags:
+#  representation:
+#    displayNames:
+#        fake1_dialect1: "REPRESENTATION"
+#        fake2_dialect1: "ROPROSONTATION"
+#        fake2_dialect2: "RUPRUSUNTATION"
+#    allowedKeys:
+#      repr1:
+#        displayNames:
+#          fake1_dialect1: "REPR 1"
+#          fake2_dialect1: "ROPR 1"
+#          fake2_dialect2: "RUPR 1"
+#      repr2:
+#        displayNames:
+#          fake1_dialect1: "REPR 2"
+#          fake2_dialect1: "ROPR 2"
+#          fake2_dialect2: "RUPR 2"
+
+dialects:
+  fake1_dialect1:
+    displayName: "FAKE1 (DIALECT1)"
+    namesForOtherDialects:
+      fake1_dialect1: "FAKE1 (DIALECT1)"
+      fake2_dialect2: "FAKE2 (DIALECT2)"
+
+  fake2_dialect1:
+    displayName: "FAKO2 (DIOLECT2)"
+    namesForOtherDialects:
+      fake1_dialect1: "FAKO1 (DIELOCT1)"
+      fake2_dialect2: "FAKO2 (DIELOCT2)"
+#    tags:
+#      representation:
+#        value: repr1
+#        displayKey: "ROPROSONTATION"
+#        displayVal: "ROPR1"
+
+
+  fake2_dialect2:
+    displayName: "FAKU2 (DIULECT2)"
+    namesForOtherDialects:
+      fake1_dialect1: "FAKU1 (DIELUCT1)"
+      fake2_dialect1: "FAKU2 (DIELUCT1)"
+#    tags:
+#      representation:
+#        value: repr2
+#        displayKey: "RUPRUSUNTATION"
+#        displayVal: "RUPR2"
