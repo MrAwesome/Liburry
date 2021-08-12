@@ -168,6 +168,8 @@ export default class FieldClassificationHandler {
         }
     }
 
+    // TODO: have this return an Option, and/or handle more gracefully upstream (this shouldn't cause a crash
+    //       if a field isn't available in a db despite being described in metata - that field should just be ignored)
     getColumnMetadata(dbFullName: DBFullName, colName: DBColName): DBColumnMetadata {
         const allCols = this.get(dbFullName);
         const meta = allCols.find((c) => c.getColumnName() === colName);
