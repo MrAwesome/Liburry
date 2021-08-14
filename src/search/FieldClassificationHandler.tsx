@@ -50,7 +50,9 @@ const PAPAOPTS = {
     skipEmptyLines: true,
 };
 
-export const DEFAULT_FIELD_CLASSIFICATION_DB = "db/field_classification.csv?v=2";
+export const DEFAULT_FIELD_CLASSIFICATION_DB_VERSION = "2";
+export const DEFAULT_FIELD_CLASSIFICATION_DB_FILENAME = "db/field_classification.csv";
+export const DEFAULT_FIELD_CLASSIFICATION_DB_URL = `${DEFAULT_FIELD_CLASSIFICATION_DB_FILENAME}?v=${DEFAULT_FIELD_CLASSIFICATION_DB_VERSION}`;
 
 
 interface NotAPromise {
@@ -150,7 +152,7 @@ export default class FieldClassificationHandler {
 
     // TODO: move csv file to yml, and include a version (in js) that can be bumped to force new classification
     // TODO: handle error?
-    static async fetch(url: string = DEFAULT_FIELD_CLASSIFICATION_DB): Promise<FieldClassificationHandler> {
+    static async fetch(url: string = DEFAULT_FIELD_CLASSIFICATION_DB_URL): Promise<FieldClassificationHandler> {
         return papaParsePromise(url).then((res) => new FieldClassificationHandler(res.data));
     }
 

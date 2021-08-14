@@ -6,7 +6,7 @@ import ChhaTaigiOptions from './ChhaTaigiOptions';
 import * as React from 'react';
 import {noop} from './utils';
 import {DBSearchRanking, SearcherType} from './search';
-import FieldClassificationHandler, {DEFAULT_FIELD_CLASSIFICATION_DB} from './search/FieldClassificationHandler';
+import FieldClassificationHandler, {DEFAULT_FIELD_CLASSIFICATION_DB_FILENAME} from './search/FieldClassificationHandler';
 import {MATCH_HTML_TAG} from './constants';
 
 // NOTE: just used to silence errors in node TSC.
@@ -28,7 +28,7 @@ test('render searchbar by default', () => {
 
 test('render single entry via override', async () => {
     // TODO: simplify this
-    const classificationText = fs.readFileSync("public/" + DEFAULT_FIELD_CLASSIFICATION_DB);
+    const classificationText = fs.readFileSync("public/" + DEFAULT_FIELD_CLASSIFICATION_DB_FILENAME);
     const fieldHandlerPromise = FieldClassificationHandler.fromText(classificationText.toString());
 
     let options = new ChhaTaigiOptions();
