@@ -1,15 +1,46 @@
-import {RawDialect, RawLangConfig} from "./yamlTypes";
+import {RawLangConfig, NamesForOtherDialects} from "./yamlTypes";
 import {loadTestYaml} from "../utils/yaml";
 
 test('parse test config', async () => {
     const testDataFilename = "src/languages/testData/validConfig.yml";
     const rawDialects: RawLangConfig = await loadTestYaml(testDataFilename);
     //validateRawLangConfigs([rawDialects]);
-    for (const dialectID in rawDialects.dialects) {
-        const dialect = rawDialects.dialects[dialectID];
-        expect(dialect).toBe<RawDialect>(dialect);
+
+    const d = rawDialects.dialects;
+    const f1d1 = d["fake1_dialect1"];
+    expect(f1d1.displayName).toEqual("FAKE1 (DIALECT1)");
+    if (f1d1.namesForOtherDialects !== undefined) {
+        expect(f1d1.namesForOtherDialects["fake2_dialect1"]).toContain("F1D1_F2D1");
+        expect(f1d1.namesForOtherDialects["fake2_dialect2"]).toContain("F1D1_F2D2");
+    } else {
+        throw "namesForOtherDialects not defined!";
+    }
+
+    const f2d1 = d["fake2_dialect1"];
+    expect(f2d1.displayName).toEqual("FAKE2 (DIALECT1)");
+    if (f2d1.namesForOtherDialects !== undefined) {
+        expect(f2d1.namesForOtherDialects["fake1_dialect1"]).toContain("F2D1_F1D1");
+        expect(f2d1.namesForOtherDialects["fake2_dialect2"]).toContain("F2D1_F2D2");
+    } else {
+        throw "namesForOtherDialects not defined!";
+    }
+
+    const f2d2 = d["fake2_dialect2"];
+    expect(f2d2.displayName).toEqual("FAKE2 (DIALECT2)");
+    if (f2d2.namesForOtherDialects !== undefined) {
+        expect(f2d2.namesForOtherDialects["fake1_dialect1"]).toContain("F2D2_F1D1");
+        expect(f2d2.namesForOtherDialects["fake2_dialect1"]).toContain("F2D2_F2D1");
+    } else {
+        throw "namesForOtherDialects not defined!";
     }
 });
+
+test('validate test config', async () => {
+    const testDataFilename = "src/languages/testData/validConfig.yml";
+    const rawDialects: RawLangConfig = await loadTestYaml(testDataFilename);
+    validateRawLangConfigs([rawDialects]);
+});
+
 
 // TODO: throw/assert instead
 export function validateRawLangConfigs(rawLangConfigs: RawLangConfig[]) {
@@ -43,9 +74,11 @@ export function validateRawLangConfigs(rawLangConfigs: RawLangConfig[]) {
 
         for (const dialectID in r.dialects) {
             const dialect = r.dialects[dialectID];
-            expect(dialect.displayName).toBeInstanceOf(String);
+            expect(typeof dialect.displayName).toBe("string");
             expect(dialect.displayName).toBeTruthy();
+            if (dialect.namesForOtherDialects !== undefined) {
+                expect(typeof dialect.namesForOtherDialects).toBe("object");
+            }
         }
     });
 }
-

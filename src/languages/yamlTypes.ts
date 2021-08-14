@@ -27,10 +27,14 @@ export interface RawLangConfig {
 export interface RawDialect {
     displayName: string,
     //{ [otherDialectID: string]: string },
-    namesForOtherDialects?: { [dialectID: string]: string },
+    namesForOtherDialects?: NamesForOtherDialects,
     //namesForOtherLangGroups?: { [dialectID: string]: string },
     //parentGroups?: RawUniqueLangID[],
     //letterCode?: string,
+}
+
+export interface NamesForOtherDialects {
+    [dialectID: string]: string
 }
 
 // TODO: in verification, ensure:
