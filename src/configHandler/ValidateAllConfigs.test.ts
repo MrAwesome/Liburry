@@ -1,3 +1,4 @@
+import LanguageHandler from "../languages/LanguageHandler";
 import ConfigHandler from "./ConfigHandler";
 
 //test('language configs', async () => {
@@ -23,7 +24,17 @@ test('app configs', async () => {
     expect(configs.interfaceLangs).toContain("eng");
 });
 
+// TODO: same handler pattern as below
 test('db configs', async () => {
     const ch = new ConfigHandler("taigi.us", true);
     const configs = await ch.loadDBConfig();
+    expect(configs["giku"]).toBeTruthy();
+});
+
+test('lang configs', async () => {
+    const ch = new ConfigHandler("taigi.us", true);
+    const rawLangConfig = await ch.loadLanguageConfigs();
+    const h = LanguageHandler.from(rawLangConfig);
+    const dialects = h.getAllDialects();
+    expect(dialects[0].getID()).toBe("tw_poj");
 });

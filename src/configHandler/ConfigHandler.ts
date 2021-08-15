@@ -1,5 +1,6 @@
 import {AppName} from "../ChhaTaigiOptions";
-import {AllDBConfig, AppConfig, LanguageConfig} from '../types/config';
+import {RawLangConfig} from "../languages/rawConfigTypes";
+import {AllDBConfig, AppConfig} from '../types/config';
 import {loadYaml} from "../utils/yaml";
 
 const CONFIG_FILENAME_LANG = "lang";
@@ -13,7 +14,7 @@ export default class ConfigHandler {
         private localMode: boolean = false,
     ) {}
 
-    async loadLanguageConfigs(): Promise<LanguageConfig> {
+    async loadLanguageConfigs(): Promise<RawLangConfig> {
         return this.loadConfigHeirarchy(CONFIG_FILENAME_LANG);
     }
 

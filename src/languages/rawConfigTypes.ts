@@ -13,7 +13,7 @@ export interface RawLangConfig {
 
     dialects: {
         // NOTE: langID is a RawUniqueDialectID (TypeScript doesn't allow type aliases in index signatures)
-        [dialectID: string]: RawDialect,
+        [rawDialectID: string]: RawDialect,
     }
 }
 
@@ -27,15 +27,15 @@ export interface RawLangConfig {
 export interface RawDialect {
     displayName: string,
     //{ [otherDialectID: string]: string },
-    namesForOtherDialects?: NamesForOtherDialects,
+    //
+    namesForOtherDialects?: {
+        [rawDialectID: string]: string
+    },
     //namesForOtherLangGroups?: { [dialectID: string]: string },
     //parentGroups?: RawUniqueLangID[],
     //letterCode?: string,
 }
 
-export interface NamesForOtherDialects {
-    [dialectID: string]: string
-}
 
 // TODO: in verification, ensure:
 //  [] all lang ids are unique

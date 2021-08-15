@@ -1,12 +1,6 @@
 import {KnownDisplayTypeEntry} from "./displayTypes";
 import {Language} from "./language";
 
-export interface LanguageConfig {
-    [langName: string]: {
-        displayName: string
-    }
-}
-
 export interface AppConfig {
     name: string,
     displayName: string,

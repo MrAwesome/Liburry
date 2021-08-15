@@ -1,28 +1,26 @@
-import {RawLanguage, RawLanguageSuperset} from "./types";
+import Dialect from "./dialect";
+import type {RawLangConfig} from "./rawConfigTypes";
 
 export default class LanguageHandler {
+    private dialects: Dialect[];
+
     constructor(
-        private langBag: RawLanguageSuperset,
+        rawLangConfig: RawLangConfig,
     ) {
-        this.getAllLangs = this.getAllLangs.bind(this);
-        this.getLangsHelper = this.getLangsHelper.bind(this);
+        this.dialects = [];
+        for (const rawDialectID in rawLangConfig.dialects) {
+            const rawDialect = rawLangConfig.dialects[rawDialectID];
+            this.dialects.push(Dialect.from(rawDialectID, rawDialect));
+        }
+        this.getAllDialects = this.getAllDialects.bind(this);
     }
 
-    getAllLangs(): Array<RawLanguage> {
-        return this.getLangsHelper(this.langBag);
+    static from(rawLangConfig: RawLangConfig): LanguageHandler {
+        return new this(rawLangConfig);
     }
 
-    private getLangsHelper(languageSuperset: RawLanguageSuperset): Array<RawLanguage> {
-        let output: Array<RawLanguage> = [];
-        languageSuperset.subLangs.forEach((maybeSuper) => {
-            if ((maybeSuper as RawLanguageSuperset).subLangs !== undefined) {
-                const subSuper = maybeSuper as RawLanguageSuperset;
-                output.push(...this.getLangsHelper(subSuper));
-            } else {
-                const lang = maybeSuper as RawLanguage;
-                output.push(lang);
-            }
-        });
-        return output;
+    getAllDialects(): Array<Dialect> {
+        return this.dialects;
     }
+
 }

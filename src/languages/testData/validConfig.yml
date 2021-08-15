@@ -1,3 +1,27 @@
+dialects:
+  fake1_dialect1:
+    displayName: "FAKE1 (DIALECT1)"
+    namesForOtherDialects:
+      fake2_dialect1: "F1D1_F2D1"
+      fake2_dialect2: "F1D1_F2D2"
+
+  fake2_dialect1:
+    displayName: "FAKE2 (DIALECT1)"
+    namesForOtherDialects:
+      fake1_dialect1: "F2D1_F1D1"
+      fake2_dialect2: "F2D1_F2D2"
+
+  fake2_dialect2:
+    displayName: "FAKE2 (DIALECT2)"
+    namesForOtherDialects:
+      fake1_dialect1: "F2D2_F1D1"
+      fake2_dialect1: "F2D2_F2D1"
+#    tags:
+#      representation:
+#        value: repr2
+#        displayKey: "RUPRUSUNTATION"
+#        displayVal: "RUPR2"
+#
 #languageGroups:
 #  fake1:
 #    defaultDialect: fake1_dialect1
@@ -22,33 +46,32 @@
 #          fake1_dialect1: "REPR 2"
 #          fake2_dialect1: "ROPR 2"
 #          fake2_dialect2: "RUPR 2"
+#
+#
+#
+# const TW_POJ: RawLanguage = {
+#     langID: "tw_poj",
+#     displayNames: {
+#         english: "Taiwanese (POJ)",
+#         tw_poj: "Pe̍h-ōe-jī",
+#         tw_kip: "Pe̍h-uē-jī",
+#         mandarin: "白話字",
+#         taibun: "白話字",
+#         taibun_poj: "白話字",
+#         taibun_kip: "白話字",
+#     }
+# };
+#
+# const ENGLISH: RawLanguage = {
+#     langID: "english",
+#     displayNames: {
+#         english: "English",
+#         tw_poj: "Eng-gí",
+#         tw_kip: "Ing-gí",
+#         mandarin: "英語",
+#         taibun: "英語",
+#         taibun_poj: "英語",
+#         taibun_kip: "英語",
+#     }
+# };
 
-dialects:
-  fake1_dialect1:
-    displayName: "FAKE1 (DIALECT1)"
-    namesForOtherDialects:
-      fake2_dialect1: "F1D1_F2D1"
-      fake2_dialect2: "F1D1_F2D2"
-
-  fake2_dialect1:
-    displayName: "FAKE2 (DIALECT1)"
-    namesForOtherDialects:
-      fake1_dialect1: "F2D1_F1D1"
-      fake2_dialect2: "F2D1_F2D2"
-#    tags:
-#      representation:
-#        value: repr1
-#        displayKey: "ROPROSONTATION"
-#        displayVal: "ROPR1"
-
-
-  fake2_dialect2:
-    displayName: "FAKE2 (DIALECT2)"
-    namesForOtherDialects:
-      fake1_dialect1: "F2D2_F1D1"
-      fake2_dialect1: "F2D2_F2D1"
-#    tags:
-#      representation:
-#        value: repr2
-#        displayKey: "RUPRUSUNTATION"
-#        displayVal: "RUPR2"

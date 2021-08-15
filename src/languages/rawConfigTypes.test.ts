@@ -1,12 +1,11 @@
-import {RawLangConfig, NamesForOtherDialects} from "./yamlTypes";
+import {RawLangConfig} from "./rawConfigTypes";
 import {loadTestYaml} from "../utils/yaml";
 
 test('parse test config', async () => {
     const testDataFilename = "src/languages/testData/validConfig.yml";
-    const rawDialects: RawLangConfig = await loadTestYaml(testDataFilename);
-    //validateRawLangConfigs([rawDialects]);
+    const rawLangConfig: RawLangConfig = await loadTestYaml(testDataFilename);
 
-    const d = rawDialects.dialects;
+    const d = rawLangConfig.dialects;
     const f1d1 = d["fake1_dialect1"];
     expect(f1d1.displayName).toEqual("FAKE1 (DIALECT1)");
     if (f1d1.namesForOtherDialects !== undefined) {
@@ -37,8 +36,8 @@ test('parse test config', async () => {
 
 test('validate test config', async () => {
     const testDataFilename = "src/languages/testData/validConfig.yml";
-    const rawDialects: RawLangConfig = await loadTestYaml(testDataFilename);
-    validateRawLangConfigs([rawDialects]);
+    const rawLangConfig: RawLangConfig = await loadTestYaml(testDataFilename);
+    validateRawLangConfigs([rawLangConfig]);
 });
 
 

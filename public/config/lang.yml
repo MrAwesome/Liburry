@@ -1,37 +1,37 @@
-languageGroups:
-  english:
-    defaultDialect: eng_us
-    displayNames:
-      eng_us: "English"
-      tw_poj: "Eng-gí"
-
-  taiwanese:
-    defaultDialect: tw_poj
-    displayNames:
-      english: "Taiwanese"
-      tw_poj: "Tâi-oân-ōe"
-    allowedTags:
-      representation:
-        - poj
-        - kip
-        - taibun
-
+#languageGroups:
+#  english:
+#    defaultDialect: eng_us
+#    displayNames:
+#      eng_us: "English"
+#      tw_poj: "Eng-gí"
+#
+#  taiwanese:
+#    defaultDialect: tw_poj
+#    displayNames:
+#      english: "Taiwanese"
+#      tw_poj: "Tâi-oân-ōe"
+#    allowedTags:
+#      representation:
+#        - poj
+#        - kip
+#        - taibun
+#
 dialects:
   tw_poj:
     displayName: "Pe̍h-oē-jī"
-    displayNames:
-      eng_us: "Taiwanese (POJ)"
-      tw_poj: "Pe̍h-uē-jī"
-    parentGroups:
-      - taiwanese
-    tags:
-      representation: poj
+#    displayNames:
+#      eng_us: "Taiwanese (POJ)"
+#      tw_poj: "Pe̍h-uē-jī"
+#    parentGroups:
+#      - taiwanese
+#    tags:
+#      representation: poj
 
   tw_kip:
     displayName: "Tâi-lô"
-    displayNames:
-      eng_us: "Taiwanese (KIP)"
-      tw_poj: "Pe̍h-uē-jī"
+#    displayNames:
+#      eng_us: "Taiwanese (KIP)"
+#      tw_poj: "Pe̍h-uē-jī"
     parentGroups:
       - taiwanese
     tags:
@@ -39,8 +39,8 @@ dialects:
 
   eng_us:
     displayName: "English (US)"
-    displayNames:
-      tw_poj: "Eng-gí (Bí-kok)"
-      tw_kip: "Ing-gí (Bí-kok)"
-    parentGroups:
-      - english
+#    displayNames:
+#      tw_poj: "Eng-gí (Bí-kok)"
+#      tw_kip: "Ing-gí (Bí-kok)"
+#    parentGroups:
+#      - english
