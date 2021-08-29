@@ -1,16 +1,17 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import {DBShortName, LangDB, PerDictResultsRaw} from "./types/dbTypes";
+import {PerDictResultsRaw} from "./types/dbTypes";
 import {CancelablePromise} from "./types/general";
-import FuzzySortSearcher, {FUZZY_SCORE_LOWER_THRESHOLD} from "./search/FuzzySortSearcher";
-import LunrSearcher from "./search/LunrSearcher";
+import {FuzzySortPreparer, FUZZY_SCORE_LOWER_THRESHOLD} from "./search/FuzzySortSearcher";
+import {LunrPreparer} from "./search/LunrSearcher";
+import {DBConfig, DBIdentifier} from "./types/config";
 
-export interface Searcher {
-    searcherType: SearcherType;
-    dbName: DBShortName;
-    langDB: LangDB;
-    debug: boolean;
-    prepare(): Promise<void>;
-    search(query: string): OngoingSearch | SearchFailure;
+export abstract class SearcherPreparer {
+    abstract prepare(): Promise<Searcher>;
+}
+
+export abstract class Searcher {
+    // TODO: more granular search args are needed.
+    abstract search(query: string): OngoingSearch | SearchFailure;
 }
 
 export enum SearcherType {
@@ -36,13 +37,13 @@ export function getMaxScore(searcherType: SearcherType): number {
     }
 }
 
-export function getSearcher(searcherType: SearcherType, dbName: DBShortName, langDB: LangDB, debug: boolean): Searcher {
+export function getSearcherPreparer(searcherType: SearcherType, dbIdentifier: DBIdentifier, dbConfig: DBConfig, debug: boolean): SearcherPreparer {
     switch (searcherType) {
         case SearcherType.FUZZYSORT:
-            return new FuzzySortSearcher(dbName, langDB, debug);
+            return new FuzzySortPreparer(dbConfig, debug);
         case SearcherType.LUNR:
             // TODO: implement for lunr
-            return new LunrSearcher(dbName, langDB, debug);
+            return new LunrPreparer(dbConfig, debug);
     }
 }
 
@@ -55,7 +56,7 @@ export enum SearchFailure {
 
 // TODO: type promises
 export class OngoingSearch {
-    dbName: DBShortName;
+    dbIdentifier: DBIdentifier;
     query: string;
     searchPromise?: CancelablePromise<any>;
     parsePromise?: CancelablePromise<PerDictResultsRaw | SearchFailure>;
@@ -64,16 +65,16 @@ export class OngoingSearch {
     console: StubConsole;
 
     constructor(
-        dbName: DBShortName,
+        dbIdentifier: DBIdentifier,
         query: string = "",
         debug: boolean,
         searchPromise?: CancelablePromise<any>,
         parsePromise?: CancelablePromise<PerDictResultsRaw | SearchFailure>,
     ) {
         this.console = getDebugConsole(debug);
-        this.console.time("asyncSearch-" + dbName);
+        this.console.time("asyncSearch-" + dbIdentifier);
         this.query = query;
-        this.dbName = dbName;
+        this.dbIdentifier = dbIdentifier;
 
         if (query === "") {
             this.completed = true;
@@ -94,7 +95,7 @@ export class OngoingSearch {
 
     markCompleted(): void {
         this.completed = true;
-        this.console.timeEnd("asyncSearch-" + this.dbName);
+        this.console.timeEnd("asyncSearch-" + this.dbIdentifier);
     }
 
     markCanceled(): void {

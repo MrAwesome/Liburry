@@ -1,8 +1,12 @@
+// XXX TODO: this should be converted to use the YAML configs (and live elsewhere)
+//
+// TODO: determine if lunr indexes should be generated
+// TODO: this code should all live in a separate repo with the yml config, and "upstreamCSV" should be stored nearby
 import fs from 'fs';
 import papaparse from "papaparse";
 import fetch from "node-fetch";
-import {LangDB, DBRow} from '../types/dbTypes';
-import {DATABASES} from "../searchSettings";
+import {OldLangDB, RawDBRow} from '../types/dbTypes';
+import {OLD_DATABASES} from "../searchSettings";
 import {fromKipUnicodeToKipNormalized, fromPojUnicodeToPojNormalized} from './languageUtils';
 
 import lunr from 'lunr';
@@ -31,22 +35,22 @@ function writeFileErrHandler(succMsg: string) {
     }
 }
 
-function processCSV(text: string): DBRow[] {
+function processCSV(text: string): RawDBRow[] {
     text = text.replace(/^\uFEFF/, "");
-    const csv = papaparse.parse<DBRow>(text, {header: true, skipEmptyLines: true});
+    const csv = papaparse.parse<RawDBRow>(text, {header: true, skipEmptyLines: true});
     csv.data.forEach((entry, index) => {
         // TODO: fail if entry doesn't have poj_unicode?
         const pojNormalized = fromPojUnicodeToPojNormalized(entry["poj_unicode"]);
         const kipNormalized = fromKipUnicodeToKipNormalized(entry["kip_unicode"]);
-        csv.data[index] = {...csv.data[index], poj_normalized: pojNormalized, kip_normalized: kipNormalized} as DBRow;
+        csv.data[index] = {...csv.data[index], poj_normalized: pojNormalized, kip_normalized: kipNormalized} as RawDBRow;
     });
 
-    const processed = csv.data as DBRow[];
+    const processed = csv.data as RawDBRow[];
 
     return processed;
 }
 
-function writeLunrIndex(langDB: LangDB, entries: DBRow[]) {
+function writeLunrIndex(langDB: OldLangDB, entries: RawDBRow[]) {
     const idx = lunr(function () {
         // @ts-ignore lunr-languages doesn't have types defined
         this.use(lunr.multiLanguage('en', 'zh'));
@@ -57,7 +61,7 @@ function writeLunrIndex(langDB: LangDB, entries: DBRow[]) {
         this.field("hoabun");
         this.field("poj_input");
 
-        entries.forEach((entry: DBRow) => {
+        entries.forEach((entry: RawDBRow) => {
             this.add(entry)
         }, this)
     });
@@ -69,7 +73,7 @@ function writeLunrIndex(langDB: LangDB, entries: DBRow[]) {
         ));
 }
 
-function writeFile(langDB: LangDB, entries: DBRow[]) {
+function writeFile(langDB: OldLangDB, entries: RawDBRow[]) {
     const newCSVText = papaparse.unparse(entries, {header: true});
 
     fs.writeFile(
@@ -81,7 +85,7 @@ function writeFile(langDB: LangDB, entries: DBRow[]) {
 }
 
 
-DATABASES.forEach(async (langDB: LangDB) => {
+OLD_DATABASES.forEach(async (langDB: OldLangDB) => {
     console.log("Started: ", langDB.shortName);
     const url = URL_PREFIX + langDB.upstreamCSV;
 
@@ -90,7 +94,8 @@ DATABASES.forEach(async (langDB: LangDB) => {
             console.log("Successfully fetched: ", langDB.shortName);
             const entries = processCSV(text);
             writeFile(langDB, entries);
-            writeLunrIndex(langDB, entries);
+            // Disabled for now
+            //writeLunrIndex(langDB, entries);
         });
     });
 });

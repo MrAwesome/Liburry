@@ -74,8 +74,8 @@ registerRoute(
 
 function fileMatcher(opts: {url: URL}): boolean {
     const {url} = opts;
-    const locationCorrect = url.pathname.startsWith('/db/');
-    const matchFileType = !!url.pathname.match(/(\.json|\.csv)$/);
+    const locationCorrect = url.pathname.startsWith('/db/'); //|| url.pathname.startsWith('/config/');
+    const matchFileType = !!url.pathname.match(/(\.json|\.csv)$/); //|\.yml)$/);
     return locationCorrect && matchFileType;
 }
 

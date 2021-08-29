@@ -8,18 +8,18 @@ import {MainDisplayAreaMode} from "./types/displayTypes";
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 
 import SearchResultsHolder from "./SearchResultsHolder";
-import {DATABASES} from "./searchSettings";
 
 import SearchController from "./SearchController";
 
 import {runningInJest} from "./utils";
-import ChhaTaigiOptions from "./ChhaTaigiOptions";
-import {ChhaTaigiProps, ChhaTaigiState} from "./types/mainAppState";
+import OptionsChangeableByUser from "./ChhaTaigiOptions";
 
-import FieldClassificationHandler, {PromHolder} from "./search/FieldClassificationHandler";
 import EntryContainer from "./entry_containers/EntryContainer";
 import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
+import {AnnotatedPerDictResults} from "./types/dbTypes";
+import {AppConfig, DBConfig, DBIdentifier} from "./types/config";
 
+// TODO(urgent): migrate configs to new names (see https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/commit/b33c6a1fcc2d11a2962e76b6055d528d11677c3b)
 // TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): only change hashtag on submit
 // TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
@@ -127,6 +127,7 @@ import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
 // TODO(later): WASM fast search
 // TODO(later): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(maybe): install a router library for handling e.g. playground
+// TODO(maybe): allow results to hint/override where particular columns should be displayed? or a way to query server/file per db?
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
 // TODO(watch): keep an eye out for 200% CPU util. infinite search loop?
@@ -169,6 +170,10 @@ import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
 //      1) add a yaml with internationalizations (start is in ~/ChhaTaigi/public/interface_text/main.yml)
 //      2) populate it entirely with english for now, but pull in text for components from it
 //      3) create a selectable option for interface language
+//
+// Project: Loader Class
+//      # Should be the only piece that does any network/file/browser I/O for configuration
+//      # NOTE: can/should have a "#reset" client-side directive that allows for flushing/refreshing the service worker cache for particular/all files
 
 const queryStringHandler = new QueryStringHandler();
 
@@ -177,6 +182,22 @@ enum MountedState {
     MOUNTED = "MOUNTED",
     UNMOUNTED = "UNMOUNTED",
 }
+
+export interface ChhaTaigiProps {
+    options: OptionsChangeableByUser,
+    appConfig: AppConfig,
+    // TODO: always annotate results with the current displaytype's info (one re-search when you change displaytype is well worth being able to calculate before render time (preferably in another thread))
+    mockResults?: AnnotatedPerDictResults,
+};
+
+export interface ChhaTaigiState {
+    options: OptionsChangeableByUser,
+    resultsHolder: SearchResultsHolder,
+    loadedDBs: Map<DBIdentifier, boolean>,
+}
+
+export type GetMainState = () => ChhaTaigiState;
+export type SetMainState = (state: Partial<ChhaTaigiState> | ((prevState: ChhaTaigiState) => any)) => void;
 
 export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     mountedState = MountedState.INIT;
@@ -188,17 +209,16 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     constructor(props: ChhaTaigiProps) {
         super(props);
 
+        const appConfig = this.props.appConfig;
+        // TODO: make sure fullidentifier is correct
         // State initialization
-        const initialDBLoadedMapping: [string, boolean][] =
-            Array.from(DATABASES.keys()).map((k) => [k, false]);
-
-        const fieldHandlerProm = new PromHolder(this.props.overrideFieldHandler ?? null);
+        const initialDBLoadedMapping: [DBIdentifier, boolean][] =
+            appConfig.getAllEnabledDBConfigs().map((k: DBConfig) => [k.getDBIdentifier(), false]);
 
         this.state = {
-            options: this.props.options ?? new ChhaTaigiOptions(),
+            options: this.props.options ?? new OptionsChangeableByUser(),
             loadedDBs: new Map(initialDBLoadedMapping),
             resultsHolder: new SearchResultsHolder(),
-            fieldHandlerProm,
         };
 
 
@@ -225,7 +245,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             this.state.options.debug,
             this.getStateTyped,
             this.setStateTyped,
-            this.state.fieldHandlerProm,
+            appConfig,
         );
 
         // Allow for overriding results from Jest.
@@ -233,12 +253,9 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     overrideResultsForTests() {
-        const {mockResults, overrideFieldHandler} = this.props;
-        if (runningInJest() &&
-            mockResults !== undefined &&
-            overrideFieldHandler !== undefined
-        ) {
-            this.state.resultsHolder.addResults(mockResults, overrideFieldHandler);
+        const {mockResults} = this.props;
+        if (runningInJest() && mockResults !== undefined) {
+            this.state.resultsHolder.addResults(mockResults);
         }
     }
 
@@ -263,7 +280,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     componentDidMount() {
         this.mountedState = MountedState.MOUNTED;
 
-        const {options, fieldHandlerProm} = this.getStateTyped();
+        const {options} = this.getStateTyped();
         this.console.time("mountToAllDB");
 
         // TODO: does this need to happen here? can we just start a search?
@@ -271,9 +288,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         this.searchController.startWorkersAndListener(options.searcherType);
         this.subscribeHash();
-
-        fieldHandlerProm.setPromise(FieldClassificationHandler.fetch())
-
     }
 
     componentWillUnmount() {
@@ -340,36 +354,25 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     // TODO: replace uses of DBFullName with something like LangDB?
 
     getEntryComponents(): JSX.Element {
-        const {resultsHolder, options, fieldHandlerProm} = this.getStateTyped();
+        const {resultsHolder, options} = this.getStateTyped();
         const entries = resultsHolder.getAllResults();
 
-        const fieldHandler = fieldHandlerProm.getValue();
-        if (fieldHandler !== null) {
-            const entryContainers = entries.map((entry) => {
-                if (options.agnostic) {
-                    return <AgnosticEntryContainer
-                        debug={options.debug}
-                        lang={options.languageTEMPORARY}
-                        //langOptions={langOptions}
-                        fieldHandler={fieldHandler}
-                        entry={entry}
-                        key={entry.getDisplayKey()} />;
-                } else {
-                    return <EntryContainer
-                        debug={options.debug}
-                        fieldHandler={fieldHandler}
-                        entry={entry}
-                        key={entry.getDisplayKey()}
-                    />;
-                }
-            });
+        const entryContainers = entries.map((entry) => {
+            if (options.agnostic) {
+                return <AgnosticEntryContainer
+                    debug={options.debug}
+                    entry={entry}
+                    key={entry.getDisplayKey()} />;
+            } else {
+                return <EntryContainer
+                    debug={options.debug}
+                    entry={entry}
+                    key={entry.getDisplayKey()}
+                />;
+            }
+        });
 
-            return <>{entryContainers}</>;
-        } else {
-            // TODO: handle this
-            return <>Loading...</>;
-        }
-
+        return <>{entryContainers}</>;
     }
 
     mainDisplayArea(mode: MainDisplayAreaMode): JSX.Element {

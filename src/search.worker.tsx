@@ -1,6 +1,8 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import type {LangDB, DBShortName, PerDictResultsRaw} from "./types/dbTypes";
-import {getSearcher, OngoingSearch, Searcher, SearcherType, SearchFailure} from "./search";
+import type {PerDictResultsRaw} from "./types/dbTypes";
+import {getSearcherPreparer, OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "./search";
+import {DBConfig, DBIdentifier} from "./types/config";
+import {RawDBConfig} from "./configHandler/rawConfigTypes";
 
 // TODO(wishlist): ensure that objects passed to/from the worker are simple objects (interface, not class)
 //                 and/or translate from simple objects to full classes (with methods) before/after message
@@ -9,25 +11,25 @@ import {getSearcher, OngoingSearch, Searcher, SearcherType, SearchFailure} from 
 const ctx: Worker = self as any;
 
 export type SearchWorkerCommandMessage =
-    {command: SearchWorkerCommandType.INIT, payload: {dbName: DBShortName, langDB: LangDB, debug: boolean, searcherType: SearcherType}} |
+    {command: SearchWorkerCommandType.INIT, payload: {dbIdentifier: DBIdentifier, rawDBConfig: RawDBConfig, debug: boolean, searcherType: SearcherType}} |
     {command: SearchWorkerCommandType.SEARCH, payload: {query: string, searchID: number}} |
     {command: SearchWorkerCommandType.CANCEL, payload?: null} |
     {command: SearchWorkerCommandType.LOG, payload?: null} |
     {command: SearchWorkerCommandType.CHANGE_SEARCHER, payload: {searcherType: SearcherType}};
 
-export type SearchSuccessPayload = {dbName: DBShortName, query: string, results: PerDictResultsRaw, searchID: number};
+export type SearchSuccessPayload = {dbIdentifier: DBIdentifier, query: string, results: PerDictResultsRaw, searchID: number};
 export type SearchWorkerResponseMessage =
-    {resultType: SearchWorkerResponseType.CANCELED, payload: {dbName: DBShortName, query: string, searchID: number}} |
+    {resultType: SearchWorkerResponseType.CANCELED, payload: {dbIdentifier: DBIdentifier, query: string, searchID: number}} |
     {resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: SearchSuccessPayload} |
-    {resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {dbName: DBShortName, query: string, searchID: number, failure: SearchFailure}} |
-    {resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbName: DBShortName}};
+    {resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {dbIdentifier: DBIdentifier, query: string, searchID: number, failure: SearchFailure}} |
+    {resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbIdentifier: DBIdentifier}};
 
 type WorkerInitializedState =
     {init: WorkerInitState.UNINITIALIZED} |
-    {init: WorkerInitState.FAILED_TO_PREPARE, dbName: DBShortName, langDB: LangDB} |
-    {init: WorkerInitState.LOADING, dbName: DBShortName, langDB: LangDB, searcher: Searcher} |
-    {init: WorkerInitState.LOADED, dbName: DBShortName, langDB: LangDB, searcher: Searcher} |
-    {init: WorkerInitState.SEARCHING, dbName: DBShortName, langDB: LangDB, searcher: Searcher, ogs: OngoingSearch, searchID: number};
+    {init: WorkerInitState.FAILED_TO_PREPARE, dbIdentifier: DBIdentifier, dbConfig: DBConfig} |
+    {init: WorkerInitState.LOADING, dbIdentifier: DBIdentifier, dbConfig: DBConfig, preparer: SearcherPreparer} |
+    {init: WorkerInitState.LOADED, dbIdentifier: DBIdentifier, dbConfig: DBConfig, searcher: Searcher} |
+    {init: WorkerInitState.SEARCHING, dbIdentifier: DBIdentifier, dbConfig: DBConfig, searcher: Searcher, ogs: OngoingSearch, searchID: number};
 
 enum WorkerInitState {
     UNINITIALIZED = "UNINITIALIZED",
@@ -63,8 +65,8 @@ class SearchWorkerHelper {
 
     private sendResponse(message: SearchWorkerResponseMessage) {
         if (this.state.init !== WorkerInitState.UNINITIALIZED) {
-            const {dbName} = this.state;
-            this.console.log("Sending response from:", dbName, message);
+            const {dbIdentifier} = this.state;
+            this.console.log("Sending response from:", dbIdentifier, message);
         } else {
             this.console.log("Sending response from uninitialized worker:", message);
         }
@@ -72,18 +74,18 @@ class SearchWorkerHelper {
         ctx.postMessage(message);
     }
 
-    start(dbName: DBShortName, langDB: LangDB, debug: boolean, searcherType: SearcherType) {
+    start(dbIdentifier: DBIdentifier, dbConfig: DBConfig, debug: boolean, searcherType: SearcherType) {
         this.debug = debug;
         this.console = getDebugConsole(debug);
-        const searcher = getSearcher(searcherType, dbName, langDB, this.debug);
-        this.state = {dbName, langDB, searcher, init: WorkerInitState.LOADING};
+        const preparer = getSearcherPreparer(searcherType, dbIdentifier, dbConfig, this.debug);
+        this.state = {dbIdentifier, dbConfig, preparer, init: WorkerInitState.LOADING};
 
-        searcher.prepare().then(() => {
-            this.state = {searcher, dbName, langDB, init: WorkerInitState.LOADED};
-            this.sendResponse({resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbName}});
+        preparer.prepare().then((searcher) => {
+            this.state = {searcher, dbIdentifier, dbConfig, init: WorkerInitState.LOADED};
+            this.sendResponse({resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbIdentifier}});
         }).catch((err) => {
             console.warn("DB preparation failure!", this, err);
-            this.state = {dbName, langDB, init: WorkerInitState.FAILED_TO_PREPARE};
+            this.state = {dbIdentifier, dbConfig, init: WorkerInitState.FAILED_TO_PREPARE};
         });
     }
 
@@ -95,21 +97,21 @@ class SearchWorkerHelper {
                 break;
             case WorkerInitState.LOADED:
                 const ongoingSearch = this.state.searcher.search(query);
-                const dbName = this.state.dbName;
+                const dbIdentifier = this.state.dbIdentifier;
                 if (ongoingSearch instanceof OngoingSearch) {
                     const originalState = this.state;
                     this.state = {...originalState, init: WorkerInitState.SEARCHING, ogs: ongoingSearch, searchID};
                     ongoingSearch.parsePromise?.then((resultsOrFailure) => {
                         if (isResults(resultsOrFailure)) {
-                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results: resultsOrFailure, dbName, searchID}});
+                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results: resultsOrFailure, dbIdentifier, searchID}});
                         } else {
-                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbName, searchID, failure: resultsOrFailure}});
+                            this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbIdentifier, searchID, failure: resultsOrFailure}});
                         }
                         this.state = originalState;
                     });
                 } else {
                     this.console.log("Failed searching!", ongoingSearch, this);
-                    this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbName, searchID, failure: ongoingSearch}});
+                    this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {query, dbIdentifier, searchID, failure: ongoingSearch}});
                 }
                 break;
             case WorkerInitState.UNINITIALIZED:
@@ -121,20 +123,20 @@ class SearchWorkerHelper {
 
     cancel() {
         if (this.state.init === WorkerInitState.SEARCHING) {
-            const {ogs, dbName, searchID} = this.state;
+            const {ogs, dbIdentifier, searchID} = this.state;
             const {query} = ogs;
             ogs.cancel();
-            this.sendResponse({resultType: SearchWorkerResponseType.CANCELED, payload: {query, dbName, searchID}});
+            this.sendResponse({resultType: SearchWorkerResponseType.CANCELED, payload: {query, dbIdentifier, searchID}});
             this.state = {...this.state, init: WorkerInitState.LOADED};
         }
     }
 
     changeSearcher(searcherType: SearcherType) {
         if (this.state.init !== WorkerInitState.UNINITIALIZED) {
-            const {dbName, langDB} = this.state;
+            const {dbIdentifier, dbConfig} = this.state;
 
             this.cancel();
-            sw.start(dbName, langDB, this.debug, searcherType);
+            sw.start(dbIdentifier, dbConfig, this.debug, searcherType);
         }
     }
 
@@ -151,8 +153,9 @@ ctx.addEventListener("message", (e) => {
     const message: SearchWorkerCommandMessage = e.data;
     switch (message.command) {
         case SearchWorkerCommandType.INIT: {
-            const {dbName, langDB, debug, searcherType} = message.payload;
-            sw.start(dbName, langDB, debug, searcherType);
+            const {dbIdentifier, rawDBConfig, debug, searcherType} = message.payload;
+            const dbConfig = new DBConfig(dbIdentifier, rawDBConfig);
+            sw.start(dbIdentifier, dbConfig, debug, searcherType);
         }
             break;
         case SearchWorkerCommandType.SEARCH:

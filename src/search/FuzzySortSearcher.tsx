@@ -1,13 +1,14 @@
 import fuzzysort from "fuzzysort";
 
 import {FuzzyKeysOptions, FuzzyPreparedDBEntry} from "../types/fuzzySortTypes";
-import {OngoingSearch, Searcher, SearcherType, SearchFailure} from "../search";
-import {DBShortName, DBRow, LangDB, PerDictResultsRaw} from "../types/dbTypes";
+import {OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "../search";
+import {RawDBRow} from "../types/dbTypes";
 import getDebugConsole, {StubConsole} from "../getDebugConsole";
 import {getEntriesFromPreparedCSV} from "../common/csvUtils";
 import {makeCancelable} from "../utils";
 import {convertDBRowToFuzzySortPrepared, parseFuzzySortResultsForRender} from "../fuzzySortUtils";
 import {FIELDS_TO_SEARCH, SEARCH_RESULTS_LIMIT} from "../searchSettings";
+import {DBConfig} from "../types/config";
 
 // TODO: give slight preference for poj-unicode/poj-normalized in fuzzy settings, so that e.g. "iong" will show up first in a search for itself
 // TODO: handle hyphens vs spaces
@@ -26,64 +27,58 @@ function getFuzzyOpts(searchKeys: Array<string> = FIELDS_TO_SEARCH): FuzzyKeysOp
     };
 }
 
-
-export default class FuzzySortSearcher implements Searcher {
+export class FuzzySortSearcher implements Searcher {
     searcherType = SearcherType.FUZZYSORT;
-    dbName: DBShortName;
-    langDB: LangDB;
-    debug: boolean;
 
-    private fuzzyDict?: FuzzySearchableDict;
-
-    constructor(dbName: DBShortName, langDB: LangDB, debug: boolean) {
-        this.dbName = dbName;
-        this.langDB = langDB;
-        this.debug = debug;
+    constructor(
+        private fuzzyDict: FuzzySearchableDict,
+    ) {
     }
 
     async prepare(): Promise<void> {
-        const preparer = new FuzzyPreparer(this.langDB, this.debug);
-        return preparer
-            .fetchAndPrepare()
-            .then((fuzzyDict) => {
-                this.fuzzyDict = fuzzyDict;
-            });
     }
 
     search(query: string): OngoingSearch | SearchFailure {
-        if (this.fuzzyDict === undefined) {
-            console.warn("Tried to search before preparation: ", this);
-            return SearchFailure.SearchedBeforePrepare;
-        } else {
-            return this.fuzzyDict.search(query);
-        }
+        return this.fuzzyDict.search(query);
     }
 
 }
 
-class FuzzyPreparer {
-    langDB: LangDB;
+export class FuzzySortPreparer implements SearcherPreparer {
     console: StubConsole;
-    debug: boolean;
 
-    constructor(langDB: LangDB, debug: boolean) {
-        this.langDB = langDB;
-        this.debug = debug;
+    constructor(
+        private dbConfig: DBConfig,
+        private debug: boolean,
+    ) {
         this.console = getDebugConsole(debug);
+        this.prepare = this.prepare.bind(this);
         this.fetchAndPrepare = this.fetchAndPrepare.bind(this);
         this.convertCSVToFuzzySearchableDict = this.convertCSVToFuzzySearchableDict.bind(this);
     }
 
+    async prepare(): Promise<Searcher> {
+        return this
+            .fetchAndPrepare()
+            .then((fuzzyDict) => {
+                return new FuzzySortSearcher(fuzzyDict);
+            });
+    }
+
     async fetchAndPrepare(): Promise<FuzzySearchableDict> {
-        const {shortName: name, localCSV, localCSVVersion} = this.langDB;
-        const dbName = name;
-        this.console.time("total-" + dbName);
-        this.console.time("fetch-" + dbName);
-        let versionString = "";
-        if (localCSVVersion) {
-            versionString = `?v=${localCSVVersion}`;
+        const dbIdentifier = this.dbConfig.getDBIdentifier();
+        const {localCSV} = this.dbConfig.getDBLoadInfo();
+        if (localCSV === undefined) {
+            throw `Fuzzy search requires a local CSV to be defined! (${dbIdentifier})`;
         }
-        return fetch(localCSV + versionString)
+        this.console.time("total-" + dbIdentifier);
+        this.console.time("fetch-" + dbIdentifier);
+        let versionString = "";
+        // XXX TODO: fix csv versioning
+        //if (localCSVVersion) {
+        //    versionString = `?v=${localCSVVersion}`;
+        //}
+        return fetch("/" + localCSV)
             .then((response: Response) => {
                 return response.text();
             })
@@ -91,36 +86,33 @@ class FuzzyPreparer {
     }
 
     convertCSVToFuzzySearchableDict(text: string): FuzzySearchableDict {
-        const langDB = this.langDB;
+        const dbIdentifier = this.dbConfig.getDBIdentifier();
         const searchableFields = FIELDS_TO_SEARCH;
-        const dbName = langDB.shortName;
-        this.console.timeEnd("fetch-" + dbName);
+        this.console.timeEnd("fetch-" + dbIdentifier);
 
-        this.console.time("csvConvertPrePrepped-" + dbName);
-        const nonFuzzyPreppedEntries: DBRow[] = getEntriesFromPreparedCSV(text);
-        this.console.timeEnd("csvConvertPrePrepped-" + dbName);
+        this.console.time("csvConvertPrePrepped-" + dbIdentifier);
+        const nonFuzzyPreppedEntries: RawDBRow[] = getEntriesFromPreparedCSV(text);
+        this.console.timeEnd("csvConvertPrePrepped-" + dbIdentifier);
 
-        this.console.time("prepareSlow-" + dbName);
+        this.console.time("prepareSlow-" + dbIdentifier);
         const searchableEntries = nonFuzzyPreppedEntries.map(
             (d) => convertDBRowToFuzzySortPrepared(d, searchableFields));
-        this.console.timeEnd("prepareSlow-" + dbName);
-        this.console.timeEnd("total-" + dbName);
+        this.console.timeEnd("prepareSlow-" + dbIdentifier);
+        this.console.timeEnd("total-" + dbIdentifier);
 
-        return new FuzzySearchableDict(langDB, searchableEntries, this.debug);
+        return new FuzzySearchableDict(this.dbConfig, searchableEntries, this.debug);
     }
 
 }
 
 class FuzzySearchableDict {
-    langDB: LangDB;
     console: StubConsole;
-    searchableEntries: Array<FuzzyPreparedDBEntry>;
-    debug: boolean;
 
-    constructor(langDB: LangDB, searchableEntries: Array<FuzzyPreparedDBEntry>, debug: boolean) {
-        this.langDB = langDB;
-        this.searchableEntries = searchableEntries;
-        this.debug = debug;
+    constructor(
+        private dbConfig: DBConfig,
+        private searchableEntries: Array<FuzzyPreparedDBEntry>,
+        private debug: boolean
+    ) {
         this.console = getDebugConsole(debug);
         this.search = this.search.bind(this);
     }
@@ -128,8 +120,7 @@ class FuzzySearchableDict {
     search(
         query: string,
     ): OngoingSearch | SearchFailure {
-        const langDB = this.langDB;
-        const dbName = langDB.shortName;
+        const dbIdentifier = this.dbConfig.getDBIdentifier();
 
         const fuzzyOpts = getFuzzyOpts();
         const cancelableSearchPromise = fuzzysort.goAsync(
@@ -153,24 +144,23 @@ class FuzzySearchableDict {
 
                 ongoingSearch.markCompleted();
                 const results = parseFuzzySortResultsForRender(
-                    dbName,
-                    langDB.fullName,
+                    dbIdentifier,
                     // @ts-ignore Deal with lack of fuzzysort interfaces
                     res,
                 );
                 return {
-                    dbName,
+                    dbIdentifier,
                     results
-                } as PerDictResultsRaw;
+                };
             }
         ).catch(
             (reason) => {
-                this.console.log(dbName, reason);
+                this.console.log(dbIdentifier, reason);
                 return SearchFailure.ParsePromiseFailed;
             }
         ));
 
-        const ongoingSearch = new OngoingSearch(dbName, query, this.debug, cancelableSearchPromise, cancelableParsePromise);
+        const ongoingSearch = new OngoingSearch(dbIdentifier, query, this.debug, cancelableSearchPromise, cancelableParsePromise);
 
         return ongoingSearch;
     }

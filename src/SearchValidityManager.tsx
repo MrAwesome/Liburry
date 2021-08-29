@@ -1,13 +1,13 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {RETRY_ATTEMPTS} from "./searchSettings";
-import {DBShortName} from "./types/dbTypes";
+import {DBIdentifier} from "./types/config";
 import {mod} from "./utils";
 
 class SearchContext {
     query: string = "";
     invalidated: boolean = false;
-    completionStatus: Map<DBShortName, boolean> = new Map();
-    retries: Map<DBShortName, number> = new Map();
+    completionStatus: Map<DBIdentifier, boolean> = new Map();
+    retries: Map<DBIdentifier, number> = new Map();
 
     clear() {
         this.query = "";
@@ -65,15 +65,15 @@ export default class SearchInvalidationAndRetryManager {
     }
 
     // Check if the named DB can retry for the named searchID
-    acquireRetry(dbName: DBShortName, searchID: number): boolean {
+    acquireRetry(dbIdentifier: DBIdentifier, searchID: number): boolean {
         const currentAttempt = this.getSearch(searchID).retries;
-        const retries = currentAttempt.get(dbName);
+        const retries = currentAttempt.get(dbIdentifier);
         if (retries === undefined) {
-            currentAttempt.set(dbName, RETRY_ATTEMPTS - 1);
+            currentAttempt.set(dbIdentifier, RETRY_ATTEMPTS - 1);
             return true;
         } else {
             if (retries > 0) {
-                currentAttempt.set(dbName, retries - 1);
+                currentAttempt.set(dbIdentifier, retries - 1);
                 return true;
             } else {
                 return false;
@@ -81,9 +81,9 @@ export default class SearchInvalidationAndRetryManager {
         }
     }
 
-    retriesRemaining(dbName: DBShortName, searchID: number): number {
+    retriesRemaining(dbIdentifier: DBIdentifier, searchID: number): number {
         const currentAttempt = this.getSearch(searchID).retries;
-        const retries = currentAttempt.get(dbName);
+        const retries = currentAttempt.get(dbIdentifier);
         return retries ?? RETRY_ATTEMPTS;
     }
 
@@ -104,21 +104,21 @@ export default class SearchInvalidationAndRetryManager {
 
     // NOTE: could check here if search was already started, but as long
     //       as we're always clearing it shouldn't be a problem
-    startSearches(query: string, dbNames: DBShortName[]) {
+    startSearches(query: string, dbIdentifiers: DBIdentifier[]) {
         this.getCurrentSearch().query = query;
 
         this.console.time(`search-${this.currentSearchID}`);
-        dbNames.forEach((dbName) => this.getCurrentSearch().completionStatus.set(dbName, false))
+        dbIdentifiers.forEach((dbIdentifier) => this.getCurrentSearch().completionStatus.set(dbIdentifier, false))
     }
 
-    markSearchCompleted(dbName: DBShortName, searchID: number) {
-        this.getSearch(searchID).completionStatus.set(dbName, true)
+    markSearchCompleted(dbIdentifier: DBIdentifier, searchID: number) {
+        this.getSearch(searchID).completionStatus.set(dbIdentifier, true)
 
         if (this.checkAllSearchesCompleted(searchID)) {
             this.console.timeEnd(`search-${searchID}`);
 
             const query = this.getSearch(searchID).query;
-            this.console.log(`"Search "${query}"(${searchID}) finished successfully. Slowest DB: "${dbName}"`);
+            this.console.log(`"Search "${query}"(${searchID}) finished successfully. Slowest DB: "${dbIdentifier}"`);
         }
     }
 }

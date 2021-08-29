@@ -1,5 +1,5 @@
 import Dialect from "./dialect";
-import type {RawLangConfig} from "./rawConfigTypes";
+import type {RawLangConfig} from "../configHandler/rawConfigTypes";
 
 export default class LanguageHandler {
     private dialects: Dialect[];

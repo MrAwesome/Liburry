@@ -1,6 +1,5 @@
 import {AppName} from "../ChhaTaigiOptions";
-import {RawLangConfig} from "../languages/rawConfigTypes";
-import {AllDBConfig, AppConfig} from '../types/config';
+import {RawAllDBConfig, RawAppConfig, RawLangConfig} from "./rawConfigTypes";
 import {loadYaml} from "../utils/yaml";
 
 const CONFIG_FILENAME_LANG = "lang";
@@ -8,6 +7,7 @@ const CONFIG_FILENAME_APP = "app";
 const CONFIG_FILENAME_DB = "db";
 
 // TODO: determine how to force strong typing at load time
+// TODO: determine how to handle versioning configs and versions here
 export default class ConfigHandler {
     constructor(
         private appName: AppName,
@@ -18,11 +18,11 @@ export default class ConfigHandler {
         return this.loadConfigHeirarchy(CONFIG_FILENAME_LANG);
     }
 
-    async loadAppConfig(): Promise<AppConfig> {
+    async loadAppConfig(): Promise<RawAppConfig> {
         return this.loadAppSpecificConfig(CONFIG_FILENAME_APP);
     }
 
-    async loadDBConfig(): Promise<AllDBConfig> {
+    async loadDBConfigs(): Promise<RawAllDBConfig> {
         return this.loadAppSpecificConfig(CONFIG_FILENAME_DB);
     }
 

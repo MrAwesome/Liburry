@@ -1,21 +1,20 @@
-import {DATABASES} from "./searchSettings";
-
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import type Worker from "worker-loader!./search.worker";
 
-import {DBShortName} from "./types/dbTypes";
 import {SearchWorkerCommandMessage, SearchWorkerCommandType, SearchWorkerResponseMessage} from "./search.worker";
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {SearcherType} from "./search";
 import {runningInJest} from "./utils";
+import {AppConfig, DBIdentifier} from "./types/config";
 
 export default class SearchWorkerManager {
-    private searchWorkers: Map<DBShortName, Worker> = new Map();
-    private debug: boolean;
+    private searchWorkers: Map<DBIdentifier, Worker> = new Map();
     private console: StubConsole;
 
-    constructor(debug: boolean) {
-        this.debug = debug;
+    constructor(
+        private appConfig: AppConfig,
+        private debug: boolean,
+    ) {
         this.console = getDebugConsole(debug);
 
         this.searchAll = this.searchAll.bind(this);
@@ -25,13 +24,15 @@ export default class SearchWorkerManager {
         this.sendCommand = this.sendCommand.bind(this);
     }
 
-    private sendCommand(dbName: DBShortName, worker: Worker, command: SearchWorkerCommandMessage) {
-        this.console.log(`Sending command to "${dbName}:`, command);
+    // NOTE: workers are still started one-per-db, and identified by their DB's identifier.
+    //       This can certainly change in the future.
+    private sendCommand(dbIdentifier: DBIdentifier, worker: Worker, command: SearchWorkerCommandMessage) {
+        this.console.log(`Sending command to "${dbIdentifier}:`, command);
         worker.postMessage(command);
     }
 
     private sendAll(command: SearchWorkerCommandMessage) {
-        this.searchWorkers.forEach((worker, dbName) => this.sendCommand(dbName, worker, command));
+        this.searchWorkers.forEach((worker, dbIdentifier) => this.sendCommand(dbIdentifier, worker, command));
     }
 
     async init(searcherType: SearcherType, searchWorkerReplyHandler: (e: MessageEvent<SearchWorkerResponseMessage>) => Promise<void>) {
@@ -39,18 +40,26 @@ export default class SearchWorkerManager {
         if (!runningInJest()) {
             import("worker-loader!./search.worker").then((worker) => {
 
-                for (let [dbName, langDB] of DATABASES) {
-
+                this.appConfig.getAllEnabledDBConfigs().forEach((dbConfig) => {
+                    const dbIdentifier = dbConfig.getDBIdentifier();
                     const searchWorker = new worker.default();
+                    const rawDBConfig = dbConfig.asRaw();
                     this.searchWorkers.set(
-                        dbName,
+                        dbIdentifier,
                         searchWorker,
                     );
 
                     searchWorker.onmessage = searchWorkerReplyHandler;
 
-                    this.sendCommand(dbName, searchWorker, {command: SearchWorkerCommandType.INIT, payload: {dbName, langDB, debug: this.debug, searcherType}});
-                }
+                    this.sendCommand(
+                        dbIdentifier,
+                        searchWorker,
+                        {
+                            command: SearchWorkerCommandType.INIT,
+                            payload: {dbIdentifier, rawDBConfig, debug: this.debug, searcherType}
+                        }
+                    );
+                });
             });
         }
     }
@@ -68,12 +77,12 @@ export default class SearchWorkerManager {
         this.sendAll({command: SearchWorkerCommandType.CANCEL});
     }
 
-    searchSpecificDB(dbName: DBShortName, query: string, searchID: number) {
-        const worker = this.searchWorkers.get(dbName);
+    searchSpecificDB(dbIdentifier: DBIdentifier, query: string, searchID: number) {
+        const worker = this.searchWorkers.get(dbIdentifier);
         if (worker !== undefined) {
-            this.sendCommand(dbName, worker, {command: SearchWorkerCommandType.SEARCH, payload: {query, searchID}});
+            this.sendCommand(dbIdentifier, worker, {command: SearchWorkerCommandType.SEARCH, payload: {query, searchID}});
         } else {
-            console.warn("Tried to search nonexistant DB: ", dbName);
+            console.warn("Tried to search nonexistant DB: ", dbIdentifier);
         }
     }
 
@@ -81,7 +90,7 @@ export default class SearchWorkerManager {
         this.sendAll({command: SearchWorkerCommandType.SEARCH, payload: {query, searchID}});
     }
 
-    getAllActiveDBs(): DBShortName[] {
+    getIdentifiersForAllActiveDBs(): DBIdentifier[] {
         return Array.from(this.searchWorkers.keys());
     }
 }

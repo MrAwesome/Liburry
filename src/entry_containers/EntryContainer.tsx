@@ -3,8 +3,7 @@ import * as React from "react";
 import {REPO_LINK} from "../constants";
 import {createMatchElement} from "../fuzzySortReactUtils";
 import {getMaxScore, SearcherType} from "../search";
-import FieldClassificationHandler from "../search/FieldClassificationHandler";
-import {SearchResultEntry} from "../types/dbTypes";
+import {AnnotatedSearchResultEntry} from "../types/dbTypes";
 
 enum ClickedOrder {
     NORMAL,
@@ -27,8 +26,7 @@ const FADING_STYLE = {
 
 export default class EntryContainer extends React.PureComponent<{
     debug: boolean,
-    entry: SearchResultEntry,
-    fieldHandler: FieldClassificationHandler,
+    entry: AnnotatedSearchResultEntry,
 }
 , any> {
     constructor(props: any) {
@@ -47,7 +45,7 @@ export default class EntryContainer extends React.PureComponent<{
         this.clickReport = this.clickReport.bind(this);
     }
 
-    getEntry(): SearchResultEntry {
+    getEntry(): AnnotatedSearchResultEntry {
         return this.props.entry;
     }
 
@@ -91,18 +89,16 @@ export default class EntryContainer extends React.PureComponent<{
     }
 
     getAltTextContainers(): JSX.Element[] {
-        const {fieldHandler} = this.props;
-        const altTextFields = fieldHandler.getAltTextsINCOMPLETE(this.getEntry());
+        const altTextFields = ["poj_input", "poj_normalized"];
         let altTextContainers: JSX.Element[] = [];
 
-        altTextFields.forEach((field) => {
-            if (field.wasMatched()) {
-                const inner = createMatchElement(field.getDisplayValue(), "alt-text");
-                const container = <div className="alt-text-container">
-                    ({inner})
-                </div>;
-                altTextContainers.push(container);
-            }
+        altTextFields.forEach((fieldName) => {
+            const field = this.getEntry().getFieldByNameDEPRECATED(fieldName);
+            const inner = createMatchElement(field!.getDisplayValue(), "alt-text");
+            const container = <div className="alt-text-container">
+                ({inner})
+            </div>;
+            altTextContainers.push(container);
         });
 
         return altTextContainers;
@@ -156,7 +152,7 @@ export default class EntryContainer extends React.PureComponent<{
     clickReport(e: React.MouseEvent) {
         e.preventDefault();
 
-        const dbName = this.getEntry().getDBName();
+        const dbName = this.getEntry().getDBIdentifier();
         const rowID = this.getEntry().getRowID();
         const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("poj_unicode");
         const pojUnicodeText = pojUnicode!.getOriginalValue();
@@ -183,7 +179,8 @@ export default class EntryContainer extends React.PureComponent<{
 
     render() {
         const {debug} = this.props;
-        const dbName = this.getEntry().getDBName();
+        const dbIdentifier = this.getEntry().getDBIdentifier();
+        const dbName = dbIdentifier.replace(/^ChhoeTaigi_/, "");
 
         const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("poj_unicode");
         const definition = this.getEntry().getFieldByNameDEPRECATED("english");

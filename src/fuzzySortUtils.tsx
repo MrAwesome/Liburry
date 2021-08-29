@@ -1,5 +1,5 @@
 import fuzzysort from "fuzzysort";
-import type {DBShortName, SearchResultEntryRaw, DBFullName, DisplayReadyFieldRaw, DBRow} from "./types/dbTypes";
+import type {SearchResultEntryRaw, DisplayReadyFieldRaw, RawDBRow} from "./types/dbTypes";
 
 import type {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedDBEntry} from "./types/fuzzySortTypes";
 
@@ -7,44 +7,42 @@ import {SearcherType} from "./search";
 
 // TODO: remove when there are other types of search
 import {DISPLAY_RESULTS_LIMIT} from "./searchSettings";
-import {DBSearchRanking} from "./search";
 import {PREPPED_KEY_SUFFIX} from "./search/FuzzySortSearcher";
 import {MATCH_HTML_TAG} from "./constants";
+import {DBIdentifier} from "./types/config";
 
 // TODO: find out why "      " matches "chúi-pho 波紋 水波" on the "l" in "ripples"
 
 
 export function parseFuzzySortResultsForRender(
-    dbName: DBShortName,
-    dbFullName: DBFullName,
+    dbIdentifier: DBIdentifier,
     rawResults: FuzzyKeyResults[]
 ): SearchResultEntryRaw[] {
     const currentResultsElements = rawResults
         .slice(0, DISPLAY_RESULTS_LIMIT)
-        .map((res) => fuzzySortResultToSearchResultEntry(dbName, dbFullName, res));
+        .map((res) => fuzzySortResultToSearchResultEntry(dbIdentifier, res));
     return currentResultsElements;
 }
 
 // TODO: Unit test!
-function fuzzySortResultToSearchResultEntry(dbName: DBShortName, dbFullName: DBFullName, fuzzysortResult: FuzzyKeyResults) {
+function fuzzySortResultToSearchResultEntry(dbIdentifier: DBIdentifier, fuzzysortResult: FuzzyKeyResults) {
     const obj = fuzzysortResult.obj;
     const rowID = obj.id;
 
     const dbSearchRanking = {
         searcherType: SearcherType.FUZZYSORT,
         score: fuzzysortResult.score
-    } as DBSearchRanking;
+    };
 
     const fields = getDisplayReadyFieldObjects(obj);
 
     return {
-        key: dbName + "-" + rowID,
+        key: dbIdentifier + "-" + rowID,
         rowID: parseInt(rowID),
-        dbName,
-        dbFullName,
+        dbIdentifier,
         dbSearchRanking,
         fields,
-    } as SearchResultEntryRaw;
+    };
 }
 
 function getDisplayReadyFieldObjects(obj: FuzzyPreparedDBEntry): DisplayReadyFieldRaw[] {
@@ -104,8 +102,8 @@ function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string) {
 // NOTE: this modifies the object and returns it as a type
 //       which is a superset of its original type.
 export function convertDBRowToFuzzySortPrepared(
-    unpreparedEntry: DBRow,
-    searchableKeys: (keyof DBRow)[],
+    unpreparedEntry: RawDBRow,
+    searchableKeys: (keyof RawDBRow)[],
 ): FuzzyPreparedDBEntry {
     searchableKeys.forEach(
         (key) => {

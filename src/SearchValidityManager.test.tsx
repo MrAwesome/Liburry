@@ -10,14 +10,14 @@ test('search validity', () => {
 });
 
 test('search retry', () => {
-    const dbName = "fakedb";
+    const dbIdentifier = "fakedb";
     const vman = new SearchValidityManager(false);
     const searchID = vman.currentSearchID;
 
-    const numRetries = vman.retriesRemaining(dbName, searchID);
-    const gotRetry = vman.acquireRetry(dbName, searchID);
+    const numRetries = vman.retriesRemaining(dbIdentifier, searchID);
+    const gotRetry = vman.acquireRetry(dbIdentifier, searchID);
     expect(gotRetry).toBe(true);
-    const remRetries = vman.retriesRemaining(dbName, searchID);
+    const remRetries = vman.retriesRemaining(dbIdentifier, searchID);
     expect(remRetries).toBe(numRetries - 1);
 });
 

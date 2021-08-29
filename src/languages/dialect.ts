@@ -1,6 +1,16 @@
-import {RawDialect} from "./rawConfigTypes";
+import {RawDialect} from "../configHandler/rawConfigTypes";
 
 export type DialectID = string;
+
+//export type Language =
+//    "english" |
+//    "mandarin" |
+//    "tw_poj" |
+//    "tw_kip" |
+//    "tw_taibun_only" |
+//    "tw_taibun_poj" |
+//    "tw_taibun_kip";
+
 
 export default class Dialect {
     constructor(

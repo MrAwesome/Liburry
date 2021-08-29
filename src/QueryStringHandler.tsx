@@ -1,5 +1,5 @@
 import qs from "qs";
-import ChhaTaigiOptions from "./ChhaTaigiOptions";
+import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import {SearcherType} from "./search";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
@@ -72,8 +72,8 @@ export default class QueryStringParser {
         }
     }
 
-    parse(): ChhaTaigiOptions {
-        let options = new ChhaTaigiOptions();
+    parse(): OptionsChangeableByUser {
+        let options = new OptionsChangeableByUser();
         const parsed = this.parseInternal();
         const q = parsed[QUERY];
         const mode = parsed[MAIN_MODE];

@@ -1,8 +1,8 @@
 import * as React from "react";
-import {DBShortName} from "../types/dbTypes";
 import {MainDisplayAreaMode} from "../types/displayTypes";
 import QueryStringHandler from "../QueryStringHandler";
 import {REPO_LINK} from "../constants";
+import {DBIdentifier} from "../types/config";
 
 export class SearchBar extends React.PureComponent<any, any> {
     textInput: React.RefObject<any>;
@@ -40,7 +40,7 @@ export class SearchBar extends React.PureComponent<any, any> {
     }
 }
 
-export function DebugArea({loadedDBs}: {loadedDBs: Map<DBShortName, boolean>}) {
+export function DebugArea({loadedDBs}: {loadedDBs: Map<DBIdentifier, boolean>}) {
     return <div className="debug-area">
         <DBLoadedState loadedDBs={loadedDBs} />
     </div>
@@ -48,7 +48,7 @@ export function DebugArea({loadedDBs}: {loadedDBs: Map<DBShortName, boolean>}) {
 
 function DBLoadedState({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
     let states: JSX.Element[] = [];
-    loadedDBs.forEach((db, dbName) => {
+    loadedDBs.forEach((db, dbIdentifier) => {
         const isLoaded = (db === null) || (db === false);
         const loadedString = isLoaded ? "⌛" : "✅";
         const borderStyleColor = isLoaded ? "red" : "green";
@@ -58,8 +58,8 @@ function DBLoadedState({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
             "background": backgroundColor,
         };
 
-        const entryDiv = <div className="db-loaded-entry" key={dbName} style={loadedStatusStyle} >
-            <span className="db-loaded-entry-name">{dbName}: </span>
+        const entryDiv = <div className="db-loaded-entry" key={dbIdentifier} style={loadedStatusStyle} >
+            <span className="db-loaded-entry-name">{dbIdentifier}: </span>
             <span className="db-loaded-entry-isloaded">
                 {loadedString}
             </span>

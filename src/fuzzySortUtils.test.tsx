@@ -1,5 +1,5 @@
 import { convertDBRowToFuzzySortPrepared } from "./fuzzySortUtils";
-import {DBRow} from "./types/dbTypes";
+import {RawDBRow} from "./types/dbTypes";
 
 test('preparation', () => {
     const row = {
@@ -7,7 +7,7 @@ test('preparation', () => {
         poj: "A-le̍k-san-tāi",
         english: "alexander! alexander!",
         trash: "throw away!",
-    } as DBRow;
+    } as RawDBRow;
 
     const searchableKeys = ["poj", "english"];
 

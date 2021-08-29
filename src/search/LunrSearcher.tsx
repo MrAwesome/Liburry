@@ -1,17 +1,16 @@
-import type {DBShortName, DBRow, LangDB, PerDictResultsRaw} from "../types/dbTypes";
+import type {RawDBRow, PerDictResultsRaw} from "../types/dbTypes";
 
 import {DISPLAY_RESULTS_LIMIT} from "../searchSettings";
 import getDebugConsole, {StubConsole} from "../getDebugConsole";
-import {DBSearchRanking, OngoingSearch, Searcher, SearcherType, SearchFailure} from "../search";
+import {DBSearchRanking, OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "../search";
 import {makeCancelable} from "../utils";
 import {getEntriesFromPreparedCSV} from "../common/csvUtils";
 import {vanillaDBEntryToResult} from "./utils";
 
 import lunr from "lunr";
+import {DBConfig, DBIdentifier} from "../types/config";
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
-
-function FixDBRowUsage() {}
 
 // TODO(urgent): find out why on reload fuzzy json is being loaded in lunr mode
 // TODO(urgent): find out why double-loads are happening / timers are running twice but not showing up
@@ -26,56 +25,111 @@ function FixDBRowUsage() {}
 // TODO: catch errors on searches like "chines~"
 // TODO: limit number of results from the search itself? ever necessary?
 
-export default class LunrSearcher implements Searcher {
+
+export class LunrPreparer implements SearcherPreparer {
+    private console: StubConsole;
+    constructor(
+        private dbConfig: DBConfig,
+        private debug: boolean,
+    ) {
+        this.console = getDebugConsole(debug);
+        this.prepare = this.prepare.bind(this);
+    }
+    async prepare(): Promise<Searcher> {
+        const dbIdentifier = this.dbConfig.getDBIdentifier();
+        // XXX TODO: document that this needs both, and needs incremental IDs etc
+        const {localCSV, localLunr} = this.dbConfig.getDBLoadInfo();
+
+        if (localCSV === undefined || localLunr === undefined) {
+            throw `Lunr search requires both a CSV and a pre-generated lunr index for that CSV! (${dbIdentifier})`;
+        }
+        this.console.time("lunr-total-" + dbIdentifier);
+
+        this.console.time("lunr-total-entries-" + dbIdentifier);
+        this.console.time("lunr-fetch-entries-" + dbIdentifier);
+        const entriesFetchAndLoad = fetch(localCSV)
+            .then((response: Response) => {
+                return response.text();
+            })
+            .then((text: string) => {
+                this.console.timeEnd("lunr-fetch-entries-" + dbIdentifier);
+
+                this.console.time("lunr-loadfromcsv-" + dbIdentifier);
+                const searchableEntries: RawDBRow[] = getEntriesFromPreparedCSV(text);
+                this.console.timeEnd("lunr-loadfromcsv-" + dbIdentifier);
+
+                this.console.timeEnd("lunr-total-entries-" + dbIdentifier);
+                return searchableEntries;
+            });
+
+        this.console.time("lunr-total-index-" + dbIdentifier);
+        this.console.time("lunr-fetch-index-" + dbIdentifier);
+        let versionString = "";
+        // XXX TODO: fix up version strings
+        //if (localLunrVersion) {
+        //    versionString = `?v=${localLunrVersion}`;
+        //}
+        const indexFetchAndLoad = fetch(localLunr + versionString)
+            .then((response: Response) => {
+                return response.text();
+            })
+            .then((text: string) => {
+                this.console.timeEnd("lunr-fetch-index-" + dbIdentifier);
+
+                this.console.time("lunr-index-parsejson-" + dbIdentifier);
+                const obj = JSON.parse(text);
+
+                this.console.time("lunr-index-parsejson-" + dbIdentifier);
+
+                this.console.time("lunr-index-load-" + dbIdentifier);
+                const idx = lunr.Index.load(obj);
+                this.console.timeEnd("lunr-index-load-" + dbIdentifier);
+                this.console.timeEnd("lunr-total-index-" + dbIdentifier);
+                return idx;
+            });
+
+        return Promise.all([entriesFetchAndLoad, indexFetchAndLoad]).then(([entries, idx]) => {
+            const searcher = new LunrSearcher(dbIdentifier, idx, entries, this.debug);
+            this.console.timeEnd("lunr-total-" + dbIdentifier);
+            return searcher;
+        });
+    }
+}
+
+export class LunrSearcher implements Searcher {
     searcherType: SearcherType = SearcherType.LUNR;
-    dbName: string;
-    langDB: LangDB;
-    debug: boolean;
 
     private console: StubConsole;
-    private idx?: lunr.Index;
-    private entries?: DBRow[];
 
-    constructor(dbName: DBShortName, langDB: LangDB, debug: boolean) {
-        this.dbName = dbName;
-        this.langDB = langDB;
-        this.debug = debug;
+    constructor(
+        private dbIdentifier: DBIdentifier,
+        private idx: lunr.Index,
+        private entries: RawDBRow[],
+        private debug: boolean,
+    ) {
         this.console = getDebugConsole(debug);
     }
 
     search(query: string): OngoingSearch | SearchFailure {
-        const dbName = this.dbName;
+        const dbIdentifier = this.dbIdentifier;
 
         const searchResultPromise = async () => {
-            if (this.idx === undefined) {
-                console.warn("Tried to search before preparation: ", this);
-                return SearchFailure.SearchedBeforePrepare;
-            } else {
-                this.console.time("lunr-search-" + dbName);
-                const searchResults = this.idx.search(query);
-                this.console.timeEnd("lunr-search-" + dbName);
-                return searchResults;
-            }
+            this.console.time("lunr-search-" + dbIdentifier);
+            const searchResults = this.idx.search(query);
+            this.console.timeEnd("lunr-search-" + dbIdentifier);
+            return searchResults;
         };
 
         const cancelableSearchPromise = makeCancelable(searchResultPromise());
 
         const parsePromise = cancelableSearchPromise.then(results => {
-            if ((results as lunr.Index.Result[]).reduce !== undefined) {
-                if (this.entries !== undefined) {
-                    return this.searchInternal(results as lunr.Index.Result[], this.entries);
-                } else {
-                    return SearchFailure.SearchedBeforePrepare;
-                }
-            } else {
-                return results as SearchFailure;
-            }
+            return this.searchInternal(results as lunr.Index.Result[], this.entries);
         });
 
         const cancelableParsePromise = makeCancelable(parsePromise);
 
         return new OngoingSearch(
-            dbName,
+            dbIdentifier,
             query,
             this.debug,
             cancelableSearchPromise,
@@ -85,11 +139,11 @@ export default class LunrSearcher implements Searcher {
 
     private searchInternal(
         results: lunr.Index.Result[],
-        entries: DBRow[],
+        entries: RawDBRow[],
     ): PerDictResultsRaw {
-        const dbName = this.dbName;
+        const dbIdentifier = this.dbIdentifier;
         const searchResults = results as lunr.Index.Result[];
-        this.console.time("lunr-getEntries-" + dbName);
+        this.console.time("lunr-getEntries-" + dbIdentifier);
 
         // NOTE: Clipping results to display limit here, Lunr doesn't seem to have a built-in limit
         const clippedSearchResults = searchResults.slice(0, DISPLAY_RESULTS_LIMIT);
@@ -101,67 +155,12 @@ export default class LunrSearcher implements Searcher {
                 searcherType: SearcherType.LUNR,
                 score: lunrRes.score
             } as DBSearchRanking;
-            return vanillaDBEntryToResult(dbName, this.langDB.fullName, entry, dbSearchRanking);
+            return vanillaDBEntryToResult(dbIdentifier, entry, dbSearchRanking);
         });
-        this.console.timeEnd("lunr-getEntries-" + dbName);
+        this.console.timeEnd("lunr-getEntries-" + dbIdentifier);
         return {
-            dbName,
+            dbIdentifier,
             results: matchingEntries,
         } as PerDictResultsRaw;
     }
-
-    // TODO: continue testing performance
-    async prepare(): Promise<void> {
-        const dbName = this.dbName;
-        const {localCSV, localLunr, localLunrVersion} = this.langDB;
-        this.console.time("lunr-total-" + dbName);
-
-        this.console.time("lunr-total-entries-" + dbName);
-        this.console.time("lunr-fetch-entries-" + dbName);
-        const entriesFetchAndLoad = fetch(localCSV)
-            .then((response: Response) => {
-                return response.text();
-            })
-            .then((text: string) => {
-                this.console.timeEnd("lunr-fetch-entries-" + dbName);
-
-                this.console.time("lunr-loadfromcsv-" + dbName);
-                const searchableEntries: DBRow[] = getEntriesFromPreparedCSV(text);
-                this.entries = searchableEntries;
-                this.console.timeEnd("lunr-loadfromcsv-" + dbName);
-
-                this.console.timeEnd("lunr-total-entries-" + dbName);
-            });
-
-        this.console.time("lunr-total-index-" + dbName);
-        this.console.time("lunr-fetch-index-" + dbName);
-        let versionString = "";
-        if (localLunrVersion) {
-            versionString = `?v=${localLunrVersion}`;
-        }
-        const indexFetchAndLoad = fetch(localLunr + versionString)
-            .then((response: Response) => {
-                return response.text();
-            })
-            .then((text: string) => {
-                this.console.timeEnd("lunr-fetch-index-" + dbName);
-
-                this.console.time("lunr-index-parsejson-" + dbName);
-                const obj = JSON.parse(text);
-
-                this.console.time("lunr-index-parsejson-" + dbName);
-
-                this.console.time("lunr-index-load-" + dbName);
-                const idx = lunr.Index.load(obj);
-                this.idx = idx;
-                this.console.timeEnd("lunr-index-load-" + dbName);
-                this.console.timeEnd("lunr-total-index-" + dbName);
-            });
-
-        return Promise.all([entriesFetchAndLoad, indexFetchAndLoad]).then(() => {
-            this.console.timeEnd("lunr-total-" + dbName);
-        });
-    }
-
 }
-

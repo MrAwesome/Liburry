@@ -1,15 +1,17 @@
-import FieldClassificationHandler from "./search/FieldClassificationHandler";
 import {typeGuard} from "./typeguard";
-import {DBShortName, PerDictResults, PerDictResultsRaw, SearchResultEntry} from "./types/dbTypes";
+import {DBIdentifier} from "./types/config";
+import {AnnotatedPerDictResults, AnnotatedSearchResultEntry} from "./types/dbTypes";
 
+// NOTE: storing results per-dict is almost certainly not necessary anymore
+//       instead, this should use a worker-unique ID (which, for now, is the DB name)
 export default class SearchResultsHolder {
-    currentResults: Map<DBShortName, PerDictResults> = new Map();
+    currentResults: Map<DBIdentifier, AnnotatedPerDictResults> = new Map();
     numResults: number = 0;
 
-    addResults(res: PerDictResultsRaw, fieldHandler: FieldClassificationHandler): this {
-        const parsedRes = PerDictResults.from(res, fieldHandler)
-        this.currentResults.set(res.dbName, parsedRes);
-        this.numResults += res.results.length;
+    // NOTE: this just plops a "per-dict results" object in at the noted db. In the future, results should just be added directly to a large list, or to the list per-dict if that's still important
+    addResults(res: AnnotatedPerDictResults): this {
+        this.currentResults.set(res.getDBIdentifier(), res);
+        this.numResults += res.getResults().length;
         return this;
     }
 
@@ -23,15 +25,15 @@ export default class SearchResultsHolder {
         return this.numResults;
     }
 
-    getAllResults(): SearchResultEntry[] {
-        let allPerDictRes = Array.from(this.currentResults.values()).filter(typeGuard) as PerDictResults[];
+    getAllResults(): AnnotatedSearchResultEntry[] {
+        let allPerDictRes = Array.from(this.currentResults.values()).filter(typeGuard) as AnnotatedPerDictResults[];
 
         // NOTE: this could be cached, and only updated/sorted on add.
-        let entries: SearchResultEntry[] = [];
+        let entries: AnnotatedSearchResultEntry[] = [];
 
         // Flatten out all results
-        allPerDictRes.forEach((perDict: PerDictResults) => {
-            perDict.getResults().forEach((rawEntry: SearchResultEntry) => {
+        allPerDictRes.forEach((perDict: AnnotatedPerDictResults) => {
+            perDict.getResults().forEach((rawEntry: AnnotatedSearchResultEntry) => {
                 entries.push(rawEntry);
             });
         });

@@ -1,50 +1,125 @@
-import {KnownDisplayTypeEntry} from "./displayTypes";
-import {Language} from "./language";
+import {RawAllDBConfig, RawAllowedFieldClassifierTags, RawDBConfig} from "../configHandler/rawConfigTypes";
+import Dialect, {DialectID} from "../languages/dialect";
+import {DBColName} from "./dbTypes";
+import {RawKnownDisplayTypeEntry} from "./displayTypes";
 
-export interface AppConfig {
-    name: string,
-    displayName: string,
-    interfaceLangs: string[],
+export class AppConfig {
+    private constructor(
+        //private appIdentifier: string,
+        //private displayName: string,
+        //private interfaceLangs: string[],
+        //rawDBConfigs: RawAllDBConfig,
+        private dbConfigs: Map<DBIdentifier, DBConfig>,
+        //private langConfigs: RawLangConfig[],
+    ) {
+    }
+
+    static from(
+        rawDBConfigs: RawAllDBConfig,
+    ) {
+        const dbIdentifierToConfigPairs: [DBIdentifier, DBConfig][] =
+            Object.getOwnPropertyNames(rawDBConfigs)
+                .map((dbIdentifier) => [dbIdentifier, new DBConfig(dbIdentifier, rawDBConfigs[dbIdentifier])]);
+        const dbConfigs = new Map(dbIdentifierToConfigPairs);
+        return new AppConfig(dbConfigs);
+    }
+
+    getAllEnabledDBConfigs(): DBConfig[] {
+        return Array.from(this.dbConfigs.values()).filter((dbConfig) => dbConfig.isEnabled());
+    }
+
+    getDBConfig(dbIdentifier: DBIdentifier): DBConfig | null{
+        return this.dbConfigs.get(dbIdentifier) ?? null;
+    }
 }
 
-export interface AllDBConfig {
-    [dbName: string]: DBConfig,
-}
-
-export type DBLoadInfo = {
-    format: "local_csv",
-    filename: string,
-} | {
-    format: "local_lunr",
-    filename: string,
+export interface DBLoadInfo {
+    localCSV?: string;
+    localLunr?: string;
 }
 
 type FieldName = string;
 
-export interface DBConfig {
-    fullIdentifier: string,
-    displayShortName: string,
-    loadInfo: DBLoadInfo,
+export type DBIdentifier = string;
 
+// TODO: Should these be functions? (yes.)
+export class DBConfig {
+    private loadInfo: DBLoadInfo;
+    private fieldConfigs: FieldConfig[];
+    private otherMetadata?: {
+        [s: string]: any,
+    }
+
+    constructor(
+        private dbIdentifier: DBIdentifier,
+        private r: RawDBConfig,
+    ) {
+        this.loadInfo = r.loadInfo;
+
+        this.fieldConfigs = Object.getOwnPropertyNames(r.fields).map((rawFieldName) => {
+            const rawField = r.fields[rawFieldName];
+            let rawDialect = rawField.dialect;
+            let dialect: Dialect | Dialect[] | undefined = undefined;
+
+            if (rawDialect !== undefined) {
+                if ((rawDialect as string[]).flatMap !== undefined) {
+                    dialect = (rawDialect as string[]).map((dialectName) => {
+                        // TODO: search langConfig and find dialect config to get info here (or create all Dialects there, then just point to the right dialect here)
+                        return new Dialect(dialectName, dialectName);
+                    })
+                } else {
+                    const dialectName = rawDialect as string;
+                    dialect = new Dialect(dialectName, dialectName);
+                }
+            }
+
+            return {
+                name: rawFieldName,
+                fieldType: rawField.type,
+                delimiter: rawField.delimiter,
+                dialect,
+            }
+        });
+    }
+
+    asRaw(): RawDBConfig {
+        return this.r;
+    }
+
+    isEnabled(): boolean {
+        return this.r.enabled ?? false;
+    }
+
+    getDBLoadInfo() {
+        return this.loadInfo;
+    }
+
+    getDisplayName(lang: DialectID) {
+        // THROW: not defined yet
+    }
+
+    getDBIdentifier() {
+        return this.dbIdentifier;
+    }
+
+    // TODO: return a less-raw view into column metadata
+    getColumnMetadata(colName: DBColName): RawAllowedFieldClassifierTags {
+        return this.r.fields[colName];
+    }
+
+    //
     // TODO: dynamically determine these by checking isTitleType (for now just "vocab") on all fields then getting the lang of those fields
     //titleLangs: Language[],
     //dataLangs: Language[],
 
-    fields: FieldConfig,
-
-    otherMetadata?: {
-        [s: string]: any,
-    }
 }
 
-// XXX TODO: try to use a csv-to-yaml converter to populate the field configs
 export interface FieldConfig {
     name: FieldName,
-    // XXX TODO: see if this mapping works
-    fieldType: KnownDisplayTypeEntry | KnownDisplayTypeEntry[],
+    fieldType: RawKnownDisplayTypeEntry | undefined,
     delimiter?: string,
 
     // NOTE: The array is so that fields containing multiple languages can be appropriately tagged
-    language: Language | Language[],
+    dialect: Dialect | Dialect[] | undefined,
 }
 

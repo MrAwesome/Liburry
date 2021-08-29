@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import ChhaTaigiOptions from "./ChhaTaigiOptions";
+import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import ConfigHandler from "./configHandler/ConfigHandler";
 
 // TODO: add yaml to service worker! (? - worth it for speed? does complicate config changes)
@@ -13,7 +13,7 @@ import ConfigHandler from "./configHandler/ConfigHandler";
 //          * see if you can use `preload` on these yaml files
 
 interface ChhaTaigiPlaygroundProps {
-    options: ChhaTaigiOptions,
+    options: OptionsChangeableByUser,
 }
 
 interface ChhaTaigiPlaygroundState {

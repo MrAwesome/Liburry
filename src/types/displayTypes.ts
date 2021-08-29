@@ -6,16 +6,23 @@ export enum MainDisplayAreaMode {
     SETTINGS = "SETTINGS",
 }
 
-export type KnownDisplayTypeEntry =
-    { appType: "dictionary", fieldType: DictionaryFieldDisplayType};
+export interface RawKnownDisplayTypeEntry {
+    dictionary?: RawDictionaryFieldDisplayType,
+    fake_mtg?: FakeMTGDisplayType,
+}
+
+export type DisplayType = keyof RawKnownDisplayTypeEntry;
+export type DataType = RawKnownDisplayTypeEntry[DisplayType];
 
 export interface HasFieldDisplayTypeToAreaMapping<FT, DA> {
     fieldDisplayTypeToDisplayRule(fieldDisplayType: FT): DA;
 }
 
+export type FakeMTGDisplayType = "fake_mtg" | "mtg_fake";
+
 // NOTE: this are still somewhat specific to taigi.us - can they be abstracted per-app?
 // NOTE: for perf, this can/could be an enum (doubtful that it will matter for a long, long time)
-export type DictionaryFieldDisplayType =
+export type RawDictionaryFieldDisplayType =
     "base_phrase" |
     "channel_name" |
     "class" |

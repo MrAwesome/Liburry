@@ -2,7 +2,7 @@ import fs from 'fs';
 import { render, screen } from '@testing-library/react';
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {ChhaTaigi} from './ChhaTaigi';
-import ChhaTaigiOptions from './ChhaTaigiOptions';
+import OptionsChangeableByUser from './ChhaTaigiOptions';
 import * as React from 'react';
 import {noop} from './utils';
 import {DBSearchRanking, SearcherType} from './search';
@@ -31,7 +31,7 @@ test('render single entry via override', async () => {
     const classificationText = fs.readFileSync("public/" + DEFAULT_FIELD_CLASSIFICATION_DB_FILENAME);
     const fieldHandlerPromise = FieldClassificationHandler.fromText(classificationText.toString());
 
-    let options = new ChhaTaigiOptions();
+    let options = new OptionsChangeableByUser();
     options.mainMode = MainDisplayAreaMode.SEARCH;
 
     const dbName = "maryknoll";

@@ -1,8 +1,7 @@
 import * as React from "react";
 import {createMatchElement} from "../fuzzySortReactUtils";
-import FieldClassificationHandler, {DBLangType} from "../search/FieldClassificationHandler";
-import {SearchResultEntry} from "../types/dbTypes";
-import {DictionaryFieldDisplayType, HasFieldDisplayTypeToAreaMapping} from "../types/displayTypes";
+import {AnnotatedSearchResultEntry} from "../types/dbTypes";
+import {RawDictionaryFieldDisplayType, HasFieldDisplayTypeToAreaMapping} from "../types/displayTypes";
 import {FieldTypeToAreaConverter} from "./utils";
 
 import "./AgnosticEntryContainer.css";
@@ -13,10 +12,7 @@ import "./AgnosticEntryContainer.css";
 
 type AECProps = {
     debug: boolean,
-    lang: DBLangType,
-    //langOptions={langOptions}
-    fieldHandler: FieldClassificationHandler,
-    entry: SearchResultEntry,
+    entry: AnnotatedSearchResultEntry,
 }
 
 type AECDisplayArea =
@@ -32,7 +28,7 @@ type AECDisplayArea =
 // TODO: codify these areas to appear in particular order, etc
 
 // TODO: move this to YAML
-const fieldTypeToDisplayArea: Array<[DictionaryFieldDisplayType, AECDisplayArea]> = [
+const fieldTypeToDisplayArea: Array<[RawDictionaryFieldDisplayType, AECDisplayArea]> = [
     ["vocab", "title"],
     ["definition", "definition"],
     ["example", "other_info"],
@@ -44,7 +40,7 @@ const fieldTypeToDisplayArea: Array<[DictionaryFieldDisplayType, AECDisplayArea]
 
 export default class AgnosticEntryContainer
     extends React.PureComponent<AECProps, {}>
-    implements HasFieldDisplayTypeToAreaMapping<DictionaryFieldDisplayType, AECDisplayArea>
+    implements HasFieldDisplayTypeToAreaMapping<RawDictionaryFieldDisplayType, AECDisplayArea>
 {
 
     static CSS_PREFIX = "agnostic-container";
@@ -53,11 +49,11 @@ export default class AgnosticEntryContainer
         super(props);
     }
 
-    fieldDisplayTypeToDisplayRule(fieldDisplayType: DictionaryFieldDisplayType): AECDisplayArea {
+    fieldDisplayTypeToDisplayRule(fieldDisplayType: RawDictionaryFieldDisplayType): AECDisplayArea {
         return AgnosticEntryContainer.fieldTypeToDisplayAreaConverter.getArea(fieldDisplayType);
     }
 
-    getEntry(): SearchResultEntry {
+    getEntry(): AnnotatedSearchResultEntry {
         return this.props.entry;
     }
 
@@ -67,20 +63,20 @@ export default class AgnosticEntryContainer
 
         let displayContainer: Map<AECDisplayArea, JSX.Element[]> = new Map();
 
-        //output.push(<div style={littleStyle}> DB: {entry.getDBFullName()} </div>);
         entry.getFields().forEach((field) => {
-            if (field.hasValue()) {
+            const maybeFieldType = field.getDataTypeForDisplayType("dictionary");
+            if (field.hasValue() && maybeFieldType !== null) {
+                const fieldType = maybeFieldType as RawDictionaryFieldDisplayType;
                 const colName = field.getColumnName();
-                const fieldType = field.getDataType() as DictionaryFieldDisplayType; // TODO: type this upstream
                 const displayArea = this.fieldDisplayTypeToDisplayRule(fieldType);
                 const cssPrefix = AgnosticEntryContainer.CSS_PREFIX + "-" + displayArea;
 
-                // TODO XXX : if a YAML config implements DictionaryFieldDisplayType -> whatever the more abstract version of AECDisplayArea is, it automatically can be displayed using AEC or any other
+                // TODO XXX : if a YAML config implements RawDictionaryFieldDisplayType -> whatever the more abstract version of AECDisplayArea is, it automatically can be displayed using AEC or any other
                 // TODO: order of areas should be pre-determined, since they're known at typing time? should they be? or should areas be defined in yaml and just have e.g. "other_info" "bottom" "priority: 0" or whatever?
 
                 if (displayArea !== null) {
                     // TODO: more strongly type language
-                    const language = field.getLanguage();
+                    const dialect = field.getDialect();
 
                     // TODO: don't do this for non-matched elems
                     let element;
@@ -96,7 +92,6 @@ export default class AgnosticEntryContainer
             }
         });
         // Example
-        //this.props.fieldHandler.getFieldsOfType(entry, "normalized").forEach((f) => output.push(f.getDisplayValue()));
         let output: JSX.Element[] = [];
         displayContainer.forEach((elementList, displayArea) => {
             output.push(<div className={AgnosticEntryContainer.CSS_PREFIX + "-" + displayArea}>{elementList}</div>);

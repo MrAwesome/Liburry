@@ -1,14 +1,13 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
 
-import {ChhaTaigi} from "./ChhaTaigi";
-import {ChhaTaigiPlayground} from "./ChhaTaigiPlayground";
-
 import "./ChhaTaigi.css";
 import "./pages.css";
 import QueryStringHandler from "./QueryStringHandler";
 
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import {ChhaTaigiPlayground} from "./ChhaTaigiPlayground";
+import {ChhaTaigiLoader} from "./ChhaTaigiLoader";
 //import reportWebVitals from "./reportWebVitals";
 
 const queryStringHandler = new QueryStringHandler();
@@ -19,7 +18,7 @@ let app: JSX.Element;
 if (options.playground) {
     app = <ChhaTaigiPlayground options={options}/>;
 } else {
-    app = <ChhaTaigi options={options}/>;
+    app = <ChhaTaigiLoader options={options}/>;
 }
 
 const rootElement = document.getElementById("root");

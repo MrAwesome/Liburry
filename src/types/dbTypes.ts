@@ -1,17 +1,20 @@
+import {RawAllowedFieldClassifierTags} from "../configHandler/rawConfigTypes";
+import {DialectID} from "../languages/dialect";
 import {DBSearchRanking} from "../search";
-import FieldClassificationHandler, {DBColType, DBColumnMetadata, DBLangType} from "../search/FieldClassificationHandler";
+import {AppConfig, DBIdentifier} from "./config";
+import {DataType, DisplayType} from "./displayTypes";
 
 // TODO: move the code here that isn't type-only somewhere else
 
 export type RowIdentifier = number;
-export type DBShortName = string;
+export type OldDBShortName = string;
 export type DBFullName = string;
 export type DBFilename = string;
 export type SearchPreppedKey = string;
 export type EntryFieldNameToPreppedNameMapping = Map<string, SearchPreppedKey>;
 
-export interface LangDB {
-    shortName: DBShortName,
+export interface OldLangDB {
+    shortName: OldDBShortName,
     fullName: DBFullName,
     upstreamCSV: DBFilename,
     localCSV: DBFilename,
@@ -31,32 +34,60 @@ export enum Langs {
 
 // NOTE: This type is passed back from web workers.
 export interface PerDictResultsRaw {
-    dbName: DBShortName,
+    dbIdentifier: DBIdentifier,
     results: Array<SearchResultEntryRaw>,
 }
 
-export class PerDictResults {
-    private constructor(
-        private dbName: DBShortName,
-        private results: SearchResultEntry[],
+// NOTE: This type is passed back from web workers.
+export interface AnnotatedPerDictResultsRaw {
+    dbIdentifier: DBIdentifier,
+    results: Array<AnnotatedSearchResultEntryRaw>,
+}
+
+export function annotateRawResults(allRes: PerDictResultsRaw, appConfig: AppConfig): AnnotatedPerDictResultsRaw {
+    const {dbIdentifier} = allRes;
+    const dbConfig = appConfig.getDBConfig(dbIdentifier);
+    const results: AnnotatedSearchResultEntryRaw[] = allRes.results.map((entryRaw) => {
+        const fields: AnnotatedDisplayReadyFieldRaw[] = entryRaw.fields.map((fieldRaw) => {
+            const colName = fieldRaw.colName;
+            const metadata = dbConfig?.getColumnMetadata(colName)
+            // NOTE: it may be wasteful to pass all of this data onwards, since every field will pass all of the metadata associated with it along with every single entry (so the fieldclassifier approach may save some space)
+            return {
+                ...fieldRaw,
+                metadata,
+            };
+        });
+        return {
+            ...entryRaw,
+            fields,
+        }
+    });
+
+    return {
+        dbIdentifier,
+        results,
+    }
+}
+
+
+export class AnnotatedPerDictResults {
+    private results: AnnotatedSearchResultEntry[];
+    constructor(
+        private r: AnnotatedPerDictResultsRaw,
     ) {
+        this.results = r.results.map((rawEntry) => new AnnotatedSearchResultEntry(rawEntry));
     }
 
-    static from(allRes: PerDictResultsRaw, h: FieldClassificationHandler) {
-        const results = allRes.results.map((r) => SearchResultEntry.from(r, h));
-        return new PerDictResults(allRes.dbName, results);
+    getDBIdentifier(): DBIdentifier {
+        return this.r.dbIdentifier;
     }
 
-    getDBName(): DBShortName {
-        return this.dbName;
-    }
-
-    getResults(): Array<SearchResultEntry> {
+    getResults(): Array<AnnotatedSearchResultEntry> {
         return this.results;
     }
-
-
 }
+
+
 
 // NOTE: This type is passed back from web workers. It's okay to store
 // a fair amount of information here, since these are only created for
@@ -66,6 +97,9 @@ export class PerDictResults {
 export type DBColName = string;
 export type DBColVal = string;
 
+// TODO: this most likely should be some enum or abstract type
+export type DBColType = string;
+
 // NOTE: this class is passed from workers back to the main thread, hence interface instead of class.
 export interface DisplayReadyFieldRaw {
     readonly colName: DBColName;
@@ -74,19 +108,19 @@ export interface DisplayReadyFieldRaw {
     readonly displayValOverride?: string;
 }
 
-export class DisplayReadyField {
-    private constructor(
-        private d: DisplayReadyFieldRaw,
-        private dbName: DBShortName,
-        private metadata: DBColumnMetadata,
+// NOTE: this class is passed from workers back to the main thread, hence interface instead of class.
+export interface AnnotatedDisplayReadyFieldRaw extends DisplayReadyFieldRaw {
+    metadata?: RawAllowedFieldClassifierTags,
+}
+
+export class AnnotatedDisplayReadyField {
+    constructor(
+        private d: AnnotatedDisplayReadyFieldRaw,
+        private dbIdentifier: DBIdentifier,
     ){
         this.hasValue = this.hasValue.bind(this);
         this.getDisplayValue = this.getDisplayValue.bind(this);
         this.getColumnName = this.getColumnName.bind(this);
-    }
-
-    static from(d: DisplayReadyFieldRaw, dbName: DBShortName, metadata: DBColumnMetadata) {
-        return new DisplayReadyField(d, dbName, metadata);
     }
 
     hasValue(): boolean {
@@ -109,16 +143,21 @@ export class DisplayReadyField {
         return this.d.matched;
     }
 
-    getDataType(): DBColType {
-        return this.metadata.getDataType();
+    getDataTypeForDisplayType(appDisplayType: DisplayType): DataType | null {
+        const dt = this.d.metadata?.type;
+        if (dt !== undefined) {
+            return dt[appDisplayType] ?? null;
+        } else {
+            return null
+        }
     }
 
-    getLanguage(): DBLangType {
-        return this.metadata.getLanguage();
+    getDialect(): DialectID | DialectID[] | null {
+        return this.d.metadata?.dialect ?? null;
     }
 
-    getDBName(): DBShortName {
-        return this.dbName;
+    getDBIdentifier(): DBIdentifier {
+        return this.dbIdentifier;
     }
 }
 
@@ -126,40 +165,37 @@ export class DisplayReadyField {
 export interface SearchResultEntryRaw {
     readonly key: string;
     readonly rowID: RowIdentifier;
-    readonly dbName: DBShortName;
-    readonly dbFullName: DBFullName;
+    readonly dbIdentifier: DBIdentifier;
+    // NOTE: this should use the language-aware displayName from the DBConfig instead
     readonly dbSearchRanking: DBSearchRanking;
     readonly fields: DisplayReadyFieldRaw[];
 }
 
-export class SearchResultEntry {
-    private constructor(
-        private e: SearchResultEntryRaw,
-        private fields: DisplayReadyField[],
+// NOTE: this class is passed from workers back to the main thread, hence interface instead of class.
+export interface AnnotatedSearchResultEntryRaw extends SearchResultEntryRaw {
+    readonly fields: AnnotatedDisplayReadyFieldRaw[];
+}
+
+export class AnnotatedSearchResultEntry {
+    private fields: AnnotatedDisplayReadyField[];
+
+    constructor(
+        private e: AnnotatedSearchResultEntryRaw,
     ) {
+        this.fields = e.fields.map((fieldRaw) => new AnnotatedDisplayReadyField(fieldRaw, e.dbIdentifier));
+
         this.getDisplayKey = this.getDisplayKey.bind(this);
         this.getFieldByNameDEPRECATED = this.getFieldByNameDEPRECATED.bind(this);
 
-        this.getDBName = this.getDBName.bind(this);
+        this.getDBIdentifier = this.getDBIdentifier.bind(this);
         this.getRowID = this.getRowID.bind(this);
-        this.getDBFullName = this.getDBFullName.bind(this);
         this.getRanking = this.getRanking.bind(this);
         this.getFields = this.getFields.bind(this);
 
     }
 
-    static from(entryRaw: SearchResultEntryRaw, fieldHandler: FieldClassificationHandler) {
-        const fields = entryRaw.fields.map((fieldRaw) => {
-            const dbFullName = entryRaw.dbFullName;
-            const colName = fieldRaw.colName;
-            const metadata = fieldHandler.getColumnMetadata(dbFullName, colName)
-            return DisplayReadyField.from(fieldRaw, dbFullName, metadata);
-        });
-        return new SearchResultEntry(entryRaw, fields);
-    }
-
     // NOTE: if duplicate fields were added, this would only return the first.
-    getFieldByNameDEPRECATED(name: string): DisplayReadyField | null {
+    getFieldByNameDEPRECATED(name: string): AnnotatedDisplayReadyField | null {
         const foundField = this.getFields().find((f) => f.getColumnName() === name);
         return foundField ?? null;
     }
@@ -169,32 +205,28 @@ export class SearchResultEntry {
         return this.e.key;
     }
 
-    getDBName(): DBShortName {
-        return this.e.dbName;
+    getDBIdentifier(): DBIdentifier {
+        return this.e.dbIdentifier;
     }
     getRowID(): RowIdentifier {
         return this.e.rowID;
-    }
-
-    getDBFullName(): DBFullName {
-        return this.e.dbFullName;
     }
 
     getRanking(): DBSearchRanking {
         return this.e.dbSearchRanking;
     }
 
-    getFields(): DisplayReadyField[] {
+    getFields(): AnnotatedDisplayReadyField[] {
         return this.fields;
     }
 }
 
-export interface DBRow {
+export interface RawDBRow {
     id: string,
     [s: string]: string,
 }
 
-export function getDBRowKeys(r: DBRow): (keyof DBRow)[] {
+export function getDBRowKeys(r: RawDBRow): (keyof RawDBRow)[] {
     const fields = Object.getOwnPropertyNames(r)
                         .filter((k) => k !== "id");
     return fields;
