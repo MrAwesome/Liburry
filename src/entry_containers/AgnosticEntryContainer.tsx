@@ -62,18 +62,23 @@ export default class AgnosticEntryContainer
     render() {
         const treeHandler = AgnosticEntryContainer.treeHandler;
         const tree = treeHandler.generateEmptyTree();
-        treeHandler.insertInto(tree, "explanation", "Receiving quite a dickin'");
-        treeHandler.insertInto(tree, "definition", "You gettin dickin'!!!");
-        treeHandler.insertInto(tree, "vocab", "Dicking");
-        return treeHandler.getAsNestedDivs(tree);
-        const entry = this.getEntry();
 
-        let displayContainer: Map<AECDisplayArea, JSX.Element[]> = new Map();
+        const entry = this.getEntry();
 
         entry.getFields().forEach((field) => {
             const maybeFieldType = field.getDataTypeForDisplayType("dictionary");
             if (field.hasValue() && maybeFieldType !== null) {
                 const fieldType = maybeFieldType as RawDictionaryFieldDisplayType;
+                const value = field.getDisplayValue();
+                const className = fieldType + "-element";
+                let element: JSX.Element;
+                if (field.wasMatched()) {
+                    element = createMatchElement(value, className);
+                } else {
+                    element = <span className={className}>{value}</span>
+                }
+                treeHandler.insertInto(tree, fieldType, element);
+
                 //const colName = field.getColumnName();
                 // const displayArea = this.fieldDisplayTypeToDisplayRule(fieldType);
                 // const cssPrefix = AgnosticEntryContainer.CSS_PREFIX + "-" + displayArea;
@@ -98,11 +103,12 @@ export default class AgnosticEntryContainer
                 // }
             }
         });
-        // Example
-        let output: JSX.Element[] = [];
-        displayContainer.forEach((elementList, displayArea) => {
-            output.push(<div className={AgnosticEntryContainer.CSS_PREFIX + "-" + displayArea}>{elementList}</div>);
-        });
-        return <div className={AgnosticEntryContainer.CSS_PREFIX}>{output}</div>;
+        return treeHandler.getAsNestedDivs(tree);
+//        // Example
+//        let output: JSX.Element[] = [];
+//        displayContainer.forEach((elementList, displayArea) => {
+//            output.push(<div className={AgnosticEntryContainer.CSS_PREFIX + "-" + displayArea}>{elementList}</div>);
+//        });
+//        return <div className={AgnosticEntryContainer.CSS_PREFIX}>{output}</div>;
     }
 }
