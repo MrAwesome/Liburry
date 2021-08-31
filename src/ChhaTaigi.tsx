@@ -305,7 +305,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         window.removeEventListener("hashchange", this.hashChange);
     }
 
-    hashChange(_e: HashChangeEvent) {
+    hashChange(_evt: Event) {
         const oldOptions = this.getStateTyped().options;
         const newOptions = queryStringHandler.parse();
 

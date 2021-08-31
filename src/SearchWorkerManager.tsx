@@ -38,6 +38,7 @@ export default class SearchWorkerManager {
     async init(searcherType: SearcherType, searchWorkerReplyHandler: (e: MessageEvent<SearchWorkerResponseMessage>) => Promise<void>) {
         // Import is here so that the import of worker code doesn't break Jest testing elsewhere.
         if (!runningInJest()) {
+            /* eslint-disable import/no-webpack-loader-syntax */
             import("worker-loader!./search.worker").then((worker) => {
 
                 this.appConfig.getAllEnabledDBConfigs().forEach((dbConfig) => {

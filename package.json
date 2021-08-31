@@ -24,7 +24,7 @@
     "fuse.js": "3.2.1",
     "fuzzysort": "^1.1.4",
     "lunr": "^2.3.9",
-    "lunr-languages": "^1.7.0",
+    "lunr-languages": "^1.9.0",
     "node-fetch": "^2.6.1",
     "normalize-diacritics": "^2.13.2",
     "papaparse": "^5.3.1",
@@ -40,6 +40,7 @@
     "worker-loader": "^3.0.8"
   },
   "devDependencies": {
+    "nodejieba": "^2.5.2",
     "webpack-cli": "^4.7.2",
     "webpack-node-externals": "^3.0.0"
   },
