@@ -1,4 +1,3 @@
-import fs from 'fs';
 import { render, screen } from '@testing-library/react';
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {ChhaTaigi} from './ChhaTaigi';
@@ -6,8 +5,10 @@ import OptionsChangeableByUser from './ChhaTaigiOptions';
 import * as React from 'react';
 import {noop} from './utils';
 import {DBSearchRanking, SearcherType} from './search';
-import FieldClassificationHandler, {DEFAULT_FIELD_CLASSIFICATION_DB_FILENAME} from './search/FieldClassificationHandler';
 import {MATCH_HTML_TAG} from './constants';
+import ConfigHandler from './configHandler/ConfigHandler';
+import {AppConfig} from './types/config';
+import {AnnotatedPerDictResults, annotateRawResults, PerDictResultsRaw} from './types/dbTypes';
 
 // NOTE: just used to silence errors in node TSC.
 noop(React.version);
@@ -18,8 +19,27 @@ noop(React.version);
 // TODO(high): test basic worker search behavior (probably not possible from jest?)
 // TODO(low): figure out how to run componentDidMount
 
-test('render searchbar by default', () => {
-    render(<ChhaTaigi />);
+export async function getAppConfig() {
+    const configHandler = new ConfigHandler("taigi.us", true);
+    return Promise.all([
+        //configHandler.loadAppConfig(),
+        configHandler.loadDBConfigs(),
+        //configHandler.loadLanguageConfigs(),
+    ]).then(([
+        //rawAppConfig,
+        dbConfigs,
+        //langConfigs
+    ]) => {
+        return AppConfig.from(dbConfigs);
+    });
+}
+
+const appConfigPromise = getAppConfig();
+
+test('render searchbar by default', async () => {
+    const appConfig = await appConfigPromise;
+    let options = new OptionsChangeableByUser();
+    render(<ChhaTaigi appConfig={appConfig} options={options} />);
     const searchBar = screen.getByPlaceholderText(/Search.../);
     expect(searchBar).toBeInTheDocument();
     expect(searchBar).toBeEmptyDOMElement();
@@ -28,24 +48,19 @@ test('render searchbar by default', () => {
 
 test('render single entry via override', async () => {
     // TODO: simplify this
-    const classificationText = fs.readFileSync("public/" + DEFAULT_FIELD_CLASSIFICATION_DB_FILENAME);
-    const fieldHandlerPromise = FieldClassificationHandler.fromText(classificationText.toString());
-
     let options = new OptionsChangeableByUser();
     options.mainMode = MainDisplayAreaMode.SEARCH;
 
-    const dbName = "maryknoll";
-    const dbFullName = "ChhoeTaigi_TaioanPehoeKichhooGiku";
+    const dbIdentifier = "ChhoeTaigi_TaioanPehoeKichhooGiku";
     const rowID = 1;
 
     const marked = `hoat-<${MATCH_HTML_TAG}>lu̍t</${MATCH_HTML_TAG}>`;
 
     const dbSearchRanking = {searcherType: SearcherType.LUNR, score: -3} as DBSearchRanking;
     let res1 = {
-        key: `${dbName}-${rowID}`,
+        key: `${dbIdentifier}-${rowID}`,
         rowID,
-        dbName,
-        dbFullName,
+        dbIdentifier,
         dbSearchRanking,
         fields: [
             {
@@ -77,13 +92,17 @@ test('render single entry via override', async () => {
         ],
     };
 
-    let perDictRes = {
-        dbName: "ChhoeTaigi_TaioanPehoeKichhooGiku",
+    let perDictRes: PerDictResultsRaw = {
+        dbIdentifier,
         results: [res1],
     };
 
-    const fieldHandler = await fieldHandlerPromise;
-    render(<ChhaTaigi options={options} mockResults={perDictRes} overrideFieldHandler={fieldHandler} />);
+    const appConfig = await appConfigPromise;
+
+    const annotatedResRaw = annotateRawResults(perDictRes, appConfig);
+    const annotatedRes = new AnnotatedPerDictResults(annotatedResRaw);
+
+    render(<ChhaTaigi options={options} appConfig={appConfig} mockResults={annotatedRes} />);
 
     const hoabun = screen.getByText(/法律/i);
     expect(hoabun).toBeInTheDocument();
@@ -96,7 +115,7 @@ test('render single entry via override', async () => {
 
     const eng = screen.getByText(/the law/i);
     expect(eng).toBeInTheDocument();
-    const db = screen.getByText(/maryknoll/i);
+    const db = screen.getByText(/TaioanPehoeKichhooGiku/i);
     expect(db).toBeInTheDocument();
     const searchBar = screen.getByPlaceholderText(/Search.../);
     expect(searchBar).toBeInTheDocument();

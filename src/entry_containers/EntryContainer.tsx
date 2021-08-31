@@ -95,7 +95,7 @@ export default class EntryContainer extends React.PureComponent<{
         altTextFields.forEach((fieldName) => {
             const field = this.getEntry().getFieldByNameDEPRECATED(fieldName);
             const inner = createMatchElement(field!.getDisplayValue(), "alt-text");
-            const container = <div className="alt-text-container">
+            const container = <div className="alt-text-container" key={fieldName}>
                 ({inner})
             </div>;
             altTextContainers.push(container);

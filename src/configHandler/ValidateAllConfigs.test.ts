@@ -21,14 +21,13 @@ test('app configs', async () => {
     // TODO: for now, hardcode expected schema
     expect(configs.name).toBe("taigi.us");
     expect(configs.displayName).toBe("Chhâ Tâi-gí!");
-    expect(configs.interfaceLangs).toContain("eng");
 });
 
 // TODO: same handler pattern as below
 test('db configs', async () => {
     const ch = new ConfigHandler("taigi.us", true);
-    const configs = await ch.loadDBConfig();
-    expect(configs["giku"]).toBeTruthy();
+    const configs = await ch.loadDBConfigs();
+    expect(configs["ChhoeTaigi_TaioanPehoeKichhooGiku"]).toBeTruthy();
 });
 
 test('lang configs', async () => {
