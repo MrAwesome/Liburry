@@ -1,5 +1,5 @@
 import * as React from "react";
-import ReactDOM from "react-dom";
+import * as ReactDOM from 'react-dom';
 
 import "./ChhaTaigi.css";
 import "./pages.css";
@@ -22,10 +22,12 @@ if (options.playground) {
 }
 
 const rootElement = document.getElementById("root");
-ReactDOM.render(
+const root = (ReactDOM as any).createRoot(rootElement);
+
+root.render(
     <React.StrictMode>
         {app}
-    </React.StrictMode>, rootElement);
+    </React.StrictMode>);
 
 serviceWorkerRegistration.register();
 //reportWebVitals(console.log);
