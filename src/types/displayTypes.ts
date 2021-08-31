@@ -14,10 +14,6 @@ export interface RawKnownDisplayTypeEntry {
 export type DisplayType = keyof RawKnownDisplayTypeEntry;
 export type DataType = RawKnownDisplayTypeEntry[DisplayType];
 
-export interface HasFieldDisplayTypeToAreaMapping<FT, DA> {
-    fieldDisplayTypeToDisplayRule(fieldDisplayType: FT): DA;
-}
-
 export type FakeMTGDisplayType = "fake_mtg" | "mtg_fake";
 
 // NOTE: this are still somewhat specific to taigi.us - can they be abstracted per-app?

@@ -29,8 +29,8 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
             configHandler.loadDBConfigs(),
             //configHandler.loadLanguageConfigs(),
         ]).then(([
-            //rawAppConfig, 
-            dbConfigs, 
+            //rawAppConfig,
+            dbConfigs,
             //langConfigs
         ]) => {
             const appConfig = AppConfig.from(dbConfigs);

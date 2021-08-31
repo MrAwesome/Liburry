@@ -1,10 +1,10 @@
 import * as React from "react";
 import {createMatchElement} from "../fuzzySortReactUtils";
 import {AnnotatedSearchResultEntry} from "../types/dbTypes";
-import {RawDictionaryFieldDisplayType, HasFieldDisplayTypeToAreaMapping} from "../types/displayTypes";
-import {FieldTypeToAreaConverter} from "./utils";
+import {RawDictionaryFieldDisplayType} from "../types/displayTypes";
 
 import "./AgnosticEntryContainer.css";
+import {area, AreaNode, LocationTreeHandler} from "./utils";
 
 // TODO(high): set up integration tests
 // TODO: use FieldDisplayType/FieldDisplayRule to display everything
@@ -16,41 +16,42 @@ type AECProps = {
 }
 
 type AECDisplayArea =
+    "container" |
     "title" |
     "title_alt_display" |
     "title_alt_search" |
     "definition" |
-    "other_info" |
-    "metadata" |
-    "debug_metadata" |
-    null;
+    "examples" |
+    "long_descriptions" |
+    "main_other" |
+    "metadata";
 
-// TODO: codify these areas to appear in particular order, etc
-
-// TODO: move this to YAML
-const fieldTypeToDisplayArea: Array<[RawDictionaryFieldDisplayType, AECDisplayArea]> = [
-    ["vocab", "title"],
-    ["definition", "definition"],
-    ["example", "other_info"],
-    ["example_phrase", "other_info"],
-];
+const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDisplayType> = area("container", [
+    area("title", ["vocab"]) as AreaNode<AECDisplayArea, RawDictionaryFieldDisplayType>,
+    area("title_alt_display", []),
+    area("title_alt_search", []),
+    area("definition", ["definition"]),
+    area("main_other", [
+        area("long_descriptions",
+            ["explanation"]),
+        area("examples",
+            ["example", "example_phrase"])]),
+    area("metadata", ["id"]),
+]);
 
 // TODO: when pulling in from config file, only include matching display rules
 // TODO: instead, field to display *rule*?
 
 export default class AgnosticEntryContainer
     extends React.PureComponent<AECProps, {}>
-    implements HasFieldDisplayTypeToAreaMapping<RawDictionaryFieldDisplayType, AECDisplayArea>
 {
-
     static CSS_PREFIX = "agnostic-container";
-    static fieldTypeToDisplayAreaConverter = new FieldTypeToAreaConverter(fieldTypeToDisplayArea);
+    //
+    // NOTE: for now, this is specific to the dictionary type
+    static treeHandler = new LocationTreeHandler(AgnosticEntryContainer.CSS_PREFIX, agnosticDictionaryAreas);
+
     constructor(props: AECProps) {
         super(props);
-    }
-
-    fieldDisplayTypeToDisplayRule(fieldDisplayType: RawDictionaryFieldDisplayType): AECDisplayArea {
-        return AgnosticEntryContainer.fieldTypeToDisplayAreaConverter.getArea(fieldDisplayType);
     }
 
     getEntry(): AnnotatedSearchResultEntry {
@@ -59,6 +60,12 @@ export default class AgnosticEntryContainer
 
     // TODO: also include score in debug mode (or actually show a pixel-size colorbar in main mode)
     render() {
+        const treeHandler = AgnosticEntryContainer.treeHandler;
+        const tree = treeHandler.generateEmptyTree();
+        treeHandler.insertInto(tree, "explanation", "Receiving quite a dickin'");
+        treeHandler.insertInto(tree, "definition", "You gettin dickin'!!!");
+        treeHandler.insertInto(tree, "vocab", "Dicking");
+        return treeHandler.getAsNestedDivs(tree);
         const entry = this.getEntry();
 
         let displayContainer: Map<AECDisplayArea, JSX.Element[]> = new Map();
@@ -67,28 +74,28 @@ export default class AgnosticEntryContainer
             const maybeFieldType = field.getDataTypeForDisplayType("dictionary");
             if (field.hasValue() && maybeFieldType !== null) {
                 const fieldType = maybeFieldType as RawDictionaryFieldDisplayType;
-                const colName = field.getColumnName();
-                const displayArea = this.fieldDisplayTypeToDisplayRule(fieldType);
-                const cssPrefix = AgnosticEntryContainer.CSS_PREFIX + "-" + displayArea;
+                //const colName = field.getColumnName();
+                // const displayArea = this.fieldDisplayTypeToDisplayRule(fieldType);
+                // const cssPrefix = AgnosticEntryContainer.CSS_PREFIX + "-" + displayArea;
 
-                // TODO XXX : if a YAML config implements RawDictionaryFieldDisplayType -> whatever the more abstract version of AECDisplayArea is, it automatically can be displayed using AEC or any other
-                // TODO: order of areas should be pre-determined, since they're known at typing time? should they be? or should areas be defined in yaml and just have e.g. "other_info" "bottom" "priority: 0" or whatever?
+                // // TODO XXX : if a YAML config implements RawDictionaryFieldDisplayType -> whatever the more abstract version of AECDisplayArea is, it automatically can be displayed using AEC or any other
+                // // TODO: order of areas should be pre-determined, since they're known at typing time? should they be? or should areas be defined in yaml and just have e.g. "other_info" "bottom" "priority: 0" or whatever?
 
-                if (displayArea !== null) {
-                    // TODO: more strongly type language
-                    const dialect = field.getDialect();
+                // if (displayArea !== null) {
+                //     // TODO: more strongly type language
+                //     const dialect = field.getDialect();
 
-                    // TODO: don't do this for non-matched elems
-                    let element;
-                    if (field.wasMatched()) {
-                        element = createMatchElement(field.getDisplayValue(), cssPrefix + "-element");
-                    } else {
-                        element = <span className={cssPrefix + "-element"}>{field.getDisplayValue()}</span>
-                    }
+                //     // TODO: don't do this for non-matched elems
+                //     let element;
+                //     if (field.wasMatched()) {
+                //         element = createMatchElement(field.getDisplayValue(), cssPrefix + "-element");
+                //     } else {
+                //         element = <span className={cssPrefix + "-element"}>{field.getDisplayValue()}</span>
+                //     }
 
-                    let area = displayContainer.get(displayArea) ?? [];
-                    displayContainer.set(displayArea, [...area, element]);
-                }
+                //     let area = displayContainer.get(displayArea) ?? [];
+                //     displayContainer.set(displayArea, [...area, element]);
+                // }
             }
         });
         // Example
