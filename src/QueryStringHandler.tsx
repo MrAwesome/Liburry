@@ -80,7 +80,7 @@ export default class QueryStringParser {
         const searcher = parsed[SEARCHER];
 
         if (typeof q === "string") {
-            options.query = q;
+            options.savedQuery = q;
         }
 
         // TODO: abstract away this process

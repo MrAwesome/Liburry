@@ -203,6 +203,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     mountedState = MountedState.INIT;
     searchBar: React.RefObject<SearchBar>;
     console: StubConsole;
+    newestQuery: string;
 
     searchController: SearchController;
 
@@ -221,6 +222,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             resultsHolder: new SearchResultsHolder(),
         };
 
+        this.newestQuery = this.state.options.savedQuery;
 
         // Miscellaneous object initialization
         this.console = getDebugConsole(this.state.options.debug);
@@ -228,11 +230,14 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         // Bind functions
         this.getEntryComponents = this.getEntryComponents.bind(this);
+        this.getNewestQuery = this.getNewestQuery.bind(this);
         this.getStateTyped = this.getStateTyped.bind(this);
         this.hashChange = this.hashChange.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
         this.onSearchBarChange = this.onSearchBarChange.bind(this);
+        this.onSearchBarSubmit = this.onSearchBarSubmit.bind(this);
         this.overrideResultsForTests = this.overrideResultsForTests.bind(this);
+        this.saveQuery = this.saveQuery.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
         this.setStateTyped = this.setStateTyped.bind(this);
         this.subscribeHash = this.subscribeHash.bind(this);
@@ -245,11 +250,20 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             this.state.options.debug,
             this.getStateTyped,
             this.setStateTyped,
+            this.getNewestQuery,
             appConfig,
         );
 
         // Allow for overriding results from Jest.
         this.overrideResultsForTests();
+    }
+
+    getNewestQuery() {
+        return this.newestQuery;
+    }
+
+    setNewestQuery(query: string) {
+        this.newestQuery = query;
     }
 
     overrideResultsForTests() {
@@ -284,7 +298,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.console.time("mountToAllDB");
 
         // TODO: does this need to happen here? can we just start a search?
-        this.updateSearchBar(options.query);
+        this.updateSearchBar(this.getNewestQuery());
 
         this.searchController.startWorkersAndListener(options.searcherType);
         this.subscribeHash();
@@ -294,7 +308,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.mountedState = MountedState.UNMOUNTED;
         this.unsubscribeHash();
         this.searchController.cleanup();
-        // TODO: unmount fieldhandler?
     }
 
     subscribeHash() {
@@ -306,12 +319,14 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     hashChange(_evt: Event) {
-        const oldOptions = this.getStateTyped().options;
+        const oldQuery = this.getNewestQuery();
         const newOptions = queryStringHandler.parse();
 
-        if (newOptions.query !== oldOptions.query) {
-            this.updateSearchBar(newOptions.query);
-            this.searchQuery(newOptions.query);
+        if (newOptions.savedQuery !== oldQuery) {
+            const newQuery = newOptions.savedQuery;
+            this.updateSearchBar(newQuery);
+            this.searchQuery(newQuery);
+            this.setNewestQuery(newQuery);
         }
 
         this.setStateTyped({options: newOptions});
@@ -319,7 +334,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
     // NOTE: we don't need to update state here - the hash change does that for us.
     setMode(mode: MainDisplayAreaMode) {
-        const queryStringHandler = new QueryStringHandler();
         queryStringHandler.updateMode(mode);
     }
 
@@ -329,16 +343,23 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         }
     }
 
-    onSearchBarChange(e: any) {
-        const {target = {}} = e;
-        const {value = ""} = target;
-        const query = value;
-
+    onSearchBarChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const query = e.target.value;
         this.searchQuery(query);
     }
 
-    updateQuery(query: string) {
-        this.setStateTyped((state) => ({options: {...state.options, query: query}}));
+    onSearchBarSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        this.saveQuery(this.newestQuery);
+    }
+
+    updateQuery(newestQuery: string) {
+        this.setNewestQuery(newestQuery);
+    }
+
+    // TODO: this should give some visual indication of the saved search
+    saveQuery(query: string) {
+        this.setStateTyped((state) => ({options: {...state.options, savedQuery: query}}));
         queryStringHandler.updateQuery(query);
     }
 
@@ -401,12 +422,16 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     render() {
-        const {onSearchBarChange} = this;
+        const {onSearchBarChange, onSearchBarSubmit} = this;
         const {options} = this.getStateTyped();
 
         return (
             <div className="ChhaTaigi">
-                <SearchBar ref={this.searchBar} onChange={onSearchBarChange} />
+                <SearchBar
+                    ref={this.searchBar}
+                    onChange={onSearchBarChange}
+                    onSubmit={onSearchBarSubmit}
+                />
                 {this.mainDisplayArea(options.mainMode)}
             </div>
         );

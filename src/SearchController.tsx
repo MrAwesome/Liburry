@@ -19,6 +19,7 @@ export default class SearchController {
         debug: boolean,
         private getStateTyped: GetMainState,
         private setStateTyped: SetMainState,
+        private getNewestQuery: () => string,
         private appConfig: AppConfig,
     ) {
         this.console = getDebugConsole(debug);
@@ -60,9 +61,8 @@ export default class SearchController {
     }
 
     getCurrentQueryCallback(): string {
-        return this.getStateTyped().options.query;
+        return this.getNewestQuery();
     }
-
 
     async startWorkersAndListener(searcherType: SearcherType) {
         this.searchWorkerManager.init(searcherType, this.searchWorkerReplyHandler);
