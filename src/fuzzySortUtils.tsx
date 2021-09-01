@@ -5,14 +5,14 @@ import type {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedDBEntry} from "./type
 
 import {SearcherType} from "./search";
 
-// TODO: remove when there are other types of search
 import {DISPLAY_RESULTS_LIMIT} from "./searchSettings";
 import {PREPPED_KEY_SUFFIX} from "./search/FuzzySortSearcher";
 import {MATCH_HTML_TAG} from "./constants";
 import {DBIdentifier} from "./types/config";
 
-// TODO: find out why "      " matches "chúi-pho 波紋 水波" on the "l" in "ripples"
+import xss from "xss";
 
+// TODO: find out why "      " matches "chúi-pho 波紋 水波" on the "l" in "ripples"
 
 export function parseFuzzySortResultsForRender(
     dbIdentifier: DBIdentifier,
@@ -66,7 +66,7 @@ function getDisplayReadyFieldObjects(obj: FuzzyPreparedDBEntry): DisplayReadyFie
     return fields.filter((f) => f !== undefined) as DisplayReadyFieldRaw[];
 }
 
-function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string) {
+function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string): DisplayReadyFieldRaw {
     const colName = key.replace(PREPPED_KEY_SUFFIX, '');
     const value = obj[colName] as string;
 
@@ -77,7 +77,7 @@ function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string) {
     // NOTE: each matched field has its own score,
     //       which could be used to more strongly highlight the matched field
     let matched = false;
-    let displayValOverride = null;
+    let displayValOverride: string | undefined;
     if (fuzzyRes !== undefined) {
         if (fuzzyRes.score !== null) {
             matched = true;
@@ -86,7 +86,17 @@ function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string) {
         if (matched) {
             // NOTE: this leaves behind "artifact" matches on fuzzyRes, which lives around
             //       after the search is over. To fix this, clear the score and index fields.
-            displayValOverride = fuzzysort.highlight(fuzzyRes, `<${MATCH_HTML_TAG}>`, `</${MATCH_HTML_TAG}>`);
+            const highlighted = fuzzysort.highlight(fuzzyRes, `<${MATCH_HTML_TAG}>`, `</${MATCH_HTML_TAG}>`);
+            if (highlighted !== null) {
+                // DOMPurify doesn't work in web workers:
+                //const clean = domPurify.sanitize(highlighted, {ALLOWED_TAGS: [MATCH_HTML_TAG]});
+
+                // So we use xss instead:
+                const clean = xss(highlighted);
+
+                displayValOverride = clean;
+            }
+
         }
     }
 
@@ -95,7 +105,7 @@ function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string) {
         value,
         matched,
         displayValOverride,
-    } as DisplayReadyFieldRaw;
+    };
 }
 
 // Prepare a fast search version of each searchable key.

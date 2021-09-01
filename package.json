@@ -37,7 +37,8 @@
     "typescript": "^4.2.4",
     "web-vitals": "^1.1.1",
     "webfontloader": "^1.6.28",
-    "worker-loader": "^3.0.8"
+    "worker-loader": "^3.0.8",
+    "xss": "^1.0.9"
   },
   "devDependencies": {
     "nodejieba": "^2.5.2",

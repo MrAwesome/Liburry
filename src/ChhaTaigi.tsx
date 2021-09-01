@@ -19,6 +19,7 @@ import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
 import {AnnotatedPerDictResults} from "./types/dbTypes";
 import {AppConfig, DBConfig, DBIdentifier} from "./types/config";
 
+// TODO(urgent): fix initial letter disappearing in update to hash
 // TODO(urgent): migrate configs to new names (see https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/commit/b33c6a1fcc2d11a2962e76b6055d528d11677c3b)
 // TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): only change hashtag on submit
