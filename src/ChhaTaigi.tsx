@@ -243,7 +243,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.setStateTyped = this.setStateTyped.bind(this);
         this.subscribeHash = this.subscribeHash.bind(this);
         this.unsubscribeHash = this.unsubscribeHash.bind(this);
-        this.updateQuery = this.updateQuery.bind(this);
         this.updateSearchBar = this.updateSearchBar.bind(this);
 
         // Start the search controller, and allow it to send/receive changes to the state of this element
@@ -303,6 +302,9 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         this.searchController.startWorkersAndListener(options.searcherType);
         this.subscribeHash();
+
+        // TODO: XXX: Temporary workaround to fix ghost letter
+        this.setMode(MainDisplayAreaMode.SEARCH);
     }
 
     componentWillUnmount() {
@@ -354,10 +356,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.saveQuery(this.newestQuery);
     }
 
-    updateQuery(newestQuery: string) {
-        this.setNewestQuery(newestQuery);
-    }
-
     // TODO: this should give some visual indication of the saved search
     saveQuery(query: string) {
         this.setStateTyped((state) => ({options: {...state.options, savedQuery: query}}));
@@ -366,7 +364,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
     searchQuery(query: string) {
         this.searchController.search(query);
-        this.updateQuery(query);
+        this.setNewestQuery(query);
 
         this.setMode(MainDisplayAreaMode.SEARCH);
     }
