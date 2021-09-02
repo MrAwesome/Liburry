@@ -3,35 +3,63 @@ import {MainDisplayAreaMode} from "../types/displayTypes";
 import QueryStringHandler from "../QueryStringHandler";
 import {REPO_LINK} from "../constants";
 import {DBIdentifier} from "../types/config";
+import {isMobileDevice} from "../utils";
 
-export class SearchBar extends React.PureComponent<any, any> {
-    textInput: React.RefObject<any>;
+interface SearchBarProps {
+    searchQuery(query: string): void;
+    saveNewestQuery(): void;
+}
+
+interface SearchBarState {
+}
+
+export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarState> {
+    textInput: React.RefObject<HTMLInputElement>;
     constructor(props: any) {
         super(props);
+
         this.textInput = React.createRef();
+        this.onChange = this.onChange.bind(this);
+        this.onSubmit = this.onSubmit.bind(this);
     }
 
     componentDidMount() {
-        this.textInput.current.focus();
+        this.textInput.current?.focus();
     }
 
     updateAndFocus(query: string) {
-        this.textInput.current.value = query;
-        this.textInput.current.focus();
+        if (this.textInput.current !== null) {
+            this.textInput.current.value = query;
+            this.textInput.current.focus();
+        }
+    }
+
+    onChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const query = e.target.value;
+        this.props.searchQuery(query);
+    }
+
+    onSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        this.props.saveNewestQuery();
+
+        // If the user clicks submit on mobile, dismiss the keyboard:
+        if (isMobileDevice()) {
+            this.textInput.current?.blur();
+        }
     }
 
     render() {
-        const {onChange, onSubmit} = this.props;
         return <>
             <div className="search-bar-container">
                 <div className="search-bar">
-                    <form onSubmit={onSubmit}>
+                    <form onSubmit={this.onSubmit}>
                         <input
                             autoFocus
                             type="text"
                             ref={this.textInput}
                             placeholder="Search..."
-                            onChange={onChange}
+                            onChange={this.onChange}
                         />
                     </form>
                     <svg aria-hidden="true" className="mag-glass" ><path d="M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z"></path></svg>

@@ -34,3 +34,9 @@ export function makeNameToObjMapping<Obj extends HasName>(fields: Obj[]): Map<st
     const nameToFields: [string, Obj][] = fields.map((field) => ([field.shortName, field]));
     return new Map(nameToFields);
 }
+
+// Useragent is not a great way to detect whether or not we're on mobile, but it's fast and easy.
+// This should not be relied on for core functionality, but small affordances/functionality are fine.
+export function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}

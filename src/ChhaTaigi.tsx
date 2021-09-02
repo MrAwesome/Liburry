@@ -235,10 +235,8 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.getStateTyped = this.getStateTyped.bind(this);
         this.hashChange = this.hashChange.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
-        this.onSearchBarChange = this.onSearchBarChange.bind(this);
-        this.onSearchBarSubmit = this.onSearchBarSubmit.bind(this);
         this.overrideResultsForTests = this.overrideResultsForTests.bind(this);
-        this.saveQuery = this.saveQuery.bind(this);
+        this.saveNewestQuery = this.saveNewestQuery.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
         this.setStateTyped = this.setStateTyped.bind(this);
         this.subscribeHash = this.subscribeHash.bind(this);
@@ -346,18 +344,9 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         }
     }
 
-    onSearchBarChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const query = e.target.value;
-        this.searchQuery(query);
-    }
-
-    onSearchBarSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        this.saveQuery(this.newestQuery);
-    }
-
     // TODO: this should give some visual indication of the saved search
-    saveQuery(query: string) {
+    saveNewestQuery() {
+        const query = this.newestQuery;
         this.setStateTyped((state) => ({options: {...state.options, savedQuery: query}}));
         queryStringHandler.updateQuery(query);
     }
@@ -421,15 +410,14 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     render() {
-        const {onSearchBarChange, onSearchBarSubmit} = this;
         const {options} = this.getStateTyped();
 
         return (
             <div className="ChhaTaigi">
                 <SearchBar
                     ref={this.searchBar}
-                    onChange={onSearchBarChange}
-                    onSubmit={onSearchBarSubmit}
+                    searchQuery={this.searchQuery}
+                    saveNewestQuery={this.saveNewestQuery}
                 />
                 {this.mainDisplayArea(options.mainMode)}
             </div>
