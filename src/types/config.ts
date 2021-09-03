@@ -24,8 +24,8 @@ export class AppConfig {
         return new AppConfig(dbConfigs);
     }
 
-    getAllEnabledDBConfigs(): DBConfig[] {
-        return Array.from(this.dbConfigs.values()).filter((dbConfig) => dbConfig.isEnabled());
+    getAllEnabledDBConfigs(ignoreEnabledTag?: boolean): DBConfig[] {
+        return Array.from(this.dbConfigs.values()).filter((dbConfig) => dbConfig.isEnabled() || ignoreEnabledTag);
     }
 
     getDBConfig(dbIdentifier: DBIdentifier): DBConfig | null{

@@ -47,6 +47,10 @@ export default class QueryStringParser {
         this.update(QUERY, query);
     }
 
+    saveQuery(query: string) {
+        this.update(QUERY, query, true);
+    }
+
     updateMode(mode: MainDisplayAreaMode) {
         this.update(MAIN_MODE, MainDisplayAreaMode[mode]);
     }
@@ -59,16 +63,21 @@ export default class QueryStringParser {
         return qs.stringify(parsed, QS_STRINGIFY_OPTS);
     }
 
-    // NOTE: This function updates window.location.hash, which
-    //       will trigger a state change in the main component.
-    private update(field: string, value: string) {
+    private update(field: string, value: string, save?: boolean) {
+        const shouldSave = save ?? false;
         const parsed = this.parseInternal();
         parsed[field] = value;
-        const strang = this.stringifyInternal(parsed);
+        const newHashString = this.stringifyInternal(parsed);
+
         if (this.testString) {
-            this.testString = strang;
+            this.testString = newHashString;
         } else {
-            window.location.hash = strang;
+            const args: [Object, string, string] = [parsed, '', "#" + newHashString];
+            if (shouldSave) {
+                window.history.pushState(...args);
+            } else {
+                window.history.replaceState(...args);
+            }
         }
     }
 

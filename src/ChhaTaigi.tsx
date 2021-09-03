@@ -211,9 +211,8 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     constructor(props: ChhaTaigiProps) {
         super(props);
 
-        const appConfig = this.props.appConfig;
-        // TODO: make sure fullidentifier is correct
         // State initialization
+        const appConfig = this.props.appConfig;
         const initialDBLoadedMapping: [DBIdentifier, boolean][] =
             appConfig.getAllEnabledDBConfigs().map((k: DBConfig) => [k.getDBIdentifier(), false]);
 
@@ -300,9 +299,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         this.searchController.startWorkersAndListener(options.searcherType);
         this.subscribeHash();
-
-        // TODO: XXX: Temporary workaround to fix ghost letter
-        this.setMode(MainDisplayAreaMode.SEARCH);
     }
 
     componentWillUnmount() {
@@ -319,15 +315,16 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         window.removeEventListener("hashchange", this.hashChange);
     }
 
+    // Whenever the hash changes, check if a new search should be triggered, and
+    // update changed options in state.
     hashChange(_evt: Event) {
         const oldQuery = this.getNewestQuery();
         const newOptions = queryStringHandler.parse();
+        const newQuery = newOptions.savedQuery;
 
-        if (newOptions.savedQuery !== oldQuery) {
-            const newQuery = newOptions.savedQuery;
+        if (newQuery !== oldQuery) {
             this.updateSearchBar(newQuery);
             this.searchQuery(newQuery);
-            this.setNewestQuery(newQuery);
         }
 
         this.setStateTyped({options: newOptions});
@@ -335,6 +332,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
     // NOTE: we don't need to update state here - the hash change does that for us.
     setMode(mode: MainDisplayAreaMode) {
+        this.setStateTyped((state) => ({options: {...state.options, mainMode: mode}}));
         queryStringHandler.updateMode(mode);
     }
 
@@ -348,13 +346,14 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     saveNewestQuery() {
         const query = this.newestQuery;
         this.setStateTyped((state) => ({options: {...state.options, savedQuery: query}}));
-        queryStringHandler.updateQuery(query);
+        queryStringHandler.saveQuery(query);
     }
 
     searchQuery(query: string) {
         this.searchController.search(query);
         this.setNewestQuery(query);
 
+        queryStringHandler.updateQuery(query);
         this.setMode(MainDisplayAreaMode.SEARCH);
     }
 
