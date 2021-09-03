@@ -19,10 +19,8 @@ import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
 import {AnnotatedPerDictResults} from "./types/dbTypes";
 import {AppConfig, DBConfig, DBIdentifier} from "./types/config";
 
-// TODO(urgent): fix initial letter disappearing in update to hash
 // TODO(urgent): migrate configs to new names (see https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/commit/b33c6a1fcc2d11a2962e76b6055d528d11677c3b)
 // TODO(urgent): see if poj_normalized can be committed upstream
-// TODO(urgent): only change hashtag on submit
 // TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js` - let different parts of the build process be run separately, and standardize/document what is run
 // TODO(high): loading bar for initial load, and for ongoing search (size of per-db bar based on number of entries, if known (can be generated during build process))
