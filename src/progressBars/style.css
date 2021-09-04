@@ -1,0 +1,30 @@
+.loadingBarContainer {
+    display: relative;
+    transition-property: height;
+    transition-duration: .2s;
+    transition-timing-function: ease;
+    width: 100%;
+}
+
+.loadingBar {
+    transition-property: width;
+    transition-timing-function: ease;
+    position: absolute;
+    height: 5px;
+    width: 100%;
+}
+
+#chhaConfigBar {
+    background: pink;
+    opacity: 50%;
+}
+
+#chhaDBLoadBar {
+    background: darkblue;
+    opacity: 50%;
+}
+
+#chhaSearchBar {
+    background: #00BC4C;
+    opacity: 100%;
+}

@@ -18,12 +18,15 @@ import EntryContainer from "./entry_containers/EntryContainer";
 import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
 import {AnnotatedPerDictResults} from "./types/dbTypes";
 import {AppConfig, DBConfig, DBIdentifier} from "./types/config";
+import {SearchContext} from "./SearchValidityManager";
 
+// TODO(urgent): find out why local mode is spawning 2x the expected number of DBs workers
 // TODO(urgent): migrate configs to new names (see https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/commit/b33c6a1fcc2d11a2962e76b6055d528d11677c3b)
 // TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js` - let different parts of the build process be run separately, and standardize/document what is run
 // TODO(high): loading bar for initial load, and for ongoing search (size of per-db bar based on number of entries, if known (can be generated during build process))
+// TODO(high): don't require a double-back right after submit
 // TODO(high): look into strange behavior of fuzzysort mark generation (did it work before and broke recently, or was it always broken? - try "alexander")
 // TODO(high): different debug levels, possibly use an upstream lib for logging
 // TODO(high): remember to handle "unknown" field type (and anything else) in display rules
@@ -176,30 +179,28 @@ import {AppConfig, DBConfig, DBIdentifier} from "./types/config";
 
 const queryStringHandler = new QueryStringHandler();
 
-enum MountedState {
-    INIT = "INIT",
-    MOUNTED = "MOUNTED",
-    UNMOUNTED = "UNMOUNTED",
-}
-
 export interface ChhaTaigiProps {
     options: OptionsChangeableByUser,
     appConfig: AppConfig,
     // TODO: always annotate results with the current displaytype's info (one re-search when you change displaytype is well worth being able to calculate before render time (preferably in another thread))
     mockResults?: AnnotatedPerDictResults,
+    updateDisplayForDBLoadEvent?: (loadedDBs: LoadedDBsMap) => void,
+    updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
 };
+
+export type LoadedDBsMap = Map<DBIdentifier, boolean>;
 
 export interface ChhaTaigiState {
     options: OptionsChangeableByUser,
     resultsHolder: SearchResultsHolder,
-    loadedDBs: Map<DBIdentifier, boolean>,
+    loadedDBs: LoadedDBsMap,
 }
 
 export type GetMainState = () => ChhaTaigiState;
 export type SetMainState = (state: Partial<ChhaTaigiState> | ((prevState: ChhaTaigiState) => any)) => void;
 
 export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
-    mountedState = MountedState.INIT;
+    private currentMountAttempt = 0;
     searchBar: React.RefObject<SearchBar>;
     console: StubConsole;
     newestQuery: string;
@@ -227,6 +228,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.searchBar = React.createRef();
 
         // Bind functions
+        this.getCurrentMountAttempt = this.getCurrentMountAttempt.bind(this);
         this.getEntryComponents = this.getEntryComponents.bind(this);
         this.getNewestQuery = this.getNewestQuery.bind(this);
         this.getStateTyped = this.getStateTyped.bind(this);
@@ -247,6 +249,8 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             this.setStateTyped,
             this.getNewestQuery,
             appConfig,
+            this.props.updateDisplayForDBLoadEvent,
+            this.props.updateDisplayForSearchEvent,
         );
 
         // Allow for overriding results from Jest.
@@ -261,6 +265,10 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.newestQuery = query;
     }
 
+    getCurrentMountAttempt() {
+        return this.currentMountAttempt;
+    }
+
     overrideResultsForTests() {
         const {mockResults} = this.props;
         if (runningInJest() && mockResults !== undefined) {
@@ -269,16 +277,8 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     setStateTyped(state: Partial<ChhaTaigiState> | ((prevState: ChhaTaigiState) => any)) {
-        if (this.mountedState !== MountedState.MOUNTED) {
-            this.console.warn(
-                "Attempting to change state after unmount!",
-                "MountedState: ", this.mountedState,
-                "State: ", state
-            );
-        } else {
-            // @ts-ignore - Partial seems to work fine, why does Typescript complain?
-            this.setState(state)
-        }
+        // @ts-ignore - Partial seems to work fine, why does Typescript complain?
+        this.setState(state)
     }
 
     // TODO: get rid of this now that state is typed?
@@ -287,20 +287,28 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     componentDidMount() {
-        this.mountedState = MountedState.MOUNTED;
-
         const {options} = this.getStateTyped();
         this.console.time("mountToAllDB");
 
         // TODO: does this need to happen here? can we just start a search?
         this.updateSearchBar(this.getNewestQuery());
 
-        this.searchController.startWorkersAndListener(options.searcherType);
-        this.subscribeHash();
+        const savedMountAttempt = this.currentMountAttempt;
+
+        // Wait a millisecond to check that this is actually the final mount attempt
+        // (prevents double-loading DBs on localhost)
+        setTimeout(() => {
+            if (this.currentMountAttempt === savedMountAttempt) {
+                this.searchController.startWorkersAndListener(options.searcherType);
+                this.subscribeHash();
+            } else {
+                console.warn("Detected double-mount, not starting workers...");
+            }
+        }, 1);
     }
 
     componentWillUnmount() {
-        this.mountedState = MountedState.UNMOUNTED;
+        this.currentMountAttempt += 1;
         this.unsubscribeHash();
         this.searchController.cleanup();
     }
@@ -411,6 +419,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         return (
             <div className="ChhaTaigi">
+                <div id="chhaSearchProgressbar" />
                 <SearchBar
                     ref={this.searchBar}
                     searchQuery={this.searchQuery}

@@ -1,11 +1,11 @@
-import {SearchSuccessPayload, SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.worker";
+import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.worker";
 
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import SearchWorkerManager from "./SearchWorkerManager";
-import SearchValidityManager from "./SearchValidityManager";
+import SearchValidityManager, {SearchContext} from "./SearchValidityManager";
 import {AnnotatedPerDictResults, annotateRawResults, PerDictResultsRaw} from "./types/dbTypes";
 import {SearcherType} from "./search";
-import {GetMainState, SetMainState} from "./ChhaTaigi";
+import {GetMainState, LoadedDBsMap, SetMainState} from "./ChhaTaigi";
 import {AppConfig, DBIdentifier} from "./types/config";
 
 // TODO: write tests for this, which ensure the correct messages are sent and callbacks are called
@@ -20,11 +20,15 @@ export default class SearchController {
         private getStateTyped: GetMainState,
         private setStateTyped: SetMainState,
         private getNewestQuery: () => string,
+        //private getCurrentMountAttempt: () => number,
         private appConfig: AppConfig,
+        private updateDisplayForDBLoadEvent?: (loadedDBs: LoadedDBsMap) => void,
+        private updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
     ) {
+        const expectedNumberOfDBs = Array.from(this.getStateTyped().loadedDBs.keys()).length;
         this.console = getDebugConsole(debug);
         this.searchWorkerManager = new SearchWorkerManager(appConfig, debug);
-        this.validity = new SearchValidityManager(debug);
+        this.validity = new SearchValidityManager(debug, expectedNumberOfDBs);
 
         // Callbacks for the search controller to use to communicate changes back to the main component.
         this.addResultsCallback = this.addResultsCallback.bind(this);
@@ -49,7 +53,10 @@ export default class SearchController {
     }
 
     async addDBLoadedCallback(dbIdentifier: DBIdentifier) {
-        this.setStateTyped((state) => state.loadedDBs.set(dbIdentifier, true));
+        this.setStateTyped((state) => {
+            state.loadedDBs.set(dbIdentifier, true);
+            this.updateDisplayForDBLoadEvent?.(state.loadedDBs);
+        });
     }
 
     async clearResultsCallback() {
@@ -76,25 +83,19 @@ export default class SearchController {
         // Invalidate the previous search, so any lingering results don't pollute the current view
         this.validity.invalidate();
 
+        const searchContext = this.validity.getCurrentSearch();
+        const searchID = this.validity.currentSearchID;
+
         if (query === "") {
             this.searchWorkerManager.cancelAllCurrent();
             this.clearResultsCallback();
+            this.updateDisplayForSearchEvent?.(null);
         } else {
             const activeDBs = this.searchWorkerManager.getIdentifiersForAllActiveDBs();
-            const searchID = this.validity.currentSearchID;
-            this.validity.startSearches(query, activeDBs);
+            this.validity.startSearches(searchID, query, activeDBs);
             this.searchWorkerManager.searchAll(query, searchID);
             this.validity.bump();
-        }
-    }
-
-    doSearch(payload: SearchSuccessPayload) {
-        const {results, dbIdentifier, searchID} = payload;
-
-        const wasInvalidated = this.validity.isInvalidated(searchID);
-        if (!wasInvalidated) {
-            this.addResultsCallback(results);
-            this.validity.markSearchCompleted(dbIdentifier, searchID);
+            this.updateDisplayForSearchEvent?.(searchContext);
         }
     }
 
@@ -104,10 +105,22 @@ export default class SearchController {
             case SearchWorkerResponseType.CANCELED: {
                 const {query, dbIdentifier, searchID} = message.payload;
                 this.console.log(`Canceled search "${query}" with searchID "${searchID}" on db "${dbIdentifier}".`);
+
+                const wasInvalidated = this.validity.isInvalidated(searchID);
+                if (!wasInvalidated) {
+                    this.updateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
+                }
             }
                 break;
             case SearchWorkerResponseType.SEARCH_SUCCESS: {
-                this.doSearch(message.payload);
+                const {results, dbIdentifier, searchID} = message.payload;
+
+                const wasInvalidated = this.validity.isInvalidated(searchID);
+                if (!wasInvalidated) {
+                    this.addResultsCallback(results);
+                    this.validity.markSearchCompleted(dbIdentifier, searchID);
+                    this.updateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
+                }
             }
                 break;
             case SearchWorkerResponseType.SEARCH_FAILURE: {
@@ -123,6 +136,8 @@ export default class SearchController {
                     } else {
                         console.error(msg + "Ran out of retries!");
                     }
+
+                    this.updateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
                 } else {
                     this.console.log("Requested to retry an invalidated search: ", message.payload);
                 }
@@ -142,6 +157,7 @@ export default class SearchController {
                 // TODO: Add to validity.searchCompletionStatus here
                 const initialID = this.validity.initialSearchID;
                 if (query && !this.validity.isInvalidated(initialID)) {
+                    this.validity.startSearches(initialID, query, [dbIdentifier]);
                     this.searchWorkerManager.searchSpecificDB(dbIdentifier, query, initialID);
                 }
 

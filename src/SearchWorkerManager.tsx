@@ -66,6 +66,7 @@ export default class SearchWorkerManager {
     }
 
     async stopAll() {
+        this.sendAll({command: SearchWorkerCommandType.TERMINATE});
         this.searchWorkers.forEach((worker, _) => worker.terminate());
     }
 

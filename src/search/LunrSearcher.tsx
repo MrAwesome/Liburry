@@ -25,9 +25,9 @@ require("lunr-languages/lunr.zh")(lunr);
 // TODO: catch errors on searches like "chines~"
 // TODO: limit number of results from the search itself? ever necessary?
 
-
 export class LunrPreparer implements SearcherPreparer {
     private console: StubConsole;
+
     constructor(
         private dbConfig: DBConfig,
         private debug: boolean,
@@ -35,13 +35,15 @@ export class LunrPreparer implements SearcherPreparer {
         this.console = getDebugConsole(debug);
         this.prepare = this.prepare.bind(this);
     }
+
     async prepare(): Promise<Searcher> {
         const dbIdentifier = this.dbConfig.getDBIdentifier();
         // XXX TODO: document that this needs both, and needs incremental IDs etc
         const {localCSV, localLunr} = this.dbConfig.getDBLoadInfo();
 
         if (localCSV === undefined || localLunr === undefined) {
-            throw `Lunr search requires both a CSV and a pre-generated lunr index for that CSV! (${dbIdentifier})`;
+            const errMsg = `Lunr search requires both a CSV and a pre-generated lunr index for that CSV! (${dbIdentifier})`;
+            throw new Error(errMsg);
         }
         this.console.time("lunr-total-" + dbIdentifier);
 

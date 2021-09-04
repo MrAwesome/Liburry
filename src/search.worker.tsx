@@ -15,12 +15,12 @@ export type SearchWorkerCommandMessage =
     {command: SearchWorkerCommandType.SEARCH, payload: {query: string, searchID: number}} |
     {command: SearchWorkerCommandType.CANCEL, payload?: null} |
     {command: SearchWorkerCommandType.LOG, payload?: null} |
-    {command: SearchWorkerCommandType.CHANGE_SEARCHER, payload: {searcherType: SearcherType}};
+    {command: SearchWorkerCommandType.CHANGE_SEARCHER, payload: {searcherType: SearcherType}} |
+    {command: SearchWorkerCommandType.TERMINATE, payload?: null};
 
-export type SearchSuccessPayload = {dbIdentifier: DBIdentifier, query: string, results: PerDictResultsRaw, searchID: number};
 export type SearchWorkerResponseMessage =
     {resultType: SearchWorkerResponseType.CANCELED, payload: {dbIdentifier: DBIdentifier, query: string, searchID: number}} |
-    {resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: SearchSuccessPayload} |
+    {resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {dbIdentifier: DBIdentifier, query: string, results: PerDictResultsRaw, searchID: number}} |
     {resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {dbIdentifier: DBIdentifier, query: string, searchID: number, failure: SearchFailure}} |
     {resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbIdentifier: DBIdentifier}};
 
@@ -45,6 +45,7 @@ export enum SearchWorkerCommandType {
     CANCEL = "CANCEL",
     LOG = "LOG",
     CHANGE_SEARCHER = "CHANGE_SEARCHER",
+    TERMINATE = "TERMINATE",
 }
 
 export enum SearchWorkerResponseType {
@@ -171,6 +172,9 @@ ctx.addEventListener("message", (e) => {
         case SearchWorkerCommandType.CHANGE_SEARCHER:
             const {searcherType} = message.payload;
             sw.changeSearcher(searcherType);
+            break;
+        case SearchWorkerCommandType.TERMINATE:
+            ctx.terminate();
             break;
     }
 });

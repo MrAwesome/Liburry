@@ -3,11 +3,17 @@ import {RETRY_ATTEMPTS} from "./searchSettings";
 import {DBIdentifier} from "./types/config";
 import {mod} from "./utils";
 
-class SearchContext {
+export class SearchContext {
     query: string = "";
     invalidated: boolean = false;
-    completionStatus: Map<DBIdentifier, boolean> = new Map();
     retries: Map<DBIdentifier, number> = new Map();
+    completionStatus: Map<DBIdentifier, boolean> = new Map();
+
+    constructor(
+        id: number,
+        private expectedNumberOfDBs: number,
+    ) {
+    }
 
     clear() {
         this.query = "";
@@ -23,26 +29,41 @@ class SearchContext {
     valid() {
         return this.invalidated;
     }
+
+    getCompletedAndTotal(): [completed: number, total: number] {
+        let totalDBs = this.expectedNumberOfDBs;
+        let completedDBs = 0;
+        this.completionStatus.forEach((done, _name) => {
+            if (done) {
+                completedDBs += 1;
+            }
+        });
+
+        return [completedDBs, totalDBs];
+    }
 }
 
-export default class SearchInvalidationAndRetryManager {
+export default class SearchValidityManager {
     private bufLen: number = 10;
-    private searches: Array<SearchContext> =
-        Array.from({length: this.bufLen}).map(_ => new SearchContext());
+    private searches: Array<SearchContext>;
     private console: StubConsole;
 
-    constructor(debug: boolean) {
+    constructor(
+        debug: boolean,
+        expectedNumberOfDBs: number
+    ) {
         this.console = getDebugConsole(debug);
+        this.searches = Array.from({length: this.bufLen}).map((_, i) => new SearchContext(i, expectedNumberOfDBs));
     }
 
     initialSearchID: number = 0;
     currentSearchID: number = this.initialSearchID;
 
-    private getSearch(searchID: number): SearchContext {
+    getSearch(searchID: number): SearchContext {
         return this.searches[searchID];
     }
 
-    private getCurrentSearch(): SearchContext {
+    getCurrentSearch(): SearchContext {
         return this.searches[this.currentSearchID];
     }
 
@@ -104,8 +125,9 @@ export default class SearchInvalidationAndRetryManager {
 
     // NOTE: could check here if search was already started, but as long
     //       as we're always clearing it shouldn't be a problem
-    startSearches(query: string, dbIdentifiers: DBIdentifier[]) {
-        this.getCurrentSearch().query = query;
+    startSearches(searchID: number, query: string, dbIdentifiers: DBIdentifier[]) {
+        const searchContext = this.getSearch(searchID);
+        searchContext.query = query;
 
         this.console.time(`search-${this.currentSearchID}`);
         dbIdentifiers.forEach((dbIdentifier) => this.getCurrentSearch().completionStatus.set(dbIdentifier, false))

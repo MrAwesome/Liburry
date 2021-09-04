@@ -32,8 +32,7 @@ export class FuzzySortSearcher implements Searcher {
 
     constructor(
         private fuzzyDict: FuzzySearchableDict,
-    ) {
-    }
+    ) {}
 
     async prepare(): Promise<void> {
     }
@@ -69,11 +68,12 @@ export class FuzzySortPreparer implements SearcherPreparer {
         const dbIdentifier = this.dbConfig.getDBIdentifier();
         const {localCSV} = this.dbConfig.getDBLoadInfo();
         if (localCSV === undefined) {
-            throw `Fuzzy search requires a local CSV to be defined! (${dbIdentifier})`;
+            const errMsg = `Fuzzy search requires a local CSV to be defined! (${dbIdentifier})`;
+            throw new Error(errMsg);
         }
         this.console.time("total-" + dbIdentifier);
         this.console.time("fetch-" + dbIdentifier);
-        let versionString = "";
+        //let versionString = "";
         // XXX TODO: fix csv versioning
         //if (localCSVVersion) {
         //    versionString = `?v=${localCSVVersion}`;

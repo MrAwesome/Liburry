@@ -50,10 +50,6 @@ export default class AgnosticEntryContainer
     // NOTE: for now, this is specific to the dictionary type
     static treeHandler = new LocationTreeHandler(AgnosticEntryContainer.CSS_PREFIX, agnosticDictionaryAreas);
 
-    constructor(props: AECProps) {
-        super(props);
-    }
-
     getEntry(): AnnotatedSearchResultEntry {
         return this.props.entry;
     }
