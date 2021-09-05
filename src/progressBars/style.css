@@ -13,15 +13,15 @@
 
 #chhaConfigBar {
     background: pink;
-    opacity: 50%;
+    opacity: 0.5;
 }
 
 #chhaDBLoadBar {
     background: darkblue;
-    opacity: 50%;
+    opacity: 0.5;
 }
 
 #chhaSearchBar {
     background: #00BC4C;
-    opacity: 100%;
+    opacity: 1.0;
 }
