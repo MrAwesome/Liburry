@@ -1,14 +1,11 @@
 .loadingBarContainer {
     display: relative;
-    transition-property: height;
-    transition-duration: .2s;
-    transition-timing-function: ease;
+    transition: height .2s ease;
     width: 100%;
 }
 
 .loadingBar {
-    transition-property: width;
-    transition-timing-function: ease;
+    transition: width .2s ease;
     position: absolute;
     height: 5px;
     width: 100%;

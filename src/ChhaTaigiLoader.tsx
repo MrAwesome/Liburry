@@ -145,9 +145,9 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
         const {options} = this.props;
 
         const progressBars = [
-            makeProgressBar(configProgress, "chhaConfigBar", PROGRESS_BAR_ANIMATION_LENGTH),
-            makeProgressBar(dbLoadProgress, "chhaDBLoadBar", PROGRESS_BAR_ANIMATION_LENGTH),
-            makeProgressBar(searchProgress, "chhaSearchBar", PROGRESS_BAR_ANIMATION_LENGTH),
+            makeProgressBar(configProgress, "chhaConfigBar"),
+            makeProgressBar(dbLoadProgress, "chhaDBLoadBar"),
+            makeProgressBar(searchProgress, "chhaSearchBar"),
         ];
 
         const height =

@@ -7,7 +7,7 @@ export const PROGRESS_BARS_HEIGHT = "4px";
 export function makeProgressBar(
     percentProgress: number,
     elementID: string,
-    durationMs: number,
+    //durationMs: number,
 ): JSX.Element {
     const widthPercent = Math.min(percentProgress * 100, 100);
     return <div
@@ -15,7 +15,7 @@ export function makeProgressBar(
         className="loadingBar"
         style={{
             width: `${widthPercent}%`,
-            transitionDuration: `${durationMs}ms`,
+            //transitionDuration: `${durationMs}ms`,
         }}
         key={elementID}
     />;
