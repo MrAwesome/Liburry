@@ -2,6 +2,7 @@ import * as React from "react";
 
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import ConfigHandler from "./configHandler/ConfigHandler";
+import {CHHA_APPNAME} from "./constants";
 
 // TODO: add yaml to service worker! (? - worth it for speed? does complicate config changes)
 // TODO: determine format/location (probably local userstorage) for user config
@@ -29,7 +30,7 @@ export class ChhaTaigiPlayground extends React.Component<ChhaTaigiPlaygroundProp
     }
 
     componentDidMount() {
-        const configHandler = new ConfigHandler(this.props.options.appName);
+        const configHandler = new ConfigHandler(CHHA_APPNAME);
         configHandler.loadLanguageConfigs().then((conf) => console.log(conf));
     }
 

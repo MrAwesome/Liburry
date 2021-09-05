@@ -7,6 +7,7 @@ import {SearchContext} from "./SearchValidityManager";
 import {AppConfig} from "./types/config";
 
 import "./progressBars/style.css";
+import {CHHA_APPNAME} from "./constants";
 
 // XXX TODO: changes to these options won't be persistent here, as changes are handled downstream. Should they be handled here before being passed into the main component?
 interface ChhaTaigiLoaderProps {
@@ -25,7 +26,6 @@ interface ChhaTaigiLoaderState {
 
 export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaTaigiLoaderState> {
     private mountAttempt = 0;
-    private appName: string = "taigi.us"; // XXX TODO: don't hardcode
 
     private numConfigsToLoad = 0;
     private numConfigsLoaded = 0;
@@ -49,7 +49,7 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
     componentDidMount() {
         // TODO(wishlist): progressbar for each DB, in a flexbox constellation
 
-        const configHandler = new ConfigHandler(this.appName);
+        const configHandler = new ConfigHandler(CHHA_APPNAME);
 
         const configPromises = [
             //configHandler.loadAppConfig(),

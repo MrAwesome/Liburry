@@ -26,7 +26,7 @@ test('search completion', () => {
     const dbs = ["fake_mk", "fake_emb", "fake_gik"];
     const vman = new SearchValidityManager(false);
     const searchID = vman.currentSearchID;
-    vman.startSearches(query, dbs);
+    vman.startSearches(0, query, dbs);
     expect(vman.checkAllSearchesCompleted(searchID)).toBe(false);
     vman.markSearchCompleted(dbs[0], searchID);
     vman.markSearchCompleted(dbs[1], searchID);

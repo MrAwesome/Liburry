@@ -10,6 +10,4 @@ export default class OptionsChangeableByUser {
     agnostic: boolean = false;
     savedQuery: string = "";
     playground: boolean = false;
-    // TODO: find a way to load this dynamically
-    appName: AppName = "taigi.us";
 }

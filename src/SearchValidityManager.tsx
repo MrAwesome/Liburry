@@ -50,7 +50,7 @@ export default class SearchValidityManager {
 
     constructor(
         debug: boolean,
-        expectedNumberOfDBs: number
+        expectedNumberOfDBs: number = 0,
     ) {
         this.console = getDebugConsole(debug);
         this.searches = Array.from({length: this.bufLen}).map((_, i) => new SearchContext(i, expectedNumberOfDBs));
