@@ -221,13 +221,12 @@ export class AnnotatedSearchResultEntry {
     }
 }
 
+// TODO: search for \<id\> - instead of hardcoding "id", use dbconfig.dbbbb.primaryKey
 export interface RawDBRow {
-    id: string,
     [s: string]: string,
 }
 
 export function getDBRowKeys(r: RawDBRow): (keyof RawDBRow)[] {
-    const fields = Object.getOwnPropertyNames(r)
-                        .filter((k) => k !== "id");
+    const fields = Object.getOwnPropertyNames(r);
     return fields;
 }

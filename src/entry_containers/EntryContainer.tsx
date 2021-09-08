@@ -24,12 +24,17 @@ const FADING_STYLE = {
     //"transform": "perspective(400px) translate3d(0em, 0em, -60px)",
 }
 
-export default class EntryContainer extends React.PureComponent<{
+interface EntryContainerProps {
     debug: boolean,
     entry: AnnotatedSearchResultEntry,
 }
-, any> {
-    constructor(props: any) {
+
+interface EntryContainerState {
+    clicked: ClickedOrder,
+}
+
+export default class EntryContainer extends React.PureComponent<EntryContainerProps, EntryContainerState> {
+    constructor(props: EntryContainerProps) {
         super(props);
         this.state = {
             clicked: ClickedOrder.NORMAL,
@@ -56,7 +61,7 @@ export default class EntryContainer extends React.PureComponent<{
     myOnClick(e: React.MouseEvent) {
         e.preventDefault();
 
-        const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("poj_unicode");
+        const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("PojUnicode");
         // TODO: wrap in a try/catch for situations where clipboard isn't accessible (http, etc)
         navigator.clipboard.writeText(pojUnicode!.getOriginalValue());
         this.setState({clicked: ClickedOrder.CLICKED});
@@ -89,7 +94,7 @@ export default class EntryContainer extends React.PureComponent<{
     }
 
     getAltTextContainers(): JSX.Element[] {
-        const altTextFields = ["poj_input", "poj_normalized"];
+        const altTextFields = ["PojInput", "PojNormalized"];
         let altTextContainers: JSX.Element[] = [];
 
         altTextFields.forEach((fieldName) => {
@@ -154,7 +159,7 @@ export default class EntryContainer extends React.PureComponent<{
 
         const dbName = this.getEntry().getDBIdentifier();
         const rowID = this.getEntry().getRowID();
-        const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("poj_unicode");
+        const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("PojUnicode");
         const pojUnicodeText = pojUnicode!.getOriginalValue();
         const pojUnicodeCSV = pojUnicodeText.replace(/"/g, '""');
         const csvReportSkeleton = `"${dbName}","${rowID}","${pojUnicodeCSV}",`;
@@ -182,9 +187,9 @@ export default class EntryContainer extends React.PureComponent<{
         const dbIdentifier = this.getEntry().getDBIdentifier();
         const dbName = dbIdentifier.replace(/^ChhoeTaigi_/, "");
 
-        const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("poj_unicode");
-        const definition = this.getEntry().getFieldByNameDEPRECATED("english");
-        const hoabun = this.getEntry().getFieldByNameDEPRECATED("hoabun");
+        const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("PojUnicode");
+        const definition = this.getEntry().getFieldByNameDEPRECATED("EngBun");
+        const hoabun = this.getEntry().getFieldByNameDEPRECATED("HoaBun");
         const pojUnicodePossibleMatch = pojUnicode!.getDisplayValue();
         const definitionPossibleMatch = definition!.getDisplayValue();
         const hoabunPossibleMatch = hoabun!.getDisplayValue();

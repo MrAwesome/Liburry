@@ -14,11 +14,11 @@ export const DISPLAY_RESULTS_LIMIT = 20;
 // XXX TODO: determine programmatically
 // TODO: until agnostic is launched, this shouldn't be default?
 export const FIELDS_TO_SEARCH = [
-    "poj_unicode",
-    "poj_normalized",
-    "poj_input",
-    "english",
-    "hoabun",
+    "PojUnicode",
+    "PojNormalized",
+    "PojInput",
+    "EngBun",
+    "HoaBun",
 ];
 
 // TODO: dynamically generate filenames and versions

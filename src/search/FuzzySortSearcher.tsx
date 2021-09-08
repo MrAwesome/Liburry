@@ -100,7 +100,9 @@ export class FuzzySortPreparer implements SearcherPreparer {
         this.console.timeEnd("prepareSlow-" + dbIdentifier);
         this.console.timeEnd("total-" + dbIdentifier);
 
-        return new FuzzySearchableDict(this.dbConfig, searchableEntries, this.debug);
+        const primaryKey = this.dbConfig.getPrimaryKey();
+
+        return new FuzzySearchableDict(this.dbConfig, searchableEntries, this.debug, primaryKey);
     }
 
 }
@@ -111,7 +113,8 @@ class FuzzySearchableDict {
     constructor(
         private dbConfig: DBConfig,
         private searchableEntries: Array<FuzzyPreparedDBEntry>,
-        private debug: boolean
+        private debug: boolean,
+        private primaryKey: string,
     ) {
         this.console = getDebugConsole(debug);
         this.search = this.search.bind(this);
@@ -133,18 +136,12 @@ class FuzzySearchableDict {
             rawResults => {
                 // Filter out duplicates, as fuzzysort occasionally gives them to us and React loathes duplicate keys
                 // TODO: Find out why this doesn't prevent the flash of warning text from react
-                const seen = new Set();
-                const res = rawResults.filter(({obj}) => {
-                    if (seen.has(obj.id)) {
-                        return false;
-                    }
-                    seen.add(obj.id);
-                    return true;
-                });
+                const res = filterDupes(rawResults, this.primaryKey);
 
                 ongoingSearch.markCompleted();
                 const results = parseFuzzySortResultsForRender(
                     dbIdentifier,
+                    this.primaryKey,
                     // @ts-ignore Deal with lack of fuzzysort interfaces
                     res,
                 );
@@ -165,4 +162,15 @@ class FuzzySearchableDict {
         return ongoingSearch;
     }
 
+}
+
+function filterDupes(rawResults: Fuzzysort.KeysResults<FuzzyPreparedDBEntry>, primaryKey: string) {
+    const seen = new Set();
+    return rawResults.filter(({obj}) => {
+        if (seen.has(obj[primaryKey])) {
+            return false;
+        }
+        seen.add(obj[primaryKey]);
+        return true;
+    });
 }

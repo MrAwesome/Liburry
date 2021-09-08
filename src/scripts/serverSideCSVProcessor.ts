@@ -40,9 +40,9 @@ function processCSV(text: string): RawDBRow[] {
     const csv = papaparse.parse<RawDBRow>(text, {header: true, skipEmptyLines: true});
     csv.data.forEach((entry, index) => {
         // TODO: fail if entry doesn't have poj_unicode?
-        const pojNormalized = fromPojUnicodeToPojNormalized(entry["poj_unicode"]);
-        const kipNormalized = fromKipUnicodeToKipNormalized(entry["kip_unicode"]);
-        csv.data[index] = {...csv.data[index], poj_normalized: pojNormalized, kip_normalized: kipNormalized} as RawDBRow;
+        const pojNormalized = fromPojUnicodeToPojNormalized(entry["PojUnicode"]);
+        const kipNormalized = fromKipUnicodeToKipNormalized(entry["KipUnicode"]);
+        csv.data[index] = {...csv.data[index], PojNormalized: pojNormalized, KipNormalized: kipNormalized} as RawDBRow;
     });
 
     const processed = csv.data as RawDBRow[];
@@ -54,12 +54,12 @@ function writeLunrIndex(langDB: OldLangDB, entries: RawDBRow[]) {
     const idx = lunr(function () {
         // @ts-ignore lunr-languages doesn't have types defined
         this.use(lunr.multiLanguage('en', 'zh'));
-        this.ref("id");
-        this.field("english");
-        this.field("poj_unicode");
-        this.field("poj_normalized");
-        this.field("hoabun");
-        this.field("poj_input");
+        this.ref("DictWordID");
+        this.field("EngBun");
+        this.field("PojUnicode");
+        this.field("PojNormalized");
+        this.field("HoaBun");
+        this.field("PojInput");
 
         entries.forEach((entry: RawDBRow) => {
             this.add(entry)

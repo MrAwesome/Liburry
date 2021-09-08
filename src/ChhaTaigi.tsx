@@ -295,9 +295,12 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         const savedMountAttempt = this.currentMountAttempt;
 
+        // Waiting breaks MountUnmount tests, so don't setTimeout in tests
+        const protecc = runningInJest() ? (f: Function) => f() : setTimeout;
+
         // Wait a millisecond to check that this is actually the final mount attempt
         // (prevents double-loading DBs on localhost)
-        setTimeout(() => {
+        protecc(() => {
             if (this.currentMountAttempt === savedMountAttempt) {
                 this.searchController.startWorkersAndListener(options.searcherType);
                 this.subscribeHash();

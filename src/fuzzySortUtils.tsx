@@ -16,18 +16,23 @@ import xss from "xss";
 
 export function parseFuzzySortResultsForRender(
     dbIdentifier: DBIdentifier,
-    rawResults: FuzzyKeyResults[]
+    primaryKey: string,
+    rawResults: FuzzyKeyResults[],
 ): SearchResultEntryRaw[] {
     const currentResultsElements = rawResults
         .slice(0, DISPLAY_RESULTS_LIMIT)
-        .map((res) => fuzzySortResultToSearchResultEntry(dbIdentifier, res));
+        .map((res) => fuzzySortResultToSearchResultEntry(dbIdentifier, primaryKey, res));
     return currentResultsElements;
 }
 
 // TODO: Unit test!
-function fuzzySortResultToSearchResultEntry(dbIdentifier: DBIdentifier, fuzzysortResult: FuzzyKeyResults) {
+function fuzzySortResultToSearchResultEntry(
+    dbIdentifier: DBIdentifier,
+    primaryKey: string,
+    fuzzysortResult: FuzzyKeyResults,
+) {
     const obj = fuzzysortResult.obj;
-    const rowID = obj.id;
+    const rowID = obj[primaryKey] as string;
 
     const dbSearchRanking = {
         searcherType: SearcherType.FUZZYSORT,

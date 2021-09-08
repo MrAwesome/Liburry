@@ -51,6 +51,7 @@ export interface RawDBConfig {
     displayName: {
         [rawDialectID: string]: string,
     }
+    primaryKey: string,
     loadInfo: RawDBLoadInfo,
     fields: {
         [rawFieldID: string]: RawAllowedFieldClassifierTags,

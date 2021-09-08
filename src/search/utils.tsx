@@ -5,9 +5,10 @@ import {RawDBRow, getDBRowKeys, SearchResultEntryRaw} from "../types/dbTypes";
 export function vanillaDBEntryToResult(
     dbIdentifier: DBIdentifier,
     row: RawDBRow,
-    dbSearchRanking: DBSearchRanking
+    dbSearchRanking: DBSearchRanking,
+    primaryKey: string,
 ): SearchResultEntryRaw {
-    const rowID = row.id;
+    const rowID = row[primaryKey];
 
     const keys = getDBRowKeys(row);
     const fields = keys.map((k) => ({

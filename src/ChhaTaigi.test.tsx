@@ -64,28 +64,28 @@ test('render single entry via override', async () => {
         dbSearchRanking,
         fields: [
             {
-                colName: "poj_unicode",
+                colName: "PojUnicode",
                 value: "hoat-lu̍t",
                 matched: true,
                 displayValOverride: marked,
             },
             {
-                colName: "poj_input",
+                colName: "PojInput",
                 value: "hoat-lut8",
                 matched: false,
             },
             {
-                colName: "hoabun",
+                colName: "HoaBun",
                 value: "法律",
                 matched: false,
             },
             {
-                colName: "poj_normalized",
+                colName: "PojNormalized",
                 value: "hoat-lut",
                 matched: false,
             },
             {
-                colName: "english",
+                colName: "EngBun",
                 value: "the law",
                 matched: false,
             },

@@ -136,6 +136,8 @@ ChhoeTaigi_EmbreeTaiengSutian:
   loadInfo:
     localCSV: db/ChhoeTaigi_EmbreeTaiengSutian.csv
 
+  primaryKey: DictWordID
+
   fields:
     DictWordID:
       type:
@@ -243,6 +245,8 @@ ChhoeTaigi_iTaigiHoataiTuichiautian:
   loadInfo:
     localCSV: db/ChhoeTaigi_iTaigiHoataiTuichiautian.csv
 
+  primaryKey: DictWordID
+
   fields:
     DictWordID:
       type:
@@ -320,6 +324,8 @@ ChhoeTaigi_KamJitian:
 
   loadInfo:
     localCSV: db/ChhoeTaigi_KamJitian.csv
+
+  primaryKey: DictWordID
 
   fields:
     DictWordID:
@@ -426,6 +432,8 @@ ChhoeTaigi_KauiokpooTaigiSutian:
 
   loadInfo:
     localCSV: db/ChhoeTaigi_KauiokpooTaigiSutian.csv
+
+  primaryKey: DictWordID
 
   fields:
     DictWordID:
@@ -576,6 +584,8 @@ ChhoeTaigi_MaryknollTaiengSutian:
   loadInfo:
     localCSV: db/ChhoeTaigi_MaryknollTaiengSutian.csv
 
+  primaryKey: DictWordID
+
   fields:
     DictWordID:
       type:
@@ -646,6 +656,8 @@ ChhoeTaigi_TaihoaSoanntengTuichiautian:
 
   loadInfo:
     localCSV: db/ChhoeTaigi_TaihoaSoanntengTuichiautian.csv
+
+  primaryKey: DictWordID
 
   fields:
     DictWordID:
@@ -743,6 +755,8 @@ ChhoeTaigi_TaijitToaSutian:
 
   loadInfo:
     localCSV: db/ChhoeTaigi_TaijitToaSutian.csv
+
+  primaryKey: DictWordID
 
   fields:
     DictWordID:
@@ -889,6 +903,8 @@ ChhoeTaigi_TaioanPehoeKichhooGiku:
 
   loadInfo:
     localCSV: db/ChhoeTaigi_TaioanPehoeKichhooGiku.csv
+
+  primaryKey: DictWordID
 
   fields:
     DictWordID:
@@ -1048,6 +1064,8 @@ ChhoeTaigi_TaioanSitbutMialui:
 
   loadInfo:
     localCSV: db/ChhoeTaigi_TaioanSitbutMialui.csv
+
+  primaryKey: DictWordID
 
   fields:
     DictWordID:

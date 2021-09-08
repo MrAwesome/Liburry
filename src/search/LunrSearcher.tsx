@@ -90,8 +90,10 @@ export class LunrPreparer implements SearcherPreparer {
                 return idx;
             });
 
+        const primaryKey = this.dbConfig.getPrimaryKey();
+
         return Promise.all([entriesFetchAndLoad, indexFetchAndLoad]).then(([entries, idx]) => {
-            const searcher = new LunrSearcher(dbIdentifier, idx, entries, this.debug);
+            const searcher = new LunrSearcher(dbIdentifier, primaryKey, idx, entries, this.debug);
             this.console.timeEnd("lunr-total-" + dbIdentifier);
             return searcher;
         });
@@ -105,6 +107,7 @@ export class LunrSearcher implements Searcher {
 
     constructor(
         private dbIdentifier: DBIdentifier,
+        private primaryKey: string,
         private idx: lunr.Index,
         private entries: RawDBRow[],
         private debug: boolean,
@@ -157,7 +160,7 @@ export class LunrSearcher implements Searcher {
                 searcherType: SearcherType.LUNR,
                 score: lunrRes.score
             } as DBSearchRanking;
-            return vanillaDBEntryToResult(dbIdentifier, entry, dbSearchRanking);
+            return vanillaDBEntryToResult(dbIdentifier, entry, dbSearchRanking, this.primaryKey);
         });
         this.console.timeEnd("lunr-getEntries-" + dbIdentifier);
         return {

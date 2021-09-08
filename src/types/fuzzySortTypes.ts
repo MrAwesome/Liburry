@@ -1,6 +1,5 @@
 type FuzzyResUnion = FuzzyKeyResult | string;
 export interface FuzzyPreparedDBEntry {
-    id: string,
     [s: string]: FuzzyResUnion,
 }
 

@@ -46,6 +46,7 @@ export type DBIdentifier = string;
 export class DBConfig {
     private loadInfo: DBLoadInfo;
     private fieldConfigs: FieldConfig[];
+    private primaryKey: string;
     private otherMetadata?: {
         [s: string]: any,
     }
@@ -55,6 +56,7 @@ export class DBConfig {
         private r: RawDBConfig,
     ) {
         this.loadInfo = r.loadInfo;
+        this.primaryKey = r.primaryKey;
 
         this.fieldConfigs = Object.getOwnPropertyNames(r.fields).map((rawFieldName) => {
             const rawField = r.fields[rawFieldName];
@@ -94,8 +96,13 @@ export class DBConfig {
         return this.loadInfo;
     }
 
+    getPrimaryKey() {
+        return this.primaryKey;
+    }
+
     getDisplayName(lang: DialectID) {
         // THROW: not defined yet
+        throw new Error("Not implemented yet.");
     }
 
     getDBIdentifier() {
