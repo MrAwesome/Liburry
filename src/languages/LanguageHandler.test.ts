@@ -1,4 +1,4 @@
-import {RawLangConfig} from "./rawConfigTypes";
+import {RawLangConfig} from "../configHandler/rawConfigTypes";
 import {loadTestYaml} from "../utils/yaml";
 import LanguageHandler from "./LanguageHandler";
 

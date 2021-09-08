@@ -5,11 +5,14 @@
 import fs from 'fs';
 import papaparse from "papaparse";
 import fetch from "node-fetch";
+import ConfigHandler from '../configHandler/ConfigHandler';
+import {AppConfig, DBConfig} from '../types/config';
 import {OldLangDB, RawDBRow} from '../types/dbTypes';
-import {OLD_DATABASES} from "../searchSettings";
+//import {OLD_DATABASES} from "../searchSettings";
 import {fromKipUnicodeToKipNormalized, fromPojUnicodeToPojNormalized} from './languageUtils';
 
 import lunr from 'lunr';
+import {CHHA_APPNAME} from '../constants';
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
 require("lunr-languages/lunr.multi")(lunr);
@@ -22,7 +25,7 @@ require("lunr-languages/lunr.multi")(lunr);
 //const {DATABASES} = require("../searchSettings");
 
 const URL_PREFIX = "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/raw/master/ChhoeTaigiDatabase/";
-const OUTPUT_PREFIX = "public";
+const OUTPUT_PREFIX = "public/";
 
 function writeFileErrHandler(succMsg: string) {
     return (err: any) => {
@@ -73,29 +76,37 @@ function writeLunrIndex(langDB: OldLangDB, entries: RawDBRow[]) {
         ));
 }
 
-function writeFile(langDB: OldLangDB, entries: RawDBRow[]) {
+function writeFile(dbConfig: DBConfig, entries: RawDBRow[]) {
     const newCSVText = papaparse.unparse(entries, {header: true});
 
     fs.writeFile(
-        `${OUTPUT_PREFIX}${langDB.localCSV}`,
+        `${OUTPUT_PREFIX}${dbConfig.getDBLoadInfo().localCSV!}`,
         newCSVText,
-        writeFileErrHandler(`Wrote out local CSV for: "${langDB.shortName}"`
+        writeFileErrHandler(`Wrote out local CSV for: "${dbConfig.getDBIdentifier()}"`
         ));
 
 }
 
+const configHandler = new ConfigHandler(CHHA_APPNAME, true);
+const configPromises = [configHandler.loadDBConfigs()];
+Promise.all(configPromises).then(([rawDBConfigs]) => {
+    const appConfig = AppConfig.from(rawDBConfigs);
+    const dbConfigs = appConfig.getAllEnabledDBConfigs();
 
-OLD_DATABASES.forEach(async (langDB: OldLangDB) => {
-    console.log("Started: ", langDB.shortName);
-    const url = URL_PREFIX + langDB.upstreamCSV;
+    dbConfigs.forEach((dbConfig) => {
+        console.log("Started: ", dbConfig.getDBIdentifier());
+        const loadInfo = dbConfig.getDBLoadInfo().localCSV!;
+        // NOTE: this is chhoetaigi specific
+        const url = URL_PREFIX + loadInfo.slice(3);
 
-    fetch(url).then((resp) => {
-        resp.text().then((text) => {
-            console.log("Successfully fetched: ", langDB.shortName);
-            const entries = processCSV(text);
-            writeFile(langDB, entries);
-            // Disabled for now
-            //writeLunrIndex(langDB, entries);
+        fetch(url).then((resp) => {
+            resp.text().then((text) => {
+                console.log("Successfully fetched: ", dbConfig.getDBIdentifier());
+                const entries = processCSV(text);
+                writeFile(dbConfig, entries);
+                // Disabled for now
+                //writeLunrIndex(langDB, entries);
+            });
         });
     });
 });

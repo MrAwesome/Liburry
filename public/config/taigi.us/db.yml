@@ -2,14 +2,6 @@
 # TODO: "type" is actually defined per displaytype...
 # TODO: split this up into a config per db (you define one yml per csv, or have your server return the raw object form of this at startup, etc)
 
-#allowedFieldClassifierTags:
-#  - type
-#  - dialect
-#  - delimiter
-#  - lengthHint
-#  - status
-#  - notes
-
 ##### Structure: #####
 #
 # Note that fields can be either a:
@@ -28,104 +20,6 @@
 #
 # fields:
 #
-
-#giku:
-#  fullIdentifier: "ChhoeTaigi_TaioanPehoeKichhooGiku"
-#  displayShortName: "giku"
-#
-#  loadInfo:
-#    format: "local_csv"
-#    location: "db/giku.csv"
-#
-#  vocabLangs:
-#    - tw_kip
-#    - tw_poj
-#
-#  definitionLangs:
-#    - english
-#    - mandarin
-#
-#  fields: FieldConfig,
-
-#ChhoeTaigi_BanglooMuitheSekin:
-#  displayName:
-#    eng_us: Sekin
-#
-#  loadInfo:
-#    localCSV: db/ChhoeTaigi_BanglooMuitheSekin.csv
-#
-#  fields:
-#    DictWordID:
-#      type: id
-#
-#    PojUnicode:
-#      type: vocab
-#      dialect: poj
-#      lengthHint: long
-#
-#    PojNormalized:
-#      type: normalized
-#      dialect: poj
-#      lengthHint: long
-#
-#    PojInput:
-#      type: input
-#      dialect: poj
-#      lengthHint: long
-#
-#    KipUnicode:
-#      type: vocab
-#      dialect: kip
-#      lengthHint: long
-#
-#    KipNormalized:
-#      type: normalized
-#      dialect: kip
-#      lengthHint: long
-#
-#    KipInput:
-#      type: input
-#      dialect: kip
-#      lengthHint: long
-#
-#    HanLoTaibunPoj:
-#      type: vocab
-#      dialect: taibun_poj
-#      lengthHint: long
-#
-#    HanLoTaibunKip:
-#      type: vocab
-#      dialect: taibun_kip
-#      lengthHint: long
-#
-#    HoaBun:
-#      type: definition
-#      dialect: hoabun
-#      lengthHint: long
-#
-#    EngBun:
-#      type: definition
-#      dialect: english
-#      status: blank
-#
-#    poochhiong_chuliau:
-#      type: see_also
-#      dialect: poj/taibun_poj
-#      lengthHint: long
-#      status: sparse
-#
-#    muithe_miachheng:
-#      type: channel_name
-#      dialect: hoabun
-#      lengthHint: short
-#
-#    hongsang_jitki:
-#      type: date_YYYY.MM.DD
-#      lengthHint: short
-#
-#    liankiat:
-#      type: link
-#      lengthHint: short
 
 ChhoeTaigi_EmbreeTaiengSutian:
   enabled: True

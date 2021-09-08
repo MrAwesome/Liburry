@@ -7,8 +7,8 @@
     "skipLibCheck": true, // only check types we refer to from our code
     "forceConsistentCasingInFileNames": true, // prevents cross-OS problems
     "resolveJsonModule": true, // enable import of JSON files
-    "lib": ["esnext", "dom"], // use JavaScript API esnext
-    "target": "esnext", // compile to esnext
+    "lib": ["es2021", "dom"], // use JavaScript API esnext
+    "target": "es2019", // compile to esnext
     "jsx": "react", // compile JSX to React.createElement statements for SSR
     "allowJs": true, // allow import of JS modules
     // enable strict type checking
