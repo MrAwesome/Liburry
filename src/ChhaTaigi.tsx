@@ -24,7 +24,7 @@ import {SearchContext} from "./SearchValidityManager";
 // TODO(urgent): migrate configs to new names (see https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/commit/b33c6a1fcc2d11a2962e76b6055d528d11677c3b)
 // TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
-// TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.server.js` - let different parts of the build process be run separately, and standardize/document what is run
+// TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.scripts.js && node build/server.js` - let different parts of the build process be run separately, and standardize/document what is run
 // TODO(high): loading bar for initial load, and for ongoing search (size of per-db bar based on number of entries, if known (can be generated during build process))
 // TODO(high): don't require a double-back right after submit
 // TODO(high): look into strange behavior of fuzzysort mark generation (did it work before and broke recently, or was it always broken? - try "alexander")
@@ -127,6 +127,7 @@ import {SearchContext} from "./SearchValidityManager";
 // TODO(later): store options between sessions
 // TODO(later): run a spellchecker on "english"
 // TODO(later): WASM fast search
+// TODO(later): browser omnibar tab search (register as search engine)
 // TODO(later): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(maybe): install a router library for handling e.g. playground
 // TODO(maybe): allow results to hint/override where particular columns should be displayed? or a way to query server/file per db?

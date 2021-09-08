@@ -91,7 +91,7 @@ const configHandler = new ConfigHandler(CHHA_APPNAME, true);
 const configPromises = [configHandler.loadDBConfigs()];
 Promise.all(configPromises).then(([rawDBConfigs]) => {
     const appConfig = AppConfig.from(rawDBConfigs);
-    const dbConfigs = appConfig.getAllEnabledDBConfigs();
+    const dbConfigs = appConfig.getAllEnabledDBConfigs(true);
 
     dbConfigs.forEach((dbConfig) => {
         console.log("Started: ", dbConfig.getDBIdentifier());
