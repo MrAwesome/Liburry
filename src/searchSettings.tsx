@@ -37,7 +37,7 @@ export const OLD_DATABASES: Map<string, OldLangDB> = makeNameToObjMapping([
     {
         shortName: "embree",
         fullName: "ChhoeTaigi_EmbreeTaiengSutian",
-        localCSV: "/db/ChhoeTaigi_EmbreeTaiengSutian.csv.csv",
+        localCSV: "/db/ChhoeTaigi_EmbreeTaiengSutian.csv",
         localCSVVersion: 3,
         localLunr: "/db/ChhoeTaigi_EmbreeTaiengSutian.lunr.json",
         localLunrVersion: 3,
