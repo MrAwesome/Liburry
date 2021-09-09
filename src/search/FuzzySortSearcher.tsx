@@ -78,7 +78,8 @@ export class FuzzySortPreparer implements SearcherPreparer {
         //if (localCSVVersion) {
         //    versionString = `?v=${localCSVVersion}`;
         //}
-        return fetch("/" + localCSV)
+        // XXX TODO: fix csv versioning
+        return fetch("/" + localCSV + "?v=10")
             .then((response: Response) => {
                 return response.text();
             })
