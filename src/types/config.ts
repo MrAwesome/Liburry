@@ -1,4 +1,5 @@
 import {RawAllDBConfig, RawAllowedFieldClassifierTags, RawDBConfig} from "../configHandler/rawConfigTypes";
+import {CHHA_ALLDB} from "../constants";
 import Dialect, {DialectID} from "../languages/dialect";
 import {DBColName} from "./dbTypes";
 import {RawKnownDisplayTypeEntry} from "./displayTypes";
@@ -25,7 +26,13 @@ export class AppConfig {
     }
 
     getAllEnabledDBConfigs(ignoreEnabledTag?: boolean): DBConfig[] {
-        return Array.from(this.dbConfigs.values()).filter((dbConfig) => dbConfig.isEnabled() || ignoreEnabledTag);
+        console.log(CHHA_ALLDB);
+        return Array.from(this.dbConfigs.values())
+            .filter((dbConfig) => 
+                dbConfig.isEnabled() ||
+                ignoreEnabledTag ||
+                CHHA_ALLDB
+            );
     }
 
     getDBConfig(dbIdentifier: DBIdentifier): DBConfig | null{
