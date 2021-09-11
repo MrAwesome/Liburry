@@ -26,9 +26,8 @@ export class AppConfig {
     }
 
     getAllEnabledDBConfigs(ignoreEnabledTag?: boolean): DBConfig[] {
-        console.log(CHHA_ALLDB);
         return Array.from(this.dbConfigs.values())
-            .filter((dbConfig) => 
+            .filter((dbConfig) =>
                 dbConfig.isEnabled() ||
                 ignoreEnabledTag ||
                 CHHA_ALLDB

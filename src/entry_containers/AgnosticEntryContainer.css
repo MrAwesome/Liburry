@@ -1,14 +1,104 @@
+* {
+    box-sizing: border-box;
+}
+
 .agnostic-container-container {
-    border: 2px black solid;
-    display: absolute;
+    border: 1px black solid;
+    box-sizing: border-box;
+
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.agnostic-container-container:hover {
+/*    background: #eeffee;*/
+    box-sizing: border-box;
+    border-left: 3px solid black;
+    box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, .2);
+
+}
+
+.agnostic-container-debugbox {
+    max-width: 10%;
+}
+
+.agnostic-container-rightbox {
+    max-width: 15%;
+}
+
+.agnostic-container-title_alternate {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.agnostic-container-rightbox {
+    align-items: flex-end;
+}
+
+.agnostic-container-mainbox {
+    flex-grow: 1;
+    padding: 2px;
+}
+
+.agnostic-container-debugbox {
+    min-width: 5%;
+    border-right: 1px solid black;
+    align-items: center;
+    z-index: 200;
 }
 
 .agnostic-container-title {
-    padding-left: 4px;
+    display: inline;
     border: 1px blue solid;
 }
 
-.vocab-element {
+.agnostic-container-title span {
+    padding-left: 2px;
+    padding-right: 2px;
+    border: 1px green solid;
+}
+
+.agnostic-container-title_other {
+    display: inline;
+    border: 1px magenta solid;
+}
+
+.agnostic-container-title_prefix {
+    display: inline;
+}
+
+.agnostic-container-title_alternate, .agnostic-container-title_alternate_other {
+    float: right;
+}
+
+.agnostic-container-title_alternate span, .agnostic-container-title_alternate_other span {
+    font-size: 8px;
     padding-left: 4px;
     border: 1px green solid;
+}
+
+.agnostic-container-dbname {
+    font-size: 8px;
+}
+
+.agnostic-container-main_other {
+    border: 1px solid pink;
+}
+
+.agnostic-container-definition span {
+    border: 1px solid grey;
+    display: block;
+}
+
+.agnostic-container-long_descriptions span {
+    border: 1px solid darkgreen;
+    display: block;
+}
+
+.agnostic-container-examples span {
+    border: 1px solid brown;
+    display: block;
 }

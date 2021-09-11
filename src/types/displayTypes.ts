@@ -24,6 +24,7 @@ export type RawDictionaryFieldDisplayType =
     "class" |
     "contributor" |
     "date_YYYY.MM.DD" |
+    "dbname" |
     "definition" |
     "example" |
     "example_phrase" |
@@ -35,9 +36,8 @@ export type RawDictionaryFieldDisplayType =
     "matched_example" |
     "measure_word" |
     "normalized" |
+    "normalized_other" |
     "opposite" |
-    "other" | // TODO: more specific name for what this corresponds to (other versions of vocab)
-    "other_input" | // TODO: same
     "page_number" |
     "pos_classification" |
     "see_also" |

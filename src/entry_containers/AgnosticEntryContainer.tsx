@@ -17,26 +17,43 @@ type AECProps = {
 
 type AECDisplayArea =
     "container" |
+    "debugbox" |
+    "mainbox" |
+    "rightbox" |
     "title" |
-    "title_alt_display" |
-    "title_alt_search" |
+    "title_other" |
+    "title_alternate" |
+    "title_alternate_other" |
+    "title_prefix" |
     "definition" |
     "examples" |
     "long_descriptions" |
     "main_other" |
-    "metadata";
+    "dbname" |
+    "vocab_metadata" |
+    "debug_metadata";
 
 const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDisplayType> = area("container", [
-    area("title", ["vocab"]) as AreaNode<AECDisplayArea, RawDictionaryFieldDisplayType>,
-    area("title_alt_display", []),
-    area("title_alt_search", []),
-    area("definition", ["definition"]),
-    area("main_other", [
-        area("long_descriptions",
-            ["explanation"]),
-        area("examples",
-            ["example", "example_phrase"])]),
-    area("metadata", ["id"]),
+    // TODO: only display in debug mode
+    //area("debugbox", [
+    //    area("debug_metadata", ["id"]),
+    //    area("dbname", ["dbname"]),
+    //]),
+    area("mainbox", [
+        //area("title_prefix", ["measure_word"]),
+        area("title", ["vocab"]),
+        area("title_other", ["vocab_other"]),
+        area("definition", ["definition"]),
+        area("main_other", [
+            area("long_descriptions",
+                ["explanation"]),
+            area("examples",
+                ["example", "example_phrase"])]),
+        //area("vocab_metadata", ["pos_classification"]),
+    ]),
+    area("rightbox", [
+        area("title_alternate", ["input", "normalized", "input_other", "normalized_other"]),
+    ]),
 ]);
 
 // TODO: when pulling in from config file, only include matching display rules
@@ -73,38 +90,24 @@ export default class AgnosticEntryContainer
                 } else {
                     element = <span className={className}>{value}</span>
                 }
+
+                const areas = treeHandler.getAreas(fieldType);
+                console.log(fieldType, areas);
+
+                // TODO: handle delimiters. can fuzzy search lists? should split only be here? that does not work well with </mark>...
+                // TODO: how can you add onclick/etc for the elements you create here?
+                // TODO: can you have items inserted ["where", "they", "are", "in", "list"]
+
                 treeHandler.insertInto(tree, fieldType, element);
 
-                //const colName = field.getColumnName();
-                // const displayArea = this.fieldDisplayTypeToDisplayRule(fieldType);
-                // const cssPrefix = AgnosticEntryContainer.CSS_PREFIX + "-" + displayArea;
-
-                // // TODO XXX : if a YAML config implements RawDictionaryFieldDisplayType -> whatever the more abstract version of AECDisplayArea is, it automatically can be displayed using AEC or any other
-                // // TODO: order of areas should be pre-determined, since they're known at typing time? should they be? or should areas be defined in yaml and just have e.g. "other_info" "bottom" "priority: 0" or whatever?
-
-                // if (displayArea !== null) {
-                //     // TODO: more strongly type language
-                //     const dialect = field.getDialect();
-
-                //     // TODO: don't do this for non-matched elems
-                //     let element;
-                //     if (field.wasMatched()) {
-                //         element = createMatchElement(field.getDisplayValue(), cssPrefix + "-element");
-                //     } else {
-                //         element = <span className={cssPrefix + "-element"}>{field.getDisplayValue()}</span>
-                //     }
-
-                //     let area = displayContainer.get(displayArea) ?? [];
-                //     displayContainer.set(displayArea, [...area, element]);
-                // }
             }
         });
+
+        // NOTE: should be displayname instead
+        const TEMPdbid = entry.getDBIdentifier();
+        const dbName = TEMPdbid.replace(/^ChhoeTaigi_/, "");
+        treeHandler.insertInto(tree, "dbname", <span className="dbname-element">{dbName}</span>);
+
         return treeHandler.getAsNestedDivs(tree);
-//        // Example
-//        let output: JSX.Element[] = [];
-//        displayContainer.forEach((elementList, displayArea) => {
-//            output.push(<div className={AgnosticEntryContainer.CSS_PREFIX + "-" + displayArea}>{elementList}</div>);
-//        });
-//        return <div className={AgnosticEntryContainer.CSS_PREFIX}>{output}</div>;
     }
 }

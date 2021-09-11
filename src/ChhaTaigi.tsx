@@ -22,10 +22,12 @@ import {SearchContext} from "./SearchValidityManager";
 
 // TODO(CRITICAL): handle changes in csv versions!
 // TODO(urgent): see if poj_normalized can be committed upstream
+// TODO(urgent): change server script to also generate normalized_other
 // TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.scripts.js && node build/server.js` - let different parts of the build process be run separately, and standardize/document what is run
-// TODO(high): loading bar for initial load, and for ongoing search (size of per-db bar based on number of entries, if known (can be generated during build process))
+// TODO(high): have loading bar float with the searchbar (will need a padding element which disappears at the same speed)
 // TODO(high): don't require a double-back right after submit
+// TODO(high): handle "-", "?", etc entries in KamJitian
 // TODO(high): look into strange behavior of fuzzysort mark generation (did it work before and broke recently, or was it always broken? - try "alexander")
 // TODO(high): different debug levels, possibly use an upstream lib for logging
 // TODO(high): remember to handle "unknown" field type (and anything else) in display rules

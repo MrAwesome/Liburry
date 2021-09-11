@@ -254,7 +254,7 @@ ChhoeTaigi_KamJitian:
 
     HanbunImPojUnicode:
       type:
-        dictionary: other
+        dictionary: vocab_other
       dialect: poj
       delimiter: sparse
       lengthHint: single
@@ -298,7 +298,7 @@ ChhoeTaigi_KamJitian:
 
     HanbunImKipUnicode:
       type:
-        dictionary: other
+        dictionary: vocab_other
       dialect: kip
       delimiter: sparse
       lengthHint: single

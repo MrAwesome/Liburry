@@ -19,6 +19,7 @@ type RecursiveTreeArrayOnly<T> = (T | RecursiveTreeArrayOnly<T>)[]
 //           how can you pass one around with a set locationmap / tree, but the tree is empty every time it's used? copy/clear?
 export class LocationTreeHandler<DA extends string, FT extends string, TreeElem> {
     private readonly locationMap: Map<FT, TreeLocationIndex[]>;
+    private readonly areaMap: Map<FT, DA[]>;
 
     constructor(
         private cssPrefix: string,
@@ -28,20 +29,23 @@ export class LocationTreeHandler<DA extends string, FT extends string, TreeElem>
         this.generateEmptyTree = this.generateEmptyTree.bind(this);
 
         this.locationMap = new Map();
-        this.createTreeIndexMap([], areaLayout);
+        this.areaMap = new Map();
+        this.createTreeIndexMap([], [], areaLayout);
     }
 
-    createTreeIndexMap(indices: number[], parentArea: AreaNode<DA, FT>) {
+    createTreeIndexMap(indices: number[], parents: DA[], parentArea: AreaNode<DA, FT>) {
         const {contents} = parentArea;
+        const newParents = [...parents, parentArea.name];
         contents.forEach((entry, i) => {
             const internalIndices = [...indices, i];
             if ((entry as AreaNode<DA, FT>).isArea === true) {
                 const area = entry as AreaNode<DA, FT>;
-                this.createTreeIndexMap(internalIndices, area);
+                this.createTreeIndexMap(internalIndices, newParents, area);
             } else {
                 const item = entry as FT;
-                const existing = this.locationMap.get(item) ?? [];
-                this.locationMap.set(item, [...existing, internalIndices]);
+                const existingLocationList = this.locationMap.get(item) ?? [];
+                this.areaMap.set(item, newParents);
+                this.locationMap.set(item, [...existingLocationList, internalIndices]);
             }
         });
     }
@@ -68,6 +72,10 @@ export class LocationTreeHandler<DA extends string, FT extends string, TreeElem>
 
     private getLocations(fieldType: FT): TreeLocationIndex[] | null {
         return this.locationMap.get(fieldType) ?? null;
+    }
+
+    getAreas(fieldType: FT): DA[] | null {
+        return this.areaMap.get(fieldType) ?? null;
     }
 
     private insertAtLocation(parentArea: AreaNode<DA, TreeElem[]>, loc: TreeLocationIndex, value: TreeElem): void {
@@ -102,12 +110,7 @@ export class LocationTreeHandler<DA extends string, FT extends string, TreeElem>
                 return this.getAsNestedDivsHelper(newArea);
             } else {
                 const elemList = item as TreeElem[];
-
-                // TODO: don't use i as key? Ensure elem is stringish?
-                // TODO: determine a className if needed
-                const jsxList = elemList.map((elem, i) =>
-                    <span key={i}>{elem}</span>
-                );
+                const jsxList = elemList.map((elem) => <>{elem}</>);
                 return [jsxList, elemList.length] as [JSX.Element[], number];
             }
         });
