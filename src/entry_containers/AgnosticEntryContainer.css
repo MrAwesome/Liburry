@@ -28,6 +28,10 @@
     max-width: 15%;
 }
 
+.agnostic-container-title, .agnostic-container-title_other {
+    font-weight: 600;
+}
+
 .agnostic-container-title_alternate {
     display: flex;
     flex-direction: column;
