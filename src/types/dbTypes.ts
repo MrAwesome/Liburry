@@ -159,6 +159,10 @@ export class AnnotatedDisplayReadyField {
     getDBIdentifier(): DBIdentifier {
         return this.dbIdentifier;
     }
+
+    getDelimiter(): string | null {
+        return this.d.metadata?.delimiter ?? null;
+    }
 }
 
 // NOTE: this class is passed from workers back to the main thread, hence interface instead of class.

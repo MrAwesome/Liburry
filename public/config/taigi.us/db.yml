@@ -450,6 +450,7 @@ ChhoeTaigi_KauiokpooTaigiSutian:
       type:
         dictionary: vocab_other
       dialect: kip/taibun_kip/hoabun
+      delimiter: "。"
       lengthHint: very_long
       status: sparse
 

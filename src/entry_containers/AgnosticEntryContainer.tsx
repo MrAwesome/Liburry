@@ -27,6 +27,7 @@ type AECDisplayArea =
     "title_prefix" |
     "definition" |
     "examples" |
+    "matched_examples" |
     "long_descriptions" |
     "main_other" |
     "dbname" |
@@ -45,10 +46,10 @@ const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDispla
         area("title_other", ["vocab_other"]),
         area("definition", ["definition"]),
         area("main_other", [
-            area("long_descriptions",
-                ["explanation"]),
-            area("examples",
-                ["example", "example_phrase"])]),
+            area("long_descriptions", ["explanation"]),
+            area("examples", ["example", "example_phrase"]),
+            area("matched_examples", ["matched_example"]),
+        ]),
         //area("vocab_metadata", ["pos_classification"]),
     ]),
     area("rightbox", [
@@ -77,6 +78,7 @@ export default class AgnosticEntryContainer
         const tree = treeHandler.generateEmptyTree();
 
         const entry = this.getEntry();
+        console.log(entry);
 
         entry.getFields().forEach((field) => {
             const maybeFieldType = field.getDataTypeForDisplayType("dictionary");
@@ -85,16 +87,26 @@ export default class AgnosticEntryContainer
                 const value = field.getDisplayValue();
                 const className = fieldType + "-element";
                 let element: JSX.Element;
+
+                // TODO: handle delimiters. can fuzzy search lists? should split only be here? that does not work well with </mark>...
+                // TODO: XXX: find solution for matches
                 if (field.wasMatched()) {
                     element = createMatchElement(value, className);
                 } else {
-                    element = <span className={className}>{value}</span>
+                    const delim = field.getDelimiter();
+
+
+                    if (delim) {
+                        const spl = value.split(delim).filter(x => x);
+                        const elems = spl.map(x => <span className={className}>{x}</span>);
+                        element = <>{elems}</>;
+                    } else {
+                        element = <span className={className}>{value}</span>;
+                    }
                 }
 
                 const areas = treeHandler.getAreas(fieldType);
-                console.log(fieldType, areas);
 
-                // TODO: handle delimiters. can fuzzy search lists? should split only be here? that does not work well with </mark>...
                 // TODO: how can you add onclick/etc for the elements you create here?
                 // TODO: can you have items inserted ["where", "they", "are", "in", "list"]
 
