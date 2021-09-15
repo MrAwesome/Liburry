@@ -72,6 +72,7 @@ export interface RawAllowedFieldClassifierTags {
     dialect?: string | string[],
 
     delimiter?: string,
+    delimiterRegex?: string,
     lengthHint?: string,
     status?: string,
     notes?: string,

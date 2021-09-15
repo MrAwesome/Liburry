@@ -1,6 +1,6 @@
 import * as React from "react";
 import {createMatchElement} from "../fuzzySortReactUtils";
-import {AnnotatedSearchResultEntry} from "../types/dbTypes";
+import {AnnotatedDisplayReadyField, AnnotatedSearchResultEntry} from "../types/dbTypes";
 import {RawDictionaryFieldDisplayType} from "../types/displayTypes";
 
 import "./AgnosticEntryContainer.css";
@@ -63,10 +63,10 @@ const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDispla
 export default class AgnosticEntryContainer
     extends React.PureComponent<AECProps, {}>
 {
-    static CSS_PREFIX = "agnostic-container";
+    static CSS_AREA_PREFIX = "agnostic-container";
     //
     // NOTE: for now, this is specific to the dictionary type
-    static treeHandler = new LocationTreeHandler(AgnosticEntryContainer.CSS_PREFIX, agnosticDictionaryAreas);
+    static treeHandler = new LocationTreeHandler(AgnosticEntryContainer.CSS_AREA_PREFIX, agnosticDictionaryAreas);
 
     getEntry(): AnnotatedSearchResultEntry {
         return this.props.entry;
@@ -78,31 +78,55 @@ export default class AgnosticEntryContainer
         const tree = treeHandler.generateEmptyTree();
 
         const entry = this.getEntry();
-        console.log(entry);
+
+        const matchGroups: JSX.Element[][] = [];
 
         entry.getFields().forEach((field) => {
+            const maybeDialect = field.getDialect();
+            if (maybeDialect !== null) {
+                if ((maybeDialect as string).trimEnd !== undefined) {
+                    const singleDialect = maybeDialect as string;
+                    // XXX TODO: use actual dialects from chosen options. this is a temporary restraining order against KIP.
+                    if (singleDialect.match(/kip/)) {
+                        return;
+                    }
+                } else if ((maybeDialect as string[]).flatMap !== undefined) {
+                    const dialects = maybeDialect as string[];
+                    //if (dialects.some(d => d.match(/kip/))) {
+                    //    return;
+                    //}
+                }
+                //if dialect?.contains("kip")
+
+            }
             const maybeFieldType = field.getDataTypeForDisplayType("dictionary");
             if (field.hasValue() && maybeFieldType !== null) {
                 const fieldType = maybeFieldType as RawDictionaryFieldDisplayType;
-                const value = field.getDisplayValue();
+                const displayValue = field.getDisplayValue();
                 const className = fieldType + "-element";
-                let element: JSX.Element;
 
                 // TODO: handle delimiters. can fuzzy search lists? should split only be here? that does not work well with </mark>...
                 // TODO: XXX: find solution for matches
-                if (field.wasMatched()) {
-                    element = createMatchElement(value, className);
+                const delim = field.getDelimiter();
+
+                let element: JSX.Element;
+                if (delim) {
+                    // TODO: handle match elements that are delimited
+                    const subvals = displayValue.split(delim).filter(x => x);
+                    const elems = subvals.map((subval, i) => {
+                        const val = makeElem(field, className, subval);
+                        if (fieldType === "matched_example") {
+                            if (matchGroups[i] === undefined) {
+                                matchGroups[i] = [];
+                            }
+                            matchGroups[i].push(val);
+                            return null;
+                        }
+                        return val;
+                    });
+                    element = <>{elems}</>;
                 } else {
-                    const delim = field.getDelimiter();
-
-
-                    if (delim) {
-                        const spl = value.split(delim).filter(x => x);
-                        const elems = spl.map(x => <span className={className}>{x}</span>);
-                        element = <>{elems}</>;
-                    } else {
-                        element = <span className={className}>{value}</span>;
-                    }
+                    element = makeElem(field, className, displayValue);
                 }
 
                 const areas = treeHandler.getAreas(fieldType);
@@ -115,11 +139,35 @@ export default class AgnosticEntryContainer
             }
         });
 
+        if (matchGroups.length > 0) {
+            matchGroups.forEach((matchGroup, i) => {
+                const prefix = (matchGroups.length > 1) ?
+                    <div className="agnostic-matched-group-prefix">{i}.</div> :
+                    null;
+                const matchGroupContainer = <div className="agnostic-matched-group-container">
+                    {prefix}
+                    <div className="agnostic-matched-group">{matchGroup}</div>
+                </div>;
+                // NOTE: you can insert a container around x to have each match group display as a group
+                treeHandler.insertInto(tree, "matched_example", matchGroupContainer)
+                }
+            );
+        }
+
         // NOTE: should be displayname instead
         const TEMPdbid = entry.getDBIdentifier();
         const dbName = TEMPdbid.replace(/^ChhoeTaigi_/, "");
-        treeHandler.insertInto(tree, "dbname", <span className="dbname-element">{dbName}</span>);
+        treeHandler.insertInto(tree, "dbname", <div className="dbname-element">{dbName}</div>);
 
         return treeHandler.getAsNestedDivs(tree);
+    }
+}
+
+function makeElem(field: AnnotatedDisplayReadyField, className: string, text: string): JSX.Element {
+    // TODO: handle matching on delimited elements
+    if (field.wasMatched()) {
+        return createMatchElement(text, className);
+    } else {
+        return <div className={className}>{text}</div>;
     }
 }

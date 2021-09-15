@@ -48,16 +48,16 @@
     text-align: right;
 }
 
-.agnostic-container-title_alternate span {
+.agnostic-container-title_alternate > div {
     font-size: 8px;
     padding-left: 4px;
     color: #444444;
 }
 
-.agnostic-container-title_alternate span::before {
+.agnostic-container-title_alternate > div::before {
     content: "(";
 }
-.agnostic-container-title_alternate span::after {
+.agnostic-container-title_alternate > div::after {
     content: ")";
 }
 
@@ -70,7 +70,8 @@
     border-radius: 4px;
 }
 
-.agnostic-container-title span {
+.agnostic-container-title div {
+    display: inline-block;
     padding-left: 2px;
     padding-right: 2px;
     border: 1px green solid;
@@ -83,17 +84,17 @@
     padding-bottom: 4px;
 }
 
-.agnostic-container-title_other span {
+.agnostic-container-title_other > div {
     display: inline-block;
     font-size: 10px;
     color: #333333;
 }
 
-.agnostic-container-title_other span::after {
+.agnostic-container-title_other > div::after {
     content: ")";
 }
 
-.agnostic-container-title_other span::before {
+.agnostic-container-title_other > div::before {
     content: "(";
 }
 
@@ -106,27 +107,68 @@
 }
 
 .agnostic-container-main_other {
-    border: 1px solid pink;
 }
 
-.agnostic-container-definition span {
-    border: 1px solid grey;
+.agnostic-container-definition {
+    padding-top: 1px;
+}
+
+.agnostic-container-definition > div {
+    border-radius: 10px;
+    margin-bottom: 1px;
+    border: 1px solid darkgreen;
     display: block;
     padding-left: 3px;
     padding-right: 3px;
+    line-height: 1.2;
 }
 
-.agnostic-container-long_descriptions span {
+.agnostic-container-long_descriptions > div {
     border: 1px solid darkgreen;
+    border-radius: 10px;
+    padding: 4px;
+    line-height: 1.2;
     display: block;
 }
 
-.agnostic-container-examples span {
+.agnostic-container-examples {
+    margin-top: 1px;
     border: 1px solid brown;
+    padding-top: 1px;
+}
+.agnostic-container-examples > div {
+    border: 1px solid brown;
+    margin-bottom: 1px;
     display: block;
 }
 
-.agnostic-container-matched_examples span {
-    border: 1px solid brown;
+.agnostic-container-matched_examples {
+    padding-top: 1px;
+    display: flex;
+    flex-direction: column;
+}
+
+.agnostic-matched-group-container {
+    padding-top: 1px;
+    border: 1px solid grey;
+    display: flex;
+    margin-bottom: 1px;
+}
+
+.agnostic-matched-group-prefix {
+    display: inline-block;
+    vertical-align: top;
+    font-style: italic;
+    padding-right: 3px;
+    padding-left: 2px;
+}
+
+.agnostic-matched-group {
+    display: inline-block;
+}
+
+.agnostic-matched-group > div {
+    border: 1px solid grey;
     display: block;
+    margin-bottom: 1px;
 }

@@ -85,6 +85,7 @@ export class DBConfig {
                 name: rawFieldName,
                 fieldType: rawField.type,
                 delimiter: rawField.delimiter,
+                delimiterRegex: rawField.delimiterRegex,
                 dialect,
             }
         });
@@ -131,6 +132,7 @@ export interface FieldConfig {
     name: FieldName,
     fieldType: RawKnownDisplayTypeEntry | undefined,
     delimiter?: string,
+    delimiterRegex?: string,
 
     // NOTE: The array is so that fields containing multiple languages can be appropriately tagged
     dialect: Dialect | Dialect[] | undefined,

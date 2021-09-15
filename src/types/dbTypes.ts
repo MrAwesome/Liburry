@@ -114,6 +114,8 @@ export interface AnnotatedDisplayReadyFieldRaw extends DisplayReadyFieldRaw {
 }
 
 export class AnnotatedDisplayReadyField {
+    private delimiterRegex?: RegExp;
+
     constructor(
         private d: AnnotatedDisplayReadyFieldRaw,
         private dbIdentifier: DBIdentifier,
@@ -121,6 +123,11 @@ export class AnnotatedDisplayReadyField {
         this.hasValue = this.hasValue.bind(this);
         this.getDisplayValue = this.getDisplayValue.bind(this);
         this.getColumnName = this.getColumnName.bind(this);
+
+        const reggie = this.d.metadata?.delimiterRegex;
+        if (reggie !== undefined) {
+            this.delimiterRegex = new RegExp(reggie, "g");
+        }
     }
 
     hasValue(): boolean {
@@ -160,8 +167,10 @@ export class AnnotatedDisplayReadyField {
         return this.dbIdentifier;
     }
 
-    getDelimiter(): string | null {
-        return this.d.metadata?.delimiter ?? null;
+    getDelimiter(): RegExp | string | null {
+        return this.delimiterRegex ??
+            this.d.metadata?.delimiter ??
+            null;
     }
 }
 

@@ -211,6 +211,7 @@ mark {
 
 .hoabun {
     user-select: text;
+    display: inline-block;
 }
 
 .all-alt-text-container {
@@ -231,6 +232,7 @@ mark {
 .alt-text {
     user-select: text;
     text-align: right;
+    display: inline;
 }
 
 .definition-container {

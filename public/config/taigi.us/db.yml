@@ -437,19 +437,30 @@ ChhoeTaigi_KauiokpooTaigiSutian:
     KaisoehHanLoPoj:
       type:
         dictionary: definition
-      dialect: poj/taibun_poj/hoabun
+      dialect:
+        - poj
+        - taibun_poj
+        - hoabun
+      delimiterRegex: (?=[0-9]\.[【 ])
       lengthHint: very_long
 
     KaisoehHanLoKip:
       type:
         dictionary: definition
-      dialect: kip/taibun_kip/hoabun
+      dialect:
+        - kip
+        - taibun_kip
+        - hoabun
+      delimiterRegex: (?=[0-9]\.[【 ])
       lengthHint: very_long
 
     KipDictDialects:
       type:
         dictionary: vocab_other
-      dialect: kip/taibun_kip/hoabun
+      dialect:
+        - kip
+        - taibun_kip
+        - hoabun
       delimiter: "。"
       lengthHint: very_long
       status: sparse
@@ -709,6 +720,7 @@ ChhoeTaigi_TaijitToaSutian:
       type:
         dictionary: definition
       dialect: taibun_poj
+      delimiter: "。"
       lengthHint: long
       status: sparse
       notes: 806 missing this.
@@ -717,6 +729,7 @@ ChhoeTaigi_TaijitToaSutian:
       type:
         dictionary: example
       dialect: taibun_poj
+      delimiter: "。"
       lengthHint: long
       status: sparse
       notes: Delimiter possibly ";"
@@ -770,6 +783,7 @@ ChhoeTaigi_TaijitToaSutian:
       type:
         dictionary: definition
       dialect: taibun_kip
+      delimiter: "。"
       lengthHint: long
       status: sparse
       notes: 806 missing this.
@@ -778,6 +792,7 @@ ChhoeTaigi_TaijitToaSutian:
       type:
         dictionary: example
       dialect: taibun_kip
+      delimiter: "。"
       lengthHint: long
       status: sparse
 

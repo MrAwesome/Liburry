@@ -7,10 +7,10 @@ import {SearcherType} from "./search";
 
 import {DISPLAY_RESULTS_LIMIT} from "./searchSettings";
 import {PREPPED_KEY_SUFFIX} from "./search/FuzzySortSearcher";
-import {MATCH_HTML_TAG} from "./constants";
 import {DBIdentifier} from "./types/config";
 
 import xss from "xss";
+import {MATCH_END, MATCH_START} from "./constants";
 
 // TODO: find out why "      " matches "chúi-pho 波紋 水波" on the "l" in "ripples"
 
@@ -91,7 +91,7 @@ function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string): DisplayR
         if (matched) {
             // NOTE: this leaves behind "artifact" matches on fuzzyRes, which lives around
             //       after the search is over. To fix this, clear the score and index fields.
-            const highlighted = fuzzysort.highlight(fuzzyRes, `<${MATCH_HTML_TAG}>`, `</${MATCH_HTML_TAG}>`);
+            const highlighted = fuzzysort.highlight(fuzzyRes, MATCH_START, MATCH_END);
             if (highlighted !== null) {
                 // DOMPurify doesn't work in web workers:
                 //const clean = domPurify.sanitize(highlighted, {ALLOWED_TAGS: [MATCH_HTML_TAG]});
