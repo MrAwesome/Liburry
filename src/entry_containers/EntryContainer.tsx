@@ -194,14 +194,15 @@ export default class EntryContainer extends React.PureComponent<EntryContainerPr
         const pojUnicode = entry.getFieldByNameDEPRECATED("PojUnicode");
         const definition = entry.getFieldByNameDEPRECATED("EngBun");
         const hoabun = entry.getFieldByNameDEPRECATED("HoaBun");
-        const pojUnicodePossibleMatch = pojUnicode ? pojUnicode.getDisplayValue() : "";
-        const definitionPossibleMatch = definition ? definition.getDisplayValue() : "";
-        const hoabunPossibleMatch = hoabun ? hoabun.getDisplayValue() : "";
+        const pojUnicodePossibleMatch = pojUnicode?.getDisplayValue() ?? null;
+        const definitionPossibleMatch = definition?.getDisplayValue() ?? null;
+        const hoabunPossibleMatch = hoabun?.getDisplayValue() ?? null;
+
         const clicked = this.getClicked();
 
-        const poju = createMatchElement(pojUnicodePossibleMatch, "poj-unicode");
-        const hoab = createMatchElement(hoabunPossibleMatch, "hoabun");
-        const engl = createMatchElement(definitionPossibleMatch, "definition");
+        const poju = pojUnicodePossibleMatch !== null ? createMatchElement(pojUnicodePossibleMatch, "poj-unicode") : null;
+        const hoab = hoabunPossibleMatch !== null ? createMatchElement(hoabunPossibleMatch, "hoabun") : null;
+        const engl = definitionPossibleMatch !== null ? createMatchElement(definitionPossibleMatch, "definition") : null;
 
         return (
             // NOTE: the nbsp below is for copy-paste convenience if you want both hoabun and poj
