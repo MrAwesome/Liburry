@@ -63,7 +63,10 @@ export default class EntryContainer extends React.PureComponent<EntryContainerPr
 
         const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("PojUnicode");
         // TODO: wrap in a try/catch for situations where clipboard isn't accessible (http, etc)
-        navigator.clipboard.writeText(pojUnicode!.getOriginalValue());
+        if (pojUnicode) {
+            navigator.clipboard.writeText(pojUnicode.getOriginalValue());
+        }
+
         this.setState({clicked: ClickedOrder.CLICKED});
         setTimeout(this.fadeClicked, 500);
     }
@@ -99,7 +102,7 @@ export default class EntryContainer extends React.PureComponent<EntryContainerPr
 
         altTextFields.forEach((fieldName) => {
             const field = this.getEntry().getFieldByNameDEPRECATED(fieldName);
-            const inner = createMatchElement(field!.getDisplayValue(), "alt-text");
+            const inner = field !== null ? createMatchElement(field.getDisplayValue(), "alt-text") : null;
             const container = <div className="alt-text-container" key={fieldName}>
                 ({inner})
             </div>;
@@ -184,15 +187,16 @@ export default class EntryContainer extends React.PureComponent<EntryContainerPr
 
     render() {
         const {debug} = this.props;
-        const dbIdentifier = this.getEntry().getDBIdentifier();
+        const entry = this.getEntry();
+        const dbIdentifier = entry.getDBIdentifier();
         const dbName = dbIdentifier.replace(/^ChhoeTaigi_/, "");
 
-        const pojUnicode = this.getEntry().getFieldByNameDEPRECATED("PojUnicode");
-        const definition = this.getEntry().getFieldByNameDEPRECATED("EngBun");
-        const hoabun = this.getEntry().getFieldByNameDEPRECATED("HoaBun");
-        const pojUnicodePossibleMatch = pojUnicode!.getDisplayValue();
-        const definitionPossibleMatch = definition!.getDisplayValue();
-        const hoabunPossibleMatch = hoabun!.getDisplayValue();
+        const pojUnicode = entry.getFieldByNameDEPRECATED("PojUnicode");
+        const definition = entry.getFieldByNameDEPRECATED("EngBun");
+        const hoabun = entry.getFieldByNameDEPRECATED("HoaBun");
+        const pojUnicodePossibleMatch = pojUnicode ? pojUnicode.getDisplayValue() : "";
+        const definitionPossibleMatch = definition ? definition.getDisplayValue() : "";
+        const hoabunPossibleMatch = hoabun ? hoabun.getDisplayValue() : "";
         const clicked = this.getClicked();
 
         const poju = createMatchElement(pojUnicodePossibleMatch, "poj-unicode");

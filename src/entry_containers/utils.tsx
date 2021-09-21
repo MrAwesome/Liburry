@@ -2,13 +2,15 @@ export interface AreaNode<N, C> {
     isArea: true,
     name: N,
     contents: (C | AreaNode<N, C>)[],
+    displayName?: string,
 }
 
-export function area<N, C>(name: N, contents: (C | AreaNode<N, C>)[]): AreaNode<N, C> {
+export function area<N, C>(name: N, contents: (C | AreaNode<N, C>)[], displayName?: string): AreaNode<N, C> {
     return {
         isArea: true,
         name,
         contents,
+        displayName,
     };
 }
 
@@ -59,6 +61,7 @@ export class LocationTreeHandler<DA extends string, FT extends string, TreeElem>
     private generateEmptyTreeHelper(parentArea: AreaNode<DA, FT>): AreaNode<DA, TreeElem[]> {
         const oldName = parentArea.name;
         const oldContents = parentArea.contents;
+
         const newContents = oldContents.map((entry) => {
             if ((entry as AreaNode<DA, FT>).isArea === true) {
                 const newArea = entry as AreaNode<DA, FT>;
@@ -67,7 +70,7 @@ export class LocationTreeHandler<DA extends string, FT extends string, TreeElem>
                 return [] as TreeElem[];
             }
         });
-        return area(oldName, newContents);
+        return area(oldName, newContents, parentArea.displayName);
     }
 
     private getLocations(fieldType: FT): TreeLocationIndex[] | null {
@@ -103,11 +106,11 @@ export class LocationTreeHandler<DA extends string, FT extends string, TreeElem>
         }
     }
 
-    private getAsNestedDivsHelper(parentArea: AreaNode<DA, TreeElem[]>): [JSX.Element | null, number] {
+    private getAsNestedDivsHelper(parentArea: AreaNode<DA, TreeElem[]>, debug: boolean): [JSX.Element | null, number] {
         const jsxContentsAndSum = parentArea.contents.map((item) => {
             if ((item as AreaNode<DA, TreeElem[]>).isArea === true) {
                 const newArea = item as AreaNode<DA, TreeElem[]>;
-                return this.getAsNestedDivsHelper(newArea);
+                return this.getAsNestedDivsHelper(newArea, debug);
             } else {
                 const elemList = item as TreeElem[];
                 const jsxList = elemList.map((elem) => <>{elem}</>);
@@ -121,14 +124,20 @@ export class LocationTreeHandler<DA extends string, FT extends string, TreeElem>
         if (totalCount > 0) {
             const cssName = parentArea.name;
             const jsxContents = jsxContentsAndSum.map(([j, _]) => j);
+            if (debug) {
+                jsxContents.unshift(<span className={"dbg-area-info"}>{parentArea.name}</span>);
+            }
+
+            jsxContents.unshift(<span className={"area-title-"+parentArea.name}>{parentArea.displayName}</span>);
+
             return [<div className={this.cssPrefix + "-" + cssName} key={cssName as string}>{jsxContents}</div>, totalCount];
         } else {
             return [null, 0];
         }
     }
 
-    getAsNestedDivs(areaNode: AreaNode<DA, TreeElem[]>): JSX.Element {
-        return this.getAsNestedDivsHelper(areaNode)[0] ?? <></>;
+    getAsNestedDivs(areaNode: AreaNode<DA, TreeElem[]>, debug: boolean): JSX.Element {
+        return this.getAsNestedDivsHelper(areaNode, debug)[0] ?? <></>;
     }
 
     private getAsRawArraysHelper(parentArea: AreaNode<DA, TreeElem[]>): RecursiveTreeArrayOnly<TreeElem[]> {

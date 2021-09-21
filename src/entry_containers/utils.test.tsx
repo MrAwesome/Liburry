@@ -75,7 +75,7 @@ test('test divs mode', () => {
     treeHandler.insertInto(tree, "title", "ANOTHER_FAKE_TITLE");
     treeHandler.insertInto(tree, "description", "FAKE_DESCRIPTION");
     treeHandler.insertInto(tree, "extra_info", "FAKE_EXTRA_INFO_SON");
-    const div = treeHandler.getAsNestedDivs(tree);
+    const div = treeHandler.getAsNestedDivs(tree, false);
     expect(div.props["className"]).toBe("FAKE-top");
-    expect(div.props["children"][0].props["className"]).toBe("FAKE-0");
+    expect(div.props["children"][1].props["className"]).toBe("FAKE-0");
 });

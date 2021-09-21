@@ -22,8 +22,8 @@ import {SearchContext} from "./SearchValidityManager";
 
 // TODO(CRITICAL): handle changes in csv versions!
 // TODO(urgent): see if poj_normalized can be committed upstream
+// TODO(urgent): error messages for if offline and no cache
 // TODO(urgent): change server script to also generate normalized_other
-// TODO(urgent): import all DBs from chhoetaigidatabase, halve the dbs that are larger than 9-10M, and create logic for recombining them
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.scripts.js && node build/server.js` - let different parts of the build process be run separately, and standardize/document what is run
 // TODO(high): have loading bar float with the searchbar (will need a padding element which disappears at the same speed)
 // TODO(high): don't require a double-back right after submit

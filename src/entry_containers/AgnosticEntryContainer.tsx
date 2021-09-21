@@ -34,6 +34,9 @@ type AECDisplayArea =
     "vocab_metadata" |
     "debug_metadata";
 
+
+// TODO: more generic way of representing titles, and more language-agnostic way of displaying titles.
+//       both can and probably should should live in yaml configs
 const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDisplayType> = area("container", [
     // TODO: only display in debug mode
     //area("debugbox", [
@@ -46,9 +49,9 @@ const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDispla
         area("title_other", ["vocab_other"]),
         area("definition", ["definition"]),
         area("main_other", [
-            area("long_descriptions", ["explanation"]),
-            area("examples", ["example", "example_phrase"]),
-            area("matched_examples", ["matched_example"]),
+            area("long_descriptions", ["explanation"], "Explanations / Kái-Soeh / 解說"),
+            area("examples", ["example", "example_phrase"], "Examples / Lē-Kù / 例句"),
+            area("matched_examples", ["matched_example"], "Matched Examples / Sì-Thīn Lē-Kù / 四伨例句"),
         ]),
         //area("vocab_metadata", ["pos_classification"]),
     ]),
@@ -59,6 +62,7 @@ const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDispla
 
 // TODO: when pulling in from config file, only include matching display rules
 // TODO: instead, field to display *rule*?
+// TODO: decide how to display the name of a field, and any information about it
 
 export default class AgnosticEntryContainer
     extends React.PureComponent<AECProps, {}>
@@ -84,17 +88,19 @@ export default class AgnosticEntryContainer
         entry.getFields().forEach((field) => {
             const maybeDialect = field.getDialect();
             if (maybeDialect !== null) {
+                    // XXX TODO: use actual dialects from chosen options. this is a temporary restraining order against KIP.
+                    // note KaisoehHanLoKip - it seems like you may need a "primary vocabulary" to be able to differentiate between various forms?
+                    // XXX TODO: decide if "KipDictDialects" is worth the trouble (some "ignore dialects" override field?)
                 if ((maybeDialect as string).trimEnd !== undefined) {
                     const singleDialect = maybeDialect as string;
-                    // XXX TODO: use actual dialects from chosen options. this is a temporary restraining order against KIP.
                     if (singleDialect.match(/kip/)) {
                         return;
                     }
                 } else if ((maybeDialect as string[]).flatMap !== undefined) {
                     const dialects = maybeDialect as string[];
-                    //if (dialects.some(d => d.match(/kip/))) {
-                    //    return;
-                    //}
+                    if (dialects.some(d => d.match(/kip/))) {
+                        return;
+                    }
                 }
                 //if dialect?.contains("kip")
 
@@ -114,7 +120,7 @@ export default class AgnosticEntryContainer
                     // TODO: handle match elements that are delimited
                     const subvals = displayValue.split(delim).filter(x => x);
                     const elems = subvals.map((subval, i) => {
-                        const val = makeElem(field, className, subval);
+                        const val = makeElem(this.props.debug, field, className, subval);
                         if (fieldType === "matched_example") {
                             if (matchGroups[i] === undefined) {
                                 matchGroups[i] = [];
@@ -126,7 +132,7 @@ export default class AgnosticEntryContainer
                     });
                     element = <>{elems}</>;
                 } else {
-                    element = makeElem(field, className, displayValue);
+                    element = makeElem(this.props.debug, field, className, displayValue);
                 }
 
                 const areas = treeHandler.getAreas(fieldType);
@@ -141,16 +147,15 @@ export default class AgnosticEntryContainer
 
         if (matchGroups.length > 0) {
             matchGroups.forEach((matchGroup, i) => {
-                const prefix = (matchGroups.length > 1) ?
-                    <div className="agnostic-matched-group-prefix">{i}.</div> :
-                    null;
-                const matchGroupContainer = <div className="agnostic-matched-group-container">
-                    {prefix}
-                    <div className="agnostic-matched-group">{matchGroup}</div>
-                </div>;
-                // NOTE: you can insert a container around x to have each match group display as a group
+                const prefix = !(matchGroups.length > 1) ? null :
+                    <div className="agnostic-matched-group-prefix">{i}.</div>;
+                const matchGroupContainer =
+                    <div className="agnostic-matched-group-container">
+                        {prefix}
+                        <div className="agnostic-matched-group">{matchGroup}</div>
+                    </div>;
                 treeHandler.insertInto(tree, "matched_example", matchGroupContainer)
-                }
+            }
             );
         }
 
@@ -159,15 +164,27 @@ export default class AgnosticEntryContainer
         const dbName = TEMPdbid.replace(/^ChhoeTaigi_/, "");
         treeHandler.insertInto(tree, "dbname", <div className="dbname-element">{dbName}</div>);
 
-        return treeHandler.getAsNestedDivs(tree);
+        return treeHandler.getAsNestedDivs(tree, this.props.debug);
     }
 }
 
-function makeElem(field: AnnotatedDisplayReadyField, className: string, text: string): JSX.Element {
+function makeElem(debug: boolean, field: AnnotatedDisplayReadyField, className: string, text: string): JSX.Element {
     // TODO: handle matching on delimited elements
+    let out: JSX.Element;
     if (field.wasMatched()) {
-        return createMatchElement(text, className);
+        out = createMatchElement(text, className);
     } else {
-        return <div className={className}>{text}</div>;
+        out = <div className={className}>{text}</div>;
     }
+
+    let dbg: JSX.Element | null = null;
+    if (debug) {
+        const dbgOut = `[${field.getColumnName()}-${field.getDialect()}]`;
+        dbg = <span className="dbg-field-info">{dbgOut}</span>
+    }
+
+    return <>
+        {dbg}
+        {out}
+    </>
 }

@@ -229,8 +229,9 @@ export class AnnotatedSearchResultEntry {
         return this.e.dbSearchRanking;
     }
 
+    // Note that this only returns fields with valid values
     getFields(): AnnotatedDisplayReadyField[] {
-        return this.fields;
+        return this.fields.filter(f => f.hasValue());
     }
 }
 
