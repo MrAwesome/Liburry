@@ -109,18 +109,17 @@ export default class AgnosticEntryContainer
             if (field.hasValue() && maybeFieldType !== null) {
                 const fieldType = maybeFieldType as RawDictionaryFieldDisplayType;
                 const displayValue = field.getDisplayValue();
-                const className = fieldType + "-element";
 
                 // TODO: handle delimiters. can fuzzy search lists? should split only be here? that does not work well with </mark>...
-                // TODO: XXX: find solution for matches
                 const delim = field.getDelimiter();
 
                 let element: JSX.Element;
-                if (delim) {
-                    // TODO: handle match elements that are delimited
+                if (!delim) {
+                    element = makeElem(this.props.debug, field, fieldType, displayValue);
+                } else {
                     const subvals = displayValue.split(delim).filter(x => x);
                     const elems = subvals.map((subval, i) => {
-                        const val = makeElem(this.props.debug, field, className, subval);
+                        const val = makeElem(this.props.debug, field, fieldType, subval, i.toString());
                         if (fieldType === "matched_example") {
                             if (matchGroups[i] === undefined) {
                                 matchGroups[i] = [];
@@ -129,15 +128,13 @@ export default class AgnosticEntryContainer
                             return null;
                         }
                         return val;
-                    });
-                    element = <>{elems}</>;
-                } else {
-                    element = makeElem(this.props.debug, field, className, displayValue);
+                    }).filter(x => x !== null);
+                    element = <React.Fragment key={fieldType + "-split-items"}>{elems}</React.Fragment>;
                 }
 
-                const areas = treeHandler.getAreas(fieldType);
+                //const areas = treeHandler.getAreas(fieldType);
 
-                // TODO: how can you add onclick/etc for the elements you create here?
+                // TODO: how can you add onclick/etc for the elements you create here? (just create React elements and insert them)
                 // TODO: can you have items inserted ["where", "they", "are", "in", "list"]
 
                 treeHandler.insertInto(tree, fieldType, element);
@@ -148,11 +145,11 @@ export default class AgnosticEntryContainer
         if (matchGroups.length > 0) {
             matchGroups.forEach((matchGroup, i) => {
                 const prefix = !(matchGroups.length > 1) ? null :
-                    <div className="agnostic-matched-group-prefix">{i}.</div>;
+                    <div className="agnostic-matched-group-prefix" key="matched-group-prefix">{i}.</div>;
                 const matchGroupContainer =
-                    <div className="agnostic-matched-group-container">
+                    <div className="agnostic-matched-group-container" key="matched-group-container">
                         {prefix}
-                        <div className="agnostic-matched-group">{matchGroup}</div>
+                        <div className="agnostic-matched-group" key="matched-group">{matchGroup}</div>
                     </div>;
                 treeHandler.insertInto(tree, "matched_example", matchGroupContainer)
             }
@@ -168,23 +165,24 @@ export default class AgnosticEntryContainer
     }
 }
 
-function makeElem(debug: boolean, field: AnnotatedDisplayReadyField, className: string, text: string): JSX.Element {
+function makeElem(debug: boolean, field: AnnotatedDisplayReadyField, fieldType: string, text: string, keyHelper?: string): JSX.Element {
     // TODO: handle matching on delimited elements
-    let out: JSX.Element;
-    if (field.wasMatched()) {
-        out = createMatchElement(text, className);
-    } else {
-        out = <div className={className}>{text}</div>;
+    const className = fieldType + "-element";
+    let key = `${field.getColumnName()}-${field.getDialect()}`;
+    if (keyHelper) {
+       key = `${key}-${keyHelper}`;
     }
 
-    let dbg: JSX.Element | null = null;
-    if (debug) {
-        const dbgOut = `[${field.getColumnName()}-${field.getDialect()}]`;
-        dbg = <span className="dbg-field-info">{dbgOut}</span>
-    }
+    const out = field.wasMatched()
+        ? createMatchElement(text, className, key)
+        : <div className={className} key={key}>{text}</div>;
 
-    return <>
+    const dbg = debug
+        ? <span className="dbg-field-info" key={"header-"+key}>[{key}]</span>
+        : null;
+
+    return <React.Fragment key={key}>
         {dbg}
         {out}
-    </>
+    </React.Fragment>
 }

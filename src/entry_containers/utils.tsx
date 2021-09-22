@@ -1,3 +1,5 @@
+import * as React from "react";
+
 export interface AreaNode<N, C> {
     isArea: true,
     name: N,
@@ -113,7 +115,8 @@ export class LocationTreeHandler<DA extends string, FT extends string, TreeElem>
                 return this.getAsNestedDivsHelper(newArea, debug);
             } else {
                 const elemList = item as TreeElem[];
-                const jsxList = elemList.map((elem) => <>{elem}</>);
+                // NOTE: using key=i here is probably the incorrect option?
+                const jsxList = elemList.map((elem, i) => <React.Fragment key={i}>{elem}</React.Fragment>);
                 return [jsxList, elemList.length] as [JSX.Element[], number];
             }
         });
@@ -125,10 +128,12 @@ export class LocationTreeHandler<DA extends string, FT extends string, TreeElem>
             const cssName = parentArea.name;
             const jsxContents = jsxContentsAndSum.map(([j, _]) => j);
             if (debug) {
-                jsxContents.unshift(<span className={"dbg-area-info"}>{parentArea.name}</span>);
+                jsxContents.unshift(<span className={"dbg-area-info"} key="dbg-area-info">{parentArea.name}</span>);
             }
 
-            jsxContents.unshift(<span className={"area-title-"+parentArea.name}>{parentArea.displayName}</span>);
+            if (parentArea.displayName !== undefined) {
+                jsxContents.unshift(<span className={"area-title-"+parentArea.name} key="area-title">{parentArea.displayName}</span>);
+            }
 
             return [<div className={this.cssPrefix + "-" + cssName} key={cssName as string}>{jsxContents}</div>, totalCount];
         } else {
@@ -137,7 +142,7 @@ export class LocationTreeHandler<DA extends string, FT extends string, TreeElem>
     }
 
     getAsNestedDivs(areaNode: AreaNode<DA, TreeElem[]>, debug: boolean): JSX.Element {
-        return this.getAsNestedDivsHelper(areaNode, debug)[0] ?? <></>;
+        return this.getAsNestedDivsHelper(areaNode, debug)[0] ?? <React.Fragment key="root-empty"></React.Fragment>;
     }
 
     private getAsRawArraysHelper(parentArea: AreaNode<DA, TreeElem[]>): RecursiveTreeArrayOnly<TreeElem[]> {
