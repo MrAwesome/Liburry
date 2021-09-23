@@ -27,6 +27,7 @@ import {SearchContext} from "./SearchValidityManager";
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.scripts.js && node build/server.js` - let different parts of the build process be run separately, and standardize/document what is run
 // TODO(high): have loading bar float with the searchbar (will need a padding element which disappears at the same speed)
 // TODO(high): don't require a double-back right after submit
+// TODO(high): include link to: https://www.zeczec.com/projects/taibun-kesimi / https://www.zeczec.com/projects/taibun-kesimi/orders/back_project#_=_
 // TODO(high): handle "-", "?", etc entries in KamJitian
 // TODO(high): look into strange behavior of fuzzysort mark generation (did it work before and broke recently, or was it always broken? - try "alexander")
 // TODO(high): different debug levels, possibly use an upstream lib for logging
@@ -46,6 +47,7 @@ import {SearchContext} from "./SearchValidityManager";
 // TODO(high): chase down error causing duplicate search entries
 // TODO(high): create side box for dbname/alttext/etc, differentiate it with vertical line?
 // TODO(high): better styling, fewer borders
+// TODO(high): "click to update" PWA link (see WhatsApp)
 // TODO(high): fix integration tests: https://stackoverflow.com/questions/42567535/resolving-imports-using-webpacks-worker-loader-in-jest-tests
 // TODO(high): decide how to handle hoabun vs taibun, settings for display
 // TODO(high): show/search typing input
@@ -105,6 +107,7 @@ import {SearchContext} from "./SearchValidityManager";
 // TODO(low): have display results limit be part of options, and pass it around for use where it's needed
 // TODO(low): take a nap
 // TODO(wishlist): "add to desktop" shortcut
+// TODO(wishlist): google translate link
 // TODO(wishlist): non-javascript support?
 // TODO(wishlist): dark and light themes
 // TODO(wishlist): engaging buttons - random words, random search, etc
