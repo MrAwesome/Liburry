@@ -19,6 +19,7 @@ type AECDisplayArea =
     "container" |
     "debugbox" |
     "mainbox" |
+    "titlebox" |
     "rightbox" |
     "title" |
     "title_other" |
@@ -45,8 +46,11 @@ const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDispla
     //]),
     area("mainbox", [
         //area("title_prefix", ["measure_word"]),
-        area("title", ["vocab"]),
-        area("title_other", ["vocab_other"]),
+        area("titlebox", [
+            area("title", ["vocab"]),
+            area("title_other", ["vocab_other"]),
+            area("title_alternate", ["input", "normalized", "input_other", "normalized_other"]),
+        ]),
         area("definition", ["definition"]),
         area("main_other", [
             area("long_descriptions", ["explanation"], "Explanations / Kái-Soeh / 解說"),
@@ -55,9 +59,8 @@ const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDispla
         ]),
         //area("vocab_metadata", ["pos_classification"]),
     ]),
-    area("rightbox", [
-        area("title_alternate", ["input", "normalized", "input_other", "normalized_other"]),
-    ]),
+    //area("rightbox", [
+    //]),
 ]);
 
 // TODO: when pulling in from config file, only include matching display rules
@@ -108,6 +111,18 @@ export default class AgnosticEntryContainer
             const maybeFieldType = field.getDataTypeForDisplayType("dictionary");
             if (field.hasValue() && maybeFieldType !== null) {
                 const fieldType = maybeFieldType as RawDictionaryFieldDisplayType;
+
+                const areas = treeHandler.getAreas(fieldType);
+
+                // Don't include alt-text if it wasn't matched.
+                // NOTE: if alt-text would be displayed elsewhere, this will need to be
+                //       tweaked to allow it to appear there but not in title_alternate
+                if (areas?.includes("title_alternate")) {
+                   if (!field.wasMatched()) {
+                       return;
+                   }
+                }
+
                 const displayValue = field.getDisplayValue();
 
                 // TODO: handle delimiters. can fuzzy search lists? should split only be here? that does not work well with </mark>...
@@ -117,7 +132,7 @@ export default class AgnosticEntryContainer
                 if (!delim) {
                     element = makeElem(this.props.debug, field, fieldType, displayValue);
                 } else {
-                    const subvals = displayValue.split(delim).filter(x => x);
+                    const subvals = displayValue.split(delim).filter(x => x).map(x => x.trim());
                     const elems = subvals.map((subval, i) => {
                         const val = makeElem(this.props.debug, field, fieldType, subval, i.toString());
                         if (fieldType === "matched_example") {
@@ -132,7 +147,6 @@ export default class AgnosticEntryContainer
                     element = <React.Fragment key={fieldType + "-split-items"}>{elems}</React.Fragment>;
                 }
 
-                //const areas = treeHandler.getAreas(fieldType);
 
                 // TODO: how can you add onclick/etc for the elements you create here? (just create React elements and insert them)
                 // TODO: can you have items inserted ["where", "they", "are", "in", "list"]

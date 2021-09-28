@@ -5,6 +5,9 @@
 :root {
     --agnostic-title-border: #fff1e5;
     --agnostic-definition-border: #66605c;
+    --light-border-inner: #BBBBBB;
+    --dark-border-inner: #444444;
+    --font-size-definition: 14px;
 }
 
 .dbg-field-info, .dbg-area-info {
@@ -25,8 +28,7 @@
 .agnostic-container-container {
     border: 1px solid black;
     border-radius: 15px;
-    padding: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
     background: white;
 
     width: 100%;
@@ -45,7 +47,6 @@
 
 .agnostic-container-mainbox {
     flex-grow: 1;
-    padding: 2px;
 }
 
 .agnostic-container-debugbox {
@@ -57,48 +58,34 @@
 }
 
 .agnostic-container-rightbox {
+    padding: 2px 5px 2px 2px;
     max-width: 15%;
+    border-left: 1px solid var(--light-border-inner);
 }
 
 .agnostic-container-title, .agnostic-container-title_other {
     font-weight: 600;
 }
 
-.agnostic-container-title_alternate {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    text-align: right;
-}
-
-.agnostic-container-title_alternate > div {
-    font-size: 8px;
-    color: #444444;
-}
-
-.agnostic-container-title_alternate > div::before {
-    content: "(";
-}
-.agnostic-container-title_alternate > div::after {
-    content: ")";
+.agnostic-container-titlebox {
+    display: inline-flex;
+    width: 100%;
+    padding: 3px 3px 1px 2px;
 }
 
 .agnostic-container-title {
-    display: inline-block;
-    padding-bottom: 2px;
+    display: inline-flex;
+    gap: 1px;
 /*    display: inline-flex;*/
 /*    flex-wrap: wrap;*/
 /*    gap: 6px;*/
-    border-radius: 10px;
 }
 
 .agnostic-container-title div {
     display: inline-block;
-    padding-left: 2px;
-    padding-right: 2px;
-    padding: 2px;
-    border: 1px solid #444444;
+    border: 1px solid var(--dark-border-inner);
     border-radius: 10px;
+    padding: 0px 4px 2px 4px;
 }
 
 .agnostic-container-title_other {
@@ -125,35 +112,69 @@
     display: inline-block;
 }
 
+.agnostic-container-title_alternate {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
+.agnostic-container-title_alternate > div {
+    font-size: 6px;
+    color: #777777;
+}
+
+.agnostic-container-title_alternate > div::before {
+    content: "(";
+}
+.agnostic-container-title_alternate > div::after {
+    content: ")";
+}
+
+
 .agnostic-container-dbname {
     font-size: 8px;
 }
 
 .agnostic-container-main_other {
+    border-top: 1px solid var(--light-border-inner);
+    padding: 0px 2px 5px 5px;
 }
 
 .agnostic-container-definition {
-    padding-top: 1px;
+    text-indent: 10px;
+    font-size: var(--font-size-definition);
 }
 
 .agnostic-container-definition > div {
-    border-radius: 10px;
-    margin-bottom: 1px;
-    margin-left: 5px;
-    border: 1px solid #444444;
+    border-bottom: 1px solid var(--light-border-inner);
     display: block;
-    padding-left: 3px;
+    min-width: 40%;
+    padding-left: 7px;
     padding-right: 3px;
+    padding-bottom: 1px;
 /*    line-height: 1.2;*/
+}
+
+
+/* TODO: XXX:  instead of > div, create named sub-elements per area */
+
+.agnostic-container-definition > div:first-of-type {
+    border-top: 1px solid var(--light-border-inner);
+}
+
+.agnostic-container-definition > div:last-of-type {
+    border-bottom: 0px;
 }
 
 .agnostic-container-long_descriptions > div {
     margin-left: 10px;
-    border: 1px solid #444444;
+    border: 1px solid var(--dark-border-inner);
     border-radius: 10px;
     padding: 4px;
 /*    line-height: 1.2;*/
     display: block;
+    font-size: var(--font-size-definition);
 }
 
 .agnostic-container-examples {
@@ -165,8 +186,9 @@
     margin-bottom: 1px;
     margin-left: 10px;
     padding-left: 4px;
-    border: 1px solid #444444;
+    border: 1px solid var(--dark-border-inner);
     border-radius: 10px;
+    font-size: var(--font-size-definition);
 }
 
 .agnostic-container-examples > div:last-of-type {
@@ -177,6 +199,7 @@
     padding-top: 1px;
     display: flex;
     flex-direction: column;
+    font-size: var(--font-size-definition);
 }
 
 .agnostic-matched-group-container {
@@ -214,6 +237,6 @@
 }
 
 .area-title-long_descriptions, .area-title-examples, .area-title-matched_examples {
-    font-size: 12px;
+    font-size: 10px;
     color: #222222;
 }
