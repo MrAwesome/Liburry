@@ -23,25 +23,22 @@ import {SearchContext} from "./SearchValidityManager";
 // TODO(CRITICAL): handle changes in csv versions!
 // TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): error messages for if offline and no cache
+// TODO(urgent): handle/log errors from: https://blog.logrocket.com/error-handling-react-error-boundary/
 // TODO(urgent): change server script to also generate normalized_other
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.scripts.js && node build/server.js` - let different parts of the build process be run separately, and standardize/document what is run
 // TODO(high): have loading bar float with the searchbar (will need a padding element which disappears at the same speed)
 // TODO(high): don't require a double-back right after submit
-// TODO(high): handle "-", "?", etc entries in KamJitian
+// TODO(high): handle "-", "?", etc entries in KamJitian (make blankOutFieldsMatching)
 // TODO(high): look into strange behavior of fuzzysort mark generation (did it work before and broke recently, or was it always broken? - try "alexander")
 // TODO(high): different debug levels, possibly use an upstream lib for logging
-// TODO(high): remember to handle "unknown" field type (and anything else) in display rules
 // TODO(high): always change url to be unicoded, so e.g. google meet won't butcher https://taigi.us/#mode=SEARCH;q=chhù-chú
 // TODO(high): 404 page, better support for 404s on json/csv
-// TODO(high): more evenly split the work between large/small databases, and possibly return results immediately and batch renders
 // TODO(high): spyon test that console.log isn't called in an integration test
 // TODO(high): search without diacritics, spaces, or hyphens, then remove duplicates?
-// TODO(high): test performance of compressing/decompressing json/csv files
-// TODO(high): fix link preview on LINE
 // TODO(high): more evenly spread work among the workers (giku is much smaller than mk, etc)
 //             have generated CSVs include the dbname for each entry? or set it when pulling in from papaparse?
-// TODO(high): give some visual indication that DBs are loading, even in search mode
-// TODO(high): implement select bar (note the way it squishes on very narrow screen - create space under it?)
+// TODO(high): more evenly split the work between large/small databases, and possibly return results immediately and batch renders
+// TODO(high): implement select bar
 // TODO(high): debug and address firefox flash of blankness during font load
 // TODO(high): chase down error causing duplicate search entries
 // TODO(high): create side box for dbname/alttext/etc, differentiate it with vertical line?
