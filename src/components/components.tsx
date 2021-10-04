@@ -2,8 +2,8 @@ import * as React from "react";
 import {MainDisplayAreaMode} from "../types/displayTypes";
 import QueryStringHandler from "../QueryStringHandler";
 import {REPO_LINK} from "../constants";
-import {DBIdentifier} from "../types/config";
 import {isMobileDevice} from "../utils";
+import {LoadedDBsMap} from "../ChhaTaigi";
 
 interface SearchBarProps {
     searchQuery(query: string): void;
@@ -70,16 +70,16 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
     }
 }
 
-export function DebugArea({loadedDBs}: {loadedDBs: Map<DBIdentifier, boolean>}) {
+export function DebugArea({loadedDBs}: {loadedDBs: LoadedDBsMap}) {
     return <div className="debug-area">
         <DBLoadedState loadedDBs={loadedDBs} />
     </div>
 }
 
-function DBLoadedState({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
+function DBLoadedState({loadedDBs}: {loadedDBs: LoadedDBsMap}) {
     let states: JSX.Element[] = [];
     loadedDBs.forEach((db, dbIdentifier) => {
-        const isLoaded = (db === null) || (db === false);
+        const isLoaded = (db === null) || (db.isLoaded === false);
         const loadedString = isLoaded ? "⌛" : "✅";
         const borderStyleColor = isLoaded ? "red" : "green";
         const backgroundColor = isLoaded ? "pink" : "white";

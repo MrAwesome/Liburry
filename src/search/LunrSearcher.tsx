@@ -9,6 +9,7 @@ import {vanillaDBEntryToResult} from "./utils";
 
 import lunr from "lunr";
 import {DBConfig, DBIdentifier} from "../types/config";
+import {DBLoadStatus} from "../ChhaTaigi";
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
 
@@ -30,6 +31,7 @@ export class LunrPreparer implements SearcherPreparer {
 
     constructor(
         private dbConfig: DBConfig,
+        private sendLoadStateUpdate: (stateDelta: Partial<DBLoadStatus>) => void,
         private debug: boolean,
     ) {
         this.console = getDebugConsole(debug);
@@ -73,6 +75,9 @@ export class LunrPreparer implements SearcherPreparer {
         //}
         const indexFetchAndLoad = fetch(localLunr + versionString)
             .then((response: Response) => {
+                // NOTE: just sending status updates from here, since the indices are *MUCH* larger than the CSVs
+                //       if desired, isDownloaded etc can become e.g. downloadProgress
+                this.sendLoadStateUpdate({isDownloaded: true});
                 return response.text();
             })
             .then((text: string) => {
@@ -87,6 +92,7 @@ export class LunrPreparer implements SearcherPreparer {
                 const idx = lunr.Index.load(obj);
                 this.console.timeEnd("lunr-index-load-" + dbIdentifier);
                 this.console.timeEnd("lunr-total-index-" + dbIdentifier);
+                this.sendLoadStateUpdate({isParsed: true});
                 return idx;
             });
 

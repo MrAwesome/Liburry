@@ -14,8 +14,11 @@ export class ProgressHandler {
     numConfigsLoaded = 0;
 
     configProgress = 0;
+    dbDownloadProgress = 0;
+    dbParsedProgress = 0;
     dbLoadProgress = 0;
     searchProgress = 0;
+
     configShouldShow = true;
     dbLoadShouldShow = true;
     searchShouldShow = false;
@@ -51,6 +54,14 @@ export class ProgressHandler {
                 elementID="chhaConfigBar" />
             <ProgressBar
                 shouldShow={this.dbLoadShouldShow}
+                percentProgress={this.dbDownloadProgress}
+                elementID="chhaDBDownloadBar" />
+            <ProgressBar
+                shouldShow={this.dbLoadShouldShow}
+                percentProgress={this.dbParsedProgress}
+                elementID="chhaDBParsedBar" />
+            <ProgressBar
+                shouldShow={this.dbLoadShouldShow}
                 percentProgress={this.dbLoadProgress}
                 elementID="chhaDBLoadBar" />
             <ProgressBar
@@ -73,23 +84,39 @@ export class ProgressHandler {
         }
     }
 
+    // NOTE: this should be generalized (each DB having its own display area?) such that
+    //       new display events don't need code changes here
     updateDisplayForDBLoadEvent(loadedDBs: LoadedDBsMap) {
+        let numDownloaded = 0;
+        let numParsed = 0;
         let numLoaded = 0;
-        let numTotal = 0;
+
+        let numDBs = 0;
 
         // If you really want to nitpick CPU cycles, this can be stored on LoadedDBsMap
-        loadedDBs.forEach((isLoaded, _name) => {
-            numTotal += 1;
+        loadedDBs.forEach(({isDownloaded, isParsed, isLoaded}, _name) => {
+            numDBs += 1;
+            if (isDownloaded) {
+                numDownloaded += 1;
+            }
+            if (isParsed) {
+                numParsed += 1;
+            }
             if (isLoaded) {
                 numLoaded += 1;
             }
         });
 
-        const percent = (numLoaded / numTotal) || 0;
-        this.dbLoadProgress = percent;
+        const percentDownloaded = (numDownloaded / numDBs) || 0;
+        const percentParsed = (numParsed / numDBs) || 0;
+        const percentLoaded = (numLoaded / numDBs) || 0;
+
+        this.dbDownloadProgress = percentDownloaded;
+        this.dbParsedProgress = percentParsed;
+        this.dbLoadProgress = percentLoaded;
         this.updateDisplay();
 
-        if (numTotal <= 0 || percent >= 1) {
+        if (numDBs <= 0 || percentLoaded >= 1) {
             setTimeout(() => {
                 this.dbLoadShouldShow = false;
                 this.updateDisplay();

@@ -5,7 +5,7 @@ import SearchWorkerManager from "./SearchWorkerManager";
 import SearchValidityManager, {SearchContext} from "./SearchValidityManager";
 import {AnnotatedPerDictResults, annotateRawResults, PerDictResultsRaw} from "./types/dbTypes";
 import {SearcherType} from "./search";
-import {GetMainState, LoadedDBsMap, SetMainState} from "./ChhaTaigi";
+import {DBLoadStatus, GetMainState, LoadedDBsMap, SetMainState} from "./ChhaTaigi";
 import {AppConfig, DBIdentifier} from "./types/config";
 
 // TODO: write tests for this, which ensure the correct messages are sent and callbacks are called
@@ -32,7 +32,7 @@ export default class SearchController {
 
         // Callbacks for the search controller to use to communicate changes back to the main component.
         this.addResultsCallback = this.addResultsCallback.bind(this);
-        this.addDBLoadedCallback = this.addDBLoadedCallback.bind(this);
+        this.dbLoadStateUpdateCallback = this.dbLoadStateUpdateCallback.bind(this);
         this.getCurrentQueryCallback = this.getCurrentQueryCallback.bind(this);
         this.checkIfAllDBLoadedCallback = this.checkIfAllDBLoadedCallback.bind(this);
         this.clearResultsCallback = this.clearResultsCallback.bind(this);
@@ -52,9 +52,10 @@ export default class SearchController {
         this.setStateTyped((state) => state.resultsHolder.addResults(results));
     }
 
-    async addDBLoadedCallback(dbIdentifier: DBIdentifier) {
+    async dbLoadStateUpdateCallback(dbIdentifier: DBIdentifier, stateDelta: Partial<DBLoadStatus>) {
+        console.log("Update detected!", stateDelta);
         this.setStateTyped((state) => {
-            state.loadedDBs.set(dbIdentifier, true);
+            state.loadedDBs.setLoadState(dbIdentifier, stateDelta);
             this.updateDisplayForDBLoadEvent?.(state.loadedDBs);
         });
     }
@@ -143,27 +144,31 @@ export default class SearchController {
                 }
             }
                 break;
-            case SearchWorkerResponseType.DB_LOAD_SUCCESS: {
-                const {dbIdentifier} = message.payload;
+            case SearchWorkerResponseType.DB_LOAD_STATUS_UPDATE: {
+                const {dbIdentifier, stateDelta} = message.payload;
                 this.console.time("dbLoadRender-" + dbIdentifier);
-                this.addDBLoadedCallback(dbIdentifier);
+                this.dbLoadStateUpdateCallback(dbIdentifier, stateDelta);
                 this.console.timeEnd("dbLoadRender-" + dbIdentifier);
-                const query = this.getCurrentQueryCallback();
 
-                // There is a small mild race condition here where typing before DB load
-                // can mean a search for the same string can be interrupted. It would
-                // already be invalidated, so there's not really any harm besides wasted cycles.
-                //
-                // TODO: Add to validity.searchCompletionStatus here
-                const initialID = this.validity.initialSearchID;
-                if (query && !this.validity.isInvalidated(initialID)) {
-                    this.validity.startSearches(initialID, query, [dbIdentifier]);
-                    this.searchWorkerManager.searchSpecificDB(dbIdentifier, query, initialID);
-                }
+                // The DB is fully loaded/prepared and ready to handle searches.
+                if (stateDelta.isLoaded) {
+                    const query = this.getCurrentQueryCallback();
 
-                if (this.checkIfAllDBLoadedCallback()) {
-                    this.console.log("All databases loaded!");
-                    this.console.timeEnd("mountToAllDB");
+                    // There is a small mild race condition here where typing before DB load
+                    // can mean a search for the same string can be interrupted. It would
+                    // already be invalidated, so there's not really any harm besides wasted cycles.
+                    //
+                    // TODO: Add to validity.searchCompletionStatus here
+                    const initialID = this.validity.initialSearchID;
+                    if (query && !this.validity.isInvalidated(initialID)) {
+                        this.validity.startSearches(initialID, query, [dbIdentifier]);
+                        this.searchWorkerManager.searchSpecificDB(dbIdentifier, query, initialID);
+                    }
+
+                    if (this.checkIfAllDBLoadedCallback()) {
+                        this.console.log("All databases loaded!");
+                        this.console.timeEnd("mountToAllDB");
+                    }
                 }
             }
                 break;

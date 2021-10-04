@@ -190,7 +190,26 @@ export interface ChhaTaigiProps {
     updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
 };
 
-export type LoadedDBsMap = Map<DBIdentifier, boolean>;
+export class LoadedDBsMap extends Map<DBIdentifier, DBLoadStatus> {
+    setLoadState(dbIdentifier: DBIdentifier, stateDelta: Partial<DBLoadStatus>) {
+        const dbStatus = this.get(dbIdentifier);
+
+        if (dbStatus !== undefined) {
+            this.set(dbIdentifier, {...dbStatus, ...stateDelta});
+        } else {
+            console.log(`Attempted to set load state on unknown DB: ${dbIdentifier} + ${stateDelta}`);
+        }
+    }
+}
+
+// NOTE: instead of booleans, these can be percentages (for preparers that load multiple files, etc)
+// NOTE: the same setup can be used for search status per-db, whenever there's a searcher
+//       that can report completion percentage
+export interface DBLoadStatus {
+    isDownloaded: boolean,
+    isParsed: boolean,
+    isLoaded: boolean,
+}
 
 export interface ChhaTaigiState {
     options: OptionsChangeableByUser,
@@ -214,12 +233,19 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         // State initialization
         const appConfig = this.props.appConfig;
-        const initialDBLoadedMapping: [DBIdentifier, boolean][] =
-            appConfig.getAllEnabledDBConfigs().map((k: DBConfig) => [k.getDBIdentifier(), false]);
+        const initialDBLoadedMapping: [DBIdentifier, DBLoadStatus][] =
+            appConfig.getAllEnabledDBConfigs().map((k: DBConfig) => [
+                k.getDBIdentifier(),
+                {
+                    isDownloaded: false,
+                    isParsed: false,
+                    isLoaded: false,
+                }
+            ]);
 
         this.state = {
             options: this.props.options ?? new OptionsChangeableByUser(),
-            loadedDBs: new Map(initialDBLoadedMapping),
+            loadedDBs: new LoadedDBsMap(initialDBLoadedMapping),
             resultsHolder: new SearchResultsHolder(),
         };
 

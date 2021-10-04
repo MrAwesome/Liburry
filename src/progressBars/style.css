@@ -17,9 +17,19 @@
     opacity: 1;
 }
 
+#chhaDBDownloadBar {
+    background: orange;
+    opacity: 1;
+}
+
+#chhaDBParsedBar {
+    background: pink;
+    opacity: 1;
+}
+
 #chhaDBLoadBar {
     background: darkblue;
-    opacity: 0.7;
+    opacity: 1;
 }
 
 #chhaSearchBar {

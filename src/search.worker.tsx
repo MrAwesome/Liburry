@@ -3,6 +3,7 @@ import type {PerDictResultsRaw} from "./types/dbTypes";
 import {getSearcherPreparer, OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "./search";
 import {DBConfig, DBIdentifier} from "./types/config";
 import {RawDBConfig} from "./configHandler/rawConfigTypes";
+import {DBLoadStatus} from "./ChhaTaigi";
 
 // TODO(wishlist): ensure that objects passed to/from the worker are simple objects (interface, not class)
 //                 and/or translate from simple objects to full classes (with methods) before/after message
@@ -22,7 +23,7 @@ export type SearchWorkerResponseMessage =
     {resultType: SearchWorkerResponseType.CANCELED, payload: {dbIdentifier: DBIdentifier, query: string, searchID: number}} |
     {resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {dbIdentifier: DBIdentifier, query: string, results: PerDictResultsRaw, searchID: number}} |
     {resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {dbIdentifier: DBIdentifier, query: string, searchID: number, failure: SearchFailure}} |
-    {resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbIdentifier: DBIdentifier}};
+    {resultType: SearchWorkerResponseType.DB_LOAD_STATUS_UPDATE, payload: {dbIdentifier: DBIdentifier, stateDelta: Partial<DBLoadStatus>}};
 
 type WorkerInitializedState =
     {init: WorkerInitState.UNINITIALIZED} |
@@ -48,11 +49,12 @@ export enum SearchWorkerCommandType {
     TERMINATE = "TERMINATE",
 }
 
+
 export enum SearchWorkerResponseType {
     CANCELED = "CANCELED",
-    DB_LOAD_SUCCESS = "DB_LOAD_SUCCESS",
     SEARCH_FAILURE = "SEARCH_FAILURE",
     SEARCH_SUCCESS = "SEARCH_SUCCESS",
+    DB_LOAD_STATUS_UPDATE = "DB_LOAD_STATUS_UPDATE"
 }
 
 function isResults(results: any): results is PerDictResultsRaw {
@@ -78,12 +80,17 @@ class SearchWorkerHelper {
     start(dbIdentifier: DBIdentifier, dbConfig: DBConfig, debug: boolean, searcherType: SearcherType) {
         this.debug = debug;
         this.console = getDebugConsole(debug);
-        const preparer = getSearcherPreparer(searcherType, dbIdentifier, dbConfig, this.debug);
+
+        const sendLoadStateUpdate = (stateDelta: Partial<DBLoadStatus>) => {
+            this.sendResponse({resultType: SearchWorkerResponseType.DB_LOAD_STATUS_UPDATE, payload: {dbIdentifier, stateDelta}});
+        };
+
+        const preparer = getSearcherPreparer(searcherType, dbConfig, sendLoadStateUpdate, this.debug);
         this.state = {dbIdentifier, dbConfig, preparer, init: WorkerInitState.LOADING};
 
         preparer.prepare().then((searcher) => {
+            sendLoadStateUpdate({isLoaded: true});
             this.state = {searcher, dbIdentifier, dbConfig, init: WorkerInitState.LOADED};
-            this.sendResponse({resultType: SearchWorkerResponseType.DB_LOAD_SUCCESS, payload: {dbIdentifier}});
         }).catch((err) => {
             console.warn("DB preparation failure!", this, err);
             this.state = {dbIdentifier, dbConfig, init: WorkerInitState.FAILED_TO_PREPARE};
