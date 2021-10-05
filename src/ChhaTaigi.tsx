@@ -2,7 +2,7 @@ import * as React from "react";
 
 import QueryStringHandler from "./QueryStringHandler";
 
-import {AboutPage, DebugArea, SearchBar} from "./components/components";
+import {AboutPage, SearchBar} from "./components/components";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
@@ -429,19 +429,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             case MainDisplayAreaMode.SETTINGS:
             case MainDisplayAreaMode.CONTACT:
             case MainDisplayAreaMode.HOME:
-                return this.mainAreaHomeView();
-        }
-    }
-
-    // TODO: create a HomePage element, and/or just generally clear this up
-    mainAreaHomeView() {
-        const {loadedDBs, options} = this.getStateTyped();
-        if (options.debug) {
-            return <>
-                <DebugArea loadedDBs={loadedDBs} />
-            </>
-        } else {
-            return <></>;
+                return <></>;
         }
     }
 
