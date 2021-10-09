@@ -12,7 +12,6 @@ export const SEARCH_RESULTS_LIMIT = 20;
 export const DISPLAY_RESULTS_LIMIT = 20;
 
 // XXX TODO: determine programmatically
-// TODO: until agnostic is launched, this shouldn't be default?
 export const FIELDS_TO_SEARCH = [
     "PojUnicode",
     "PojNormalized",

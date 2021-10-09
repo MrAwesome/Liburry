@@ -13,7 +13,6 @@ const QUERY = "q";
 const DEBUG = "debug";
 const MAIN_MODE = "mode";
 const SEARCHER = "searcher";
-const AGNOSTIC = "agnostic";
 const PLAYGROUND = "playground";
 
 const QS_SORT_FN = (a: string, b: string) => {
@@ -94,7 +93,6 @@ export default class QueryStringParser {
 
         // TODO: abstract away this process
         options.debug = parsed[DEBUG] !== undefined;
-        options.agnostic = parsed[AGNOSTIC] !== undefined;
         options.playground = parsed[PLAYGROUND] !== undefined;
 
         if (typeof mode === "string") {

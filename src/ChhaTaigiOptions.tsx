@@ -7,7 +7,6 @@ export default class OptionsChangeableByUser {
     mainMode: MainDisplayAreaMode = MainDisplayAreaMode.HOME;
     searcherType: SearcherType = SearcherType.FUZZYSORT;
     debug: boolean = false;
-    agnostic: boolean = false;
     savedQuery: string = "";
     playground: boolean = false;
 }

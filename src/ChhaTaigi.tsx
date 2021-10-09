@@ -14,7 +14,6 @@ import SearchController from "./SearchController";
 import {runningInJest} from "./utils";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
 
-import EntryContainer from "./entry_containers/EntryContainer";
 import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
 import {AnnotatedPerDictResults} from "./types/dbTypes";
 import {AppConfig, DBConfig, DBIdentifier} from "./types/config";
@@ -367,7 +366,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.setStateTyped({options: newOptions});
     }
 
-    // NOTE: we don't need to update state here - the hash change does that for us.
     setMode(mode: MainDisplayAreaMode) {
         this.setStateTyped((state) => ({options: {...state.options, mainMode: mode}}));
         queryStringHandler.updateMode(mode);
@@ -394,28 +392,16 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.setMode(MainDisplayAreaMode.SEARCH);
     }
 
-    // TODO: don't even try to display anything until the classifiers are loaded
-    //       once classifiers are loaded, trigger a state update from a classifier callback
-    // TODO: replace uses of DBFullName with something like LangDB?
-
     getEntryComponents(): JSX.Element {
         const {resultsHolder, options} = this.getStateTyped();
         const entries = resultsHolder.getAllResults();
 
-        const entryContainers = entries.map((entry) => {
-            if (options.agnostic) {
-                return <AgnosticEntryContainer
-                    debug={options.debug}
-                    entry={entry}
-                    key={entry.getDisplayKey()} />;
-            } else {
-                return <EntryContainer
-                    debug={options.debug}
-                    entry={entry}
-                    key={entry.getDisplayKey()}
-                />;
-            }
-        });
+        const entryContainers = entries.map((entry) =>
+            <AgnosticEntryContainer
+                debug={options.debug}
+                entry={entry}
+                key={entry.getDisplayKey()} />
+        );
 
         return <>{entryContainers}</>;
     }
