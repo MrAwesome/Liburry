@@ -20,6 +20,7 @@ import {AppConfig, DBConfig, DBIdentifier} from "./types/config";
 import {SearchContext} from "./SearchValidityManager";
 
 // TODO(CRITICAL): handle changes in csv versions!
+// TODO(urgent): fix bug when doing ctrl-backspace to clear during search
 // TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): error messages for if offline and no cache
 // TODO(urgent): handle/log errors from: https://blog.logrocket.com/error-handling-react-error-boundary/

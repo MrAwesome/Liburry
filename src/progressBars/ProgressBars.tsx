@@ -127,6 +127,7 @@ export class ProgressHandler {
     updateDisplayForSearchEvent(searchContext: SearchContext | null) {
         if (searchContext === null) {
             this.searchShouldShow = false;
+            this.updateDisplay();
             return;
         }
 
