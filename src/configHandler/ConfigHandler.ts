@@ -1,4 +1,3 @@
-import {AppName} from "../ChhaTaigiOptions";
 import {RawAllDBConfig, RawAppConfig, RawLangConfig} from "./rawConfigTypes";
 import {loadYaml} from "../utils/yaml";
 
@@ -10,7 +9,7 @@ const CONFIG_FILENAME_DB = "db";
 // TODO: determine how to handle versioning configs and versions here
 export default class ConfigHandler {
     constructor(
-        private appName: AppName,
+        private appName: string,
         private localMode: boolean = false,
     ) {}
 

@@ -1,8 +1,6 @@
 import {SearcherType} from "./search";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
-export type AppName = string;
-
 export default class OptionsChangeableByUser {
     mainMode: MainDisplayAreaMode = MainDisplayAreaMode.HOME;
     searcherType: SearcherType = SearcherType.FUZZYSORT;

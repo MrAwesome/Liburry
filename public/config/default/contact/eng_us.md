@@ -1,4 +1,4 @@
-This application is a passion project by a single developer, Glenn Alexander Hope.
+This application is a passion project by Glenn Alexander Hope.
 
 Ideas, criticisms, bug reports, and more are all welcome here: [](${REPO_LINK})
 
