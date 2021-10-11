@@ -53,7 +53,6 @@ export default class SearchController {
     }
 
     async dbLoadStateUpdateCallback(dbIdentifier: DBIdentifier, stateDelta: Partial<DBLoadStatus>) {
-        console.log("Update detected!", stateDelta);
         this.setStateTyped((state) => {
             state.loadedDBs.setLoadState(dbIdentifier, stateDelta);
             this.updateDisplayForDBLoadEvent?.(state.loadedDBs);
