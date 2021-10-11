@@ -39,6 +39,7 @@ import {SearchContext} from "./SearchValidityManager";
 // TODO(high): search without diacritics, spaces, or hyphens, then remove duplicates?
 // TODO(high): test performance of compressing/decompressing json/csv files
 // TODO(high): fix link preview on LINE
+// TODO(high): change the page title using JS (so each app can have its own title) (can different apps have different manifest.json?)
 // TODO(high): more evenly spread work among the workers (giku is much smaller than mk, etc)
 //             have generated CSVs include the dbname for each entry? or set it when pulling in from papaparse?
 // TODO(high): give some visual indication that DBs are loading, even in search mode
