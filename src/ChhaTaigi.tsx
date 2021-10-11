@@ -2,7 +2,7 @@ import * as React from "react";
 
 import QueryStringHandler from "./QueryStringHandler";
 
-import {AboutPage, DebugArea, SearchBar} from "./components/components";
+import {AboutPage, SearchBar} from "./components/components";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
@@ -14,7 +14,6 @@ import SearchController from "./SearchController";
 import {runningInJest} from "./utils";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
 
-import EntryContainer from "./entry_containers/EntryContainer";
 import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
 import {AnnotatedPerDictResults} from "./types/dbTypes";
 import {AppConfig, DBConfig, DBIdentifier} from "./types/config";
@@ -23,18 +22,17 @@ import {SearchContext} from "./SearchValidityManager";
 // TODO(CRITICAL): handle changes in csv versions!
 // TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): error messages for if offline and no cache
+// TODO(urgent): handle/log errors from: https://blog.logrocket.com/error-handling-react-error-boundary/
 // TODO(urgent): change server script to also generate normalized_other
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.scripts.js && node build/server.js` - let different parts of the build process be run separately, and standardize/document what is run
 // TODO(high): have loading bar float with the searchbar (will need a padding element which disappears at the same speed)
 // TODO(high): don't require a double-back right after submit
+// TODO(high): handle "-", "?", etc entries in KamJitian (make blankOutFieldsMatching)
 // TODO(high): include link to: https://www.zeczec.com/projects/taibun-kesimi / https://www.zeczec.com/projects/taibun-kesimi/orders/back_project#_=_
-// TODO(high): handle "-", "?", etc entries in KamJitian
 // TODO(high): look into strange behavior of fuzzysort mark generation (did it work before and broke recently, or was it always broken? - try "alexander")
 // TODO(high): different debug levels, possibly use an upstream lib for logging
-// TODO(high): remember to handle "unknown" field type (and anything else) in display rules
 // TODO(high): always change url to be unicoded, so e.g. google meet won't butcher https://taigi.us/#mode=SEARCH;q=chhù-chú
 // TODO(high): 404 page, better support for 404s on json/csv
-// TODO(high): more evenly split the work between large/small databases, and possibly return results immediately and batch renders
 // TODO(high): spyon test that console.log isn't called in an integration test
 // TODO(high): search without diacritics, spaces, or hyphens, then remove duplicates?
 // TODO(high): test performance of compressing/decompressing json/csv files
@@ -42,8 +40,8 @@ import {SearchContext} from "./SearchValidityManager";
 // TODO(high): change the page title using JS (so each app can have its own title) (can different apps have different manifest.json?)
 // TODO(high): more evenly spread work among the workers (giku is much smaller than mk, etc)
 //             have generated CSVs include the dbname for each entry? or set it when pulling in from papaparse?
-// TODO(high): give some visual indication that DBs are loading, even in search mode
-// TODO(high): implement select bar (note the way it squishes on very narrow screen - create space under it?)
+// TODO(high): more evenly split the work between large/small databases, and possibly return results immediately and batch renders
+// TODO(high): implement select bar
 // TODO(high): debug and address firefox flash of blankness during font load
 // TODO(high): chase down error causing duplicate search entries
 // TODO(high): create side box for dbname/alttext/etc, differentiate it with vertical line?
@@ -194,7 +192,26 @@ export interface ChhaTaigiProps {
     updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
 };
 
-export type LoadedDBsMap = Map<DBIdentifier, boolean>;
+export class LoadedDBsMap extends Map<DBIdentifier, DBLoadStatus> {
+    setLoadState(dbIdentifier: DBIdentifier, stateDelta: Partial<DBLoadStatus>) {
+        const dbStatus = this.get(dbIdentifier);
+
+        if (dbStatus !== undefined) {
+            this.set(dbIdentifier, {...dbStatus, ...stateDelta});
+        } else {
+            console.log(`Attempted to set load state on unknown DB: ${dbIdentifier} + ${stateDelta}`);
+        }
+    }
+}
+
+// NOTE: instead of booleans, these can be percentages (for preparers that load multiple files, etc)
+// NOTE: the same setup can be used for search status per-db, whenever there's a searcher
+//       that can report completion percentage
+export interface DBLoadStatus {
+    isDownloaded: boolean,
+    isParsed: boolean,
+    isLoaded: boolean,
+}
 
 export interface ChhaTaigiState {
     options: OptionsChangeableByUser,
@@ -218,12 +235,19 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         // State initialization
         const appConfig = this.props.appConfig;
-        const initialDBLoadedMapping: [DBIdentifier, boolean][] =
-            appConfig.getAllEnabledDBConfigs().map((k: DBConfig) => [k.getDBIdentifier(), false]);
+        const initialDBLoadedMapping: [DBIdentifier, DBLoadStatus][] =
+            appConfig.getAllEnabledDBConfigs().map((k: DBConfig) => [
+                k.getDBIdentifier(),
+                {
+                    isDownloaded: false,
+                    isParsed: false,
+                    isLoaded: false,
+                }
+            ]);
 
         this.state = {
             options: this.props.options ?? new OptionsChangeableByUser(),
-            loadedDBs: new Map(initialDBLoadedMapping),
+            loadedDBs: new LoadedDBsMap(initialDBLoadedMapping),
             resultsHolder: new SearchResultsHolder(),
         };
 
@@ -345,7 +369,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.setStateTyped({options: newOptions});
     }
 
-    // NOTE: we don't need to update state here - the hash change does that for us.
     setMode(mode: MainDisplayAreaMode) {
         this.setStateTyped((state) => ({options: {...state.options, mainMode: mode}}));
         queryStringHandler.updateMode(mode);
@@ -372,28 +395,16 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.setMode(MainDisplayAreaMode.SEARCH);
     }
 
-    // TODO: don't even try to display anything until the classifiers are loaded
-    //       once classifiers are loaded, trigger a state update from a classifier callback
-    // TODO: replace uses of DBFullName with something like LangDB?
-
     getEntryComponents(): JSX.Element {
         const {resultsHolder, options} = this.getStateTyped();
         const entries = resultsHolder.getAllResults();
 
-        const entryContainers = entries.map((entry) => {
-            if (options.agnostic) {
-                return <AgnosticEntryContainer
-                    debug={options.debug}
-                    entry={entry}
-                    key={entry.getDisplayKey()} />;
-            } else {
-                return <EntryContainer
-                    debug={options.debug}
-                    entry={entry}
-                    key={entry.getDisplayKey()}
-                />;
-            }
-        });
+        const entryContainers = entries.map((entry) =>
+            <AgnosticEntryContainer
+                debug={options.debug}
+                entry={entry}
+                key={entry.getDisplayKey()} />
+        );
 
         return <>{entryContainers}</>;
     }
@@ -407,19 +418,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             case MainDisplayAreaMode.SETTINGS:
             case MainDisplayAreaMode.CONTACT:
             case MainDisplayAreaMode.HOME:
-                return this.mainAreaHomeView();
-        }
-    }
-
-    // TODO: create a HomePage element, and/or just generally clear this up
-    mainAreaHomeView() {
-        const {loadedDBs, options} = this.getStateTyped();
-        if (options.debug) {
-            return <>
-                <DebugArea loadedDBs={loadedDBs} />
-            </>
-        } else {
-            return <></>;
+                return <></>;
         }
     }
 

@@ -9,6 +9,7 @@ import {makeCancelable} from "../utils";
 import {convertDBRowToFuzzySortPrepared, parseFuzzySortResultsForRender} from "../fuzzySortUtils";
 import {FIELDS_TO_SEARCH, SEARCH_RESULTS_LIMIT} from "../searchSettings";
 import {DBConfig} from "../types/config";
+import {DBLoadStatus} from "../ChhaTaigi";
 
 // TODO: give slight preference for poj-unicode/poj-normalized in fuzzy settings, so that e.g. "iong" will show up first in a search for itself
 // TODO: handle hyphens vs spaces
@@ -48,6 +49,7 @@ export class FuzzySortPreparer implements SearcherPreparer {
 
     constructor(
         private dbConfig: DBConfig,
+        private sendLoadStateUpdate: (stateDelta: Partial<DBLoadStatus>) => void,
         private debug: boolean,
     ) {
         this.console = getDebugConsole(debug);
@@ -81,9 +83,13 @@ export class FuzzySortPreparer implements SearcherPreparer {
         // XXX TODO: fix csv versioning
         return fetch("/" + localCSV + "?v=10")
             .then((response: Response) => {
+                this.sendLoadStateUpdate({isDownloaded: true});
                 return response.text();
             })
-            .then(this.convertCSVToFuzzySearchableDict);
+            .then((text: string) => {
+                this.sendLoadStateUpdate({isParsed: true});
+                return this.convertCSVToFuzzySearchableDict(text);
+            });
     }
 
     convertCSVToFuzzySearchableDict(text: string): FuzzySearchableDict {

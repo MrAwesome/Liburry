@@ -1,24 +1,35 @@
 .loadingBarContainer {
     display: relative;
-    transition: height .2s ease;
-    width: 100%;
+    transition: height .1s ease-in;
+    background: #777777;
+    opacity: 1;
 }
 
 .loadingBar {
-    transition: width .2s ease;
+    transition: width 1s ease-in;
     position: absolute;
     height: 5px;
-    width: 100%;
 }
 
 #chhaConfigBar {
+    transition: width 1s ease-in;
+    background: #aaaaaa;
+    opacity: 1;
+}
+
+#chhaDBDownloadBar {
+    background: orange;
+    opacity: 1;
+}
+
+#chhaDBParsedBar {
     background: pink;
-    opacity: 0.5;
+    opacity: 1;
 }
 
 #chhaDBLoadBar {
     background: darkblue;
-    opacity: 0.5;
+    opacity: 1;
 }
 
 #chhaSearchBar {

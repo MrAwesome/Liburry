@@ -5,7 +5,6 @@ import OptionsChangeableByUser from './ChhaTaigiOptions';
 import * as React from 'react';
 import {noop} from './utils';
 import {DBSearchRanking, SearcherType} from './search';
-import {MATCH_HTML_TAG} from './constants';
 import ConfigHandler from './configHandler/ConfigHandler';
 import {AppConfig} from './types/config';
 import {AnnotatedPerDictResults, annotateRawResults, PerDictResultsRaw} from './types/dbTypes';
@@ -54,7 +53,7 @@ test('render single entry via override', async () => {
     const dbIdentifier = "ChhoeTaigi_TaioanPehoeKichhooGiku";
     const rowID = 1;
 
-    const marked = `hoat-<${MATCH_HTML_TAG}>lu̍t</${MATCH_HTML_TAG}>`;
+    const marked = `hoat-<mark>lu̍t</mark>`;
 
     const dbSearchRanking = {searcherType: SearcherType.LUNR, score: -3} as DBSearchRanking;
     let res1 = {
@@ -115,8 +114,10 @@ test('render single entry via override', async () => {
 
     const eng = screen.getByText(/the law/i);
     expect(eng).toBeInTheDocument();
-    const db = screen.getByText(/TaioanPehoeKichhooGiku/i);
-    expect(db).toBeInTheDocument();
+
+    // TODO: display DB again at some point, possibly in debug mode
+    //const db = screen.getByText(/TaioanPehoeKichhooGiku/i);
+    //expect(db).toBeInTheDocument();
     const searchBar = screen.getByPlaceholderText(/Search.../);
     expect(searchBar).toBeInTheDocument();
 });

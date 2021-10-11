@@ -1,9 +1,8 @@
 import * as React from "react";
-import {ChhaTaigi, LoadedDBsMap} from "./ChhaTaigi";
+import {ChhaTaigi} from "./ChhaTaigi";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import ConfigHandler from "./configHandler/ConfigHandler";
-import {makeProgressBar, PROGRESS_BARS_HEIGHT, PROGRESS_BAR_ANIMATION_LENGTH} from "./progressBars/ProgressBars";
-import {SearchContext} from "./SearchValidityManager";
+import {ProgressHandler} from "./progressBars/ProgressBars";
 import {AppConfig} from "./types/config";
 
 import "./progressBars/style.css";
@@ -16,34 +15,17 @@ interface ChhaTaigiLoaderProps {
 
 interface ChhaTaigiLoaderState {
     appConfig?: AppConfig,
-    configProgress: number,
-    configShouldShow: boolean,
-    dbLoadProgress: number,
-    dbLoadShouldShow: boolean,
-    searchProgress: number,
-    searchShouldShow: boolean,
 }
 
 export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaTaigiLoaderState> {
     private mountAttempt = 0;
-
-    private numConfigsToLoad = 0;
-    private numConfigsLoaded = 0;
+    private progress: ProgressHandler;
 
     constructor(props: ChhaTaigiLoaderProps) {
         super(props);
-        this.state = {
-            configProgress: 0,
-            configShouldShow: true,
-            dbLoadProgress: 0,
-            dbLoadShouldShow: true,
-            searchProgress: 0,
-            searchShouldShow: false,
-        }
+        this.state = {};
 
-        this.updateDisplayForConfigEvent = this.updateDisplayForConfigEvent.bind(this);
-        this.updateDisplayForDBLoadEvent = this.updateDisplayForDBLoadEvent.bind(this);
-        this.updateDisplayForSearchEvent = this.updateDisplayForSearchEvent.bind(this);
+        this.progress = new ProgressHandler(() => this.setState({}));
     }
 
     componentDidMount() {
@@ -56,14 +38,15 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
             configHandler.loadDBConfigs(),
             //configHandler.loadLanguageConfigs(),
         ];
-        this.numConfigsToLoad = configPromises.length;
+        this.progress.numConfigsToLoad = configPromises.length;
 
+        // Update the config progressbar whenever a config successfully loads
         const originalMountAttempt = this.mountAttempt;
         configPromises.forEach(prom => {
             prom.then(() => {
                 if (originalMountAttempt === this.mountAttempt) {
-                    this.numConfigsLoaded += 1;
-                    this.updateDisplayForConfigEvent();
+                    this.progress.numConfigsLoaded += 1;
+                    this.progress.updateDisplayForConfigEvent();
                 }
             });
         });
@@ -76,98 +59,25 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
 
     componentWillUnmount() {
         this.mountAttempt += 1;
-        this.numConfigsLoaded = 0;
-    }
-
-    updateDisplayForConfigEvent() {
-        const percent = this.numConfigsLoaded / this.numConfigsToLoad;
-        this.setState({configProgress: percent});
-
-        if (this.numConfigsToLoad === 0 || percent >= 1) {
-            setTimeout(() => {
-                this.setState({configShouldShow: false});
-            }, PROGRESS_BAR_ANIMATION_LENGTH);
-        }
-    }
-
-    // TODO: the progressbar logic should live in a separate class, and dbLoadBar should be only about loading.
-    updateDisplayForDBLoadEvent(loadedDBs: LoadedDBsMap) {
-        let numLoaded = 0;
-        let numTotal = 0;
-
-        // If you really want to nitpick CPU cycles, this can be stored on LoadedDBsMap
-        loadedDBs.forEach((isLoaded, _name) => {
-            numTotal += 1;
-            if (isLoaded) {
-                numLoaded += 1;
-            }
-        });
-
-        const percent = (numLoaded / numTotal);
-        this.setState({dbLoadProgress: percent});
-
-        if (numTotal === 0 || percent >= 1) {
-            setTimeout(() => {
-                this.setState({dbLoadShouldShow: false});
-            }, PROGRESS_BAR_ANIMATION_LENGTH);
-        }
-    }
-
-    updateDisplayForSearchEvent(searchContext: SearchContext | null) {
-        if (searchContext === null) {
-            this.setState({searchShouldShow: false});
-            return;
-        }
-
-        this.setState({searchShouldShow: true});
-
-        const [completedDBs, totalDBs] = searchContext.getCompletedAndTotal();
-        const percent = completedDBs / totalDBs;
-
-        this.setState({searchProgress: percent});
-
-        if (totalDBs === 0 || percent >= 1) {
-            setTimeout(() => {
-                this.setState({searchShouldShow: false});
-            }, PROGRESS_BAR_ANIMATION_LENGTH);
-        }
+        this.progress.numConfigsLoaded = 0;
     }
 
     render() {
-        const {appConfig,
-            configProgress,
-            configShouldShow,
-            dbLoadProgress,
-            dbLoadShouldShow,
-            searchProgress,
-            searchShouldShow,
-        } = this.state;
         const {options} = this.props;
-
-        const progressBars = [
-            makeProgressBar(configProgress, "chhaConfigBar"),
-            makeProgressBar(dbLoadProgress, "chhaDBLoadBar"),
-            makeProgressBar(searchProgress, "chhaSearchBar"),
-        ];
-
-        const height =
-            (configShouldShow || dbLoadShouldShow || searchShouldShow)
-                ? PROGRESS_BARS_HEIGHT : "0px";
+        const {appConfig} = this.state;
 
         return <>
-            <div className="loadingBarContainer" style={{height}}>
-                {progressBars}
-            </div>
+            {this.progress.getBars()}
 
             {appConfig !== undefined
                 ? <ChhaTaigi
                     options={options}
                     appConfig={appConfig}
-                    updateDisplayForDBLoadEvent={this.updateDisplayForDBLoadEvent}
-                    updateDisplayForSearchEvent={this.updateDisplayForSearchEvent}
+                    updateDisplayForDBLoadEvent={this.progress.updateDisplayForDBLoadEvent}
+                    updateDisplayForSearchEvent={this.progress.updateDisplayForSearchEvent}
                     key="ChhaTaigi"
                 />
-                : null
+                : null // TODO: better loading default / errors
             }
         </>
     }

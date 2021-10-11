@@ -1,0 +1,14 @@
+links:
+  home:
+    target: "/" # ????
+    displayNames:
+      eng_us: "Home"
+  about:
+    markdown: "about.md"
+    displayNames:
+      eng_us: "About"
+      tw_poj: "Chu-sìn"
+  contact:
+    markdown: "contact.md"
+    displayNames:
+      eng_us: "Contact"

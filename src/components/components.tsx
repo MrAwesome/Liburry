@@ -2,7 +2,6 @@ import * as React from "react";
 import {MainDisplayAreaMode} from "../types/displayTypes";
 import QueryStringHandler from "../QueryStringHandler";
 import {REPO_LINK} from "../constants";
-import {DBIdentifier} from "../types/config";
 import {isMobileDevice} from "../utils";
 
 interface SearchBarProps {
@@ -70,36 +69,6 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
     }
 }
 
-export function DebugArea({loadedDBs}: {loadedDBs: Map<DBIdentifier, boolean>}) {
-    return <div className="debug-area">
-        <DBLoadedState loadedDBs={loadedDBs} />
-    </div>
-}
-
-function DBLoadedState({loadedDBs}: {loadedDBs: Map<string, boolean>}) {
-    let states: JSX.Element[] = [];
-    loadedDBs.forEach((db, dbIdentifier) => {
-        const isLoaded = (db === null) || (db === false);
-        const loadedString = isLoaded ? "⌛" : "✅";
-        const borderStyleColor = isLoaded ? "red" : "green";
-        const backgroundColor = isLoaded ? "pink" : "white";
-        const loadedStatusStyle = {
-            "border": `1px ${borderStyleColor} solid`,
-            "background": backgroundColor,
-        };
-
-        const entryDiv = <div className="db-loaded-entry" key={dbIdentifier} style={loadedStatusStyle} >
-            <span className="db-loaded-entry-name">{dbIdentifier}: </span>
-            <span className="db-loaded-entry-isloaded">
-                {loadedString}
-            </span>
-        </div>;
-        states.push(entryDiv);
-    });
-    return <div className="db-loaded-states">{states}</div>
-
-}
-
 const selectBarToMainModeMapping = new Map([
     ["Home", MainDisplayAreaMode.HOME],
     ["Settings", MainDisplayAreaMode.SETTINGS],
@@ -125,7 +94,7 @@ export class SelectBar extends React.PureComponent<any, any> {
     }
 }
 
-// TODO: update link when repo name has been updated
+// TODO: move to markdown/etc
 export class AboutPage extends React.PureComponent<any, any> {
     render() {
         return <div className="page">

@@ -10,7 +10,7 @@ import {PREPPED_KEY_SUFFIX} from "./search/FuzzySortSearcher";
 import {DBIdentifier} from "./types/config";
 
 import xss from "xss";
-import {MATCH_END, MATCH_START} from "./constants";
+import {MATCH_END, MATCH_START} from "./search/constants";
 
 // TODO: find out why "      " matches "chúi-pho 波紋 水波" on the "l" in "ripples"
 
