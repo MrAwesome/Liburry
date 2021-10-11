@@ -1,0 +1,10 @@
+* Afrikaans
+* Hakka
+* Fujianese (sp?)
+* Vietnamese
+* Japanese
+
+Qualities of dictionaries:
+* Creative Commons / Open Source / Public Domain
+    * Either explicitly licensed this way, released by a government, or old enough to be public domain
+* Already digitized, or able to be digitized relatively easily
