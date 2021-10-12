@@ -31,9 +31,10 @@ export default class ConfigHandler {
 
     private async loadConfigHeirarchy<T>(configName: string): Promise<T> {
         // TODO: handle empty/null lang config!
+        // TODO: load default / merge app? or just default?
         return Promise.all([
-            loadYaml<T>(`config/${configName}.yml`, this.localMode),
-            loadYaml<T>(`config/${this.appName}/${configName}.yml`, this.localMode),
+            loadYaml<T>(`config/default/${configName}.yml`, this.localMode),
+            //loadYaml<T>(`config/${this.appName}/${configName}.yml`, this.localMode),
         ]).then(([globalConfig, localConfig]) => {
             return {...globalConfig, ...localConfig};
         });

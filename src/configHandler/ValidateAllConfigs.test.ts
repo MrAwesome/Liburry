@@ -19,7 +19,6 @@ test('app configs', async () => {
 
     // TODO: have yaml fail if doesn't match cast type
     // TODO: for now, hardcode expected schema
-    expect(configs.name).toBe("taigi.us");
     expect(configs.displayName).toBe("Chhâ Tâi-gí!");
 });
 
