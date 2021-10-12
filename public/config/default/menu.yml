@@ -1,0 +1,19 @@
+links:
+  home:
+    mode: "search"
+    displayNames:
+      eng_us: "Home"
+      tw_poj: "Chú-Phiⁿ" #?
+      tcn_tw: "主頁"
+  about:
+    mode: "markdown"
+    displayNames:
+      eng_us: "About"
+      tw_poj: "Sìn-Sek" #?
+      tcn_tw: "信息" #?
+  contact:
+    mode: "markdown"
+    displayNames:
+      eng_us: "Contact"
+      tcn_tw: "連接" #?
+      tw_poj: "Liân-Chiap" #?

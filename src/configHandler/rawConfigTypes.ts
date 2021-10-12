@@ -1,9 +1,8 @@
-import {RawKnownDisplayTypeEntry} from "../types/displayTypes";
+import type {RawKnownDisplayTypeEntry} from "../types/displayTypes";
 
-// TODO: determine what this looks like. Are DBs listed here?
 export interface RawAppConfig {
-    name: string,
     displayName: string,
+    // TODO: displayNames?
     // ...
 }
 
@@ -79,7 +78,20 @@ export interface RawAllowedFieldClassifierTags {
 }
 
 // TODO: in verification, ensure:
-//  [] all lang ids are unique
 //  [] all dialect ids are unique
-//  [] all lang/dialect ids are unique
 
+export interface RawMenuConfig {
+    links: RawMenuLinks,
+}
+
+export interface RawMenuLinks {
+    [linkName: string]: {
+        mode: RawMenuLinkMode,
+        displayNames: {
+            [displayName: string]: string,
+        }
+    }
+}
+
+// Potential future modes: reactcomponent, html
+export type RawMenuLinkMode = "search" | "markdown";

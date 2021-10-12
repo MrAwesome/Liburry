@@ -106,7 +106,7 @@ import {SearchContext} from "./SearchValidityManager";
 // TODO(low): incorrect behavior of search box when using back/forward in browser
 // TODO(low): have display results limit be part of options, and pass it around for use where it's needed
 // TODO(low): take a nap
-// TODO(wishlist): "add to desktop" shortcut
+// TODO(wishlist): keyboard shortcuts, esp for "highlight search"
 // TODO(wishlist): google translate link
 // TODO(wishlist): non-javascript support?
 // TODO(wishlist): dark and light themes
