@@ -261,7 +261,7 @@ ChhoeTaigi_KamJitian:
 
     HanbunImPojInput:
       type:
-        dictionary: other_input
+        dictionary: input_other
       dialect: poj
       delimiter: sparse
       lengthHint: single
@@ -300,14 +300,14 @@ ChhoeTaigi_KamJitian:
       type:
         dictionary: vocab_other
       dialect: kip
-      delimiter: sparse
+      status: sparse
       lengthHint: single
 
     HanbunImKipInput:
       type:
-        dictionary: other_input
+        dictionary: input_other
       dialect: kip
-      delimiter: sparse
+      status: sparse
       lengthHint: single
 
     KaisoehKip:

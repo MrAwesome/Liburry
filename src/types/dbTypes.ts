@@ -1,4 +1,4 @@
-import {RawAllowedFieldClassifierTags} from "../configHandler/rawConfigTypes";
+import {RawAllowedFieldClassifierTags} from "../configHandler/zodConfigTypes";
 import {DialectID} from "../languages/dialect";
 import {DBSearchRanking} from "../search";
 import {AppConfig, DBIdentifier} from "./config";

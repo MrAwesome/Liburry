@@ -1,7 +1,10 @@
 import * as React from "react";
 import {createMatchElement} from "../fuzzySortReactUtils";
 import {AnnotatedDisplayReadyField, AnnotatedSearchResultEntry} from "../types/dbTypes";
-import {RawDictionaryFieldDisplayType} from "../types/displayTypes";
+
+// NOTE: this import feels wrong, likely too abstract / the display types maybe don't belong in this file
+//       (separation of concerns)
+import {RawDictionaryFieldDisplayType} from "../configHandler/zodConfigTypes";
 
 import "./AgnosticEntryContainer.css";
 import {area, AreaNode, LocationTreeHandler} from "./utils";

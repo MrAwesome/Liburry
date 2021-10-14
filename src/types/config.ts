@@ -1,8 +1,7 @@
-import {RawAllDBConfig, RawAllowedFieldClassifierTags, RawDBConfig} from "../configHandler/rawConfigTypes";
+import {RawAllDBConfig, RawAllowedFieldClassifierTags, RawDBConfig, RawKnownDisplayTypeEntry} from "../configHandler/zodConfigTypes";
 import {CHHA_ALLDB} from "../constants";
 import Dialect, {DialectID} from "../languages/dialect";
 import {DBColName} from "./dbTypes";
-import {RawKnownDisplayTypeEntry} from "./displayTypes";
 
 export class AppConfig {
     private constructor(

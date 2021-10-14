@@ -44,6 +44,7 @@
   },
   "devDependencies": {
     "nodejieba": "^2.5.2",
+    "ts-to-zod": "^1.5.1",
     "webpack-cli": "^4.7.2",
     "webpack-node-externals": "^3.0.0"
   },

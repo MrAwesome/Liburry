@@ -1,4 +1,4 @@
-import {RawDialect} from "../configHandler/rawConfigTypes";
+import {RawDialect} from "../configHandler/zodConfigTypes";
 
 export type DialectID = string;
 

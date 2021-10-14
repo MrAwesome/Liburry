@@ -7,16 +7,16 @@ const path = require("path");
 import {parseYaml} from "../utils/yaml";
 import {promisify} from 'util';
 import validateYaml from "./validateYaml";
+import {LoadedKnownFile, ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const opendir = promisify(fs.opendir);
 
-type ReturnedConfig =
-    { type: "yaml", id: string, parentIDs: Array<string>, obj: Object } |
-    { type: "markdown", id: string, parentIDs: Array<string>, lang: string, mdText: string };
+const CONFIG_DIR = 'public/config/';
+const CONFIG_TARGET_JSON = 'build/fullConfiguration.json';
 
-export async function* walk(dir: string, subdirs: Array<string>): AsyncIterable<ReturnedConfig> {
+export async function* walk(dir: string, subdirs: Array<string>): AsyncIterable<LoadedKnownFile | null> {
     for await (const d of await opendir(dir)) {
         const entry = path.join(dir, d.name);
         if (d.isDirectory()) {
@@ -28,51 +28,72 @@ export async function* walk(dir: string, subdirs: Array<string>): AsyncIterable<
     }
 }
 
-async function handleFile(path: string, filename: string, subdirs: Array<string>): Promise<ReturnedConfig> {
+async function handleFile(path: string, filename: string, subdirs: Array<string>): Promise<LoadedKnownFile | null> {
     if (path.endsWith('.yml')) {
         const yamlText = (await readFile(path)).toString();
         const id = filename.replace(/.yml$/, "")
-        const obj: Object = parseYaml(yamlText);
-        validateYaml(filename, obj);
-        return { type: "yaml", id, parentIDs: subdirs,  obj };
+        const yamlBlob: Object = parseYaml(yamlText);
+        const validatedConfig = validateYaml(filename, yamlBlob);
+        if (validatedConfig !== null) {
+            return {
+                type: "config",
+                app: subdirs[0],
+                idChain: [...subdirs, id],
+                ...validatedConfig
+            };
+        } else {
+            console.warn(`Unknown yaml file type! Add it to YAML_FILE_SCHEMA_MAPPING if it should be parsed: "${path}"`)
+            return null;
+        }
     } else if (path.endsWith('.md')) {
         const mdText = (await readFile(path)).toString();
         const lang = filename.replace(/.md$/, "")
-        return { type: "markdown", id: lang, parentIDs: subdirs, lang, mdText }
+        if (subdirs.length > 2) {
+            console.error(`Markdown file too deeply nested! Unsure how to handle: "${path}"`)
+            return null;
+        }
+        return {
+            type: "page",
+            app: subdirs[0],
+            pageName: subdirs[1],
+            idChain: [...subdirs, lang],
+            lang,
+            pageType: "markdown",
+            mdText,
+        }
     } else {
-        throw new Error(`Unknown file type for: ${path}`);
+        console.warn(`Unknown file type for: ${path}`);
+        return null;
     }
 }
 
-interface FinalObj {
-    [s: string]: FinalObj | ReturnedConfig;
-}
+export async function parseAllYaml(): Promise<ReturnedFinalConfig> {
+    const finalObj: ReturnedFinalConfig = {
+        apps: {},
+    };
 
-interface TargetObj {
-    [s: string]: TargetObj;
-}
-
-export async function parseAllYaml(): Promise<FinalObj> {
-    const obj: FinalObj = {};
-    let targetObj: FinalObj | ReturnedConfig = obj;
-    for await (const configObj of walk('public/config/', [])) {
-        const {parentIDs, id} = configObj;
-        parentIDs.forEach((parentID) => {
-            const to = targetObj as TargetObj;
-            if (to[parentID] === undefined) {
-                to[parentID] = {};
-            }
-            targetObj = to[parentID];
-        });
-        targetObj[id] = configObj;
-        targetObj = obj;
+    for await (const obj of walk(CONFIG_DIR, [])) {
+        if (obj === null) {
+            continue;
+        }
+        if (!(obj.app in finalObj.apps)) {
+            finalObj.apps[obj.app] = {
+                pages: {},
+                configs: {},
+            };
+        }
+        const appObj = finalObj.apps[obj.app];
+        if (obj.type === "page") {
+            appObj.pages[obj.pageName] = obj;
+        } else if (obj.type === "config") {
+            appObj.configs[obj.configType] = obj;
+        }
     }
-    console.log(obj);
-    return obj;
+    return finalObj;
 }
 
-(async function() {
-  const obj = await parseAllYaml();
-  const jsonOut = JSON.stringify(obj);
-  await writeFile("build/fullConfiguration.json", jsonOut);
+(async function () {
+    const finalObj = await parseAllYaml();
+    const jsonOut = JSON.stringify(finalObj);
+    await writeFile(CONFIG_TARGET_JSON, jsonOut);
 }());

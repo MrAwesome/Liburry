@@ -1,4 +1,4 @@
-import {RawAllDBConfig, RawAppConfig, RawLangConfig} from "./rawConfigTypes";
+import {RawAllDBConfig, RawAppConfig, RawLangConfig} from "./zodConfigTypes";
 import {loadYaml} from "../utils/yaml";
 
 const CONFIG_FILENAME_LANG = "lang";
