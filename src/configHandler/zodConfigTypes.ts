@@ -108,24 +108,6 @@ export const rawAllDBConfigSchema = z.record(rawDBConfigSchema);
 export type RawAllDBConfig = z.infer<typeof rawAllDBConfigSchema>;
 
 /////////////////////////////////////////////////
-// NOTE: new filetypes are added here. Since zod
-//   types are present at runtime, definitions
-//   must be in order, hence the odd location.
-export const YAML_FILENAME_TO_SCHEMA_MAPPING = {
-    "app.yml": {
-        type: "app_config",
-        schema: rawAppConfigSchema,
-    },
-    "db.yml": {
-        type: "db_config",
-        schema: rawAllDBConfigSchema,
-    },
-    "lang.yml": {
-        type: "lang_config",
-        schema: rawLangConfigSchema,
-    }
-} as const;
-
 export const loadedConfigSchema = z.union([
     z.object({
         configType: z.literal("app_config"),
@@ -140,6 +122,7 @@ export const loadedConfigSchema = z.union([
         config: rawLangConfigSchema,
     })
 ]);
+
 ///////////////////////////////////////////////////////
 export type LoadedConfig = z.infer<typeof loadedConfigSchema>;
 export type KnownConfigTypes = LoadedConfig["configType"];
@@ -150,7 +133,7 @@ const loadedPageSchema = z.object({
     mdText: z.string(),
     lang: z.string(),
 });
-type LoadedPage = z.infer<typeof loadedPageSchema>;
+export type LoadedPage = z.infer<typeof loadedPageSchema>;
 
 const knownFileMetadata = z.object({
     idChain: z.array(z.string()),
@@ -176,7 +159,7 @@ const fullAppConfigurationSchema = z.object({
     pages: z.record(loadedPageSchema),
     configs: z.record(loadedConfigSchema),
 });
-type FullAppConfiguration = z.infer<typeof fullAppConfigurationSchema>;
+export type FullAppConfiguration = z.infer<typeof fullAppConfigurationSchema>;
 
 const returnedFinalConfigSchema = z.object({
     apps: z.record(fullAppConfigurationSchema)

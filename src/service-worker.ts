@@ -22,7 +22,19 @@ clientsClaim();
 // Their URLs are injected into the manifest variable below.
 // This variable must be present somewhere in your service worker file,
 // even if you decide not to use precaching. See https://cra.link/PWA
-precacheAndRoute(self.__WB_MANIFEST);
+let precacheTargets = [...self.__WB_MANIFEST];
+const customTargetsJsonString = process.env.REACT_APP_CHHA_CACHE_FILES_JSON;
+if (customTargetsJsonString !== undefined) {
+    try {
+        const customTargets = JSON.parse(customTargetsJsonString);
+        console.log("Loaded custom targets: ", customTargets);
+        precacheTargets = [...precacheTargets, ...customTargets];
+        console.log("All precache targets: ", precacheTargets);
+    } catch (e) {
+        console.warn("Failed to load custom targets!", e);
+    }
+}
+precacheAndRoute(precacheTargets);
 
 // Set up App Shell-style routing, so that all navigation requests
 // are fulfilled with your index.html shell. Learn more at

@@ -75,13 +75,8 @@ export class FuzzySortPreparer implements SearcherPreparer {
         }
         this.console.time("total-" + dbIdentifier);
         this.console.time("fetch-" + dbIdentifier);
-        //let versionString = "";
-        // XXX TODO: fix csv versioning
-        //if (localCSVVersion) {
-        //    versionString = `?v=${localCSVVersion}`;
-        //}
-        // XXX TODO: fix csv versioning
-        return fetch("/" + localCSV + "?v=10")
+
+        return fetch("/" + localCSV)
             .then((response: Response) => {
                 this.sendLoadStateUpdate({isDownloaded: true});
                 return response.text();

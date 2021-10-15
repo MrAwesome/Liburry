@@ -1,4 +1,5 @@
-import {LoadedConfig, YAML_FILENAME_TO_SCHEMA_MAPPING} from "../configHandler/zodConfigTypes";
+import {LoadedConfig} from "../configHandler/zodConfigTypes";
+import {YAML_FILENAME_TO_SCHEMA_MAPPING} from "./compileYaml";
 // TODO:
 // 1) Warn on unused languages
 // 2) Error on defined languages with missing fields

@@ -105,6 +105,7 @@ dist
 .tern-port
 
 #############################
-# cha_taigi specifics
+# ChhaTaigi specifics
 #############################
-build/
+public/generated/
+.env.local

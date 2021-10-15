@@ -43,14 +43,15 @@
     "xss": "^1.0.9"
   },
   "devDependencies": {
+    "md5-file": "^5.0.0",
     "nodejieba": "^2.5.2",
     "ts-to-zod": "^1.5.1",
     "webpack-cli": "^4.7.2",
     "webpack-node-externals": "^3.0.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "yarn run webpack --config webpack.build.js && node build/compileYaml.js && react-scripts start",
+    "build": "yarn run webpack --config webpack.build.js && node build/compileYaml.js && react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
