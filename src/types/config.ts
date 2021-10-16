@@ -1,6 +1,7 @@
-import {RawAllDBConfig, RawAllowedFieldClassifierTags, RawDBConfig, RawKnownDisplayTypeEntry} from "../configHandler/zodConfigTypes";
+import {RawAllowedFieldClassifierTags, RawDBConfig, RawKnownDisplayTypeEntry, ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
 import {CHHA_ALLDB} from "../constants";
 import Dialect, {DialectID} from "../languages/dialect";
+import {getRecordEntries, getRecordValues} from "../utils";
 import {DBColName} from "./dbTypes";
 
 export class AppConfig {
@@ -8,18 +9,27 @@ export class AppConfig {
         //private appIdentifier: string,
         //private displayName: string,
         //private interfaceLangs: string[],
-        //rawDBConfigs: RawAllDBConfig,
+        //rawAllDBConfigs: RawAllDBConfig,
         private dbConfigs: Map<DBIdentifier, DBConfig>,
         //private langConfigs: RawLangConfig[],
     ) {
     }
 
     static from(
-        rawDBConfigs: RawAllDBConfig,
+        finalConfig: ReturnedFinalConfig,
+        appName: string,
     ) {
-        const dbIdentifierToConfigPairs: [DBIdentifier, DBConfig][] =
-            Object.getOwnPropertyNames(rawDBConfigs)
-                .map((dbIdentifier) => [dbIdentifier, new DBConfig(dbIdentifier, rawDBConfigs[dbIdentifier])]);
+        const dbIdentifierToConfigPairs: [DBIdentifier, DBConfig][] = [];
+        // XXX TODO: better error handling if app doesn't exist
+        const appConfig = finalConfig.apps[appName]!;
+        const allConfigs = appConfig.configs;
+        for (const config of getRecordValues(allConfigs)) {
+            if (config.configType === "db_config") {
+                for (const [dbIdentifier, rawDBConfig] of getRecordEntries(config.config.dbs)) {
+                    dbIdentifierToConfigPairs.push([dbIdentifier, new DBConfig(dbIdentifier, rawDBConfig)]);
+                }
+            }
+        }
         const dbConfigs = new Map(dbIdentifierToConfigPairs);
         return new AppConfig(dbConfigs);
     }
@@ -63,8 +73,7 @@ export class DBConfig {
         this.loadInfo = r.loadInfo;
         this.primaryKey = r.primaryKey;
 
-        this.fieldConfigs = Object.getOwnPropertyNames(r.fields).map((rawFieldName) => {
-            const rawField = r.fields[rawFieldName];
+        this.fieldConfigs = getRecordEntries(r.fields).map(([rawFieldName, rawField]) => {
             let rawDialect = rawField.dialect;
             let dialect: Dialect | Dialect[] | undefined = undefined;
 
@@ -117,7 +126,8 @@ export class DBConfig {
 
     // TODO: return a less-raw view into column metadata
     getColumnMetadata(colName: DBColName): RawAllowedFieldClassifierTags {
-        return this.r.fields[colName];
+        // XXX: TODO: better error handling
+        return this.r.fields[colName]!;
     }
 
     //

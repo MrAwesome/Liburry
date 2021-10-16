@@ -7,10 +7,10 @@ import path from 'path';
 import md5File from 'md5-file';
 import {parseYaml} from "../utils/yaml";
 import {promisify} from 'util';
-import validateYaml from "./validateYaml";
-import {LoadedKnownFile, RawAllDBConfig, rawAllDBConfigSchema, rawAppConfigSchema, rawLangConfigSchema, ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
-import {CHHA_APPNAME} from "../constants";
+import {LoadedConfig, LoadedKnownFile, RawAllDBConfig, rawAllDBConfigSchema, rawAppConfigSchema, rawLangConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../configHandler/zodConfigTypes";
+import {CHHA_APPNAME, CONFIG_TARGET_JSON_FILENAME} from "../constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
+import {getRecordValues} from '../utils';
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
@@ -23,7 +23,6 @@ const CONFIG_DIR = 'public/config/';
 
 // TODO: DB filenames are currently stored in public/db/, but their filenames are prefixed with db/ in the configs - they should probably be stored per-app, unless sharing will be common
 const PUBLIC_DIR_PREFIX = 'public/';
-const CONFIG_TARGET_JSON = 'public/generated/fullConfiguration.json';
 const CACHE_LINE_ENV_VARNAME = 'REACT_APP_CHHA_CACHE_FILES_JSON';
 
 export const YAML_FILENAME_TO_SCHEMA_MAPPING = {
@@ -92,6 +91,22 @@ async function handleFile(path: string, filename: string, subdirs: Array<string>
     }
 }
 
+// TODO:
+// 1) Warn on unused languages
+// 2) Error on defined languages with missing fields
+export default function validateYaml(filename: string, yamlBlob: Object): LoadedConfig | null {
+    if (filename in YAML_FILENAME_TO_SCHEMA_MAPPING) {
+        const m = YAML_FILENAME_TO_SCHEMA_MAPPING[filename as keyof typeof YAML_FILENAME_TO_SCHEMA_MAPPING];
+        return {
+            type: "config",
+            configType: m.type,
+            config: m.schema.parse(yamlBlob),
+        } as LoadedConfig;
+    } else {
+        return null;
+    }
+}
+
 export async function parseAllYaml(): Promise<ReturnedFinalConfig> {
     const appName = CHHA_APPNAME;
     console.log(`Building app ${appName}...`);
@@ -110,7 +125,7 @@ export async function parseAllYaml(): Promise<ReturnedFinalConfig> {
                 configs: {},
             };
         }
-        const appObj = constructedObj.apps[obj.app];
+        const appObj = constructedObj.apps[obj.app]!;
         if (obj.type === "page") {
             appObj.pages[obj.pageName] = obj;
         } else if (obj.type === "config") {
@@ -136,12 +151,14 @@ function getFilesToCache(finalObj: ReturnedFinalConfig): string[] {
     const filesToCache = [];
     for (const appName in finalObj.apps) {
         const appConfig = finalObj.apps[appName];
-        for (const configName in appConfig.configs) {
-            const {config, configType} = appConfig.configs[configName];
+        if (appConfig === undefined) {
+           throw new Error("Undefined appconfig: " + appName);
+        }
+
+        for (const {configType, config} of getRecordValues(appConfig.configs)) {
             if (configType === "db_config") {
-                const allDBConfigs = config as RawAllDBConfig;
-                for (const dbName in allDBConfigs) {
-                    const dbConfig = allDBConfigs[dbName];
+                const allDBConfigs = (config as RawAllDBConfig).dbs;
+                for (const dbConfig of getRecordValues(allDBConfigs)) {
                     for (const key in dbConfig.loadInfo) {
                         const validKey = key as keyof typeof dbConfig.loadInfo;
                         if (key.startsWith("local")) {
@@ -190,19 +207,22 @@ async function genWriteEnvFile(envFileBody: string) {
 }
 
 async function genWriteFinalConfig(jsonString: string) {
-    writeFile(CONFIG_TARGET_JSON, jsonString).then(
-            () => console.log(`* Wrote out "${CONFIG_TARGET_JSON}"...`));
+    writeFile(PUBLIC_DIR_PREFIX + CONFIG_TARGET_JSON_FILENAME, jsonString).then(
+            () => console.log(`* Wrote out "${CONFIG_TARGET_JSON_FILENAME}"...`));
 }
 
 (async function () {
-    const finalObj = await parseAllYaml();
-    const filesToCache = getFilesToCache(finalObj);
+    const generatedFinalConfig = await parseAllYaml();
+    const checkedFinalConfig = returnedFinalConfigSchema.parse(generatedFinalConfig);
 
-    const finalObjJsonString = JSON.stringify(finalObj);
     // This must be written before the env file, since we generate an md5sum of the json file for precaching
+    const finalObjJsonString = JSON.stringify(checkedFinalConfig);
     await genWriteFinalConfig(finalObjJsonString);
-    filesToCache.push(CONFIG_TARGET_JSON);
 
+    const filesToCache = [
+        ...getFilesToCache(checkedFinalConfig),
+        CONFIG_TARGET_JSON_FILENAME
+    ];
     const precacheEntries = await genPrecacheEntries(filesToCache);
     const precacheEntriesJsonString = JSON.stringify(precacheEntries);
     const envFileOutputText = makeEnvFileEntry(CACHE_LINE_ENV_VARNAME, precacheEntriesJsonString);
