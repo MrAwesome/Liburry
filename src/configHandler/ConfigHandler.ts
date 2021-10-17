@@ -6,6 +6,8 @@ export default class ConfigHandler {
     async genLoadFinalConfig(): Promise<ReturnedFinalConfig> {
         return fetch(CONFIG_TARGET_JSON_FILENAME)
             .then((text) => text.json())
+            // XXX TODO: note that this uses zod's parse method, which will throw if it encounters an error.
+            //           this should use .spa, and give a sensible error to the user when we encounter a parsing error
             .then((blob) => returnedFinalConfigSchema.parseAsync(blob));
     }
 }

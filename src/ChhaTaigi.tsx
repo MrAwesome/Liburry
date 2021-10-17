@@ -19,7 +19,7 @@ import {AnnotatedPerDictResults} from "./types/dbTypes";
 import {AppConfig, DBConfig, DBIdentifier} from "./types/config";
 import {SearchContext} from "./SearchValidityManager";
 
-// TODO(CRITICAL): handle changes in csv versions!
+// TODO(urgent): notifications to user on load/parse errors in the config
 // TODO(urgent): fix bug when doing ctrl-backspace to clear during search
 // TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): error messages for if offline and no cache
@@ -382,6 +382,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     // TODO: this should give some visual indication of the saved search
+    // TODO: this should happen after a timeout when the user stops typing
     saveNewestQuery() {
         const query = this.newestQuery;
         this.setStateTyped((state) => ({options: {...state.options, savedQuery: query}}));
