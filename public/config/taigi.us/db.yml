@@ -21,1010 +21,1009 @@
 # fields:
 #
 
-dbs:
-  ChhoeTaigi_EmbreeTaiengSutian:
-    enabled: True
-
-    displayName:
-      eng_us: Embree
-
-    loadInfo:
-      localCSV: db/ChhoeTaigi_EmbreeTaiengSutian.csv
-
-    primaryKey: DictWordID
-
-    fields:
-      DictWordID:
-        type:
-          dictionary: id
-
-      PojUnicode:
-        type:
-          dictionary: vocab
-        dialect: poj
-        delimiter: /
-        lengthHint: long
-
-      PojNormalized:
-        type:
-          dictionary: normalized
-        dialect: poj
-        delimiter: /
-        lengthHint: long
-
-      PojInput:
-        type:
-          dictionary: input
-        dialect: poj
-        delimiter: /
-        lengthHint: long
-
-      KipUnicode:
-        type:
-          dictionary: vocab
-        dialect: kip
-        delimiter: /
-        lengthHint: long
-
-      KipNormalized:
-        type:
-          dictionary: normalized
-        dialect: kip
-        delimiter: /
-        lengthHint: long
-
-      KipInput:
-        type:
-          dictionary: input
-        dialect: kip
-        delimiter: /
-        lengthHint: long
-
-      Abbreviation:
-        type:
-          dictionary: pos_classification
-        lengthHint: med
-
-      NounClassifier:
-        type:
-          dictionary: measure_word
-        dialect: poj
-        delimiter: /
-        lengthHint: single
-        status: sparse
-
-      Reduplication:
-        type:
-          dictionary: vocab_other
-        dialect: poj
-        delimiter: /
-        lengthHint: med
-        status: sparse
-
-      HoaBun:
-        type:
-          dictionary: definition
-        dialect: hoabun
-        lengthHint: med
-
-      EngBun:
-        type:
-          dictionary: definition
-        dialect: english
-        lengthHint: long
-
-      Synonym:
-        type:
-          dictionary: synonym
-        dialect: poj
-        delimiter: /
-        lengthHint: short
-        status: sparse
-
-      Confer:
-        type:
-          dictionary: opposite
-        dialect: poj
-        delimiter: /
-        lengthHint: short
-        status: sparse
-
-      PageNumber:
-        type:
-          dictionary: page_number
-
-  ChhoeTaigi_iTaigiHoataiTuichiautian:
-    displayName:
-      eng_us: iTaigi
-
-    loadInfo:
-      localCSV: db/ChhoeTaigi_iTaigiHoataiTuichiautian.csv
-
-    primaryKey: DictWordID
-
-    fields:
-      DictWordID:
-        type:
-          dictionary: id
-
-      PojUnicode:
-        type:
-          dictionary: vocab
-        dialect: poj
-        delimiter: /
-        lengthHint: long
-
-      PojNormalized:
-        type:
-          dictionary: normalized
-        dialect: poj
-        delimiter: /
-        lengthHint: long
-
-      PojInput:
-        type:
-          dictionary: input
-        dialect: poj
-        delimiter: /
-        lengthHint: long
-
-      KipUnicode:
-        type:
-          dictionary: vocab
-        dialect: kip
-        delimiter: /
-        lengthHint: long
-
-      KipNormalized:
-        type:
-          dictionary: normalized
-        dialect: kip
-        delimiter: /
-        lengthHint: long
-
-      KipInput:
-        type:
-          dictionary: input
-        dialect: kip
-        delimiter: /
-        lengthHint: long
-
-      HanLoTaibunPoj:
-        type:
-          dictionary: vocab
-        dialect: taibun_poj
-        lengthHint: med
-
-      HanLoTaibunKip:
-        type:
-          dictionary: vocab
-        dialect: taibun_kip
-        lengthHint: med
-
-      HoaBun:
-        type:
-          dictionary: definition
-        dialect: hoabun
-        lengthHint: med
-        notes: Some english in the hoabun field.
-
-      DataProvidedBy:
-        type:
-          dictionary: contributor
-        lengthHint: short
-
-  ChhoeTaigi_KamJitian:
-    displayName:
-      eng_us: KamJitian
-
-    loadInfo:
-      localCSV: db/ChhoeTaigi_KamJitian.csv
-
-    primaryKey: DictWordID
-
-    fields:
-      DictWordID:
-        type:
-          dictionary: id
-
-      PojUnicode:
-        type:
-          dictionary: vocab
-        dialect: poj
-        lengthHint: single
-        notes: This DB consists entirely of single-character entries.
-
-      PojNormalized:
-        type:
-          dictionary: normalized
-        dialect: poj
-        lengthHint: single
-
-      PojInput:
-        type:
-          dictionary: input
-        dialect: poj
-        lengthHint: single
-
-      HanLoTaibunPoj:
-        type:
-          dictionary: vocab
-        dialect: taibun_hanji
-        lengthHint: single
-        notes: Inconsistent use of "-" and "?" for blank/unknown.
-
-      HanbunImPojUnicode:
-        type:
-          dictionary: vocab_other
-        dialect: poj
-        delimiter: sparse
-        lengthHint: single
-
-      HanbunImPojInput:
-        type:
-          dictionary: input_other
-        dialect: poj
-        delimiter: sparse
-        lengthHint: single
-
-      KaisoehPoj:
-        type:
-          dictionary: definition
-        dialect: poj
-        lengthHint: long
-
-      KaisoehHanLoPoj:
-        type:
-          dictionary: definition
-        dialect: taibun_poj
-        lengthHint: long
-
-      KipUnicode:
-        type:
-          dictionary: vocab
-        dialect: kip
-        lengthHint: single
-
-      KipNormalized:
-        type:
-          dictionary: normalized
-        dialect: kip
-        lengthHint: single
-
-      KipInput:
-        type:
-          dictionary: input
-        dialect: kip
-        lengthHint: single
-
-      HanbunImKipUnicode:
-        type:
-          dictionary: vocab_other
-        dialect: kip
-        status: sparse
-        lengthHint: single
-
-      HanbunImKipInput:
-        type:
-          dictionary: input_other
-        dialect: kip
-        status: sparse
-        lengthHint: single
-
-      KaisoehKip:
-        type:
-          dictionary: definition
-        dialect: kip
-        lengthHint: long
-
-      PageNumber:
-        type:
-          dictionary: page_number
-
-  ChhoeTaigi_KauiokpooTaigiSutian:
-    displayName:
-      eng_us: Kauiokpoo
-
-    loadInfo:
-      localCSV: db/ChhoeTaigi_KauiokpooTaigiSutian.csv
-
-    primaryKey: DictWordID
-
-    fields:
-      DictWordID:
-        type:
-          dictionary: id
-
-      PojUnicode:
-        type:
-          dictionary: vocab
-        dialect: poj
-        delimiter: /
-        lengthHint: med
-
-      PojNormalized:
-        type:
-          dictionary: normalized
-        dialect: poj
-        delimiter: /
-        lengthHint: med
-
-      PojUnicodeOthers:
-        type:
-          dictionary: vocab_other
-        dialect: poj
-        delimiter: /
-        lengthHint: med
-        status: sparse
-
-      PojInput:
-        type:
-          dictionary: input
-        dialect: poj
-        delimiter: /
-        lengthHint: med
-
-      PojInputOthers:
-        type:
-          dictionary: input_other
-        dialect: poj
-        delimiter: /
-        lengthHint: med
-
-      KipUnicode:
-        type:
-          dictionary: vocab
-        dialect: kip
-        delimiter: /
-        lengthHint: med
-
-      KipNormalized:
-        type:
-          dictionary: normalized
-        dialect: kip
-        delimiter: /
-        lengthHint: med
-
-      KipUnicodeOthers:
-        type:
-          dictionary: vocab_other
-        dialect: kip
-        delimiter: /
-        lengthHint: med
-
-      KipInput:
-        type:
-          dictionary: input
-        dialect: kip
-        delimiter: /
-        lengthHint: med
-
-      KipInputOthers:
-        type:
-          dictionary: input_other
-        dialect: kip
-        delimiter: /
-        lengthHint: med
-        status: sparse
-
-      HanLoTaibunPoj:
-        type:
-          dictionary: vocab
-        dialect: taibun_hanji
-        lengthHint: med
-        notes: Delimiter could be 、
-
-      KipDictHanjiTaibunOthers:
-        type:
-          dictionary: vocab_other
-        dialect: taibun_hanji
-        lengthHint: med
-        status: sparse
-        notes: Delimiter could be 、
-
-      KipDictWordProperty:
-        type:
-          dictionary: class
-        dialect: hoabun
-        lengthHint: short
-        status: sparse
-
-      HoaBun:
-        type:
-          dictionary: definition
-        dialect: hoabun
-        lengthHint: med
-
-      KaisoehHanLoPoj:
-        type:
-          dictionary: definition
-        dialect:
-          - poj
-          - taibun_poj
-          - hoabun
-        delimiterRegex: (?=[0-9]\.[【 ])
-        lengthHint: very_long
-
-      KaisoehHanLoKip:
-        type:
-          dictionary: definition
-        dialect:
-          - kip
-          - taibun_kip
-          - hoabun
-        delimiterRegex: (?=[0-9]\.[【 ])
-        lengthHint: very_long
-
-      KipDictDialects:
-        type:
-          dictionary: vocab_other
-        dialect:
-          - kip
-          - taibun_kip
-          - hoabun
-        delimiter: "。"
-        lengthHint: very_long
-        status: sparse
-
-      Synonym:
-        type:
-          dictionary: synonym
-        dialect: hoabun
-        lengthHint: med
-        status: sparse
-        notes: Delimiter could be 、
-
-      Opposite:
-        type:
-          dictionary: opposite
-        dialect: hoabun
-        lengthHint: med
-        status: sparse
-        notes: Delimiter could be 、
-
-  ChhoeTaigi_MaryknollTaiengSutian:
-    enabled: True
-
-    displayName:
-      eng_us: Maryknoll
-
-    loadInfo:
-      localCSV: db/ChhoeTaigi_MaryknollTaiengSutian.csv
-
-    primaryKey: DictWordID
-
-    fields:
-      DictWordID:
-        type:
-          dictionary: id
-
-      PojUnicode:
-        type:
-          dictionary: vocab
-        dialect: poj
-        delimiter: INCONSISTENT
-        lengthHint: long
-
-      PojNormalized:
-        type:
-          dictionary: normalized
-        dialect: poj
-        delimiter: INCONSISTENT
-        lengthHint: long
-
-      PojInput:
-        type:
-          dictionary: input
-        dialect: poj
-        delimiter: INCONSISTENT
-        lengthHint: long
-
-      KipUnicode:
-        type:
-          dictionary: vocab
-        dialect: kip
-        delimiter: INCONSISTENT
-        lengthHint: long
-
-      KipNormalized:
-        type:
-          dictionary: normalized
-        dialect: kip
-        delimiter: INCONSISTENT
-        lengthHint: long
-
-      KipInput:
-        type:
-          dictionary: input
-        dialect: kip
-        delimiter: INCONSISTENT
-        lengthHint: long
-
-      HoaBun:
-        type:
-          dictionary: definition
-        dialect: hoabun
-        lengthHint: long
-
-      EngBun:
-        type:
-          dictionary: definition
-        dialect: english
-        lengthHint: long
-
-      PageNumber:
-        type:
-          dictionary: page_number
-        status: blank
-
-  ChhoeTaigi_TaihoaSoanntengTuichiautian:
-    displayName:
-      eng_us: TaihoaSoannteng
-
-    loadInfo:
-      localCSV: db/ChhoeTaigi_TaihoaSoanntengTuichiautian.csv
-
-    primaryKey: DictWordID
-
-    fields:
-      DictWordID:
-        type:
-          dictionary: id
-
-      PojUnicode:
-        type:
-          dictionary: vocab
-        dialect: poj
-        delimiter: /
-        lengthHint: short
-
-      PojNormalized:
-        type:
-          dictionary: normalized
-        dialect: poj
-        delimiter: /
-        lengthHint: short
-
-      PojUnicodeOthers:
-        type:
-          dictionary: vocab_other
-        dialect: poj
-        delimiter: /
-        status: sparse
-        notes: No examples of split, but assuming /.
-
-      PojInput:
-        type:
-          dictionary: input
-        dialect: poj
-        delimiter: /
-
-      PojInputOthers:
-        type:
-          dictionary: input_other
-        dialect: poj
-        delimiter: /
-        status: sparse
-        notes: No examples of split, but assuming /.
-
-      HanLoTaibunPoj:
-        type:
-          dictionary: vocab
-        dialect: taibun_poj
-
-      KipUnicode:
-        type:
-          dictionary: vocab
-        dialect: kip
-        delimiter: /
-
-      KipNormalized:
-        type:
-          dictionary: normalized
-        dialect: kip
-        delimiter: /
-
-      KipUnicodeOthers:
-        type:
-          dictionary: vocab_other
-        dialect: kip
-        delimiter: /
-        status: sparse
-        notes: No examples of split, but assuming /.
-
-      KipInput:
-        type:
-          dictionary: input
-        dialect: kip
-        delimiter: /
-
-      KipInputOthers:
-        type:
-          dictionary: input_other
-        dialect: kip
-        delimiter: /
-        status: sparse
-        notes: No examples of split, but assuming /.
-
-      HanLoTaibunKip:
-        type:
-          dictionary: vocab
-        dialect: taibun_kip
-
-      HoaBun:
-        type:
-          dictionary: definition
-        dialect: hoabun
-
-  ChhoeTaigi_TaijitToaSutian:
-    displayName:
-      eng_us: TaijitToaSutian
-
-    loadInfo:
-      localCSV: db/ChhoeTaigi_TaijitToaSutian.csv
-
-    primaryKey: DictWordID
-
-    fields:
-      DictWordID:
-        type:
-          dictionary: id
-
-      PojUnicode:
-        type:
-          dictionary: vocab
-        dialect: poj
-        delimiter: /
-        lengthHint: med
-
-      PojNormalized:
-        type:
-          dictionary: normalized
-        dialect: poj
-        delimiter: /
-        lengthHint: med
-
-      PojUnicodeOthers:
-        type:
-          dictionary: vocab_other
-        dialect: poj
-        delimiter: /
-        lengthHint: med
-        status: sparse
-        notes: "TODO: determine meaning of symbols, classify dialect accordingly"
-
-      PojInput:
-        type:
-          dictionary: input
-        dialect: poj
-        delimiter: /
-        lengthHint: med
-
-      PojInputOthers:
-        type:
-          dictionary: input_other
-        dialect: poj
-        delimiter: /
-        lengthHint: med
-        status: sparse
-        notes: "TODO: determine meaning of symbols, classify dialect accordingly"
-
-      HanLoTaibunPoj:
-        type:
-          dictionary: vocab
-        dialect: taibun_poj
-        delimiter: /
-        lengthHint: med
-        notes: 14 entries missing this.
-
-      KaisoehHanLoPoj:
-        type:
-          dictionary: definition
-        dialect: taibun_poj
-        delimiter: "。"
-        lengthHint: long
-        status: sparse
-        notes: 806 missing this.
-
-      LekuHanLoPoj:
-        type:
-          dictionary: example
-        dialect: taibun_poj
-        delimiter: "。"
-        lengthHint: long
-        status: sparse
-        notes: Delimiter possibly ";"
-
-      KipUnicode:
-        type:
-          dictionary: vocab
-        dialect: kip
-        delimiter: /
-        lengthHint: med
-
-      KipNormalized:
-        type:
-          dictionary: normalized
-        dialect: kip
-        delimiter: /
-        lengthHint: med
-
-      KipUnicodeOthers:
-        type:
-          dictionary: vocab_other
-        dialect: kip
-        delimiter: /
-        lengthHint: med
-        status: sparse
-
-      KipInput:
-        type:
-          dictionary: input
-        dialect: kip
-        delimiter: /
-        lengthHint: med
-
-      KipInputOthers:
-        type:
-          dictionary: input_other
-        dialect: kip
-        delimiter: /
-        lengthHint: med
-        status: sparse
-
-      HanLoTaibunKip:
-        type:
-          dictionary: vocab
-        dialect: taibun_kip
-        delimiter: /
-        lengthHint: med
-        notes: 14 entries missing this.
-
-      KaisoehHanLoKip:
-        type:
-          dictionary: definition
-        dialect: taibun_kip
-        delimiter: "。"
-        lengthHint: long
-        status: sparse
-        notes: 806 missing this.
-
-      LekuHanLoKip:
-        type:
-          dictionary: example
-        dialect: taibun_kip
-        delimiter: "。"
-        lengthHint: long
-        status: sparse
-
-      PageNumber:
-        type:
-          dictionary: page_number
-        lengthHint: med
-        notes: "Format like: B0780/B0783/etc"
-
-      GoanchhehPoochhiongChuliau:
-        status: empty
-
-  ChhoeTaigi_TaioanPehoeKichhooGiku:
-    enabled: True
-
-    displayName:
-      eng_us: Giku
-
-    loadInfo:
-      localCSV: db/ChhoeTaigi_TaioanPehoeKichhooGiku.csv
-
-    primaryKey: DictWordID
-
-    fields:
-      DictWordID:
-        type:
-          dictionary: id
-
-      PojUnicode:
-        type:
-          dictionary: vocab
-        dialect: poj
-        lengthHint: med
-
-      PojNormalized:
-        type:
-          dictionary: normalized
-        dialect: poj
-        lengthHint: med
-
-      PojUnicodeOthers:
-        type:
-          dictionary: vocab_other
-        dialect: poj
-        lengthHint: med
-
-      PojInput:
-        type:
-          dictionary: input
-        dialect: poj
-        lengthHint: med
-
-      PojInputOthers:
-        type:
-          dictionary: input_other
-        dialect: poj
-        lengthHint: med
-
-      KipUnicode:
-        type:
-          dictionary: vocab
-        dialect: kip
-        lengthHint: med
-
-      KipNormalized:
-        type:
-          dictionary: normalized
-        dialect: kip
-        lengthHint: med
-
-      KipUnicodeOthers:
-        type:
-          dictionary: vocab_other
-        dialect: kip
-        lengthHint: med
-
-      KipInput:
-        type:
-          dictionary: input
-        dialect: kip
-        lengthHint: med
-
-      KipInputOthers:
-        type:
-          dictionary: input_other
-        dialect: kip
-        lengthHint: med
-
-      HoaBun:
-        type:
-          dictionary: definition
-        dialect: hoabun
-        lengthHint: med
-        status: sparse
-        notes: Some entries have english_soatbeng but not hoabun or english.
-
-      EngBun:
-        type:
-          dictionary: definition
-        dialect: english
-        lengthHint: long
-        status: sparse
-        notes: Some entries have KaisoehEngbun but not hoabun or english.
-
-      KaisoehEngbun:
-        type:
-          dictionary: explanation
-        dialect: english
-        lengthHint: very_long
-        status: sparse
-
-      NounClassifier:
-        type:
-          dictionary: measure_word
-        dialect: poj
-        delimiter: /
-        lengthHint: short
-        status: sparse
-
-      LesuPoj:
-        type:
-          dictionary: example_phrase
-        dialect: poj
-        delimiter: /
-        lengthHint: long
-        status: sparse
-        notes: Small phrases.
-
-      Opposite:
-        type:
-          dictionary: opposite
-        dialect: poj
-        delimiter: /
-        lengthHint: short
-        status: sparse
-
-      LekuPoj:
-        type:
-          dictionary: matched_example
-        dialect: poj
-        delimiter: /
-        lengthHint: long
-        status: sparse
-        notes: "NOTE: Although the field name says taibun_poj, it appears to be POJ only!"
-
-      LekuEngbun:
-        type:
-          dictionary: matched_example
-        dialect: english
-        delimiter: \
-        lengthHint: long
-        status: sparse
-        notes: "NOTE: Backslashes as delimiters!"
-
-      LekuHoabun:
-        type:
-          dictionary: matched_example
-        dialect: hoabun
-        delimiter: /
-        lengthHint: long
-        status: sparse
-        notes: "NOTE: Some hoabun/poj/english definitions have the incorrect language."
-
-      Confer:
-        type:
-          dictionary: base_phrase
-        dialect: poj
-        lengthHint: short
-        status: sparse
-        notes: "NOTE: some parens."
-
-      PageNumber:
-        type:
-          dictionary: page_number
-
-  ChhoeTaigi_TaioanSitbutMialui:
-    displayName:
-      eng_us: Mialui
-
-    loadInfo:
-      localCSV: db/ChhoeTaigi_TaioanSitbutMialui.csv
-
-    primaryKey: DictWordID
-
-    fields:
-      DictWordID:
-        type:
-          dictionary: id
-
-      PojUnicode:
-        type:
-          dictionary: vocab
-        dialect: poj
-        lengthHint: short
-
-      PojNormalized:
-        type:
-          dictionary: normalized
-        dialect: poj
-        lengthHint: short
-
-      PojInput:
-        type:
-          dictionary: input
-        dialect: poj
-        lengthHint: short
-
-      KipUnicode:
-        type:
-          dictionary: vocab
-        dialect: kip
-        lengthHint: short
-
-      KipNormalized:
-        type:
-          dictionary: normalized
-        dialect: kip
-        lengthHint: short
-
-      KipInput:
-        type:
-          dictionary: input
-        dialect: kip
-        lengthHint: short
-
-      HanLoTaibunPoj:
-        type:
-          dictionary: definition
-        dialect: taibun
-        lengthHint: short
-
-      PageNumber:
-        type:
-          dictionary: page_number
+ChhoeTaigi_EmbreeTaiengSutian:
+  enabled: True
+
+  displayName:
+    eng_us: Embree
+
+  loadInfo:
+    localCSV: db/ChhoeTaigi_EmbreeTaiengSutian.csv
+
+  primaryKey: DictWordID
+
+  fields:
+    DictWordID:
+      type:
+        dictionary: id
+
+    PojUnicode:
+      type:
+        dictionary: vocab
+      dialect: poj
+      delimiter: /
+      lengthHint: long
+
+    PojNormalized:
+      type:
+        dictionary: normalized
+      dialect: poj
+      delimiter: /
+      lengthHint: long
+
+    PojInput:
+      type:
+        dictionary: input
+      dialect: poj
+      delimiter: /
+      lengthHint: long
+
+    KipUnicode:
+      type:
+        dictionary: vocab
+      dialect: kip
+      delimiter: /
+      lengthHint: long
+
+    KipNormalized:
+      type:
+        dictionary: normalized
+      dialect: kip
+      delimiter: /
+      lengthHint: long
+
+    KipInput:
+      type:
+        dictionary: input
+      dialect: kip
+      delimiter: /
+      lengthHint: long
+
+    Abbreviation:
+      type:
+        dictionary: pos_classification
+      lengthHint: med
+
+    NounClassifier:
+      type:
+        dictionary: measure_word
+      dialect: poj
+      delimiter: /
+      lengthHint: single
+      status: sparse
+
+    Reduplication:
+      type:
+        dictionary: vocab_other
+      dialect: poj
+      delimiter: /
+      lengthHint: med
+      status: sparse
+
+    HoaBun:
+      type:
+        dictionary: definition
+      dialect: hoabun
+      lengthHint: med
+
+    EngBun:
+      type:
+        dictionary: definition
+      dialect: english
+      lengthHint: long
+
+    Synonym:
+      type:
+        dictionary: synonym
+      dialect: poj
+      delimiter: /
+      lengthHint: short
+      status: sparse
+
+    Confer:
+      type:
+        dictionary: opposite
+      dialect: poj
+      delimiter: /
+      lengthHint: short
+      status: sparse
+
+    PageNumber:
+      type:
+        dictionary: page_number
+
+ChhoeTaigi_iTaigiHoataiTuichiautian:
+  displayName:
+    eng_us: iTaigi
+
+  loadInfo:
+    localCSV: db/ChhoeTaigi_iTaigiHoataiTuichiautian.csv
+
+  primaryKey: DictWordID
+
+  fields:
+    DictWordID:
+      type:
+        dictionary: id
+
+    PojUnicode:
+      type:
+        dictionary: vocab
+      dialect: poj
+      delimiter: /
+      lengthHint: long
+
+    PojNormalized:
+      type:
+        dictionary: normalized
+      dialect: poj
+      delimiter: /
+      lengthHint: long
+
+    PojInput:
+      type:
+        dictionary: input
+      dialect: poj
+      delimiter: /
+      lengthHint: long
+
+    KipUnicode:
+      type:
+        dictionary: vocab
+      dialect: kip
+      delimiter: /
+      lengthHint: long
+
+    KipNormalized:
+      type:
+        dictionary: normalized
+      dialect: kip
+      delimiter: /
+      lengthHint: long
+
+    KipInput:
+      type:
+        dictionary: input
+      dialect: kip
+      delimiter: /
+      lengthHint: long
+
+    HanLoTaibunPoj:
+      type:
+        dictionary: vocab
+      dialect: taibun_poj
+      lengthHint: med
+
+    HanLoTaibunKip:
+      type:
+        dictionary: vocab
+      dialect: taibun_kip
+      lengthHint: med
+
+    HoaBun:
+      type:
+        dictionary: definition
+      dialect: hoabun
+      lengthHint: med
+      notes: Some english in the hoabun field.
+
+    DataProvidedBy:
+      type:
+        dictionary: contributor
+      lengthHint: short
+
+ChhoeTaigi_KamJitian:
+  displayName:
+    eng_us: KamJitian
+
+  loadInfo:
+    localCSV: db/ChhoeTaigi_KamJitian.csv
+
+  primaryKey: DictWordID
+
+  fields:
+    DictWordID:
+      type:
+        dictionary: id
+
+    PojUnicode:
+      type:
+        dictionary: vocab
+      dialect: poj
+      lengthHint: single
+      notes: This DB consists entirely of single-character entries.
+
+    PojNormalized:
+      type:
+        dictionary: normalized
+      dialect: poj
+      lengthHint: single
+
+    PojInput:
+      type:
+        dictionary: input
+      dialect: poj
+      lengthHint: single
+
+    HanLoTaibunPoj:
+      type:
+        dictionary: vocab
+      dialect: taibun_hanji
+      lengthHint: single
+      notes: Inconsistent use of "-" and "?" for blank/unknown.
+
+    HanbunImPojUnicode:
+      type:
+        dictionary: vocab_other
+      dialect: poj
+      delimiter: sparse
+      lengthHint: single
+
+    HanbunImPojInput:
+      type:
+        dictionary: input_other
+      dialect: poj
+      delimiter: sparse
+      lengthHint: single
+
+    KaisoehPoj:
+      type:
+        dictionary: definition
+      dialect: poj
+      lengthHint: long
+
+    KaisoehHanLoPoj:
+      type:
+        dictionary: definition
+      dialect: taibun_poj
+      lengthHint: long
+
+    KipUnicode:
+      type:
+        dictionary: vocab
+      dialect: kip
+      lengthHint: single
+
+    KipNormalized:
+      type:
+        dictionary: normalized
+      dialect: kip
+      lengthHint: single
+
+    KipInput:
+      type:
+        dictionary: input
+      dialect: kip
+      lengthHint: single
+
+    HanbunImKipUnicode:
+      type:
+        dictionary: vocab_other
+      dialect: kip
+      status: sparse
+      lengthHint: single
+
+    HanbunImKipInput:
+      type:
+        dictionary: input_other
+      dialect: kip
+      status: sparse
+      lengthHint: single
+
+    KaisoehKip:
+      type:
+        dictionary: definition
+      dialect: kip
+      lengthHint: long
+
+    PageNumber:
+      type:
+        dictionary: page_number
+
+ChhoeTaigi_KauiokpooTaigiSutian:
+  displayName:
+    eng_us: Kauiokpoo
+
+  loadInfo:
+    localCSV: db/ChhoeTaigi_KauiokpooTaigiSutian.csv
+
+  primaryKey: DictWordID
+
+  fields:
+    DictWordID:
+      type:
+        dictionary: id
+
+    PojUnicode:
+      type:
+        dictionary: vocab
+      dialect: poj
+      delimiter: /
+      lengthHint: med
+
+    PojNormalized:
+      type:
+        dictionary: normalized
+      dialect: poj
+      delimiter: /
+      lengthHint: med
+
+    PojUnicodeOthers:
+      type:
+        dictionary: vocab_other
+      dialect: poj
+      delimiter: /
+      lengthHint: med
+      status: sparse
+
+    PojInput:
+      type:
+        dictionary: input
+      dialect: poj
+      delimiter: /
+      lengthHint: med
+
+    PojInputOthers:
+      type:
+        dictionary: input_other
+      dialect: poj
+      delimiter: /
+      lengthHint: med
+
+    KipUnicode:
+      type:
+        dictionary: vocab
+      dialect: kip
+      delimiter: /
+      lengthHint: med
+
+    KipNormalized:
+      type:
+        dictionary: normalized
+      dialect: kip
+      delimiter: /
+      lengthHint: med
+
+    KipUnicodeOthers:
+      type:
+        dictionary: vocab_other
+      dialect: kip
+      delimiter: /
+      lengthHint: med
+
+    KipInput:
+      type:
+        dictionary: input
+      dialect: kip
+      delimiter: /
+      lengthHint: med
+
+    KipInputOthers:
+      type:
+        dictionary: input_other
+      dialect: kip
+      delimiter: /
+      lengthHint: med
+      status: sparse
+
+    HanLoTaibunPoj:
+      type:
+        dictionary: vocab
+      dialect: taibun_hanji
+      lengthHint: med
+      notes: Delimiter could be 、
+
+    KipDictHanjiTaibunOthers:
+      type:
+        dictionary: vocab_other
+      dialect: taibun_hanji
+      lengthHint: med
+      status: sparse
+      notes: Delimiter could be 、
+
+    KipDictWordProperty:
+      type:
+        dictionary: class
+      dialect: hoabun
+      lengthHint: short
+      status: sparse
+
+    HoaBun:
+      type:
+        dictionary: definition
+      dialect: hoabun
+      lengthHint: med
+
+    KaisoehHanLoPoj:
+      type:
+        dictionary: definition
+      dialect:
+        - poj
+        - taibun_poj
+        - hoabun
+      delimiterRegex: (?=[0-9]\.[【 ])
+      lengthHint: very_long
+
+    KaisoehHanLoKip:
+      type:
+        dictionary: definition
+      dialect:
+        - kip
+        - taibun_kip
+        - hoabun
+      delimiterRegex: (?=[0-9]\.[【 ])
+      lengthHint: very_long
+
+    KipDictDialects:
+      type:
+        dictionary: vocab_other
+      dialect:
+        - kip
+        - taibun_kip
+        - hoabun
+      delimiter: "。"
+      lengthHint: very_long
+      status: sparse
+
+    Synonym:
+      type:
+        dictionary: synonym
+      dialect: hoabun
+      lengthHint: med
+      status: sparse
+      notes: Delimiter could be 、
+
+    Opposite:
+      type:
+        dictionary: opposite
+      dialect: hoabun
+      lengthHint: med
+      status: sparse
+      notes: Delimiter could be 、
+
+ChhoeTaigi_MaryknollTaiengSutian:
+  enabled: True
+
+  displayName:
+    eng_us: Maryknoll
+
+  loadInfo:
+    localCSV: db/ChhoeTaigi_MaryknollTaiengSutian.csv
+
+  primaryKey: DictWordID
+
+  fields:
+    DictWordID:
+      type:
+        dictionary: id
+
+    PojUnicode:
+      type:
+        dictionary: vocab
+      dialect: poj
+      delimiter: INCONSISTENT
+      lengthHint: long
+
+    PojNormalized:
+      type:
+        dictionary: normalized
+      dialect: poj
+      delimiter: INCONSISTENT
+      lengthHint: long
+
+    PojInput:
+      type:
+        dictionary: input
+      dialect: poj
+      delimiter: INCONSISTENT
+      lengthHint: long
+
+    KipUnicode:
+      type:
+        dictionary: vocab
+      dialect: kip
+      delimiter: INCONSISTENT
+      lengthHint: long
+
+    KipNormalized:
+      type:
+        dictionary: normalized
+      dialect: kip
+      delimiter: INCONSISTENT
+      lengthHint: long
+
+    KipInput:
+      type:
+        dictionary: input
+      dialect: kip
+      delimiter: INCONSISTENT
+      lengthHint: long
+
+    HoaBun:
+      type:
+        dictionary: definition
+      dialect: hoabun
+      lengthHint: long
+
+    EngBun:
+      type:
+        dictionary: definition
+      dialect: english
+      lengthHint: long
+
+    PageNumber:
+      type:
+        dictionary: page_number
+      status: blank
+
+ChhoeTaigi_TaihoaSoanntengTuichiautian:
+  displayName:
+    eng_us: TaihoaSoannteng
+
+  loadInfo:
+    localCSV: db/ChhoeTaigi_TaihoaSoanntengTuichiautian.csv
+
+  primaryKey: DictWordID
+
+  fields:
+    DictWordID:
+      type:
+        dictionary: id
+
+    PojUnicode:
+      type:
+        dictionary: vocab
+      dialect: poj
+      delimiter: /
+      lengthHint: short
+
+    PojNormalized:
+      type:
+        dictionary: normalized
+      dialect: poj
+      delimiter: /
+      lengthHint: short
+
+    PojUnicodeOthers:
+      type:
+        dictionary: vocab_other
+      dialect: poj
+      delimiter: /
+      status: sparse
+      notes: No examples of split, but assuming /.
+
+    PojInput:
+      type:
+        dictionary: input
+      dialect: poj
+      delimiter: /
+
+    PojInputOthers:
+      type:
+        dictionary: input_other
+      dialect: poj
+      delimiter: /
+      status: sparse
+      notes: No examples of split, but assuming /.
+
+    HanLoTaibunPoj:
+      type:
+        dictionary: vocab
+      dialect: taibun_poj
+
+    KipUnicode:
+      type:
+        dictionary: vocab
+      dialect: kip
+      delimiter: /
+
+    KipNormalized:
+      type:
+        dictionary: normalized
+      dialect: kip
+      delimiter: /
+
+    KipUnicodeOthers:
+      type:
+        dictionary: vocab_other
+      dialect: kip
+      delimiter: /
+      status: sparse
+      notes: No examples of split, but assuming /.
+
+    KipInput:
+      type:
+        dictionary: input
+      dialect: kip
+      delimiter: /
+
+    KipInputOthers:
+      type:
+        dictionary: input_other
+      dialect: kip
+      delimiter: /
+      status: sparse
+      notes: No examples of split, but assuming /.
+
+    HanLoTaibunKip:
+      type:
+        dictionary: vocab
+      dialect: taibun_kip
+
+    HoaBun:
+      type:
+        dictionary: definition
+      dialect: hoabun
+
+ChhoeTaigi_TaijitToaSutian:
+  displayName:
+    eng_us: TaijitToaSutian
+
+  loadInfo:
+    localCSV: db/ChhoeTaigi_TaijitToaSutian.csv
+
+  primaryKey: DictWordID
+
+  fields:
+    DictWordID:
+      type:
+        dictionary: id
+
+    PojUnicode:
+      type:
+        dictionary: vocab
+      dialect: poj
+      delimiter: /
+      lengthHint: med
+
+    PojNormalized:
+      type:
+        dictionary: normalized
+      dialect: poj
+      delimiter: /
+      lengthHint: med
+
+    PojUnicodeOthers:
+      type:
+        dictionary: vocab_other
+      dialect: poj
+      delimiter: /
+      lengthHint: med
+      status: sparse
+      notes: "TODO: determine meaning of symbols, classify dialect accordingly"
+
+    PojInput:
+      type:
+        dictionary: input
+      dialect: poj
+      delimiter: /
+      lengthHint: med
+
+    PojInputOthers:
+      type:
+        dictionary: input_other
+      dialect: poj
+      delimiter: /
+      lengthHint: med
+      status: sparse
+      notes: "TODO: determine meaning of symbols, classify dialect accordingly"
+
+    HanLoTaibunPoj:
+      type:
+        dictionary: vocab
+      dialect: taibun_poj
+      delimiter: /
+      lengthHint: med
+      notes: 14 entries missing this.
+
+    KaisoehHanLoPoj:
+      type:
+        dictionary: definition
+      dialect: taibun_poj
+      delimiter: "。"
+      lengthHint: long
+      status: sparse
+      notes: 806 missing this.
+
+    LekuHanLoPoj:
+      type:
+        dictionary: example
+      dialect: taibun_poj
+      delimiter: "。"
+      lengthHint: long
+      status: sparse
+      notes: Delimiter possibly ";"
+
+    KipUnicode:
+      type:
+        dictionary: vocab
+      dialect: kip
+      delimiter: /
+      lengthHint: med
+
+    KipNormalized:
+      type:
+        dictionary: normalized
+      dialect: kip
+      delimiter: /
+      lengthHint: med
+
+    KipUnicodeOthers:
+      type:
+        dictionary: vocab_other
+      dialect: kip
+      delimiter: /
+      lengthHint: med
+      status: sparse
+
+    KipInput:
+      type:
+        dictionary: input
+      dialect: kip
+      delimiter: /
+      lengthHint: med
+
+    KipInputOthers:
+      type:
+        dictionary: input_other
+      dialect: kip
+      delimiter: /
+      lengthHint: med
+      status: sparse
+
+    HanLoTaibunKip:
+      type:
+        dictionary: vocab
+      dialect: taibun_kip
+      delimiter: /
+      lengthHint: med
+      notes: 14 entries missing this.
+
+    KaisoehHanLoKip:
+      type:
+        dictionary: definition
+      dialect: taibun_kip
+      delimiter: "。"
+      lengthHint: long
+      status: sparse
+      notes: 806 missing this.
+
+    LekuHanLoKip:
+      type:
+        dictionary: example
+      dialect: taibun_kip
+      delimiter: "。"
+      lengthHint: long
+      status: sparse
+
+    PageNumber:
+      type:
+        dictionary: page_number
+      lengthHint: med
+      notes: "Format like: B0780/B0783/etc"
+
+    GoanchhehPoochhiongChuliau:
+      status: empty
+
+ChhoeTaigi_TaioanPehoeKichhooGiku:
+  enabled: True
+
+  displayName:
+    eng_us: Giku
+
+  loadInfo:
+    localCSV: db/ChhoeTaigi_TaioanPehoeKichhooGiku.csv
+
+  primaryKey: DictWordID
+
+  fields:
+    DictWordID:
+      type:
+        dictionary: id
+
+    PojUnicode:
+      type:
+        dictionary: vocab
+      dialect: poj
+      lengthHint: med
+
+    PojNormalized:
+      type:
+        dictionary: normalized
+      dialect: poj
+      lengthHint: med
+
+    PojUnicodeOthers:
+      type:
+        dictionary: vocab_other
+      dialect: poj
+      lengthHint: med
+
+    PojInput:
+      type:
+        dictionary: input
+      dialect: poj
+      lengthHint: med
+
+    PojInputOthers:
+      type:
+        dictionary: input_other
+      dialect: poj
+      lengthHint: med
+
+    KipUnicode:
+      type:
+        dictionary: vocab
+      dialect: kip
+      lengthHint: med
+
+    KipNormalized:
+      type:
+        dictionary: normalized
+      dialect: kip
+      lengthHint: med
+
+    KipUnicodeOthers:
+      type:
+        dictionary: vocab_other
+      dialect: kip
+      lengthHint: med
+
+    KipInput:
+      type:
+        dictionary: input
+      dialect: kip
+      lengthHint: med
+
+    KipInputOthers:
+      type:
+        dictionary: input_other
+      dialect: kip
+      lengthHint: med
+
+    HoaBun:
+      type:
+        dictionary: definition
+      dialect: hoabun
+      lengthHint: med
+      status: sparse
+      notes: Some entries have english_soatbeng but not hoabun or english.
+
+    EngBun:
+      type:
+        dictionary: definition
+      dialect: english
+      lengthHint: long
+      status: sparse
+      notes: Some entries have KaisoehEngbun but not hoabun or english.
+
+    KaisoehEngbun:
+      type:
+        dictionary: explanation
+      dialect: english
+      lengthHint: very_long
+      status: sparse
+
+    NounClassifier:
+      type:
+        dictionary: measure_word
+      dialect: poj
+      delimiter: /
+      lengthHint: short
+      status: sparse
+
+    LesuPoj:
+      type:
+        dictionary: example_phrase
+      dialect: poj
+      delimiter: /
+      lengthHint: long
+      status: sparse
+      notes: Small phrases.
+
+    Opposite:
+      type:
+        dictionary: opposite
+      dialect: poj
+      delimiter: /
+      lengthHint: short
+      status: sparse
+
+    LekuPoj:
+      type:
+        dictionary: matched_example
+      dialect: poj
+      delimiter: /
+      lengthHint: long
+      status: sparse
+      notes: "NOTE: Although the field name says taibun_poj, it appears to be POJ only!"
+
+    LekuEngbun:
+      type:
+        dictionary: matched_example
+      dialect: english
+      delimiter: \
+      lengthHint: long
+      status: sparse
+      notes: "NOTE: Backslashes as delimiters!"
+
+    LekuHoabun:
+      type:
+        dictionary: matched_example
+      dialect: hoabun
+      delimiter: /
+      lengthHint: long
+      status: sparse
+      notes: "NOTE: Some hoabun/poj/english definitions have the incorrect language."
+
+    Confer:
+      type:
+        dictionary: base_phrase
+      dialect: poj
+      lengthHint: short
+      status: sparse
+      notes: "NOTE: some parens."
+
+    PageNumber:
+      type:
+        dictionary: page_number
+
+ChhoeTaigi_TaioanSitbutMialui:
+  displayName:
+    eng_us: Mialui
+
+  loadInfo:
+    localCSV: db/ChhoeTaigi_TaioanSitbutMialui.csv
+
+  primaryKey: DictWordID
+
+  fields:
+    DictWordID:
+      type:
+        dictionary: id
+
+    PojUnicode:
+      type:
+        dictionary: vocab
+      dialect: poj
+      lengthHint: short
+
+    PojNormalized:
+      type:
+        dictionary: normalized
+      dialect: poj
+      lengthHint: short
+
+    PojInput:
+      type:
+        dictionary: input
+      dialect: poj
+      lengthHint: short
+
+    KipUnicode:
+      type:
+        dictionary: vocab
+      dialect: kip
+      lengthHint: short
+
+    KipNormalized:
+      type:
+        dictionary: normalized
+      dialect: kip
+      lengthHint: short
+
+    KipInput:
+      type:
+        dictionary: input
+      dialect: kip
+      lengthHint: short
+
+    HanLoTaibunPoj:
+      type:
+        dictionary: definition
+      dialect: taibun
+      lengthHint: short
+
+    PageNumber:
+      type:
+        dictionary: page_number

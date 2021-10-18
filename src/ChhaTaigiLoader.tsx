@@ -1,7 +1,7 @@
 import * as React from "react";
 import {ChhaTaigi} from "./ChhaTaigi";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
-import ConfigLoader from "./configHandler/ConfigHandler";
+import ConfigHandler from "./configHandler/ConfigHandler";
 import {ProgressHandler} from "./progressBars/ProgressBars";
 import {AppConfig} from "./types/config";
 
@@ -31,10 +31,12 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
     componentDidMount() {
         // TODO(wishlist): progressbar for each DB, in a flexbox constellation
 
-        const configLoader = new ConfigLoader();
+        const configHandler = new ConfigHandler(CHHA_APPNAME);
 
         const configPromises = [
-            configLoader.genLoadFinalConfig(),
+            //configHandler.loadAppConfig(),
+            configHandler.loadDBConfigs(),
+            //configHandler.loadLanguageConfigs(),
         ];
         this.progress.numConfigsToLoad = configPromises.length;
 
@@ -49,8 +51,8 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
             });
         });
 
-        Promise.all(configPromises).then(([finalConfig]) => {
-            const appConfig = AppConfig.from(finalConfig, CHHA_APPNAME);
+        Promise.all(configPromises).then(([dbConfigs]) => {
+            const appConfig = AppConfig.from(dbConfigs);
             this.setState({appConfig})
         });
     }

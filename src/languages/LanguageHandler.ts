@@ -1,6 +1,5 @@
 import Dialect from "./dialect";
 import type {RawLangConfig} from "../configHandler/zodConfigTypes";
-import {getRecordEntries} from "../utils";
 
 export default class LanguageHandler {
     private dialects: Dialect[];
@@ -9,7 +8,8 @@ export default class LanguageHandler {
         rawLangConfig: RawLangConfig,
     ) {
         this.dialects = [];
-        for (const [rawDialectID, rawDialect] of getRecordEntries(rawLangConfig.dialects)) {
+        for (const rawDialectID in rawLangConfig.dialects) {
+            const rawDialect = rawLangConfig.dialects[rawDialectID];
             this.dialects.push(Dialect.from(rawDialectID, rawDialect));
         }
         this.getAllDialects = this.getAllDialects.bind(this);

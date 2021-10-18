@@ -1,3 +1,5 @@
+// XXX TODO: this should be converted to use the YAML configs (and live elsewhere)
+//
 // TODO: determine if lunr indexes should be generated
 // TODO: this code should all live in a separate repo with the yml config, and "upstreamCSV" should be stored nearby
 import fs from 'fs';
@@ -10,6 +12,7 @@ import {OldLangDB, RawDBRow} from '../types/dbTypes';
 import {fromKipUnicodeToKipNormalized, fromPojUnicodeToPojNormalized} from './languageUtils';
 
 import lunr from 'lunr';
+import {CHHA_APPNAME} from '../constants';
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
 require("lunr-languages/lunr.multi")(lunr);
@@ -84,10 +87,10 @@ function writeFile(dbConfig: DBConfig, entries: RawDBRow[]) {
 
 }
 
-const configHandler = new ConfigHandler();
-const configPromises = [configHandler.genLoadFinalConfig()];
-Promise.all(configPromises).then(([finalConfig]) => {
-    const appConfig = AppConfig.from(finalConfig, "taigi.us");
+const configHandler = new ConfigHandler(CHHA_APPNAME, true);
+const configPromises = [configHandler.loadDBConfigs()];
+Promise.all(configPromises).then(([rawDBConfigs]) => {
+    const appConfig = AppConfig.from(rawDBConfigs);
     const dbConfigs = appConfig.getAllEnabledDBConfigs(true);
 
     dbConfigs.forEach((dbConfig) => {
