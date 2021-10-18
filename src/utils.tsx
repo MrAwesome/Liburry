@@ -40,3 +40,11 @@ export function makeNameToObjMapping<Obj extends HasName>(fields: Obj[]): Map<st
 export function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
+
+export function getRecordValues<T>(rec: Record<string, T | undefined>): Array<T> {
+    return Object.values(rec).filter(v => v !== undefined).map(v => v as T);;
+}
+
+export function getRecordEntries<T>(rec: Record<string, T | undefined>): Array<[string, T]> {
+    return Object.entries(rec).filter(([_, v]) => v !== undefined).map(([k, v]) => [k, v as T]);;
+}
