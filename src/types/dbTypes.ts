@@ -1,8 +1,8 @@
-import {RawAllowedFieldClassifierTags} from "../configHandler/zodConfigTypes";
-import {DialectID} from "../languages/dialect";
-import {DBSearchRanking} from "../search";
-import {AppConfig, DBIdentifier} from "./config";
-import {DataType, DisplayType} from "./displayTypes";
+import type {RawAllowedFieldClassifierTags} from "../configHandler/zodConfigTypes";
+import type {DialectID} from "../languages/dialect";
+import type {DBSearchRanking} from "../search";
+import type {AppConfig, DBIdentifier} from "./config";
+import type {DataType, DisplayType} from "./displayTypes";
 
 // TODO: move the code here that isn't type-only somewhere else
 

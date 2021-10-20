@@ -2,7 +2,6 @@ import {RawAllowedFieldClassifierTags, RawDBConfig, RawKnownDisplayTypeEntry, Re
 import {CHHA_ALLDB} from "../constants";
 import Dialect, {DialectID} from "../languages/dialect";
 import {getRecordEntries, getRecordValues} from "../utils";
-import {DBColName} from "./dbTypes";
 
 export class AppConfig {
     private constructor(
@@ -38,8 +37,7 @@ export class AppConfig {
         return Array.from(this.dbConfigs.values())
             .filter((dbConfig) =>
                 dbConfig.isEnabled() ||
-                ignoreEnabledTag ||
-                CHHA_ALLDB
+                ignoreEnabledTag
             );
     }
 
@@ -103,8 +101,9 @@ export class DBConfig {
         return this.r;
     }
 
+    // Note that the REACT_APP_CHHA_ALLDB env var can be used to force-enable all DBs for this app.
     isEnabled(): boolean {
-        return this.r.enabled ?? false;
+        return (this.r.enabled ?? false) || CHHA_ALLDB;
     }
 
     getDBLoadInfo() {
@@ -125,7 +124,7 @@ export class DBConfig {
     }
 
     // TODO: return a less-raw view into column metadata
-    getColumnMetadata(colName: DBColName): RawAllowedFieldClassifierTags {
+    getColumnMetadata(colName: string): RawAllowedFieldClassifierTags {
         // XXX: TODO: better error handling
         return this.r.fields[colName]!;
     }

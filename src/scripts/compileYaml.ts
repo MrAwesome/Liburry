@@ -10,7 +10,8 @@ import {promisify} from 'util';
 import {LoadedConfig, LoadedKnownFile, RawAllDBConfig, rawAllDBConfigSchema, rawAppConfigSchema, rawLangConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../configHandler/zodConfigTypes";
 import {CHHA_APPNAME, CONFIG_TARGET_JSON_FILENAME} from "../constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
-import {getRecordValues} from '../utils';
+import {getRecordEntries, getRecordValues} from '../utils';
+import {DBConfig} from '../types/config';
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
@@ -158,13 +159,17 @@ function getFilesToCache(finalObj: ReturnedFinalConfig): string[] {
         for (const {configType, config} of getRecordValues(appConfig.configs)) {
             if (configType === "db_config") {
                 const allDBConfigs = (config as RawAllDBConfig).dbs;
-                for (const dbConfig of getRecordValues(allDBConfigs)) {
-                    for (const key in dbConfig.loadInfo) {
-                        const validKey = key as keyof typeof dbConfig.loadInfo;
-                        if (key.startsWith("local")) {
-                            const localFilename = dbConfig.loadInfo[validKey];
-                            if (localFilename !== undefined) {
-                                filesToCache.push(localFilename);
+                for (const [dbIdentifier, rawDBConfig] of getRecordEntries(allDBConfigs)) {
+                    const dbConfig = new DBConfig(dbIdentifier, rawDBConfig);
+                    if (dbConfig.isEnabled()) {
+                        const loadInfo = dbConfig.getDBLoadInfo();
+                        for (const key in loadInfo) {
+                            const validKey = key as keyof typeof loadInfo;
+                            if (key.startsWith("local")) {
+                                const localFilename = loadInfo[validKey];
+                                if (localFilename !== undefined) {
+                                    filesToCache.push(localFilename);
+                                }
                             }
                         }
                     }

@@ -14,7 +14,7 @@
       manifest.json provides metadata used when your web app is added to the
       homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
     -->
-    <!-- TODO: handle manifest.json version in constants.ts -->
+    <!-- TODO: handle manifest.json version/location in constants.ts/elsewhere (use app name) -->
 	<link rel="manifest" href="%PUBLIC_URL%/manifest.json?v=6">
 	<link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
 	<!--
@@ -26,40 +26,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-
-
-    <!-- Google Noto Sans TC Font
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap" rel="stylesheet">
-    -->
-
-    <!--
-    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
-    <script>
-        WebFont.load({
-            google: {
-                families: ['Noto Sans TC:400,400i,700&display=swap'],
-            }
-        });
-    </script>
-    -->
-
-    <!--
-    <script>
-        WebFontConfig = {
-            google: { families: 'Noto Sans TC' }
-        };
-
-        (function(d) {
-            var wf = d.createElement('script'), s = d.scripts[0];
-            wf.src = 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js';
-            wf.async = true;
-            s.parentNode.insertBefore(wf, s);
-        })(document);
-    </script>
-    -->
-
-
+    <!-- TODO: use name from config -->
 	<title>Chhâ Tâi-gí!</title>
 </head>
 

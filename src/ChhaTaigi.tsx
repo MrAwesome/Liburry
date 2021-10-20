@@ -21,6 +21,7 @@ import {SearchContext} from "./SearchValidityManager";
 import WebFont from "webfontloader";
 
 // TODO(urgent): notifications to user on load/parse errors in the config
+// TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?)
 // TODO(urgent): fix bug when doing ctrl-backspace to clear during search
 // TODO(urgent): see if poj_normalized can be committed upstream
 // TODO(urgent): error messages for if offline and no cache
