@@ -2,7 +2,7 @@ import * as React from "react";
 import {ChhaTaigi} from "./ChhaTaigi";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import ConfigLoader from "./configHandler/ConfigHandler";
-import {ProgressHandler} from "./progressBars/ProgressBars";
+import {ProgressHandler, PROGRESS_BAR_HEIGHT} from "./progressBars/ProgressBars";
 import {AppConfig} from "./types/config";
 
 import "./progressBars/style.css";
@@ -64,6 +64,12 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
         const {options} = this.props;
         const {appConfig} = this.state;
 
+        const showingProgressBars = this.progress.shouldShowProgressBars();
+
+        const mainDivStyle: React.CSSProperties = {
+            transform: showingProgressBars ? "none" : `translateY(-${PROGRESS_BAR_HEIGHT})`,
+        };
+
         return <>
             {this.progress.getBars()}
 
@@ -73,6 +79,7 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
                     appConfig={appConfig}
                     updateDisplayForDBLoadEvent={this.progress.updateDisplayForDBLoadEvent}
                     updateDisplayForSearchEvent={this.progress.updateDisplayForSearchEvent}
+                    mainDivStyle={mainDivStyle}
                     key="ChhaTaigi"
                 />
                 : null // TODO: better loading default / errors

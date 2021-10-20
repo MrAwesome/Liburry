@@ -192,6 +192,7 @@ export interface ChhaTaigiProps {
     mockResults?: AnnotatedPerDictResults,
     updateDisplayForDBLoadEvent?: (loadedDBs: LoadedDBsMap) => void,
     updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
+    mainDivStyle: React.CSSProperties,
 };
 
 export class LoadedDBsMap extends Map<DBIdentifier, DBLoadStatus> {
@@ -436,7 +437,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         const {options} = this.getStateTyped();
 
         return (
-            <div className="ChhaTaigi">
+            <div className="ChhaTaigi" style={this.props.mainDivStyle}>
                 <div id="chhaSearchProgressbar" />
                 <SearchBar
                     ref={this.searchBar}

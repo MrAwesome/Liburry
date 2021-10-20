@@ -3,11 +3,10 @@ import {LoadedDBsMap} from "../ChhaTaigi";
 import {SearchContext} from "../SearchValidityManager";
 
 export const PROGRESS_BAR_HEIGHT_ANIMATION_LENGTH = 200;
-export const PROGRESS_BARS_HEIGHT = "4px";
+export const PROGRESS_BAR_HEIGHT = "4px";
 
 // TODO(wishlist): color-coded DBs, with loading bar color matching a color on the entrycontainer,
 //                 and a bar for each db
-
 
 export class ProgressHandler {
     numConfigsToLoad = 0;
@@ -25,6 +24,7 @@ export class ProgressHandler {
 
     constructor(private updateDisplay: () => void) {
         this.getBars = this.getBars.bind(this);
+        this.shouldShowProgressBars = this.shouldShowProgressBars.bind(this);
         this.updateDisplayForConfigEvent = this.updateDisplayForConfigEvent.bind(this);
         this.updateDisplayForDBLoadEvent = this.updateDisplayForDBLoadEvent.bind(this);
         this.updateDisplayForSearchEvent = this.updateDisplayForSearchEvent.bind(this);
@@ -42,12 +42,18 @@ export class ProgressHandler {
         this.searchShouldShow = false;
     }
 
-    getBars(): JSX.Element {
-        const height =
-            (this.configShouldShow || this.dbLoadShouldShow || this.searchShouldShow)
-                ? PROGRESS_BARS_HEIGHT : "0px";
+    shouldShowProgressBars(): boolean {
+        return (this.configShouldShow || this.dbLoadShouldShow || this.searchShouldShow);
+    }
 
-        return <div className="loadingBarContainer" style={{height}}>
+    getBars(): JSX.Element {
+        const progressBarHeightPercent = this.shouldShowProgressBars() ? 0 : -100;
+        const style: React.CSSProperties = {
+            transform: `translateY(${progressBarHeightPercent}%)`,
+            height: PROGRESS_BAR_HEIGHT,
+        }
+
+        return <div className="loadingBarContainer" style={style}>
             <ProgressBar
                 shouldShow={this.configShouldShow}
                 percentProgress={this.configProgress}
@@ -158,7 +164,7 @@ export class ProgressBar extends React.PureComponent<{
         const {percentProgress, elementID} = this.props;
         const widthPercent = Math.min(percentProgress * 100, 100);
         const style: React.CSSProperties = {
-                width: `${widthPercent}%`,
+                transform: `scaleX(${widthPercent}%)`,
         };
 
         const minDuration = 0.2;
