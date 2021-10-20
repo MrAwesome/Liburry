@@ -18,6 +18,7 @@ import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
 import {AnnotatedPerDictResults} from "./types/dbTypes";
 import {AppConfig, DBConfig, DBIdentifier} from "./types/config";
 import {SearchContext} from "./SearchValidityManager";
+import WebFont from "webfontloader";
 
 // TODO(urgent): notifications to user on load/parse errors in the config
 // TODO(urgent): fix bug when doing ctrl-backspace to clear during search
@@ -339,6 +340,13 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 console.warn("Detected double-mount, not starting workers...");
             }
         }, 1);
+
+        // TODO: determine where this should live, and allow it to be configured via env var
+        WebFont.load({
+            google: {
+                families: ['Noto Sans TC:400,400i,700&display=swap'],
+            }
+        });
     }
 
     componentWillUnmount() {

@@ -38,6 +38,7 @@
     "ts-loader": "^8.1.0",
     "typescript": "^4.2.4",
     "web-vitals": "^1.1.1",
+    "webfont": "^11.2.26",
     "webfontloader": "^1.6.28",
     "worker-loader": "^3.0.8",
     "xss": "^1.0.9"
