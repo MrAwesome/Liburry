@@ -4,12 +4,13 @@ import fs from 'fs';
 import papaparse from "papaparse";
 import fetch from "node-fetch";
 import ConfigHandler from '../configHandler/ConfigHandler';
-import {AppConfig, DBConfig} from '../types/config';
+import {DBConfig} from '../types/config';
 import {OldLangDB, RawDBRow} from '../types/dbTypes';
 //import {OLD_DATABASES} from "../searchSettings";
 import {fromKipUnicodeToKipNormalized, fromPojUnicodeToPojNormalized} from './languageUtils';
 
 import lunr from 'lunr';
+import AppConfig from '../config/AppConfig';
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
 require("lunr-languages/lunr.multi")(lunr);

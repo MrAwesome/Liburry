@@ -25,6 +25,7 @@ export class ProgressHandler {
     constructor(private updateDisplay: () => void) {
         this.getBars = this.getBars.bind(this);
         this.shouldShowProgressBars = this.shouldShowProgressBars.bind(this);
+        this.getProgressBarHeight = this.getProgressBarHeight.bind(this);
         this.updateDisplayForConfigEvent = this.updateDisplayForConfigEvent.bind(this);
         this.updateDisplayForDBLoadEvent = this.updateDisplayForDBLoadEvent.bind(this);
         this.updateDisplayForSearchEvent = this.updateDisplayForSearchEvent.bind(this);
@@ -46,11 +47,13 @@ export class ProgressHandler {
         return (this.configShouldShow || this.dbLoadShouldShow || this.searchShouldShow);
     }
 
+    getProgressBarHeight(): string {
+        return this.shouldShowProgressBars() ? PROGRESS_BAR_HEIGHT : "0px";
+    }
+
     getBars(): JSX.Element {
-        const progressBarHeightPercent = this.shouldShowProgressBars() ? 0 : -100;
         const style: React.CSSProperties = {
-            transform: `translateY(${progressBarHeightPercent}%)`,
-            height: PROGRESS_BAR_HEIGHT,
+            height: this.getProgressBarHeight(),
         }
 
         return <div className="loadingBarContainer" style={style}>

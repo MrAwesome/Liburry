@@ -2,11 +2,11 @@ import * as React from "react";
 import {ChhaTaigi} from "./ChhaTaigi";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import ConfigLoader from "./configHandler/ConfigHandler";
-import {ProgressHandler, PROGRESS_BAR_HEIGHT} from "./progressBars/ProgressBars";
-import {AppConfig} from "./types/config";
+import {ProgressHandler} from "./progressBars/ProgressBars";
 
 import "./progressBars/style.css";
 import {CHHA_APPNAME} from "./constants";
+import AppConfig from "./config/AppConfig";
 
 // XXX TODO: changes to these options won't be persistent here, as changes are handled downstream. Should they be handled here before being passed into the main component?
 interface ChhaTaigiLoaderProps {
@@ -64,11 +64,7 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
         const {options} = this.props;
         const {appConfig} = this.state;
 
-        const showingProgressBars = this.progress.shouldShowProgressBars();
-
-        const mainDivStyle: React.CSSProperties = {
-            transform: showingProgressBars ? "none" : `translateY(-${PROGRESS_BAR_HEIGHT})`,
-        };
+        const heightOffset = this.progress.getProgressBarHeight();
 
         return <>
             {this.progress.getBars()}
@@ -79,8 +75,8 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
                     appConfig={appConfig}
                     updateDisplayForDBLoadEvent={this.progress.updateDisplayForDBLoadEvent}
                     updateDisplayForSearchEvent={this.progress.updateDisplayForSearchEvent}
-                    mainDivStyle={mainDivStyle}
                     key="ChhaTaigi"
+                    heightOffset={heightOffset}
                 />
                 : null // TODO: better loading default / errors
             }

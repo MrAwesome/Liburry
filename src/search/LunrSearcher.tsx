@@ -68,12 +68,7 @@ export class LunrPreparer implements SearcherPreparer {
 
         this.console.time("lunr-total-index-" + dbIdentifier);
         this.console.time("lunr-fetch-index-" + dbIdentifier);
-        let versionString = "";
-        // XXX TODO: fix up version strings
-        //if (localLunrVersion) {
-        //    versionString = `?v=${localLunrVersion}`;
-        //}
-        const indexFetchAndLoad = fetch(localLunr + versionString)
+        const indexFetchAndLoad = fetch(localLunr)
             .then((response: Response) => {
                 // NOTE: just sending status updates from here, since the indices are *MUCH* larger than the CSVs
                 //       if desired, isDownloaded etc can become e.g. downloadProgress

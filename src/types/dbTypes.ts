@@ -1,7 +1,8 @@
+import type AppConfig from "../config/AppConfig";
 import type {RawAllowedFieldClassifierTags} from "../configHandler/zodConfigTypes";
 import type {DialectID} from "../languages/dialect";
 import type {DBSearchRanking} from "../search";
-import type {AppConfig, DBIdentifier} from "./config";
+import type {DBIdentifier} from "./config";
 import type {DataType, DisplayType} from "./displayTypes";
 
 // TODO: move the code here that isn't type-only somewhere else
@@ -241,6 +242,6 @@ export interface RawDBRow {
 }
 
 export function getDBRowKeys(r: RawDBRow): (keyof RawDBRow)[] {
-    const fields = Object.getOwnPropertyNames(r);
+    const fields = Object.keys(r);
     return fields;
 }

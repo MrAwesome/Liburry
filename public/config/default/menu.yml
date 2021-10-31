@@ -1,6 +1,6 @@
 links:
   home:
-    mode: "search"
+    mode: "home"
     displayNames:
       eng_us: "Home"
       tw_poj: "Chú-Phiⁿ" #?
@@ -17,3 +17,9 @@ links:
       eng_us: "Contact"
       tcn_tw: "連接" #?
       tw_poj: "Liân-Chiap" #?
+  settings:
+    mode: "settings"
+    displayNames:
+      eng_us: "Settings"
+      tcn_tw: "???????" #?
+      tw_poj: "???????" #?

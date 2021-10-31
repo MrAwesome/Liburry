@@ -2,7 +2,6 @@ import * as React from "react";
 import * as ReactDOM from 'react-dom';
 
 import "./ChhaTaigi.css";
-import "./pages.css";
 import QueryStringHandler from "./QueryStringHandler";
 
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';

@@ -1,11 +1,8 @@
 import {RawKnownDisplayTypeEntry} from "../configHandler/zodConfigTypes";
 
 export enum MainDisplayAreaMode {
-    HOME = "HOME",
     SEARCH = "SEARCH",
-    ABOUT = "ABOUT",
-    CONTACT = "CONTACT",
-    SETTINGS = "SETTINGS",
+    PAGE = "PAGE",
 }
 
 export type DisplayType = keyof RawKnownDisplayTypeEntry;

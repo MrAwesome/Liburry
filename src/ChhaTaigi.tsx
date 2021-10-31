@@ -2,7 +2,7 @@ import * as React from "react";
 
 import QueryStringHandler from "./QueryStringHandler";
 
-import {AboutPage, SearchBar} from "./components/components";
+import {SearchBar} from "./components/components";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
@@ -16,11 +16,16 @@ import OptionsChangeableByUser from "./ChhaTaigiOptions";
 
 import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
 import {AnnotatedPerDictResults} from "./types/dbTypes";
-import {AppConfig, DBConfig, DBIdentifier} from "./types/config";
+import {DBConfig, DBIdentifier} from "./types/config";
 import {SearchContext} from "./SearchValidityManager";
 import WebFont from "webfontloader";
+import AppConfig from "./config/AppConfig";
+import {PageID} from "./configHandler/zodConfigTypes";
+import {CombinedPageElement} from "./pages/Page";
 
+// TODO(urgent): always load a help page if there's an exception or things fail to load (so make it default?) that explains how to Ctrl-R, *clear cache*, and/or reload newest version of service worker (or offers buttons to do these things)
 // TODO(urgent): notifications to user on load/parse errors in the config
+// TODO(urgent): integration tests, new unit tests for recently-added classes
 // TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?)
 // TODO(urgent): fix bug when doing ctrl-backspace to clear during search
 // TODO(urgent): see if poj_normalized can be committed upstream
@@ -28,6 +33,7 @@ import WebFont from "webfontloader";
 // TODO(urgent): handle/log errors from: https://blog.logrocket.com/error-handling-react-error-boundary/
 // TODO(urgent): change server script to also generate normalized_other
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.scripts.js && node build/server.js` - let different parts of the build process be run separately, and standardize/document what is run
+// TODO(high): use json imports instead of fetch/local load, and have watchman behavior for ymls to regenerate the json (in src)
 // TODO(high): have loading bar float with the searchbar (will need a padding element which disappears at the same speed)
 // TODO(high): don't require a double-back right after submit
 // TODO(high): handle "-", "?", etc entries in KamJitian (make blankOutFieldsMatching)
@@ -193,7 +199,7 @@ export interface ChhaTaigiProps {
     mockResults?: AnnotatedPerDictResults,
     updateDisplayForDBLoadEvent?: (loadedDBs: LoadedDBsMap) => void,
     updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
-    mainDivStyle: React.CSSProperties,
+    heightOffset?: string,
 };
 
 export class LoadedDBsMap extends Map<DBIdentifier, DBLoadStatus> {
@@ -203,7 +209,7 @@ export class LoadedDBsMap extends Map<DBIdentifier, DBLoadStatus> {
         if (dbStatus !== undefined) {
             this.set(dbIdentifier, {...dbStatus, ...stateDelta});
         } else {
-            console.log(`Attempted to set load state on unknown DB: ${dbIdentifier} + ${stateDelta}`);
+            console.warn(`Attempted to set load state on unknown DB: ${dbIdentifier} + ${stateDelta}`);
         }
     }
 }
@@ -221,6 +227,7 @@ export interface ChhaTaigiState {
     options: OptionsChangeableByUser,
     resultsHolder: SearchResultsHolder,
     loadedDBs: LoadedDBsMap,
+    page: PageID | null,
 }
 
 export type GetMainState = () => ChhaTaigiState;
@@ -253,6 +260,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             options: this.props.options ?? new OptionsChangeableByUser(),
             loadedDBs: new LoadedDBsMap(initialDBLoadedMapping),
             resultsHolder: new SearchResultsHolder(),
+            page: null,
         };
 
         this.newestQuery = this.state.options.savedQuery;
@@ -267,6 +275,8 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.getNewestQuery = this.getNewestQuery.bind(this);
         this.getStateTyped = this.getStateTyped.bind(this);
         this.hashChange = this.hashChange.bind(this);
+        this.loadPage = this.loadPage.bind(this);
+        this.goHome = this.goHome.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
         this.overrideResultsForTests = this.overrideResultsForTests.bind(this);
         this.saveNewestQuery = this.saveNewestQuery.bind(this);
@@ -382,7 +392,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
     setMode(mode: MainDisplayAreaMode) {
         this.setStateTyped((state) => ({options: {...state.options, mainMode: mode}}));
-        queryStringHandler.updateMode(mode);
     }
 
     updateSearchBar(query: string) {
@@ -425,25 +434,35 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         switch (mode) {
             case MainDisplayAreaMode.SEARCH:
                 return this.getEntryComponents();
-            case MainDisplayAreaMode.ABOUT:
-                return <AboutPage />;
-            case MainDisplayAreaMode.SETTINGS:
-            case MainDisplayAreaMode.CONTACT:
-            case MainDisplayAreaMode.HOME:
-                return <></>;
+            case MainDisplayAreaMode.PAGE:
+                return <CombinedPageElement
+                    perAppPages={this.props.appConfig.pageHandler.getPagesForPageID(this.state.page ?? "")} />
         }
+    }
+
+    loadPage(pageID: PageID) {
+        // NOTE: this will probably cause a double-render - setMode should probably be changed
+        this.setStateTyped({page: pageID});
+        this.setMode(MainDisplayAreaMode.PAGE);
+    }
+
+    goHome() {
+        this.setMode(MainDisplayAreaMode.SEARCH);
     }
 
     render() {
         const {options} = this.getStateTyped();
 
         return (
-            <div className="ChhaTaigi" style={this.props.mainDivStyle}>
-                <div id="chhaSearchProgressbar" />
+            <div className="ChhaTaigi">
                 <SearchBar
+                    appConfig={this.props.appConfig}
                     ref={this.searchBar}
                     searchQuery={this.searchQuery}
                     saveNewestQuery={this.saveNewestQuery}
+                    heightOffset={this.props.heightOffset ?? "0px"}
+                    loadPage={this.loadPage}
+                    goHome={this.goHome}
                 />
                 {this.mainDisplayArea(options.mainMode)}
             </div>

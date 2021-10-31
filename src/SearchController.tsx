@@ -6,7 +6,8 @@ import SearchValidityManager, {SearchContext} from "./SearchValidityManager";
 import {AnnotatedPerDictResults, annotateRawResults, PerDictResultsRaw} from "./types/dbTypes";
 import {SearcherType} from "./search";
 import {DBLoadStatus, GetMainState, LoadedDBsMap, SetMainState} from "./ChhaTaigi";
-import {AppConfig, DBIdentifier} from "./types/config";
+import {DBIdentifier} from "./types/config";
+import type AppConfig from "./config/AppConfig";
 
 // TODO: write tests for this, which ensure the correct messages are sent and callbacks are called
 

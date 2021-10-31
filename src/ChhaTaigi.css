@@ -42,12 +42,14 @@ mark {
 }
 
 .search-bar-container {
+    position: relative;
 /*    padding: 2px; */
 /*    display: flex; */
 /*    justify-content: center; */
 }
 
 .search-bar {
+    top: 4px;
     position: fixed;
     width: 100%;
     z-index: 999;

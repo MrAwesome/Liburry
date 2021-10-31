@@ -7,7 +7,7 @@ import path from 'path';
 import md5File from 'md5-file';
 import {parseYaml} from "../utils/yaml";
 import {promisify} from 'util';
-import {LoadedConfig, LoadedKnownFile, RawAllDBConfig, rawAllDBConfigSchema, rawAppConfigSchema, rawLangConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../configHandler/zodConfigTypes";
+import {LoadedConfig, LoadedKnownFile, RawAllDBConfig, rawAllDBConfigSchema, rawAppConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../configHandler/zodConfigTypes";
 import {CHHA_APPNAME, CONFIG_TARGET_JSON_FILENAME} from "../constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
 import {getRecordEntries, getRecordValues} from '../utils';
@@ -38,14 +38,18 @@ export const YAML_FILENAME_TO_SCHEMA_MAPPING = {
     "lang.yml": {
         type: "lang_config",
         schema: rawLangConfigSchema,
+    },
+    "menu.yml": {
+        type: "menu_config",
+        schema: rawMenuConfigSchema,
     }
 } as const;
 
-export async function* walk(dir: string, subdirs: Array<string>): AsyncIterable<LoadedKnownFile | null> {
+export async function* walkFileTree(dir: string, subdirs: Array<string>): AsyncIterable<LoadedKnownFile | null> {
     for await (const d of await opendir(dir)) {
         const entry = path.join(dir, d.name);
         if (d.isDirectory()) {
-            yield* walk(entry, [...subdirs, d.name]);
+            yield* walkFileTree(entry, [...subdirs, d.name]);
         }
         else if (d.isFile()) {
             yield handleFile(entry, d.name, subdirs);
@@ -80,9 +84,9 @@ async function handleFile(path: string, filename: string, subdirs: Array<string>
         return {
             type: "page",
             app: subdirs[0],
-            pageName: subdirs[1],
             idChain: [...subdirs, lang],
             lang,
+            pageID: subdirs[1],
             pageType: "markdown",
             mdText,
         }
@@ -116,7 +120,7 @@ export async function parseAllYaml(): Promise<ReturnedFinalConfig> {
         apps: {},
     };
 
-    for await (const obj of walk(CONFIG_DIR, [])) {
+    for await (const obj of walkFileTree(CONFIG_DIR, [])) {
         if (obj === null) {
             continue;
         }
@@ -128,9 +132,9 @@ export async function parseAllYaml(): Promise<ReturnedFinalConfig> {
         }
         const appObj = constructedObj.apps[obj.app]!;
         if (obj.type === "page") {
-            appObj.pages[obj.pageName] = obj;
+            appObj.pages[obj.pageID] = obj;
         } else if (obj.type === "config") {
-            appObj.configs[obj.configType] = obj;
+            appObj.configs = {...appObj.configs, [obj.configType]: obj};
         }
     }
 

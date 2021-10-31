@@ -1,12 +1,16 @@
 import * as React from "react";
-import {MainDisplayAreaMode} from "../types/displayTypes";
-import QueryStringHandler from "../QueryStringHandler";
-import {REPO_LINK} from "../constants";
 import {isMobileDevice} from "../utils";
+import {BurgerMenu} from "../menu/BurgerMenu";
+import type AppConfig from "../config/AppConfig";
+import {PageID} from "../configHandler/zodConfigTypes";
 
 interface SearchBarProps {
-    searchQuery(query: string): void;
-    saveNewestQuery(): void;
+    appConfig: AppConfig,
+    searchQuery(query: string): void,
+    saveNewestQuery(): void,
+    heightOffset: string,
+    loadPage: (pageID: PageID) => void,
+    goHome: () => void,
 }
 
 interface SearchBarState {
@@ -30,6 +34,8 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
         if (this.textInput.current !== null) {
             this.textInput.current.value = query;
             this.textInput.current.focus();
+            // XXX TODO: hack to allow auto focus to work when using react-burger-menu
+            setTimeout(() => this?.textInput.current?.focus(), 100);
         }
     }
 
@@ -49,70 +55,31 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
     }
 
     render() {
+        const style: React.CSSProperties = {
+            top: this.props.heightOffset,
+        };
         return <>
             <div className="search-bar-container">
-                <div className="search-bar">
+                <div className="search-bar" style={style}>
                     <form onSubmit={this.onSubmit} autoComplete="off" >
                         <input
                             autoFocus
                             placeholder="Search..."
-                            type="search"
+                            type="text"
+                            autoComplete="off"
                             onChange={this.onChange}
                             ref={this.textInput}
                         />
                     </form>
                     <svg aria-hidden="true" className="mag-glass" ><path d="M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z"></path></svg>
                 </div>
+                <BurgerMenu
+                    appConfig={this.props.appConfig}
+                    loadPage={this.props.loadPage}
+                    goHome={this.props.goHome}
+                />
             </div>
             <div className="search-area-buffer" />
         </>
-    }
-}
-
-const selectBarToMainModeMapping = new Map([
-    ["Home", MainDisplayAreaMode.HOME],
-    ["Settings", MainDisplayAreaMode.SETTINGS],
-    ["Search", MainDisplayAreaMode.SEARCH],
-    ["About", MainDisplayAreaMode.ABOUT],
-    ["Contact", MainDisplayAreaMode.CONTACT],
-]);
-let queryStringHandler = new QueryStringHandler();
-
-export class SelectBar extends React.PureComponent<any, any> {
-    render() {
-        let links: JSX.Element[] = [];
-        selectBarToMainModeMapping.forEach((mode, str) => {
-            const lam = (e: any) => {
-                e.preventDefault();
-                queryStringHandler.updateMode(mode);
-            };
-            links.push(
-                <button onClick={lam}> {str} </button>
-            );
-        });
-        return <div className="select-bar">{links}</div>
-    }
-}
-
-// TODO: move to markdown/etc
-export class AboutPage extends React.PureComponent<any, any> {
-    render() {
-        return <div className="page">
-            <div className="page-header">ABOUT</div>
-            <div className="page-content">
-                <div className="about-container">
-                    <div className="about">
-                        <p>This website is powered by open source technology.</p>
-                        <p>The code can be viewed here:<br />
-                            <a href={REPO_LINK}>{REPO_LINK}</a>
-                        </p>
-
-                        <p>The databases used for search can all be found here, along with relevant licensing information:<br />
-                            <a href="https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/">https://github.com/ChhoeTaigi/ChhoeTaigiDatabase/</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
     }
 }

@@ -23,7 +23,6 @@
 
 dbs:
   ChhoeTaigi_EmbreeTaiengSutian:
-    enabled: True
 
     displayName:
       eng_us: Embree
@@ -134,6 +133,8 @@ dbs:
           dictionary: page_number
 
   ChhoeTaigi_iTaigiHoataiTuichiautian:
+    disabled: True
+
     displayName:
       eng_us: iTaigi
 
@@ -214,6 +215,8 @@ dbs:
         lengthHint: short
 
   ChhoeTaigi_KamJitian:
+    disabled: True
+
     displayName:
       eng_us: KamJitian
 
@@ -322,6 +325,8 @@ dbs:
           dictionary: page_number
 
   ChhoeTaigi_KauiokpooTaigiSutian:
+    disabled: True
+
     displayName:
       eng_us: Kauiokpoo
 
@@ -483,7 +488,6 @@ dbs:
         notes: Delimiter could be 、
 
   ChhoeTaigi_MaryknollTaiengSutian:
-    enabled: True
 
     displayName:
       eng_us: Maryknoll
@@ -558,6 +562,8 @@ dbs:
         status: blank
 
   ChhoeTaigi_TaihoaSoanntengTuichiautian:
+    disabled: True
+
     displayName:
       eng_us: TaihoaSoannteng
 
@@ -657,6 +663,8 @@ dbs:
         dialect: hoabun
 
   ChhoeTaigi_TaijitToaSutian:
+    disabled: True
+
     displayName:
       eng_us: TaijitToaSutian
 
@@ -807,7 +815,6 @@ dbs:
         status: empty
 
   ChhoeTaigi_TaioanPehoeKichhooGiku:
-    enabled: True
 
     displayName:
       eng_us: Giku
@@ -970,6 +977,8 @@ dbs:
           dictionary: page_number
 
   ChhoeTaigi_TaioanSitbutMialui:
+    disabled: True
+
     displayName:
       eng_us: Mialui
 

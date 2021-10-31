@@ -1,7 +1,6 @@
 import qs from "qs";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import {SearcherType} from "./search";
-import {MainDisplayAreaMode} from "./types/displayTypes";
 
 // HACK to allow web worker loader to work:
 // https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/24#issuecomment-672853561
@@ -11,7 +10,6 @@ import {MainDisplayAreaMode} from "./types/displayTypes";
 // These are the actual fields used/set in the hash
 const QUERY = "q";
 const DEBUG = "debug";
-const MAIN_MODE = "mode";
 const SEARCHER = "searcher";
 const PLAYGROUND = "playground";
 
@@ -50,10 +48,6 @@ export default class QueryStringParser {
         this.update(QUERY, query, true);
     }
 
-    updateMode(mode: MainDisplayAreaMode) {
-        this.update(MAIN_MODE, MainDisplayAreaMode[mode]);
-    }
-
     private parseInternal() {
         return qs.parse(this.getString(), QS_PARSE_OPTS);
     }
@@ -84,7 +78,6 @@ export default class QueryStringParser {
         let options = new OptionsChangeableByUser();
         const parsed = this.parseInternal();
         const q = parsed[QUERY];
-        const mode = parsed[MAIN_MODE];
         const searcher = parsed[SEARCHER];
 
         if (typeof q === "string") {
@@ -94,13 +87,6 @@ export default class QueryStringParser {
         // TODO: abstract away this process
         options.debug = parsed[DEBUG] !== undefined;
         options.playground = parsed[PLAYGROUND] !== undefined;
-
-        if (typeof mode === "string") {
-            const modeUpper = mode.toUpperCase();
-            if (modeUpper in MainDisplayAreaMode) {
-                options.mainMode = MainDisplayAreaMode[modeUpper as keyof typeof MainDisplayAreaMode];
-            }
-        }
 
         if (typeof searcher === "string") {
             const searcherUpper = searcher.toUpperCase();

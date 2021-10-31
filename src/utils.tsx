@@ -48,3 +48,12 @@ export function getRecordValues<T>(rec: Record<string, T | undefined>): Array<T>
 export function getRecordEntries<T>(rec: Record<string, T | undefined>): Array<[string, T]> {
     return Object.entries(rec).filter(([_, v]) => v !== undefined).map(([k, v]) => [k, v as T]);;
 }
+
+export async function nodeReadFileFromDir(dirname: string, filename: string): Promise<string> {
+    const fs = await import('fs');
+    const path = await import('path');
+    const {promisify} = await import('util');
+    const readFile = promisify(fs.readFile);
+
+    return readFile(path.join(dirname, filename)).then(x => x.toString());
+}

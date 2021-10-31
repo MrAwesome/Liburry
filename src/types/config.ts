@@ -1,50 +1,7 @@
-import {RawAllowedFieldClassifierTags, RawDBConfig, RawKnownDisplayTypeEntry, ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
+import {RawAllowedFieldClassifierTags, RawDBConfig, RawKnownDisplayTypeEntry} from "../configHandler/zodConfigTypes";
 import {CHHA_ALLDB} from "../constants";
 import Dialect, {DialectID} from "../languages/dialect";
-import {getRecordEntries, getRecordValues} from "../utils";
-
-export class AppConfig {
-    private constructor(
-        //private appIdentifier: string,
-        //private displayName: string,
-        //private interfaceLangs: string[],
-        //rawAllDBConfigs: RawAllDBConfig,
-        private dbConfigs: Map<DBIdentifier, DBConfig>,
-        //private langConfigs: RawLangConfig[],
-    ) {
-    }
-
-    static from(
-        finalConfig: ReturnedFinalConfig,
-        appName: string,
-    ) {
-        const dbIdentifierToConfigPairs: [DBIdentifier, DBConfig][] = [];
-        // XXX TODO: better error handling if app doesn't exist
-        const appConfig = finalConfig.apps[appName]!;
-        const allConfigs = appConfig.configs;
-        for (const config of getRecordValues(allConfigs)) {
-            if (config.configType === "db_config") {
-                for (const [dbIdentifier, rawDBConfig] of getRecordEntries(config.config.dbs)) {
-                    dbIdentifierToConfigPairs.push([dbIdentifier, new DBConfig(dbIdentifier, rawDBConfig)]);
-                }
-            }
-        }
-        const dbConfigs = new Map(dbIdentifierToConfigPairs);
-        return new AppConfig(dbConfigs);
-    }
-
-    getAllEnabledDBConfigs(ignoreEnabledTag?: boolean): DBConfig[] {
-        return Array.from(this.dbConfigs.values())
-            .filter((dbConfig) =>
-                dbConfig.isEnabled() ||
-                ignoreEnabledTag
-            );
-    }
-
-    getDBConfig(dbIdentifier: DBIdentifier): DBConfig | null{
-        return this.dbConfigs.get(dbIdentifier) ?? null;
-    }
-}
+import {getRecordEntries} from "../utils";
 
 export interface DBLoadInfo {
     localCSV?: string;
@@ -101,9 +58,12 @@ export class DBConfig {
         return this.r;
     }
 
-    // Note that the REACT_APP_CHHA_ALLDB env var can be used to force-enable all DBs for this app.
+    // Note:
+    // * the REACT_APP_CHHA_ALLDB env var can be used to force-enable all DBs for this app.
+    // * if the "disabled" flag isn't present for a db, it defaults to enabled.
     isEnabled(): boolean {
-        return (this.r.enabled ?? false) || CHHA_ALLDB;
+        const isDisabled = this.r.disabled ?? false;
+        return !isDisabled || CHHA_ALLDB;
     }
 
     getDBLoadInfo() {
