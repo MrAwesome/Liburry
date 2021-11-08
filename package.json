@@ -46,7 +46,8 @@
     "webfont": "^11.2.26",
     "webfontloader": "^1.6.28",
     "worker-loader": "^3.0.8",
-    "xss": "^1.0.9"
+    "xss": "^1.0.9",
+    "yaml-loader": "^0.6.0"
   },
   "devDependencies": {
     "md5-file": "^5.0.0",

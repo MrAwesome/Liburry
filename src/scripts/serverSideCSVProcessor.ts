@@ -3,7 +3,7 @@
 import fs from 'fs';
 import papaparse from "papaparse";
 import fetch from "node-fetch";
-import ConfigHandler from '../configHandler/ConfigHandler';
+import ConfigHandler, {CHError} from '../configHandler/ConfigHandler';
 import {DBConfig} from '../types/config';
 import {OldLangDB, RawDBRow} from '../types/dbTypes';
 //import {OLD_DATABASES} from "../searchSettings";
@@ -86,7 +86,7 @@ function writeFile(dbConfig: DBConfig, entries: RawDBRow[]) {
 }
 
 const configHandler = new ConfigHandler();
-const configPromises = [configHandler.genLoadFinalConfig()];
+const configPromises = [configHandler.genLoadFinalConfigLocal()];
 Promise.all(configPromises).then(([finalConfig]) => {
     const appConfig = AppConfig.from(finalConfig, "taigi.us");
     const dbConfigs = appConfig.getAllEnabledDBConfigs(true);

@@ -23,8 +23,7 @@ import AppConfig from "./config/AppConfig";
 import {PageID} from "./configHandler/zodConfigTypes";
 import {CombinedPageElement} from "./pages/Page";
 
-// TODO(urgent): always load a help page if there's an exception or things fail to load (so make it default?) that explains how to Ctrl-R, *clear cache*, and/or reload newest version of service worker (or offers buttons to do these things)
-// TODO(urgent): notifications to user on load/parse errors in the config
+// TODO(urgent): always load a help page if there's an exception or things fail to load (so make it default?) that explains how to Ctrl-R, *clear cache*, and/or reload newest version of service worker (or offers buttons to do these things) TODO NEXT: abstract away configHandler error page, and make it work for all error types
 // TODO(urgent): integration tests, new unit tests for recently-added classes
 // TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?)
 // TODO(urgent): fix bug when doing ctrl-backspace to clear during search
@@ -33,7 +32,8 @@ import {CombinedPageElement} from "./pages/Page";
 // TODO(urgent): handle/log errors from: https://blog.logrocket.com/error-handling-react-error-boundary/
 // TODO(urgent): change server script to also generate normalized_other
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.scripts.js && node build/server.js` - let different parts of the build process be run separately, and standardize/document what is run
-// TODO(high): use json imports instead of fetch/local load, and have watchman behavior for ymls to regenerate the json (in src)
+// TODO(high): move config directory to src/, since it no longer needs to be public
+// TODO(high): use json imports instead of fetch/local load, and have watchman behavior for ymls to regenerate the json (in src) (aka, use yaml-loader (will require ejecting, or using react-app-rewired))
 // TODO(high): have loading bar float with the searchbar (will need a padding element which disappears at the same speed)
 // TODO(high): don't require a double-back right after submit
 // TODO(high): handle "-", "?", etc entries in KamJitian (make blankOutFieldsMatching)
@@ -66,7 +66,6 @@ import {CombinedPageElement} from "./pages/Page";
 // TODO(high): fix icon sizes/manifest: https://github.com/facebook/create-react-app/blob/master/packages/cra-template/template/public/manifest.json (both ico and icon)
 // TODO(high): handle alternate spellings / parentheticals vs separate fields
 // TODO(high): handle explanation text (see "le" in Giku)
-// TODO(high): add copyright/about page/info
 // TODO(high): Fix clipboard notif not working on most browsers
 // TODO(high): Copy to clipboard on click or tab-enter (allow for tab/hover enter/click focus equivalency?)
 // TODO(high): create an index of all 3 categories combined, and search that as text?
@@ -91,6 +90,8 @@ import {CombinedPageElement} from "./pages/Page";
 // TODO(mid): move search bar to middle of page when no results and no search yet
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
+// TODO(low): fix burger menu location not changing when bar is loading (can't use absolute position, need to use fixed and change top)
+// TODO(low): only show border around title/name when there are multiple (or put border between them, or show them on separate lines)
 // TODO(low): localization for links, about section, etc
 // TODO(low): localization for og:description etc, and/or alternates
 // TODO(low): better color for manifest.json theme

@@ -1,0 +1,52 @@
+.config-handler-error-container {
+    width: 100%;
+    padding-top: 3px;
+}
+
+.config-handler-error {
+    max-width: 80%;
+    margin: 0 auto;
+    border: 1px solid black;
+    border-radius: 8px;
+    background: white;
+}
+
+.config-handler-error-header {
+    font-style: italic;
+    border-bottom: 1px solid black;
+    background: white;
+    padding: 0px 10px;
+    text-align: center;
+    border-radius: 8px 8px 0px 0px;
+}
+
+.config-handler-error-body {
+    background: pink;
+    border-bottom: 1px solid black;
+}
+
+.config-handler-error-type, .config-handler-error-message {
+    padding: 0px 10px;
+}
+.config-handler-error-type {
+    border-bottom: 1px solid black;
+    padding: 0px 10px;
+}
+
+.config-handler-error-type-prefix, .config-handler-error-message-prefix {
+    font-style: italic;
+    display: inline-block;
+    width: 20%;
+    user-select: none;
+}
+
+.config-handler-error-type-content, .config-handler-error-message-content {
+    padding-left: 5px;
+    font-weight: bold;
+    border-left: 1px solid black;
+    display: inline;
+}
+
+.config-handler-howto {
+    padding: 6px;
+}

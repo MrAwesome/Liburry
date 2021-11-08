@@ -1,12 +1,14 @@
 import * as React from "react";
 import {ChhaTaigi} from "./ChhaTaigi";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
-import ConfigLoader from "./configHandler/ConfigHandler";
+import ConfigLoader, {CHError} from "./configHandler/ConfigHandler";
 import {ProgressHandler} from "./progressBars/ProgressBars";
 
 import "./progressBars/style.css";
 import {CHHA_APPNAME} from "./constants";
 import AppConfig from "./config/AppConfig";
+import {ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
+import ConfigHandlerErrorDisplay from "./configHandler/ConfigHandlerErrorDisplay";
 
 // XXX TODO: changes to these options won't be persistent here, as changes are handled downstream. Should they be handled here before being passed into the main component?
 interface ChhaTaigiLoaderProps {
@@ -15,6 +17,7 @@ interface ChhaTaigiLoaderProps {
 
 interface ChhaTaigiLoaderState {
     appConfig?: AppConfig,
+    configHandlerError?: CHError,
 }
 
 export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaTaigiLoaderState> {
@@ -49,9 +52,17 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
             });
         });
 
-        Promise.all(configPromises).then(([finalConfig]) => {
-            const appConfig = AppConfig.from(finalConfig, CHHA_APPNAME);
-            this.setState({appConfig})
+        Promise.all(configPromises).then(([finalConfigOrErr]) => {
+            // TODO: rather than check this here, just have something in confighandler that returns a tsx and display that?
+            if ((finalConfigOrErr as CHError).chErrType !== undefined) {
+                const configHandlerError = finalConfigOrErr as CHError;
+                console.error("ConfigHandler Error: ", configHandlerError);
+                this.setState({configHandlerError});
+            } else {
+                const finalConfig = finalConfigOrErr as ReturnedFinalConfig;
+                const appConfig = AppConfig.from(finalConfig, CHHA_APPNAME);
+                this.setState({appConfig})
+            }
         });
     }
 
@@ -62,24 +73,29 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
 
     render() {
         const {options} = this.props;
-        const {appConfig} = this.state;
+        const {appConfig, configHandlerError} = this.state;
 
         const heightOffset = this.progress.getProgressBarHeight();
 
+        const chError = configHandlerError !== undefined
+            ? <ConfigHandlerErrorDisplay configHandlerError={configHandlerError} />
+            : null;
+
+        let mainApp = appConfig !== undefined
+            ? <ChhaTaigi
+                options={options}
+                appConfig={appConfig}
+                updateDisplayForDBLoadEvent={this.progress.updateDisplayForDBLoadEvent}
+                updateDisplayForSearchEvent={this.progress.updateDisplayForSearchEvent}
+                key="ChhaTaigi"
+                heightOffset={heightOffset}
+            />
+            : null;
+
         return <>
             {this.progress.getBars()}
-
-            {appConfig !== undefined
-                ? <ChhaTaigi
-                    options={options}
-                    appConfig={appConfig}
-                    updateDisplayForDBLoadEvent={this.progress.updateDisplayForDBLoadEvent}
-                    updateDisplayForSearchEvent={this.progress.updateDisplayForSearchEvent}
-                    key="ChhaTaigi"
-                    heightOffset={heightOffset}
-                />
-                : null // TODO: better loading default / errors
-            }
+            {chError}
+            {mainApp}
         </>
     }
 }
