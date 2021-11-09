@@ -1,28 +1,26 @@
 import * as React from "react";
 
+import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
+import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import QueryStringHandler from "./QueryStringHandler";
-
-import {SearchBar} from "./components/components";
-import {MainDisplayAreaMode} from "./types/displayTypes";
+import SearchController from "./SearchController";
+import SearchResultsHolder from "./SearchResultsHolder";
+import WebFont from "webfontloader";
 
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
-
-import SearchResultsHolder from "./SearchResultsHolder";
-
-import SearchController from "./SearchController";
-
-import {runningInJest} from "./utils";
-import OptionsChangeableByUser from "./ChhaTaigiOptions";
-
-import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
-import {AnnotatedPerDictResults} from "./types/dbTypes";
-import {DBConfig, DBIdentifier} from "./types/config";
-import {SearchContext} from "./SearchValidityManager";
-import WebFont from "webfontloader";
-import AppConfig from "./config/AppConfig";
-import {PageID} from "./configHandler/zodConfigTypes";
 import {CombinedPageElement} from "./pages/Page";
+import {MainDisplayAreaMode} from "./types/displayTypes";
+import {SearchBar} from "./components/components";
+import {runningInJest} from "./utils";
 
+import type {AnnotatedPerDictResults} from "./types/dbTypes";
+import type {DBConfig, DBIdentifier} from "./types/config";
+import type {SearchContext} from "./SearchValidityManager";
+import type AppConfig from "./config/AppConfig";
+import type {PageID} from "./configHandler/zodConfigTypes";
+
+// TODO(urgent): have page links remain as links
+// TODO(urgent): catch/fatalError on any critical path async functions, if any remain
 // TODO(urgent): always load a help page if there's an exception or things fail to load (so make it default?) that explains how to Ctrl-R, *clear cache*, and/or reload newest version of service worker (or offers buttons to do these things) TODO NEXT: abstract away configHandler error page, and make it work for all error types
 // TODO(urgent): integration tests, new unit tests for recently-added classes
 // TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?)

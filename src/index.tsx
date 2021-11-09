@@ -5,8 +5,8 @@ import "./ChhaTaigi.css";
 import QueryStringHandler from "./QueryStringHandler";
 
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import MuhErrorBoundary from "./errorHandling/MuhErrorBoundary";
 import {ChhaTaigiPlayground} from "./ChhaTaigiPlayground";
-import {ChhaTaigiLoader} from "./ChhaTaigiLoader";
 //import reportWebVitals from "./reportWebVitals";
 
 const queryStringHandler = new QueryStringHandler();
@@ -17,7 +17,7 @@ let app: JSX.Element;
 if (options.playground) {
     app = <ChhaTaigiPlayground options={options}/>;
 } else {
-    app = <ChhaTaigiLoader options={options}/>;
+    app = <MuhErrorBoundary options={options}/>
 }
 
 const rootElement = document.getElementById("root");

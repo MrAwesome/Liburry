@@ -3,7 +3,7 @@
 import fs from 'fs';
 import papaparse from "papaparse";
 import fetch from "node-fetch";
-import ConfigHandler, {CHError} from '../configHandler/ConfigHandler';
+import ConfigHandler from '../configHandler/ConfigHandler';
 import {DBConfig} from '../types/config';
 import {OldLangDB, RawDBRow} from '../types/dbTypes';
 //import {OLD_DATABASES} from "../searchSettings";
@@ -51,7 +51,7 @@ function processCSV(text: string): RawDBRow[] {
     return processed;
 }
 
-function writeLunrIndex(langDB: OldLangDB, entries: RawDBRow[]) {
+function _writeLunrIndex(langDB: OldLangDB, entries: RawDBRow[]) {
     const idx = lunr(function () {
         // @ts-ignore lunr-languages doesn't have types defined
         this.use(lunr.multiLanguage('en', 'zh'));
