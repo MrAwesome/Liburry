@@ -1,4 +1,4 @@
-import {CONFIG_TARGET_JSON_FILENAME} from "../constants";
+import {FINAL_CONFIG_LOCAL_LOCATION, FINAL_CONFIG_REMOTE_LOCATION} from "../constants";
 import {MuhError, MuhErrorType} from "../errorHandling/MuhError";
 import {nodeReadFileFromDir} from "../utils";
 import {ReturnedFinalConfig, returnedFinalConfigSchema} from "./zodConfigTypes";
@@ -39,7 +39,7 @@ export default class ConfigHandler {
 }
 
 async function fetchJSON(): Promise<Object> {
-    return fetch(CONFIG_TARGET_JSON_FILENAME)
+    return fetch(FINAL_CONFIG_REMOTE_LOCATION)
         .catch((err) => {
             throw new MuhError(MuhErrorType.FETCH_THREW, err);
         }).then(async (resp: Response) => {
@@ -59,7 +59,7 @@ async function fetchJSON(): Promise<Object> {
 async function fetchNode(): Promise<Object> {
     return nodeReadFileFromDir(
         "public/",
-        CONFIG_TARGET_JSON_FILENAME
+        FINAL_CONFIG_LOCAL_LOCATION
     ).then((text) => JSON.parse(text));
 }
 

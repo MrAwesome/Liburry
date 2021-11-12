@@ -8,7 +8,7 @@ import md5File from 'md5-file';
 import {parseYaml} from "../utils/yaml";
 import {promisify} from 'util';
 import {LoadedConfig, LoadedKnownFile, RawAllDBConfig, rawAllDBConfigSchema, rawAppConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../configHandler/zodConfigTypes";
-import {CHHA_APPNAME, CONFIG_TARGET_JSON_FILENAME} from "../constants";
+import {CHHA_APPNAME, FINAL_CONFIG_LOCAL_LOCATION} from "../constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
 import {getRecordEntries, getRecordValues} from '../utils';
 import {DBConfig} from '../types/config';
@@ -216,8 +216,8 @@ async function genWriteEnvFile(envFileBody: string) {
 }
 
 async function genWriteFinalConfig(jsonString: string) {
-    writeFile(PUBLIC_DIR_PREFIX + CONFIG_TARGET_JSON_FILENAME, jsonString).then(
-            () => console.log(`* Wrote out "${CONFIG_TARGET_JSON_FILENAME}"...`));
+    writeFile(PUBLIC_DIR_PREFIX + FINAL_CONFIG_LOCAL_LOCATION, jsonString).then(
+            () => console.log(`* Wrote out "${FINAL_CONFIG_LOCAL_LOCATION}"...`));
 }
 
 (async function () {
@@ -230,7 +230,7 @@ async function genWriteFinalConfig(jsonString: string) {
 
     const filesToCache = [
         ...getFilesToCache(checkedFinalConfig),
-        CONFIG_TARGET_JSON_FILENAME
+        FINAL_CONFIG_LOCAL_LOCATION
     ];
     const precacheEntries = await genPrecacheEntries(filesToCache);
     const precacheEntriesJsonString = JSON.stringify(precacheEntries);

@@ -20,6 +20,7 @@ import type AppConfig from "./config/AppConfig";
 import type {PageID} from "./configHandler/zodConfigTypes";
 
 // TODO(urgent): have page links remain as links
+// TODO(urgent): have build happen on AWS/etc by default (how? using webpack?)
 // TODO(urgent): catch/fatalError on any critical path async functions, if any remain
 // TODO(urgent): always load a help page if there's an exception or things fail to load (so make it default?) that explains how to Ctrl-R, *clear cache*, and/or reload newest version of service worker (or offers buttons to do these things) TODO NEXT: abstract away configHandler error page, and make it work for all error types
 // TODO(urgent): integration tests, new unit tests for recently-added classes
@@ -30,6 +31,9 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(urgent): handle/log errors from: https://blog.logrocket.com/error-handling-react-error-boundary/
 // TODO(urgent): change server script to also generate normalized_other
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.scripts.js && node build/server.js` - let different parts of the build process be run separately, and standardize/document what is run
+// TODO(high): figure out the easiest/simplest/best place to have a simple support forum (github?)
+// TODO(high): create a contact email
+// TODO(high): change chha/taigi to liburry in code / github
 // TODO(high): move config directory to src/, since it no longer needs to be public
 // TODO(high): use json imports instead of fetch/local load, and have watchman behavior for ymls to regenerate the json (in src) (aka, use yaml-loader (will require ejecting, or using react-app-rewired))
 // TODO(high): have loading bar float with the searchbar (will need a padding element which disappears at the same speed)
