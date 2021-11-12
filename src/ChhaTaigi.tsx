@@ -19,7 +19,6 @@ import type {SearchContext} from "./SearchValidityManager";
 import type AppConfig from "./config/AppConfig";
 import type {PageID} from "./configHandler/zodConfigTypes";
 
-// TODO(urgent): have page links remain as links
 // TODO(urgent): have build happen on AWS/etc by default (how? using webpack?)
 // TODO(urgent): catch/fatalError on any critical path async functions, if any remain
 // TODO(urgent): always load a help page if there's an exception or things fail to load (so make it default?) that explains how to Ctrl-R, *clear cache*, and/or reload newest version of service worker (or offers buttons to do these things)
@@ -32,6 +31,7 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(urgent): change server script to also generate normalized_other
 // TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.scripts.js && node build/server.js` - let different parts of the build process be run separately, and standardize/document what is run
 // TODO(high): figure out the easiest/simplest/best place to have a simple support forum (github?)
+// TODO(high): "X" for search results
 // TODO(high): create a contact email
 // TODO(high): change chha/taigi to liburry in code / github
 // TODO(high): move config directory to src/, since it no longer needs to be public
@@ -221,7 +221,6 @@ export interface ChhaTaigiState {
     options: OptionsChangeableByUser,
     resultsHolder: SearchResultsHolder,
     loadedDBs: LoadedDBsMap,
-    page: PageID | null,
 }
 
 export type GetMainState = () => ChhaTaigiState;
@@ -254,7 +253,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             options: this.props.options ?? new OptionsChangeableByUser(),
             loadedDBs: new LoadedDBsMap(initialDBLoadedMapping),
             resultsHolder: new SearchResultsHolder(),
-            page: null,
         };
 
         this.newestQuery = this.state.options.savedQuery;
@@ -385,7 +383,11 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     setMode(mode: MainDisplayAreaMode) {
+        if (mode !== MainDisplayAreaMode.PAGE) {
+            this.clearPage();
+        }
         this.setStateTyped((state) => ({options: {...state.options, mainMode: mode}}));
+        queryStringHandler.setMode(mode);
     }
 
     updateSearchBar(query: string) {
@@ -406,7 +408,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.searchController.search(query);
         this.setNewestQuery(query);
 
-        queryStringHandler.updateQuery(query);
+        queryStringHandler.updateQueryWithoutHistoryChange(query);
         this.setMode(MainDisplayAreaMode.SEARCH);
     }
 
@@ -429,15 +431,22 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             case MainDisplayAreaMode.SEARCH:
                 return this.getEntryComponents();
             case MainDisplayAreaMode.PAGE:
+                // TODO: why the ?? ""?
                 return <CombinedPageElement
-                    perAppPages={this.props.appConfig.pageHandler.getPagesForPageID(this.state.page ?? "")} />
+                    perAppPages={this.props.appConfig.pageHandler.getPagesForPageID(this.state.options.pageID ?? "")} />
         }
     }
 
     loadPage(pageID: PageID) {
         // NOTE: this will probably cause a double-render - setMode should probably be changed
-        this.setStateTyped({page: pageID});
+        this.setStateTyped((state) => ({options: {...state.options, pageID}}));
         this.setMode(MainDisplayAreaMode.PAGE);
+        queryStringHandler.setPage(pageID);
+    }
+
+    clearPage() {
+        this.setStateTyped((state) => ({options: {...state.options, pageID: null}}));
+        queryStringHandler.clearPage();
     }
 
     goHome() {

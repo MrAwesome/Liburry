@@ -1,3 +1,4 @@
+import {PageID} from "./configHandler/zodConfigTypes";
 import {SearcherType} from "./search";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
@@ -7,4 +8,5 @@ export default class OptionsChangeableByUser {
     debug: boolean = false;
     savedQuery: string = "";
     playground: boolean = false;
+    pageID: PageID | null = null;
 }

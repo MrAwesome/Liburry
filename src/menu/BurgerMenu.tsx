@@ -42,6 +42,7 @@ export class BurgerMenu extends React.Component<BMenuProps, BMenuState> {
     }
 
     makeHomeButton() {
+        // TODO: instead of button, it should be a link - but one that just modifies the querystring
         return <button onClick={() => {
             this.closeMenu();
             this.props.goHome();

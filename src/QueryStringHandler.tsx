@@ -1,6 +1,8 @@
 import qs from "qs";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
+import {PageID} from "./configHandler/zodConfigTypes";
 import {SearcherType} from "./search";
+import {MainDisplayAreaMode} from "./types/displayTypes";
 
 // HACK to allow web worker loader to work:
 // https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/24#issuecomment-672853561
@@ -9,6 +11,8 @@ import {SearcherType} from "./search";
 
 // These are the actual fields used/set in the hash
 const QUERY = "q";
+const MODE = "m";
+const PAGE = "p";
 const DEBUG = "debug";
 const SEARCHER = "searcher";
 const PLAYGROUND = "playground";
@@ -36,16 +40,27 @@ export default class QueryStringParser {
     }
 
     getString(): string {
-        return this.testString ??
-            window.location.hash.replace(/^#/, "");
+        return this.testString ?? window.location.hash.replace(/^#/, "");
     }
 
-    updateQuery(query: string) {
-        this.update(QUERY, query);
+    updateQueryWithoutHistoryChange(query: string) {
+        this.update(QUERY, query, {doNotModifyHistory: true});
     }
 
     saveQuery(query: string) {
-        this.update(QUERY, query, true);
+        this.update(QUERY, query);
+    }
+
+    setMode(mode: MainDisplayAreaMode) {
+        this.update(MODE, mode);
+    }
+
+    setPage(page: PageID) {
+        this.update(PAGE, page);
+    }
+
+    clearPage() {
+        this.update(PAGE, null);
     }
 
     private parseInternal() {
@@ -56,10 +71,20 @@ export default class QueryStringParser {
         return qs.stringify(parsed, QS_STRINGIFY_OPTS);
     }
 
-    private update(field: string, value: string, save?: boolean) {
-        const shouldSave = save ?? false;
+    private update(
+        field: string,
+        value: string | null,
+        opts?: {
+            doNotModifyHistory?: boolean
+        }
+    ) {
+        const shouldSave = !(opts?.doNotModifyHistory);
         const parsed = this.parseInternal();
-        parsed[field] = value;
+        if (value === null) {
+            delete parsed[field];
+        } else {
+            parsed[field] = value;
+        }
         const newHashString = this.stringifyInternal(parsed);
 
         if (this.testString) {
@@ -82,6 +107,17 @@ export default class QueryStringParser {
 
         if (typeof q === "string") {
             options.savedQuery = q;
+        }
+        const mode = parsed[MODE];
+        if (typeof mode === "string") {
+            if (mode in MainDisplayAreaMode) {
+                options.mainMode = mode as MainDisplayAreaMode;
+            }
+        }
+
+        const pageID = parsed[PAGE];
+        if (typeof pageID === "string") {
+            options.pageID = pageID as PageID;
         }
 
         // TODO: abstract away this process
