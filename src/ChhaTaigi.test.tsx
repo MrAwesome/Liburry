@@ -8,6 +8,7 @@ import {DBSearchRanking, SearcherType} from './search';
 import ConfigHandler from './configHandler/ConfigHandler';
 import {AnnotatedPerDictResults, annotateRawResults, PerDictResultsRaw} from './types/dbTypes';
 import AppConfig from './config/AppConfig';
+import {ReturnedFinalConfig} from './configHandler/zodConfigTypes';
 
 // NOTE: just used to silence errors in node TSC.
 noop(React.version);
@@ -21,7 +22,7 @@ noop(React.version);
 export async function getAppConfig() {
     const configHandler = new ConfigHandler(true);
     return configHandler.genLoadFinalConfig()
-        .then((rfc) => AppConfig.from(rfc, "taigi.us"));
+        .then((rfc) => AppConfig.from(rfc as ReturnedFinalConfig, "taigi.us"));
 }
 
 const appConfigPromise = getAppConfig();

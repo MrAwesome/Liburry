@@ -6,7 +6,6 @@ import fetch from "node-fetch";
 import ConfigHandler from '../configHandler/ConfigHandler';
 import {DBConfig} from '../types/config';
 import {OldLangDB, RawDBRow} from '../types/dbTypes';
-//import {OLD_DATABASES} from "../searchSettings";
 import {fromKipUnicodeToKipNormalized, fromPojUnicodeToPojNormalized} from './languageUtils';
 
 import lunr from 'lunr';

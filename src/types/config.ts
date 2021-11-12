@@ -1,58 +1,19 @@
-import {RawAllowedFieldClassifierTags, RawDBConfig, RawKnownDisplayTypeEntry} from "../configHandler/zodConfigTypes";
+import {RawAllowedFieldClassifierTags, RawDBConfig} from "../configHandler/zodConfigTypes";
 import {CHHA_ALLDB} from "../constants";
-import Dialect, {DialectID} from "../languages/dialect";
-import {getRecordEntries} from "../utils";
 
 export interface DBLoadInfo {
     localCSV?: string;
     localLunr?: string;
 }
 
-type FieldName = string;
-
 export type DBIdentifier = string;
 
 // TODO: Should these be functions? (yes.)
 export class DBConfig {
-    private loadInfo: DBLoadInfo;
-    private fieldConfigs: FieldConfig[];
-    private primaryKey: string;
-    private otherMetadata?: {
-        [s: string]: any,
-    }
-
     constructor(
         private dbIdentifier: DBIdentifier,
         private r: RawDBConfig,
-    ) {
-        this.loadInfo = r.loadInfo;
-        this.primaryKey = r.primaryKey;
-
-        this.fieldConfigs = getRecordEntries(r.fields).map(([rawFieldName, rawField]) => {
-            let rawDialect = rawField.dialect;
-            let dialect: Dialect | Dialect[] | undefined = undefined;
-
-            if (rawDialect !== undefined) {
-                if ((rawDialect as string[]).flatMap !== undefined) {
-                    dialect = (rawDialect as string[]).map((dialectName) => {
-                        // TODO: search langConfig and find dialect config to get info here (or create all Dialects there, then just point to the right dialect here)
-                        return new Dialect(dialectName, dialectName);
-                    })
-                } else {
-                    const dialectName = rawDialect as string;
-                    dialect = new Dialect(dialectName, dialectName);
-                }
-            }
-
-            return {
-                name: rawFieldName,
-                fieldType: rawField.type,
-                delimiter: rawField.delimiter,
-                delimiterRegex: rawField.delimiterRegex,
-                dialect,
-            }
-        });
-    }
+    ) { }
 
     asRaw(): RawDBConfig {
         return this.r;
@@ -67,16 +28,15 @@ export class DBConfig {
     }
 
     getDBLoadInfo() {
-        return this.loadInfo;
+        return this.r.loadInfo;
     }
 
     getPrimaryKey() {
-        return this.primaryKey;
+        return this.r.primaryKey;
     }
 
-    getDisplayName(lang: DialectID) {
-        // THROW: not defined yet
-        throw new Error("Not implemented yet.");
+    getSearchableFields() {
+        return this.r.searchableFields;
     }
 
     getDBIdentifier() {
@@ -95,14 +55,3 @@ export class DBConfig {
     //dataLangs: Language[],
 
 }
-
-export interface FieldConfig {
-    name: FieldName,
-    fieldType: RawKnownDisplayTypeEntry | undefined,
-    delimiter?: string,
-    delimiterRegex?: string,
-
-    // NOTE: The array is so that fields containing multiple languages can be appropriately tagged
-    dialect: Dialect | Dialect[] | undefined,
-}
-

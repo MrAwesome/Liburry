@@ -24,15 +24,6 @@ export interface OldLangDB {
     localLunrVersion: number,
 }
 
-export enum Langs {
-    POJ,
-    KIP,
-    ENGLISH,
-    MANDO,
-    POJ_TYPING_INPUT,
-    POJ_NORMALIZED
-}
-
 // NOTE: This type is passed back from web workers.
 export interface PerDictResultsRaw {
     dbIdentifier: DBIdentifier,

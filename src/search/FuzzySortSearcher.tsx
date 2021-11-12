@@ -7,7 +7,7 @@ import getDebugConsole, {StubConsole} from "../getDebugConsole";
 import {getEntriesFromPreparedCSV} from "../common/csvUtils";
 import {makeCancelable} from "../utils";
 import {convertDBRowToFuzzySortPrepared, parseFuzzySortResultsForRender} from "../fuzzySortUtils";
-import {FIELDS_TO_SEARCH, SEARCH_RESULTS_LIMIT} from "../searchSettings";
+import {SEARCH_RESULTS_LIMIT} from "../searchSettings";
 import {DBConfig} from "../types/config";
 import {DBLoadStatus} from "../ChhaTaigi";
 
@@ -17,7 +17,7 @@ import {DBLoadStatus} from "../ChhaTaigi";
 export const FUZZY_SCORE_LOWER_THRESHOLD = -1000;
 export const PREPPED_KEY_SUFFIX = "_zzprepped"
 
-function getFuzzyOpts(searchKeys: Array<string> = FIELDS_TO_SEARCH): FuzzyKeysOptions {
+function getFuzzyOpts(searchKeys: Array<string>): FuzzyKeysOptions {
     const keys = searchKeys.map((k) => k + PREPPED_KEY_SUFFIX);
 
     return {
@@ -34,9 +34,6 @@ export class FuzzySortSearcher implements Searcher {
     constructor(
         private fuzzyDict: FuzzySearchableDict,
     ) {}
-
-    async prepare(): Promise<void> {
-    }
 
     search(query: string): OngoingSearch | SearchFailure {
         return this.fuzzyDict.search(query);
@@ -89,7 +86,7 @@ export class FuzzySortPreparer implements SearcherPreparer {
 
     convertCSVToFuzzySearchableDict(text: string): FuzzySearchableDict {
         const dbIdentifier = this.dbConfig.getDBIdentifier();
-        const searchableFields = FIELDS_TO_SEARCH;
+        const searchableFields = this.dbConfig.getSearchableFields();
         this.console.timeEnd("fetch-" + dbIdentifier);
 
         this.console.time("csvConvertPrePrepped-" + dbIdentifier);
@@ -127,7 +124,7 @@ class FuzzySearchableDict {
     ): OngoingSearch | SearchFailure {
         const dbIdentifier = this.dbConfig.getDBIdentifier();
 
-        const fuzzyOpts = getFuzzyOpts();
+        const fuzzyOpts = getFuzzyOpts(this.dbConfig.getSearchableFields());
         const cancelableSearchPromise = fuzzysort.goAsync(
             query,
             this.searchableEntries,

@@ -22,7 +22,7 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(urgent): have page links remain as links
 // TODO(urgent): have build happen on AWS/etc by default (how? using webpack?)
 // TODO(urgent): catch/fatalError on any critical path async functions, if any remain
-// TODO(urgent): always load a help page if there's an exception or things fail to load (so make it default?) that explains how to Ctrl-R, *clear cache*, and/or reload newest version of service worker (or offers buttons to do these things) TODO NEXT: abstract away configHandler error page, and make it work for all error types
+// TODO(urgent): always load a help page if there's an exception or things fail to load (so make it default?) that explains how to Ctrl-R, *clear cache*, and/or reload newest version of service worker (or offers buttons to do these things)
 // TODO(urgent): integration tests, new unit tests for recently-added classes
 // TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?)
 // TODO(urgent): fix bug when doing ctrl-backspace to clear during search
@@ -177,21 +177,12 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 //      2) DONE: create more flexible data structure
 //      3) DONE(ish): handle poj_normalized and kip_normalized
 //
-//      4) Add configuration for all
+//      4) DONE: Add configuration for all
 //         4) create a better config format (yaml?)
 //      5) note (in configuration) which text an alt text is for?
 //      6) regenerate fuzzy index (and lunr?) on the fly when objects change
 //      7) test performance
 //      8) create settings page with language toggle?
-//
-// Project: multi-language interface
-//      1) add a yaml with internationalizations (start is in ~/ChhaTaigi/public/interface_text/main.yml)
-//      2) populate it entirely with english for now, but pull in text for components from it
-//      3) create a selectable option for interface language
-//
-// Project: Loader Class
-//      # Should be the only piece that does any network/file/browser I/O for configuration
-//      # NOTE: can/should have a "#reset" client-side directive that allows for flushing/refreshing the service worker cache for particular/all files
 
 const queryStringHandler = new QueryStringHandler();
 

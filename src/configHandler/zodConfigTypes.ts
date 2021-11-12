@@ -115,22 +115,33 @@ export const rawMenuConfigSchema = z.object({
 });
 export type RawMenuConfig = z.infer<typeof rawMenuConfigSchema>;
 
+const fieldsSchema = realRecord(rawAllowedFieldClassifierTagsSchema);
 export const rawDBConfigSchema = z.object({
     disabled: z.boolean().optional(),
     displayName: realRecord(z.string()),
     primaryKey: z.string(),
+    searchableFields: z.array(z.string()),
     loadInfo: rawDBLoadInfoSchema,
-    fields: realRecord(rawAllowedFieldClassifierTagsSchema),
+    fields: fieldsSchema,
 }).superRefine((obj, ctx) => {
-    if (obj.disabled !== false) {
-        if (obj.primaryKey.length < 0) {
-            issue(ctx, "primary key must be defined");
-        }
-        const displayNames = getRecordValues(obj.displayName);
-        if (displayNames.length < 1) {
-            issue(ctx, "at least one displayname must be defined");
-        }
+    if (obj.primaryKey.length < 0) {
+        issue(ctx, "primaryKey must be defined");
     }
+    if (!(obj.primaryKey in obj.fields)) {
+        issue(ctx, `primaryKey "${obj.primaryKey}" is not a known field`);
+    }
+    const displayNames = getRecordValues(obj.displayName);
+    if (displayNames.length < 1) {
+        issue(ctx, "at least one displayName must be defined");
+    }
+    if (obj.searchableFields.length < 1) {
+        issue(ctx, "at least one searchableField must be defined");
+    }
+    obj.searchableFields?.forEach((givenFieldName) => {
+        if (!(givenFieldName in obj.fields)) {
+            issue(ctx, `searchableField "${givenFieldName}" is not a known field`);
+        }
+    });
 });
 export type RawDBConfig = z.infer<typeof rawDBConfigSchema>;
 

@@ -1,4 +1,4 @@
-# TODO: an "enabled" field (or "disabled", either is fine)
+# TODO: customize searchable fields for the non-english dbs
 # TODO: "type" is actually defined per displaytype...
 # TODO: split this up into a config per db (you define one yml per csv, or have your server return the raw object form of this at startup, etc)
 
@@ -31,6 +31,13 @@ dbs:
       localCSV: db/ChhoeTaigi_EmbreeTaiengSutian.csv
 
     primaryKey: DictWordID
+
+    searchableFields:
+      - PojUnicode
+      - PojNormalized
+      - PojInput
+      - EngBun
+      - HoaBun
 
     fields:
       DictWordID:
@@ -143,6 +150,12 @@ dbs:
 
     primaryKey: DictWordID
 
+    searchableFields:
+      - PojUnicode
+      - PojNormalized
+      - PojInput
+      - HoaBun
+
     fields:
       DictWordID:
         type:
@@ -224,6 +237,11 @@ dbs:
       localCSV: db/ChhoeTaigi_KamJitian.csv
 
     primaryKey: DictWordID
+
+    searchableFields:
+      - PojUnicode
+      - PojNormalized
+      - PojInput
 
     fields:
       DictWordID:
@@ -334,6 +352,12 @@ dbs:
       localCSV: db/ChhoeTaigi_KauiokpooTaigiSutian.csv
 
     primaryKey: DictWordID
+
+    searchableFields:
+      - PojUnicode
+      - PojNormalized
+      - PojInput
+      - HoaBun
 
     fields:
       DictWordID:
@@ -497,6 +521,13 @@ dbs:
 
     primaryKey: DictWordID
 
+    searchableFields:
+      - PojUnicode
+      - PojNormalized
+      - PojInput
+      - EngBun
+      - HoaBun
+
     fields:
       DictWordID:
         type:
@@ -571,6 +602,12 @@ dbs:
       localCSV: db/ChhoeTaigi_TaihoaSoanntengTuichiautian.csv
 
     primaryKey: DictWordID
+
+    searchableFields:
+      - PojUnicode
+      - PojNormalized
+      - PojInput
+      - HoaBun
 
     fields:
       DictWordID:
@@ -672,6 +709,11 @@ dbs:
       localCSV: db/ChhoeTaigi_TaijitToaSutian.csv
 
     primaryKey: DictWordID
+
+    searchableFields:
+      - PojUnicode
+      - PojNormalized
+      - PojInput
 
     fields:
       DictWordID:
@@ -823,6 +865,13 @@ dbs:
       localCSV: db/ChhoeTaigi_TaioanPehoeKichhooGiku.csv
 
     primaryKey: DictWordID
+
+    searchableFields:
+      - PojUnicode
+      - PojNormalized
+      - PojInput
+      - EngBun
+      - HoaBun
 
     fields:
       DictWordID:
@@ -986,6 +1035,11 @@ dbs:
       localCSV: db/ChhoeTaigi_TaioanSitbutMialui.csv
 
     primaryKey: DictWordID
+
+    searchableFields:
+      - PojUnicode
+      - PojNormalized
+      - PojInput
 
     fields:
       DictWordID:
