@@ -78,8 +78,6 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
         const {options} = this.props;
         const {appConfig} = this.state;
 
-        const heightOffset = this.progress.getProgressBarHeight();
-
         let mainApp = appConfig !== undefined
             ? <ChhaTaigi
                 options={options}
@@ -87,7 +85,6 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
                 updateDisplayForDBLoadEvent={this.progress.updateDisplayForDBLoadEvent}
                 updateDisplayForSearchEvent={this.progress.updateDisplayForSearchEvent}
                 key="ChhaTaigi"
-                heightOffset={heightOffset}
             />
             : null;
 

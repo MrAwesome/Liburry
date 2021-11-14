@@ -54,7 +54,7 @@
     min-width: 5%;
     border-right: 1px solid black;
     align-items: center;
-    z-index: 200;
+    z-index: 20;
 }
 
 .agnostic-container-rightbox {

@@ -4,11 +4,12 @@ import {BurgerMenu} from "../menu/BurgerMenu";
 import type AppConfig from "../config/AppConfig";
 import {PageID} from "../configHandler/zodConfigTypes";
 
+import "./SearchBar.css";
+
 interface SearchBarProps {
     appConfig: AppConfig,
     searchQuery(query: string): void,
     saveNewestQuery(): void,
-    heightOffset: string,
     loadPage: (pageID: PageID) => void,
     goHome: () => void,
 }
@@ -55,12 +56,9 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
     }
 
     render() {
-        const style: React.CSSProperties = {
-            top: this.props.heightOffset,
-        };
         return <>
             <div className="search-bar-container">
-                <div className="search-bar" style={style}>
+                <div className="search-bar">
                     <form onSubmit={this.onSubmit} autoComplete="off" >
                         <input
                             autoFocus

@@ -3,7 +3,6 @@ import {LoadedDBsMap} from "../ChhaTaigi";
 import {SearchContext} from "../SearchValidityManager";
 
 export const PROGRESS_BAR_HEIGHT_ANIMATION_LENGTH = 200;
-export const PROGRESS_BAR_HEIGHT = "4px";
 
 // TODO(wishlist): color-coded DBs, with loading bar color matching a color on the entrycontainer,
 //                 and a bar for each db
@@ -25,7 +24,6 @@ export class ProgressHandler {
     constructor(private updateDisplay: () => void) {
         this.getBars = this.getBars.bind(this);
         this.shouldShowProgressBars = this.shouldShowProgressBars.bind(this);
-        this.getProgressBarHeight = this.getProgressBarHeight.bind(this);
         this.updateDisplayForConfigEvent = this.updateDisplayForConfigEvent.bind(this);
         this.updateDisplayForDBLoadEvent = this.updateDisplayForDBLoadEvent.bind(this);
         this.updateDisplayForSearchEvent = this.updateDisplayForSearchEvent.bind(this);
@@ -47,37 +45,20 @@ export class ProgressHandler {
         return (this.configShouldShow || this.dbLoadShouldShow || this.searchShouldShow);
     }
 
-    getProgressBarHeight(): string {
-        return this.shouldShowProgressBars() ? PROGRESS_BAR_HEIGHT : "0px";
-    }
-
     getBars(): JSX.Element {
-        const style: React.CSSProperties = {
-            height: this.getProgressBarHeight(),
-        }
+        const translateY = this.shouldShowProgressBars() ? "0px" : "-5px";
 
-        return <div className="loadingBarContainer" style={style}>
-            <ProgressBar
-                shouldShow={this.configShouldShow}
-                percentProgress={this.configProgress}
-                elementID="chhaConfigBar" />
-            <ProgressBar
-                shouldShow={this.dbLoadShouldShow}
-                percentProgress={this.dbDownloadProgress}
-                elementID="chhaDBDownloadBar" />
-            <ProgressBar
-                shouldShow={this.dbLoadShouldShow}
-                percentProgress={this.dbParsedProgress}
-                elementID="chhaDBParsedBar" />
-            <ProgressBar
-                shouldShow={this.dbLoadShouldShow}
-                percentProgress={this.dbLoadProgress}
-                elementID="chhaDBLoadBar" />
-            <ProgressBar
-                shouldShow={this.searchShouldShow}
-                percentProgress={this.searchProgress}
-                elementID="chhaSearchBar" />
-        </div>;
+        const progressBars = [
+            makeProgressBar("chhaConfigBar", this.configShouldShow, this.configProgress),
+            makeProgressBar("chhaDBDownloadBar", this.dbLoadShouldShow, this.dbDownloadProgress),
+            makeProgressBar("chhaDBParsedBar", this.dbLoadShouldShow, this.dbParsedProgress),
+            makeProgressBar("chhaDBLoadBar", this.dbLoadShouldShow, this.dbLoadProgress),
+            makeProgressBar("chhaSearchBar", this.searchShouldShow, this.searchProgress),
+        ];
+
+        return <div className="loadingBarContainer" style={{transform: `translateY(${translateY})`}}>
+            <>{progressBars}</>
+        </div>
     }
 
     updateDisplayForConfigEvent() {
@@ -158,28 +139,37 @@ export class ProgressHandler {
 }
 
 export class ProgressBar extends React.PureComponent<{
-    percentProgress: number,
     elementID: string,
     shouldShow: boolean,
+    percentProgress: number,
     //durationMs: number,
 }, {}> {
     render() {
         const {percentProgress, elementID} = this.props;
-        const widthPercent = Math.min(percentProgress * 100, 100);
-        const style: React.CSSProperties = {
-                transform: `scaleX(${widthPercent}%)`,
-        };
+
+        const widthPercent100 = Math.min(percentProgress * 100, 100);
 
         const minDuration = 0.2;
         const maxAdditionalDuration = 0.4;
-        const widthDuration = minDuration + (maxAdditionalDuration * (1 - (widthPercent / 100)));
-        style.transitionDuration = `${widthDuration}s`;
+        const widthDuration = minDuration + (maxAdditionalDuration * (1 - (widthPercent100 / 100)));
 
         return <div
             id={elementID}
             className="loadingBar"
-            style={style}
+            style={{
+                transform: `scaleX(${widthPercent100}%)`,
+                transitionDuration: `${widthDuration}s`,
+            }}
             key={elementID}
         />;
     }
+}
+
+function makeProgressBar(elementID: string, shouldShow: boolean, percentProgress: number) {
+    return <ProgressBar
+        key={elementID}
+        elementID={elementID}
+        shouldShow={shouldShow}
+        percentProgress={percentProgress}
+    />
 }

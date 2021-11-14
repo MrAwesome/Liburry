@@ -10,7 +10,7 @@ import WebFont from "webfontloader";
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {CombinedPageElement} from "./pages/Page";
 import {MainDisplayAreaMode} from "./types/displayTypes";
-import {SearchBar} from "./components/components";
+import {SearchBar} from "./components/SearchBar";
 import {runningInJest} from "./utils";
 
 import type {AnnotatedPerDictResults} from "./types/dbTypes";
@@ -193,7 +193,6 @@ export interface ChhaTaigiProps {
     mockResults?: AnnotatedPerDictResults,
     updateDisplayForDBLoadEvent?: (loadedDBs: LoadedDBsMap) => void,
     updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
-    heightOffset?: string,
 };
 
 export class LoadedDBsMap extends Map<DBIdentifier, DBLoadStatus> {
@@ -463,7 +462,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                     ref={this.searchBar}
                     searchQuery={this.searchQuery}
                     saveNewestQuery={this.saveNewestQuery}
-                    heightOffset={this.props.heightOffset ?? "0px"}
                     loadPage={this.loadPage}
                     goHome={this.goHome}
                 />
