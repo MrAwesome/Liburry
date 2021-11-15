@@ -1,10 +1,9 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import {PerDictResultsRaw} from "./types/dbTypes";
+import {PerDictResultsRaw, SingleDBLoadStatus} from "./types/dbTypes";
 import {CancelablePromise} from "./types/general";
 import {FuzzySortPreparer, FUZZY_SCORE_LOWER_THRESHOLD} from "./search/FuzzySortSearcher";
 import {LunrPreparer} from "./search/LunrSearcher";
 import {DBConfig, DBIdentifier} from "./types/config";
-import {SingleDBLoadStatus} from "./ChhaTaigi";
 
 export abstract class SearcherPreparer {
     abstract prepare(): Promise<Searcher>;

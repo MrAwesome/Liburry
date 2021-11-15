@@ -221,6 +221,11 @@ async function genWriteFinalConfig(jsonString: string) {
 }
 
 (async function () {
+    // TODO: abstract away
+    if (!fs.existsSync("public/generated")){
+        fs.mkdirSync("public/generated");
+    }
+
     const generatedFinalConfig = await parseAllYaml();
     const checkedFinalConfig = returnedFinalConfigSchema.parse(generatedFinalConfig);
 

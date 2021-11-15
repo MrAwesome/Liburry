@@ -1,8 +1,7 @@
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import type {PerDictResultsRaw} from "./types/dbTypes";
+import type {PerDictResultsRaw, SingleDBLoadStatus} from "./types/dbTypes";
 import {getSearcherPreparer, OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "./search";
 import {DBConfig, DBIdentifier} from "./types/config";
-import {SingleDBLoadStatus} from "./ChhaTaigi";
 
 // NOTE: RawDBConfig is used here because we're passing between workers, and anything higher-level would lose its methods during serialization.
 import {RawDBConfig} from "./configHandler/zodConfigTypes";

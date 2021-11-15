@@ -1,4 +1,4 @@
-import type {RawDBRow, PerDictResultsRaw} from "../types/dbTypes";
+import type {RawDBRow, PerDictResultsRaw, SingleDBLoadStatus} from "../types/dbTypes";
 
 import {DISPLAY_RESULTS_LIMIT} from "../searchSettings";
 import getDebugConsole, {StubConsole} from "../getDebugConsole";
@@ -9,7 +9,6 @@ import {vanillaDBEntryToResult} from "./utils";
 
 import lunr from "lunr";
 import {DBConfig, DBIdentifier} from "../types/config";
-import {SingleDBLoadStatus} from "../ChhaTaigi";
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
 

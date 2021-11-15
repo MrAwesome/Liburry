@@ -2,14 +2,13 @@ import fuzzysort from "fuzzysort";
 
 import {FuzzyKeysOptions, FuzzyPreparedDBEntry} from "../types/fuzzySortTypes";
 import {OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "../search";
-import {RawDBRow} from "../types/dbTypes";
+import {RawDBRow, SingleDBLoadStatus} from "../types/dbTypes";
 import getDebugConsole, {StubConsole} from "../getDebugConsole";
 import {getEntriesFromPreparedCSV} from "../common/csvUtils";
 import {makeCancelable} from "../utils";
 import {convertDBRowToFuzzySortPrepared, parseFuzzySortResultsForRender} from "../fuzzySortUtils";
 import {SEARCH_RESULTS_LIMIT} from "../searchSettings";
 import {DBConfig} from "../types/config";
-import {SingleDBLoadStatus} from "../ChhaTaigi";
 
 // TODO: give slight preference for poj-unicode/poj-normalized in fuzzy settings, so that e.g. "iong" will show up first in a search for itself
 // TODO: handle hyphens vs spaces
