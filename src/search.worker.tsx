@@ -2,7 +2,7 @@ import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import type {PerDictResultsRaw} from "./types/dbTypes";
 import {getSearcherPreparer, OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "./search";
 import {DBConfig, DBIdentifier} from "./types/config";
-import {DBLoadStatus} from "./ChhaTaigi";
+import {SingleDBLoadStatus} from "./ChhaTaigi";
 
 // NOTE: RawDBConfig is used here because we're passing between workers, and anything higher-level would lose its methods during serialization.
 import {RawDBConfig} from "./configHandler/zodConfigTypes";
@@ -25,7 +25,7 @@ export type SearchWorkerResponseMessage =
     {resultType: SearchWorkerResponseType.CANCELED, payload: {dbIdentifier: DBIdentifier, query: string, searchID: number}} |
     {resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {dbIdentifier: DBIdentifier, query: string, results: PerDictResultsRaw, searchID: number}} |
     {resultType: SearchWorkerResponseType.SEARCH_FAILURE, payload: {dbIdentifier: DBIdentifier, query: string, searchID: number, failure: SearchFailure}} |
-    {resultType: SearchWorkerResponseType.DB_LOAD_STATUS_UPDATE, payload: {dbIdentifier: DBIdentifier, stateDelta: Partial<DBLoadStatus>}};
+    {resultType: SearchWorkerResponseType.DB_LOAD_STATUS_UPDATE, payload: {dbIdentifier: DBIdentifier, stateDelta: Partial<SingleDBLoadStatus>}};
 
 type WorkerInitializedState =
     {init: WorkerInitState.UNINITIALIZED} |
@@ -83,7 +83,7 @@ class SearchWorkerHelper {
         this.debug = debug;
         this.console = getDebugConsole(debug);
 
-        const sendLoadStateUpdate = (stateDelta: Partial<DBLoadStatus>) => {
+        const sendLoadStateUpdate = (stateDelta: Partial<SingleDBLoadStatus>) => {
             this.sendResponse({resultType: SearchWorkerResponseType.DB_LOAD_STATUS_UPDATE, payload: {dbIdentifier, stateDelta}});
         };
 

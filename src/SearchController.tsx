@@ -3,9 +3,9 @@ import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.wo
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import SearchWorkerManager from "./SearchWorkerManager";
 import SearchValidityManager, {SearchContext} from "./SearchValidityManager";
-import {AnnotatedPerDictResults, annotateRawResults, PerDictResultsRaw} from "./types/dbTypes";
+import {AllDBLoadStats, AnnotatedPerDictResults, annotateRawResults, PerDictResultsRaw, SingleDBLoadStatus} from "./types/dbTypes";
 import {SearcherType} from "./search";
-import {DBLoadStatus, GetMainState, LoadedDBsMap, SetMainState} from "./ChhaTaigi";
+import {GetMainState, SetMainState} from "./ChhaTaigi";
 import {DBIdentifier} from "./types/config";
 import type AppConfig from "./config/AppConfig";
 
@@ -23,7 +23,7 @@ export default class SearchController {
         private getNewestQuery: () => string,
         //private getCurrentMountAttempt: () => number,
         private appConfig: AppConfig,
-        private updateDisplayForDBLoadEvent?: (loadedDBs: LoadedDBsMap) => void,
+        private updateDisplayForDBLoadEvent?: (dbStats: AllDBLoadStats) => void,
         private updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
     ) {
         const expectedNumberOfDBs = Array.from(this.getStateTyped().loadedDBs.keys()).length;
@@ -53,10 +53,10 @@ export default class SearchController {
         this.setStateTyped((state) => state.resultsHolder.addResults(results));
     }
 
-    async dbLoadStateUpdateCallback(dbIdentifier: DBIdentifier, stateDelta: Partial<DBLoadStatus>) {
+    async dbLoadStateUpdateCallback(dbIdentifier: DBIdentifier, stateDelta: Partial<SingleDBLoadStatus>) {
         this.setStateTyped((state) => {
             state.loadedDBs.setLoadState(dbIdentifier, stateDelta);
-            this.updateDisplayForDBLoadEvent?.(state.loadedDBs);
+            this.updateDisplayForDBLoadEvent?.(state.loadedDBs.getLoadStats());
         });
     }
 

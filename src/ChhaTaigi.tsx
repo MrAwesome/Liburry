@@ -8,12 +8,12 @@ import SearchResultsHolder from "./SearchResultsHolder";
 import WebFont from "webfontloader";
 
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
+import {AllDBLoadStats, AnnotatedPerDictResults, LoadedDBsMap, SingleDBLoadStatus} from "./types/dbTypes";
 import {CombinedPageElement} from "./pages/Page";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {SearchBar} from "./components/SearchBar";
 import {runningInJest} from "./utils";
 
-import type {AnnotatedPerDictResults} from "./types/dbTypes";
 import type {DBConfig, DBIdentifier} from "./types/config";
 import type {SearchContext} from "./SearchValidityManager";
 import type AppConfig from "./config/AppConfig";
@@ -189,30 +189,9 @@ export interface ChhaTaigiProps {
     // TODO: always annotate results with the current displaytype's info (one re-search when you change displaytype is well worth being able to calculate before render time (preferably in another thread))
     mockOptions?: OptionsChangeableByUser,
     mockResults?: AnnotatedPerDictResults,
-    updateDisplayForDBLoadEvent?: (loadedDBs: LoadedDBsMap) => void,
+    updateDisplayForDBLoadEvent?: (dbStatus: AllDBLoadStats) => void,
     updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
 };
-
-export class LoadedDBsMap extends Map<DBIdentifier, DBLoadStatus> {
-    setLoadState(dbIdentifier: DBIdentifier, stateDelta: Partial<DBLoadStatus>) {
-        const dbStatus = this.get(dbIdentifier);
-
-        if (dbStatus !== undefined) {
-            this.set(dbIdentifier, {...dbStatus, ...stateDelta});
-        } else {
-            console.warn(`Attempted to set load state on unknown DB: ${dbIdentifier} + ${stateDelta}`);
-        }
-    }
-}
-
-// NOTE: instead of booleans, these can be percentages (for preparers that load multiple files, etc)
-// NOTE: the same setup can be used for search status per-db, whenever there's a searcher
-//       that can report completion percentage
-export interface DBLoadStatus {
-    isDownloaded: boolean,
-    isParsed: boolean,
-    isLoaded: boolean,
-}
 
 export interface ChhaTaigiState {
     options: OptionsChangeableByUser,
@@ -238,7 +217,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         // State initialization
         const appConfig = this.props.appConfig;
-        const initialDBLoadedMapping: [DBIdentifier, DBLoadStatus][] =
+        const initialDBLoadedMapping: [DBIdentifier, SingleDBLoadStatus][] =
             appConfig.getAllEnabledDBConfigs().map((k: DBConfig) => [
                 k.getDBIdentifier(),
                 {

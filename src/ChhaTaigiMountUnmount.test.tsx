@@ -17,7 +17,7 @@ test('SearchController start/cleanup', async () => {
 
     const appConfig = await appConfigPromise;
     let options = new OptionsChangeableByUser();
-    let x = render(<ChhaTaigi appConfig={appConfig} options={options} />);
+    let x = render(<ChhaTaigi appConfig={appConfig} mockOptions={options} />);
 
     expect(startW).toHaveBeenCalledTimes(1);
     expect(endW).toHaveBeenCalledTimes(0);
@@ -32,7 +32,7 @@ test('hashchange listen/end', async () => {
 
     const appConfig = await appConfigPromise;
     let options = new OptionsChangeableByUser();
-    let x = render(<ChhaTaigi appConfig={appConfig} options={options} />);
+    let x = render(<ChhaTaigi appConfig={appConfig} mockOptions={options} />);
 
     expect(startH).toHaveBeenCalledTimes(1);
     expect(endH).toHaveBeenCalledTimes(0);

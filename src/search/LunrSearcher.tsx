@@ -9,7 +9,7 @@ import {vanillaDBEntryToResult} from "./utils";
 
 import lunr from "lunr";
 import {DBConfig, DBIdentifier} from "../types/config";
-import {DBLoadStatus} from "../ChhaTaigi";
+import {SingleDBLoadStatus} from "../ChhaTaigi";
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
 
@@ -31,7 +31,7 @@ export class LunrPreparer implements SearcherPreparer {
 
     constructor(
         private dbConfig: DBConfig,
-        private sendLoadStateUpdate: (stateDelta: Partial<DBLoadStatus>) => void,
+        private sendLoadStateUpdate: (stateDelta: Partial<SingleDBLoadStatus>) => void,
         private debug: boolean,
     ) {
         this.console = getDebugConsole(debug);

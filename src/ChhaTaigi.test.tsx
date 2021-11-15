@@ -30,7 +30,7 @@ const appConfigPromise = getAppConfig();
 test('render searchbar by default', async () => {
     const appConfig = await appConfigPromise;
     let options = new OptionsChangeableByUser();
-    render(<ChhaTaigi appConfig={appConfig} options={options} />);
+    render(<ChhaTaigi appConfig={appConfig} mockOptions={options} />);
     const searchBar = screen.getByPlaceholderText(/Search.../);
     expect(searchBar).toBeInTheDocument();
     expect(searchBar).toBeEmptyDOMElement();
@@ -94,7 +94,7 @@ test('render single entry via override', async () => {
     const annotatedResRaw = annotateRawResults(perDictRes, appConfig);
     const annotatedRes = new AnnotatedPerDictResults(annotatedResRaw);
 
-    render(<ChhaTaigi options={options} appConfig={appConfig} mockResults={annotatedRes} />);
+    render(<ChhaTaigi mockOptions={options} appConfig={appConfig} mockResults={annotatedRes} />);
 
     const hoabun = screen.getByText(/法律/i);
     expect(hoabun).toBeInTheDocument();

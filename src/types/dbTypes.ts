@@ -236,3 +236,59 @@ export function getDBRowKeys(r: RawDBRow): (keyof RawDBRow)[] {
     const fields = Object.keys(r);
     return fields;
 }
+
+export class LoadedDBsMap extends Map<DBIdentifier, SingleDBLoadStatus> {
+    setLoadState(dbIdentifier: DBIdentifier, stateDelta: Partial<SingleDBLoadStatus>) {
+        const dbStatus = this.get(dbIdentifier);
+
+        if (dbStatus !== undefined) {
+            this.set(dbIdentifier, {...dbStatus, ...stateDelta});
+        } else {
+            console.warn(`Attempted to set load state on unknown DB: ${dbIdentifier} + ${stateDelta}`);
+        }
+    }
+
+    // TODO: If you really want to nitpick CPU cycles, these numbers can be stored on this object and updated on mutation
+    getLoadStats(): AllDBLoadStats {
+        let numDownloaded = 0;
+        let numParsed = 0;
+        let numLoaded = 0;
+        let numDBs = 0;
+
+        this.forEach(({isDownloaded, isParsed, isLoaded}, _name) => {
+            numDBs += 1;
+            if (isDownloaded) {
+                numDownloaded += 1;
+            }
+            if (isParsed) {
+                numParsed += 1;
+            }
+            if (isLoaded) {
+                numLoaded += 1;
+            }
+        });
+
+        return {
+            numDownloaded,
+            numParsed,
+            numLoaded,
+            numDBs,
+        }
+    }
+}
+
+export interface AllDBLoadStats {
+    numDownloaded: number,
+    numParsed: number,
+    numLoaded: number,
+    numDBs: number,
+}
+
+// NOTE: instead of booleans, these can be percentages (for preparers that load multiple files, etc)
+// NOTE: the same setup can be used for search status per-db, whenever there's a searcher
+//       that can report completion percentage
+export interface SingleDBLoadStatus {
+    isDownloaded: boolean,
+    isParsed: boolean,
+    isLoaded: boolean,
+}

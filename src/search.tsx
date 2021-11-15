@@ -4,7 +4,7 @@ import {CancelablePromise} from "./types/general";
 import {FuzzySortPreparer, FUZZY_SCORE_LOWER_THRESHOLD} from "./search/FuzzySortSearcher";
 import {LunrPreparer} from "./search/LunrSearcher";
 import {DBConfig, DBIdentifier} from "./types/config";
-import {DBLoadStatus} from "./ChhaTaigi";
+import {SingleDBLoadStatus} from "./ChhaTaigi";
 
 export abstract class SearcherPreparer {
     abstract prepare(): Promise<Searcher>;
@@ -41,7 +41,7 @@ export function getMaxScore(searcherType: SearcherType): number {
 export function getSearcherPreparer(
     searcherType: SearcherType,
     dbConfig: DBConfig,
-    sendLoadStateUpdate: (stateDelta: Partial<DBLoadStatus>) => void,
+    sendLoadStateUpdate: (stateDelta: Partial<SingleDBLoadStatus>) => void,
     debug: boolean
 ): SearcherPreparer {
     switch (searcherType) {

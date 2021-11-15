@@ -9,7 +9,7 @@ import {makeCancelable} from "../utils";
 import {convertDBRowToFuzzySortPrepared, parseFuzzySortResultsForRender} from "../fuzzySortUtils";
 import {SEARCH_RESULTS_LIMIT} from "../searchSettings";
 import {DBConfig} from "../types/config";
-import {DBLoadStatus} from "../ChhaTaigi";
+import {SingleDBLoadStatus} from "../ChhaTaigi";
 
 // TODO: give slight preference for poj-unicode/poj-normalized in fuzzy settings, so that e.g. "iong" will show up first in a search for itself
 // TODO: handle hyphens vs spaces
@@ -46,7 +46,7 @@ export class FuzzySortPreparer implements SearcherPreparer {
 
     constructor(
         private dbConfig: DBConfig,
-        private sendLoadStateUpdate: (stateDelta: Partial<DBLoadStatus>) => void,
+        private sendLoadStateUpdate: (stateDelta: Partial<SingleDBLoadStatus>) => void,
         private debug: boolean,
     ) {
         this.console = getDebugConsole(debug);
