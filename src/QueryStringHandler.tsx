@@ -32,7 +32,6 @@ const QS_SORT_FN = (a: string, b: string) => {
 const QS_PARSE_OPTS = {delimiter: ';'};
 const QS_STRINGIFY_OPTS = {delimiter: ';', sort: QS_SORT_FN};
 
-// TODO(low): consider having the hash string be part of the app state?
 export default class QueryStringParser {
     private testString?: string;
     constructor(testString?: string) {

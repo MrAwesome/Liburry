@@ -1,9 +1,11 @@
 import * as React from "react";
 import {LoadedDBsMap} from "../ChhaTaigi";
 import {SearchContext} from "../SearchValidityManager";
+import "./style.css";
 
 export const PROGRESS_BAR_HEIGHT_ANIMATION_LENGTH = 200;
 
+// TODO(wishlist): progressbar for each DB, in a flexbox constellation
 // TODO(wishlist): color-coded DBs, with loading bar color matching a color on the entrycontainer,
 //                 and a bar for each db
 
@@ -46,7 +48,7 @@ export class ProgressHandler {
     }
 
     getBars(): JSX.Element {
-        const translateY = this.shouldShowProgressBars() ? "0px" : "-5px";
+        const scaleY = this.shouldShowProgressBars() ? 1 : 0;
 
         const progressBars = [
             makeProgressBar("chhaConfigBar", this.configShouldShow, this.configProgress),
@@ -56,7 +58,7 @@ export class ProgressHandler {
             makeProgressBar("chhaSearchBar", this.searchShouldShow, this.searchProgress),
         ];
 
-        return <div className="loadingBarContainer" style={{transform: `translateY(${translateY})`}}>
+        return <div className="loadingBarContainer" style={{transform: `scaleY(${scaleY})`}}>
             <>{progressBars}</>
         </div>
     }
@@ -142,7 +144,6 @@ export class ProgressBar extends React.PureComponent<{
     elementID: string,
     shouldShow: boolean,
     percentProgress: number,
-    //durationMs: number,
 }, {}> {
     render() {
         const {percentProgress, elementID} = this.props;

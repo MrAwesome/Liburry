@@ -1,8 +1,10 @@
 .loadingBarContainer {
+    border: 1px solid transparent;
     position: absolute;
-    transition: transform 1s ease;
+    transition: transform .3s ease-out;
     height: 5px;
     width: 100%;
+    transform-origin: top;
     z-index: 1001;
 }
 

@@ -1,12 +1,9 @@
 import * as React from "react";
 import {MuhError} from "./MuhError";
 import {ChhaTaigiLoader} from "../ChhaTaigiLoader";
-import OptionsChangeableByUser from "../ChhaTaigiOptions";
 import MuhErrorDisplay from "./MuhErrorDisplay";
 
-interface EBProps {
-    options: OptionsChangeableByUser,
-}
+interface EBProps {}
 interface EBState {
     muhError?: MuhError | Error,
 }
@@ -35,7 +32,7 @@ export default class MuhErrorBoundary extends React.Component<EBProps, EBState> 
         if (muhError !== undefined) {
             return <MuhErrorDisplay muhError={muhError} />;
         } else {
-            return <ChhaTaigiLoader options={this.props.options} fatalError={this.fatalError} />;
+            return <ChhaTaigiLoader fatalError={this.fatalError} />;
         }
     }
 }

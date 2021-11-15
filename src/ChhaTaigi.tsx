@@ -184,12 +184,10 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 //      7) test performance
 //      8) create settings page with language toggle?
 
-const queryStringHandler = new QueryStringHandler();
-
 export interface ChhaTaigiProps {
-    options: OptionsChangeableByUser,
     appConfig: AppConfig,
     // TODO: always annotate results with the current displaytype's info (one re-search when you change displaytype is well worth being able to calculate before render time (preferably in another thread))
+    mockOptions?: OptionsChangeableByUser,
     mockResults?: AnnotatedPerDictResults,
     updateDisplayForDBLoadEvent?: (loadedDBs: LoadedDBsMap) => void,
     updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
@@ -226,6 +224,8 @@ export type GetMainState = () => ChhaTaigiState;
 export type SetMainState = (state: Partial<ChhaTaigiState> | ((prevState: ChhaTaigiState) => any)) => void;
 
 export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
+    private qs = new QueryStringHandler();
+
     private currentMountAttempt = 0;
     searchBar: React.RefObject<SearchBar>;
     console: StubConsole;
@@ -249,7 +249,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             ]);
 
         this.state = {
-            options: this.props.options ?? new OptionsChangeableByUser(),
+            options: this.props.mockOptions ?? this.qs.parse(),
             loadedDBs: new LoadedDBsMap(initialDBLoadedMapping),
             resultsHolder: new SearchResultsHolder(),
         };
@@ -370,7 +370,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     // update changed options in state.
     hashChange(_evt: Event) {
         const oldQuery = this.getNewestQuery();
-        const newOptions = queryStringHandler.parse();
+        const newOptions = this.qs.parse();
         const newQuery = newOptions.savedQuery;
 
         if (newQuery !== oldQuery) {
@@ -386,7 +386,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             this.clearPage();
         }
         this.setStateTyped((state) => ({options: {...state.options, mainMode: mode}}));
-        queryStringHandler.setMode(mode);
+        this.qs.setMode(mode);
     }
 
     updateSearchBar(query: string) {
@@ -400,14 +400,14 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     saveNewestQuery() {
         const query = this.newestQuery;
         this.setStateTyped((state) => ({options: {...state.options, savedQuery: query}}));
-        queryStringHandler.saveQuery(query);
+        this.qs.saveQuery(query);
     }
 
     searchQuery(query: string) {
         this.searchController.search(query);
         this.setNewestQuery(query);
 
-        queryStringHandler.updateQueryWithoutHistoryChange(query);
+        this.qs.updateQueryWithoutHistoryChange(query);
         this.setMode(MainDisplayAreaMode.SEARCH);
     }
 
@@ -440,12 +440,12 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         // NOTE: this will probably cause a double-render - setMode should probably be changed
         this.setStateTyped((state) => ({options: {...state.options, pageID}}));
         this.setMode(MainDisplayAreaMode.PAGE);
-        queryStringHandler.setPage(pageID);
+        this.qs.setPage(pageID);
     }
 
     clearPage() {
         this.setStateTyped((state) => ({options: {...state.options, pageID: null}}));
-        queryStringHandler.clearPage();
+        this.qs.clearPage();
     }
 
     goHome() {
