@@ -1,19 +1,21 @@
 .combined-page {
+    background: white;
+    color: #24292f;
     margin-top: 3px;
-    border-radius: 8px 8px 0px 0px;
-    background: #ddc5dd;
+    border-radius: 8px;
     padding-bottom: 12px;
     border-bottom: 1px solid black;
     border-right: 1px solid black;
     border-left: 1px solid black;
+    border-color: #eaecee;
 }
 
 .individual-page h1 {
     border-radius: 8px 8px 0px 0px;
     margin-top: 0px;
-    background: white;
     border-top: 1px solid black;
     border-bottom: 1px solid black;
+    border-color: #eaecee;
     padding-left: 12px;
     padding-right: 12px;
 }

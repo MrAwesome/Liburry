@@ -20,16 +20,13 @@ import type AppConfig from "./config/AppConfig";
 import type {PageID} from "./configHandler/zodConfigTypes";
 
 // TODO(urgent): have build happen on AWS/etc by default (how? using webpack?)
-// TODO(urgent): catch/fatalError on any critical path async functions, if any remain
-// TODO(urgent): always load a help page if there's an exception or things fail to load (so make it default?) that explains how to Ctrl-R, *clear cache*, and/or reload newest version of service worker (or offers buttons to do these things)
 // TODO(urgent): integration tests, new unit tests for recently-added classes
-// TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?)
-// TODO(urgent): fix bug when doing ctrl-backspace to clear during search
-// TODO(urgent): see if poj_normalized can be committed upstream
+// TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?). because all fonts aren't loaded, people without the correct fonts on their system *will not be able to see many characters* during dynamic loading
 // TODO(urgent): error messages for if offline and no cache
-// TODO(urgent): handle/log errors from: https://blog.logrocket.com/error-handling-react-error-boundary/
-// TODO(urgent): change server script to also generate normalized_other
-// TODO(urgent): clean up and document node.js setup: `yarn run webpack --config webpack.scripts.js && node build/server.js` - let different parts of the build process be run separately, and standardize/document what is run
+// TODO(urgent): move dbs into sub-repository?
+// TODO(high): change server script to also generate normalized_other
+// TODO(high): see if poj_normalized can be committed upstream
+// TODO(high): catch/fatalError on any critical path async functions in searchController / etc
 // TODO(high): figure out the easiest/simplest/best place to have a simple support forum (github?)
 // TODO(high): "X" for search results
 // TODO(high): create a contact email
@@ -43,7 +40,6 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(high): look into strange behavior of fuzzysort mark generation (did it work before and broke recently, or was it always broken? - try "alexander")
 // TODO(high): different debug levels, possibly use an upstream lib for logging
 // TODO(high): always change url to be unicoded, so e.g. google meet won't butcher https://taigi.us/#mode=SEARCH;q=chhù-chú
-// TODO(high): 404 page, better support for 404s on json/csv
 // TODO(high): spyon test that console.log isn't called in an integration test
 // TODO(high): search without diacritics, spaces, or hyphens, then remove duplicates?
 // TODO(high): test performance of compressing/decompressing json/csv files
