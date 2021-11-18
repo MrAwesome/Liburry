@@ -1,37 +1,55 @@
+// [] check lang names for displayName everywhere
+//
 // The types here are those which go through some sort of serialization - to/from YAML or JSON in particular.
 import {z} from "zod";
-import {getRecordValues} from "../utils";
+import {getRecordEntries, getRecordValues} from "../utils";
 
 ////// Utilities /////////////////////////////
 function issue(ctx: z.RefinementCtx, message: string) {
     ctx.addIssue({code: z.ZodIssueCode.custom, message});
 }
 
-// NOTE: This isn't a particularly flexible/elegant way to check if we're checking the default app
-function isDefaultApp(ctx: z.RefinementCtx) {
-    return (ctx.path[1] === "default");
-}
-
 function realRecord<V extends z.ZodTypeAny>(val: V) {
     return z.record(val.optional());
-};
+}
+
+function strictObject<T extends z.ZodRawShape>(obj: T): z.ZodObject<T, "strict"> {
+    return z.object(obj).strict();
+}
 //////////////////////////////////////////////
 
-// TODO: use a zod schema for this.
-export type AppID = string;
 
-export const rawAppConfigSchema = z.object({
+const nonDefaultAppID = z.string().refine((s) => s !== "default");
+const defaultAppID = z.literal("default");
+// TODO: use a zod schema for this.
+export type AppID = z.infer<typeof nonDefaultAppID>;
+export type SubAppID = string;
+
+export const rawSubAppConfigSchema = strictObject({
     displayName: z.string(),
 });
+
+export const rawAppConfigSchema = strictObject({
+    displayName: z.string(),
+    defaultSubApp: z.string(),
+    subApps: realRecord(rawSubAppConfigSchema),
+})
+    .refine(
+        (appConfig) => Object.keys(appConfig.subApps).includes(appConfig.defaultSubApp),
+        (appConfig) => ({
+            message: `defaultSubApp "${appConfig.defaultSubApp}" not found in subApps: "${Object.keys(appConfig.subApps)}"`,
+            appDisplayName: [appConfig.displayName],
+        }),
+    );
 export type RawAppConfig = z.infer<typeof rawAppConfigSchema>;
 
-export const rawDialectSchema = z.object({
+export const rawDialectSchema = strictObject({
     displayName: z.string(),
     namesForOtherDialects: realRecord(z.string()).optional(),
 });
 export type RawDialect = z.infer<typeof rawDialectSchema>;
 
-export const rawDBLoadInfoSchema = z.object({
+export const rawDBLoadInfoSchema = strictObject({
     localCSV: z.string().optional(),
     localLunr: z.string().optional(),
 });
@@ -80,26 +98,26 @@ export const rawDictionaryFieldDisplayTypeSchema = z.union([
 ]);
 export type RawDictionaryFieldDisplayType = z.infer<typeof rawDictionaryFieldDisplayTypeSchema>;
 
-export const rawLangConfigSchema = z.object({
+export const rawLangConfigSchema = strictObject({
     dialects: realRecord(rawDialectSchema),
 });
 export type RawLangConfig = z.infer<typeof rawLangConfigSchema>;
 
 export const rawMenuLinksSchema = realRecord(
-    z.object({
+    strictObject({
         mode: rawMenuLinkModeSchema,
         displayNames: realRecord(z.string()),
     })
 );
 export type RawMenuLinks = z.infer<typeof rawMenuLinksSchema>;
 
-export const rawKnownDisplayTypeEntrySchema = z.object({
+export const rawKnownDisplayTypeEntrySchema = strictObject({
     dictionary: rawDictionaryFieldDisplayTypeSchema.optional(),
     fake_mtg: fakeMTGDisplayTypeSchema.optional(),
 });
 export type RawKnownDisplayTypeEntry = z.infer<typeof rawKnownDisplayTypeEntrySchema>;
 
-export const rawAllowedFieldClassifierTagsSchema = z.object({
+export const rawAllowedFieldClassifierTagsSchema = strictObject({
     type: rawKnownDisplayTypeEntrySchema.optional(),
     dialect: z.union([z.string(), z.array(z.string())]).optional(),
     delimiter: z.string().optional(),
@@ -110,17 +128,16 @@ export const rawAllowedFieldClassifierTagsSchema = z.object({
 });
 export type RawAllowedFieldClassifierTags = z.infer<typeof rawAllowedFieldClassifierTagsSchema>;
 
-export const rawMenuConfigSchema = z.object({
+export const rawMenuConfigSchema = strictObject({
     links: rawMenuLinksSchema,
 });
 export type RawMenuConfig = z.infer<typeof rawMenuConfigSchema>;
 
 const fieldsSchema = realRecord(rawAllowedFieldClassifierTagsSchema);
-export const rawDBConfigSchema = z.object({
-    disabled: z.boolean().optional(),
+export const rawDBConfigSchema = strictObject({
     displayName: realRecord(z.string()),
     primaryKey: z.string(),
-    searchableFields: z.array(z.string()),
+    searchableFields: z.array(z.string()).nonempty(),
     loadInfo: rawDBLoadInfoSchema,
     fields: fieldsSchema,
 }).superRefine((obj, ctx) => {
@@ -134,10 +151,7 @@ export const rawDBConfigSchema = z.object({
     if (displayNames.length < 1) {
         issue(ctx, "at least one displayName must be defined");
     }
-    if (obj.searchableFields.length < 1) {
-        issue(ctx, "at least one searchableField must be defined");
-    }
-    obj.searchableFields?.forEach((givenFieldName) => {
+    obj.searchableFields.forEach((givenFieldName) => {
         if (!(givenFieldName in obj.fields)) {
             issue(ctx, `searchableField "${givenFieldName}" is not a known field`);
         }
@@ -145,36 +159,71 @@ export const rawDBConfigSchema = z.object({
 });
 export type RawDBConfig = z.infer<typeof rawDBConfigSchema>;
 
-export const rawAllDBConfigSchema = z.object({
-    dbs: realRecord(rawDBConfigSchema)
-    .refine((rec) => Object.keys(rec).length > 0,
-            "at least one DB must be defined")
-    .refine(
-        (allDBRec) => getRecordValues(allDBRec).filter(
-            (dbc) => dbc.disabled !== true).length > 0,
-        "at least one DB must be enabled"
-    ),
+export const rawAllDBConfigSchema = strictObject({
+    dbList: z.array(z.string()).nonempty(),
+    enabledDBs: realRecord(z.array(z.string()).nonempty()),
+    dbConfigs: realRecord(rawDBConfigSchema),
+}).superRefine((allDBConfig, ctx) => {
+    const {dbList, dbConfigs, enabledDBs} = allDBConfig;
+    dbList.forEach((dbName) => {
+        if (!(dbName in dbConfigs)) {
+            issue(ctx, `"${dbName}" must have a config defined in "dbConfigs"`);
+        }
+    });
+
+    getRecordEntries(enabledDBs).forEach(([subAppName, enabledDBList]) => {
+        enabledDBList.forEach((dbName) => {
+            if (!(dbList.includes(dbName))) {
+                issue(ctx, `"${dbName}" is not a valid DB name in enabledDBs for "${subAppName}" (check "dbList")`);
+            }
+        });
+    });
+
+    getRecordEntries(allDBConfig.dbConfigs).forEach(([dbName, _dbConfig]) => {
+        if (!(dbList.includes(dbName))) {
+            issue(ctx, `"${dbName}" is not a valid DB name in dbConfigs (check "dbList")`);
+        }
+    });
 });
+
 export type RawAllDBConfig = z.infer<typeof rawAllDBConfigSchema>;
 
-const loadedAllConfigSchema = z.object({
-    "app_config": z.object({
-        configType: z.literal("app_config"),
-        config: rawAppConfigSchema,
-    }),
-    "db_config": z.object({
-        configType: z.literal("db_config"),
-        config: rawAllDBConfigSchema,
-    }),
-    "lang_config": z.object({
-        configType: z.literal("lang_config"),
-        config: rawLangConfigSchema,
-    }),
-    "menu_config": z.object({
-        configType: z.literal("menu_config"),
-        config: rawMenuConfigSchema,
-    }),
+const appConfigSchema = strictObject({
+    configType: z.literal("appConfig"),
+    config: rawAppConfigSchema,
 });
+
+const dbConfigSchema = strictObject({
+    configType: z.literal("dbConfig"),
+    config: rawAllDBConfigSchema,
+});
+
+const langConfigSchema = strictObject({
+    configType: z.literal("langConfig"),
+    config: rawLangConfigSchema,
+});
+
+const menuConfigSchema = strictObject({
+    configType: z.literal("menuConfig"),
+    config: rawMenuConfigSchema,
+});
+
+// Which configs must/can be present for a given app.
+const rawAppLoadedAllConfigSchema = strictObject({
+    appConfig: appConfigSchema,
+    dbConfig: dbConfigSchema,
+    langConfig: langConfigSchema.optional(),
+    menuConfig: menuConfigSchema.optional(),
+});
+
+// "default" has different requirements for which configs must be present.
+const rawDefaultLoadedAllConfigSchema = strictObject({
+    langConfig: langConfigSchema,
+    menuConfig: menuConfigSchema,
+});
+
+const loadedAllConfigSchema = rawDefaultLoadedAllConfigSchema.merge(rawAppLoadedAllConfigSchema).required();
+
 type LoadedAllConfig = z.infer<typeof loadedAllConfigSchema>;
 
 export type LoadedConfig = LoadedAllConfig[keyof LoadedAllConfig];
@@ -183,87 +232,91 @@ export type KnownConfigTypes = LoadedConfig["configType"];
 // <SIN>
 // Forgive me, for I have sinned. Just a union of the values of loadedAllConfigSchema.
 // It was unclear how to accomplish this in zod without defining a separate list for the objects.
-type LCS = typeof loadedAllConfigSchema.shape;
-type LCSV = LCS[keyof LCS];
+//type LCS = typeof loadedAllConfigSchema.shape;
+//type LCSV = LCS[keyof LCS];
 // @ts-ignore
-const loadedConfigSchema: z.ZodUnion<[LCSV, LCSV, ...LCSV[]]> = z.union(Object.values(loadedAllConfigSchema.shape));
+//const loadedConfigSchema: z.ZodUnion<[LCSV, LCSV, ...LCSV[]]> = z.union(Object.values(loadedAllConfigSchema.shape));
 // </SIN>
 
 export const configRecordSchema = loadedAllConfigSchema.partial();
 
-const REQUIRED_CONFIGS: KnownConfigTypes[] = ["app_config", "db_config"];
-const DEFAULT_REQUIRED_CONFIGS: KnownConfigTypes[] = ["lang_config", "menu_config"];
+const mdPageSchema = strictObject({
+    pageType: z.literal("markdown"),
+    pageID: z.string(),
+    mdText: z.string(),
+    lang: z.string(),
+});
 
-const loadedPageSchema = z.union([
-    z.object({
-        pageType: z.literal("markdown"),
-        pageID: z.string(),
-        mdText: z.string(),
-        lang: z.string(),
-    }),
-    z.object({
-        pageType: z.literal("HTML_UNUSED"),
-        pageID: z.string(),
-        htmlText: z.string(),
-        lang: z.string(),
-    }),
-]);
+const htmlPageSchema = strictObject({
+    pageType: z.literal("HTML_UNUSED"),
+    pageID: z.string(),
+    htmlText: z.string(),
+    lang: z.string(),
+});
+
+const loadedPageSchema = z.union([mdPageSchema, htmlPageSchema]);
 export type LoadedPage = z.infer<typeof loadedPageSchema>;
 
 export type PageType = LoadedPage["pageType"];
 export type PageID = LoadedPage["pageID"];
 
-const knownFileMetadata = z.object({
-    idChain: z.array(z.string()),
-    app: z.string(),
-});
-
 const loadedKnownFileSchema = z.union([
-    z.object({
+    strictObject({
         type: z.literal("config"),
-    })
-        .merge(knownFileMetadata)
-        .and(loadedConfigSchema),
-    z.object({
+    }).and(loadedAllConfigSchema),
+    strictObject({
         type: z.literal("page"),
-    })
-        .merge(knownFileMetadata)
-        .and(loadedPageSchema),
+    }).and(loadedPageSchema),
 
 ]);
 export type LoadedKnownFile = z.infer<typeof loadedKnownFileSchema>;
 
-const allPages = realRecord(loadedPageSchema);
-const allConfigs = configRecordSchema
-.superRefine(
-    (rec, ctx) => {
-        if (!isDefaultApp(ctx)) {
-            if (!REQUIRED_CONFIGS.every((conf) => conf in rec)) {
-                const seenConfigs = Object.keys(rec);
-                issue(ctx, `every app must have the following configs defined: [${REQUIRED_CONFIGS}]. Only found: [${seenConfigs}].`);
-            }
-        } else {
-            if (!DEFAULT_REQUIRED_CONFIGS.every((conf) => conf in rec)) {
-                const seenDefaultConfigs = Object.keys(rec);
-                issue(ctx, `"default" must have the following configs defined: [${DEFAULT_REQUIRED_CONFIGS}]. Only found: [${seenDefaultConfigs}].`);
-            }
+const allPagesSchema = realRecord(loadedPageSchema);
+
+const defaultAllConfigSchema = rawDefaultLoadedAllConfigSchema;
+const appAllConfigSchema = rawAppLoadedAllConfigSchema.superRefine((appAllConfigs, ctx) => {
+    const appConfig = appAllConfigs.appConfig.config;
+    const allDBConfigs = appAllConfigs.dbConfig.config;
+
+    const {enabledDBs} = allDBConfigs;
+    const subAppNames = Object.keys(appConfig.subApps);
+
+    subAppNames.forEach((subAppName) => {
+        if (!(subAppName in enabledDBs)) {
+            issue(ctx, `subApp "${subAppName}" must have an entry in "enabledDBs"`);
         }
-    }
-);
-
-const fullAppConfigurationSchema = z.object({
-    pages: allPages,
-    configs: allConfigs,
+    });
 });
-export type FullAppConfiguration = z.infer<typeof fullAppConfigurationSchema>;
 
-const allAppsSchema = realRecord(fullAppConfigurationSchema)
-.refine(
-    (rec) => Object.keys(rec).length > 1,
-    "at least one non-default app configuration must be defined"
-);
+//.superRefine((appAllConfigs, ctx) => {
+//});
 
-export const returnedFinalConfigSchema = z.object({
+const appTopLevelConfigurationSchema = strictObject({
+    appID: nonDefaultAppID,
+    pages: allPagesSchema,
+    configs: appAllConfigSchema,
+});
+
+const defaultTopLevelConfigurationSchema = strictObject({
+    appID: defaultAppID,
+    pages: allPagesSchema,
+    configs: defaultAllConfigSchema,
+});
+
+const allAppsSchema = z.object({default: z.undefined()})
+    .catchall(appTopLevelConfigurationSchema)
+    // [] clear this up?
+    .refine(
+        (rec) => Object.keys(rec).length > 0,
+        "at least one non-default app configuration must be defined"
+    );
+
+export const returnedFinalConfigSchema = strictObject({
+    default: defaultTopLevelConfigurationSchema,
     apps: allAppsSchema,
 });
 export type ReturnedFinalConfig = z.infer<typeof returnedFinalConfigSchema>;
+
+
+const intermediateConfig = returnedFinalConfigSchema.deepPartial();
+export type IntermediateConfig = z.infer<typeof intermediateConfig>;

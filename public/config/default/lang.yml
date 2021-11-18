@@ -16,8 +16,8 @@ dialects:
 #      tw_poj: "Pe̍h-uē-jī"
 #   parentGroups:
 #     - taiwanese
-    tags:
-      representation: kip
+#    tags:
+#      representation: kip
 
   eng_us:
     displayName: "English (US)"

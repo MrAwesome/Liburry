@@ -20,6 +20,8 @@ import type AppConfig from "./config/AppConfig";
 import type {PageID} from "./configHandler/zodConfigTypes";
 
 // TODO(urgent): have build happen on AWS/etc by default (how? using webpack?)
+// TODO(urgent): fix link display in about page on nexus 5
+// TODO(urgent): add a contact page for ChhoeTaigi
 // TODO(urgent): integration tests, new unit tests for recently-added classes
 // TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?). because all fonts aren't loaded, people without the correct fonts on their system *will not be able to see many characters* during dynamic loading
 // TODO(urgent): error messages for if offline and no cache

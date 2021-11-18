@@ -7,10 +7,10 @@ import path from 'path';
 import md5File from 'md5-file';
 import {parseYaml} from "../utils/yaml";
 import {promisify} from 'util';
-import {LoadedConfig, LoadedKnownFile, RawAllDBConfig, rawAllDBConfigSchema, rawAppConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../configHandler/zodConfigTypes";
+import {AppID, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../configHandler/zodConfigTypes";
 import {CHHA_APPNAME, FINAL_CONFIG_LOCAL_LOCATION} from "../constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
-import {getRecordEntries, getRecordValues} from '../utils';
+import {getRecordEntries} from '../utils';
 import {DBConfig} from '../types/config';
 
 const readFile = promisify(fs.readFile);
@@ -19,7 +19,7 @@ const opendir = promisify(fs.opendir);
 
 const ENV_FILE = '.env.local';
 const ENV_FILE_HEADER = '# NOTE: This file is generated automatically by compileYaml.ts! ' +
-                        'Changes here will be overwritten during the build process.';
+    'Changes here will be overwritten during the build process.';
 const CONFIG_DIR = 'public/config/';
 
 // TODO: DB filenames are currently stored in public/db/, but their filenames are prefixed with db/ in the configs - they should probably be stored per-app, unless sharing will be common
@@ -28,24 +28,38 @@ const CACHE_LINE_ENV_VARNAME = 'REACT_APP_CHHA_CACHE_FILES_JSON';
 
 export const YAML_FILENAME_TO_SCHEMA_MAPPING = {
     "app.yml": {
-        type: "app_config",
+        type: "appConfig",
         schema: rawAppConfigSchema,
     },
     "db.yml": {
-        type: "db_config",
+        type: "dbConfig",
         schema: rawAllDBConfigSchema,
     },
     "lang.yml": {
-        type: "lang_config",
+        type: "langConfig",
         schema: rawLangConfigSchema,
     },
     "menu.yml": {
-        type: "menu_config",
+        type: "menuConfig",
         schema: rawMenuConfigSchema,
     }
 } as const;
 
-export async function* walkFileTree(dir: string, subdirs: Array<string>): AsyncIterable<LoadedKnownFile | null> {
+interface LKFMeta {
+    idChain: string[],
+    app: AppID,
+}
+type LoadedFilePlusMeta = {
+    type: "config",
+    conf: LoadedConfig,
+    meta: LKFMeta,
+} | {
+    type: "page",
+    page: LoadedPage,
+    meta: LKFMeta,
+};
+
+export async function* walkFileTree(dir: string, subdirs: Array<string>): AsyncIterable<LoadedFilePlusMeta | null> {
     for await (const d of await opendir(dir)) {
         const entry = path.join(dir, d.name);
         if (d.isDirectory()) {
@@ -57,7 +71,7 @@ export async function* walkFileTree(dir: string, subdirs: Array<string>): AsyncI
     }
 }
 
-async function handleFile(path: string, filename: string, subdirs: Array<string>): Promise<LoadedKnownFile | null> {
+async function handleFile(path: string, filename: string, subdirs: Array<string>): Promise<LoadedFilePlusMeta | null> {
     if (path.endsWith('.yml')) {
         const yamlText = (await readFile(path)).toString();
         const id = filename.replace(/.yml$/, "")
@@ -66,9 +80,11 @@ async function handleFile(path: string, filename: string, subdirs: Array<string>
         if (validatedConfig !== null) {
             return {
                 type: "config",
-                app: subdirs[0],
-                idChain: [...subdirs, id],
-                ...validatedConfig
+                meta: {
+                    app: subdirs[0],
+                    idChain: [...subdirs, id],
+                },
+                conf: validatedConfig,
             };
         } else {
             console.warn(`Unknown yaml file type! Add it to YAML_FILENAME_TO_SCHEMA_MAPPING if it should be parsed: "${path}"`)
@@ -83,40 +99,50 @@ async function handleFile(path: string, filename: string, subdirs: Array<string>
         }
         return {
             type: "page",
-            app: subdirs[0],
-            idChain: [...subdirs, lang],
-            lang,
-            pageID: subdirs[1],
-            pageType: "markdown",
-            mdText,
-        }
+            meta: {
+                app: subdirs[0],
+                idChain: [...subdirs, lang],
+            },
+            page: {
+                lang,
+                pageID: subdirs[1],
+                pageType: "markdown",
+                mdText,
+            }
+        };
     } else {
         console.warn(`Unknown file type for: ${path}`);
         return null;
     }
 }
 
-// TODO:
-// 1) Warn on unused languages
-// 2) Error on defined languages with missing fields
 export default function validateYaml(filename: string, yamlBlob: Object): LoadedConfig | null {
     if (filename in YAML_FILENAME_TO_SCHEMA_MAPPING) {
         const m = YAML_FILENAME_TO_SCHEMA_MAPPING[filename as keyof typeof YAML_FILENAME_TO_SCHEMA_MAPPING];
-        return {
-            type: "config",
-            configType: m.type,
-            config: m.schema.parse(yamlBlob),
-        } as LoadedConfig;
+        try {
+            // NOTE: could use safeparse instead. Just felt convenient.
+            const parsed = m.schema.parse(yamlBlob);
+
+            return {
+                configType: m.type,
+                config: parsed,
+            } as LoadedConfig;
+        } catch (e) {
+            console.error(`Failed parsing "${filename}":`);
+            throw e;
+        }
     } else {
+        console.log(`Unknown yaml filename, ignoring: "${filename}"`);
         return null;
     }
 }
 
-export async function parseAllYaml(): Promise<ReturnedFinalConfig> {
+export async function parseAllYaml(): Promise<any> {
     const appName = CHHA_APPNAME;
     console.log(`Building app ${appName}...`);
 
-    const constructedObj: ReturnedFinalConfig = {
+    // We use "any" here because we will validate using zod below once we've finished loading configs.
+    const constructedObj: any = {
         apps: {},
     };
 
@@ -124,21 +150,21 @@ export async function parseAllYaml(): Promise<ReturnedFinalConfig> {
         if (obj === null) {
             continue;
         }
-        if (!(obj.app in constructedObj.apps)) {
-            constructedObj.apps[obj.app] = {
+        if (!(obj.meta.app in constructedObj.apps)) {
+            constructedObj.apps[obj.meta.app] = {
                 pages: {},
                 configs: {},
             };
         }
-        const appObj = constructedObj.apps[obj.app]!;
+        const appObj = constructedObj.apps[obj.meta.app]!;
         if (obj.type === "page") {
-            appObj.pages[obj.pageID] = obj;
+            appObj.pages[obj.page.pageID] = obj.page;
         } else if (obj.type === "config") {
-            appObj.configs = {...appObj.configs, [obj.configType]: obj};
+            appObj.configs[obj.conf.configType] = obj.conf;
         }
     }
 
-    const trimmedObj: ReturnedFinalConfig = {apps: {}};
+    const trimmedObj: any = {apps: {}};
 
     if (!(appName in constructedObj.apps)) {
         throw new Error(`App "${appName}" not found! Check that you're setting the environment variable REACT_APP_CHHA_APPNAME correctly.`);
@@ -146,8 +172,12 @@ export async function parseAllYaml(): Promise<ReturnedFinalConfig> {
     if (!("default" in constructedObj.apps)) {
         throw new Error(`No "default" configuration found! Check that the "default" directory exists in ${CONFIG_DIR}.`);
     }
-    trimmedObj.apps["default"] = constructedObj.apps["default"];
+
+    // NOTE: This is where we move "default" up a level in the configuration hierarchy.
+    trimmedObj.default = constructedObj.apps["default"];
+    trimmedObj.default.appID = "default";
     trimmedObj.apps[appName] = constructedObj.apps[appName];
+    trimmedObj.apps[appName].appID = appName;
 
     return trimmedObj;
 }
@@ -155,27 +185,23 @@ export async function parseAllYaml(): Promise<ReturnedFinalConfig> {
 function getFilesToCache(finalObj: ReturnedFinalConfig): string[] {
     const filesToCache = [];
     for (const appName in finalObj.apps) {
-        const appConfig = finalObj.apps[appName];
-        if (appConfig === undefined) {
-           throw new Error("Undefined appconfig: " + appName);
+        const allAppConfigs = finalObj.apps[appName];
+        if (allAppConfigs === undefined) {
+            throw new Error("Undefined appconfig: " + appName);
         }
 
-        for (const {configType, config} of getRecordValues(appConfig.configs)) {
-            if (configType === "db_config") {
-                const allDBConfigs = (config as RawAllDBConfig).dbs;
-                for (const [dbIdentifier, rawDBConfig] of getRecordEntries(allDBConfigs)) {
-                    const dbConfig = new DBConfig(dbIdentifier, rawDBConfig);
-                    if (dbConfig.isEnabled()) {
-                        const loadInfo = dbConfig.getDBLoadInfo();
-                        for (const key in loadInfo) {
-                            const validKey = key as keyof typeof loadInfo;
-                            if (key.startsWith("local")) {
-                                const localFilename = loadInfo[validKey];
-                                if (localFilename !== undefined) {
-                                    filesToCache.push(localFilename);
-                                }
-                            }
-                        }
+        const {dbConfigs} = allAppConfigs.configs.dbConfig.config;
+
+        for (const [dbIdentifier, rawDBConfig] of getRecordEntries(dbConfigs)) {
+            const dbConfig = new DBConfig(dbIdentifier, rawDBConfig);
+
+            const loadInfo = dbConfig.getDBLoadInfo();
+            for (const key in loadInfo) {
+                const validKey = key as keyof typeof loadInfo;
+                if (key.startsWith("local")) {
+                    const localFilename = loadInfo[validKey];
+                    if (localFilename !== undefined) {
+                        filesToCache.push(localFilename);
                     }
                 }
             }
@@ -217,17 +243,17 @@ async function genWriteEnvFile(envFileBody: string) {
 
 async function genWriteFinalConfig(jsonString: string) {
     writeFile(PUBLIC_DIR_PREFIX + FINAL_CONFIG_LOCAL_LOCATION, jsonString).then(
-            () => console.log(`* Wrote out "${FINAL_CONFIG_LOCAL_LOCATION}"...`));
+        () => console.log(`* Wrote out "${FINAL_CONFIG_LOCAL_LOCATION}"...`));
 }
 
 (async function () {
     // TODO: abstract away
-    if (!fs.existsSync("public/generated")){
+    if (!fs.existsSync("public/generated")) {
         fs.mkdirSync("public/generated");
     }
 
     const generatedFinalConfig = await parseAllYaml();
-    const checkedFinalConfig = returnedFinalConfigSchema.parse(generatedFinalConfig);
+    const checkedFinalConfig: ReturnedFinalConfig = returnedFinalConfigSchema.parse(generatedFinalConfig);
 
     // This must be written before the env file, since we generate an md5sum of the json file for precaching
     const finalObjJsonString = JSON.stringify(checkedFinalConfig);

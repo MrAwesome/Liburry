@@ -1,29 +1,51 @@
+# This file contains the configuration for the various data sources a Liburry app uses.
+# The two main purposes of this config are:
+#   1) Describing where/how to load a particular data source.
+#   2) Describing the structure of a data source - which fields it contains, and tags indicating what those fields mean.
+#
 # TODO: customize searchable fields for the non-english dbs
 # TODO: "type" is actually defined per displaytype...
 # TODO: split this up into a config per db (you define one yml per csv, or have your server return the raw object form of this at startup, etc)
 
-##### Structure: #####
-#
-# Note that fields can be either a:
-#
-# <UniqueDBIdentifier>:
-#   fileName: string
-#
-#   fields: (filename of path for db-specific config)
-#   OR
-#   fields:
-#     <fieldname>:
-#       type:
-#
-#
-# The db-speficic config looks like this
-#
-# fields:
-#
+# The authoritative list of data sources this app knows about.
+dbList:
+  - ChhoeTaigi_TaioanSitbutMialui
+  - ChhoeTaigi_TaioanPehoeKichhooGiku
+  - ChhoeTaigi_TaijitToaSutian
+  - ChhoeTaigi_TaihoaSoanntengTuichiautian
+  - ChhoeTaigi_MaryknollTaiengSutian
+  - ChhoeTaigi_KauiokpooTaigiSutian
+  - ChhoeTaigi_KamJitian
+  - ChhoeTaigi_iTaigiHoataiTuichiautian
+  - ChhoeTaigi_EmbreeTaiengSutian
 
-dbs:
+# Which data sources are enabled in which subapp.
+enabledDBs:
+  eng_poj:
+    - ChhoeTaigi_TaioanPehoeKichhooGiku
+    - ChhoeTaigi_MaryknollTaiengSutian
+    - ChhoeTaigi_EmbreeTaiengSutian
+  eng_kip:
+    - ChhoeTaigi_TaioanPehoeKichhooGiku
+    - ChhoeTaigi_MaryknollTaiengSutian
+    - ChhoeTaigi_EmbreeTaiengSutian
+  mando_poj:
+    - ChhoeTaigi_TaioanSitbutMialui
+    - ChhoeTaigi_TaijitToaSutian
+    - ChhoeTaigi_TaihoaSoanntengTuichiautian
+    - ChhoeTaigi_KauiokpooTaigiSutian
+    - ChhoeTaigi_KamJitian
+    - ChhoeTaigi_iTaigiHoataiTuichiautian
+  mando_kip:
+    - ChhoeTaigi_TaioanSitbutMialui
+    - ChhoeTaigi_TaijitToaSutian
+    - ChhoeTaigi_TaihoaSoanntengTuichiautian
+    - ChhoeTaigi_KauiokpooTaigiSutian
+    - ChhoeTaigi_KamJitian
+    - ChhoeTaigi_iTaigiHoataiTuichiautian
+
+dbConfigs:
   ChhoeTaigi_EmbreeTaiengSutian:
-
     displayName:
       eng_us: Embree
 
@@ -140,8 +162,6 @@ dbs:
           dictionary: page_number
 
   ChhoeTaigi_iTaigiHoataiTuichiautian:
-    disabled: True
-
     displayName:
       eng_us: iTaigi
 
@@ -228,8 +248,6 @@ dbs:
         lengthHint: short
 
   ChhoeTaigi_KamJitian:
-    disabled: True
-
     displayName:
       eng_us: KamJitian
 
@@ -343,8 +361,6 @@ dbs:
           dictionary: page_number
 
   ChhoeTaigi_KauiokpooTaigiSutian:
-    disabled: True
-
     displayName:
       eng_us: Kauiokpoo
 
@@ -512,7 +528,6 @@ dbs:
         notes: Delimiter could be 、
 
   ChhoeTaigi_MaryknollTaiengSutian:
-
     displayName:
       eng_us: Maryknoll
 
@@ -593,8 +608,6 @@ dbs:
         status: blank
 
   ChhoeTaigi_TaihoaSoanntengTuichiautian:
-    disabled: True
-
     displayName:
       eng_us: TaihoaSoannteng
 
@@ -700,8 +713,6 @@ dbs:
         dialect: hoabun
 
   ChhoeTaigi_TaijitToaSutian:
-    disabled: True
-
     displayName:
       eng_us: TaijitToaSutian
 
@@ -857,7 +868,6 @@ dbs:
         status: empty
 
   ChhoeTaigi_TaioanPehoeKichhooGiku:
-
     displayName:
       eng_us: Giku
 
@@ -1026,8 +1036,6 @@ dbs:
           dictionary: page_number
 
   ChhoeTaigi_TaioanSitbutMialui:
-    disabled: True
-
     displayName:
       eng_us: Mialui
 

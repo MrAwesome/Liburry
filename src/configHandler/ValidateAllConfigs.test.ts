@@ -13,5 +13,6 @@ test('finalconfig check', async () => {
     }
     const rfc = finalConfig as ReturnedFinalConfig;
     expect(rfc).toHaveProperty("apps");
-    expect(rfc.apps.default!.configs.lang_config!.config.dialects.eng_us!).toHaveProperty("displayName");
+    expect(Object.keys(rfc.apps).length).toBeGreaterThan(0);
+    expect(rfc.default.configs.langConfig.config.dialects.eng_us!.displayName).toBe("English (US)");
 });

@@ -17,16 +17,20 @@ export default class PageHandler {
         selectedAppID: AppID,
     ) {
         // NOTE: default is second, so that page-specific info comes first
-        const appIDs = [selectedAppID, "default"];
+
+        const thisApp = finalConfig.apps[selectedAppID];
+        if (thisApp === undefined) {
+            throw new Error(`App not found: ${selectedAppID}`);
+        }
+
+        const apps = [
+            thisApp,
+            finalConfig.default,
+        ];
 
         const pageMaps = new Map();
-        appIDs.forEach((appID) => {
-            const app = finalConfig.apps[appID];
-
-            if (app === undefined) {
-                throw new Error(`App not found: ${appID}`);
-            }
-
+        apps.forEach((app) => {
+            const {appID} = app;
             const pageConfig = app.pages;
             const appPairs = getRecordEntries(pageConfig);
             appPairs.forEach(([pageID, loadedPage]) => {

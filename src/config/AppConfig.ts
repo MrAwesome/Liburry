@@ -1,9 +1,10 @@
 // TODO: move a lot of the glue code into separate modules, and have this be more the top-level type definitions (or move this to an AppConfig module)
 
-import {ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
+import {ReturnedFinalConfig, SubAppID} from "../configHandler/zodConfigTypes";
+import {CHHA_ALLDB} from "../constants";
 import PageHandler from "../pages/PageHandler";
 import {DBConfig, DBIdentifier} from "../types/config";
-import {getRecordEntries, getRecordValues} from "../utils";
+import {getRecordEntries} from "../utils";
 
 export default class AppConfig {
     private constructor(
@@ -13,6 +14,7 @@ export default class AppConfig {
         //rawAllDBConfigs: RawAllDBConfig,
         private dbConfigs: Map<DBIdentifier, DBConfig>,
         public pageHandler: PageHandler,
+        private enabledDBs: Map<SubAppID, Set<DBIdentifier>>,
         //private langConfigs: RawLangConfig[],
     ) {
     }
@@ -22,30 +24,34 @@ export default class AppConfig {
         finalConfig: ReturnedFinalConfig,
         appName: string,
     ) {
+        // TODO: possibly throw a more useful error message here? Can this ever really happen?
         const rawAppConfig = finalConfig.apps[appName]!;
 
-        // XXX TODO: better error handling if app doesn't exist
-        // NOTE: we explicitly assume that DBs are per-app only.
         const dbIDsToDBConfigs = new Map();
         const allConfigs = rawAppConfig.configs;
-        for (const config of getRecordValues(allConfigs)) {
-            if (config.configType === "db_config") {
-                for (const [dbIdentifier, rawDBConfig] of getRecordEntries(config.config.dbs)) {
-                    dbIDsToDBConfigs.set(dbIdentifier, new DBConfig(dbIdentifier, rawDBConfig));
-                }
-            }
+        const {dbConfigs, enabledDBs} = allConfigs.dbConfig.config;
+        // TODO: unit test enabledsubapps
+        for (const [dbIdentifier, rawDBConfig] of getRecordEntries(dbConfigs)) {
+            dbIDsToDBConfigs.set(dbIdentifier, new DBConfig(dbIdentifier, rawDBConfig));
         }
+
+
+        // XXX TODO: when changing subapp, the main element needs to restart its searchers, or at least handle the delta
 
         const pageHandler = PageHandler.fromFinalConfig(finalConfig, appName);
 
-        return new AppConfig(dbIDsToDBConfigs, pageHandler);
+        const edbs = new Map(getRecordEntries(enabledDBs).map(([aid, dbs]) => ([aid, new Set(dbs)])));
+        return new AppConfig(dbIDsToDBConfigs, pageHandler, edbs);
     }
 
     getAllEnabledDBConfigs(ignoreEnabledTag?: boolean): DBConfig[] {
+        // XXX TODO
+        const subAppID = "eng_poj";
         return Array.from(this.dbConfigs.values())
             .filter((dbConfig) =>
-                dbConfig.isEnabled() ||
-                ignoreEnabledTag
+                CHHA_ALLDB ||
+                ignoreEnabledTag ||
+                this.enabledDBs.get(subAppID)?.has(dbConfig.getDBIdentifier())
             );
     }
 

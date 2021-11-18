@@ -1,5 +1,4 @@
 import {RawAllowedFieldClassifierTags, RawDBConfig} from "../configHandler/zodConfigTypes";
-import {CHHA_ALLDB} from "../constants";
 
 export interface DBLoadInfo {
     localCSV?: string;
@@ -17,14 +16,6 @@ export class DBConfig {
 
     asRaw(): RawDBConfig {
         return this.r;
-    }
-
-    // Note:
-    // * the REACT_APP_CHHA_ALLDB env var can be used to force-enable all DBs for this app.
-    // * if the "disabled" flag isn't present for a db, it defaults to enabled.
-    isEnabled(): boolean {
-        const isDisabled = this.r.disabled ?? false;
-        return !isDisabled || CHHA_ALLDB;
     }
 
     getDBLoadInfo() {

@@ -2,7 +2,7 @@ import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {PerDictResultsRaw, SingleDBLoadStatus} from "./types/dbTypes";
 import {CancelablePromise} from "./types/general";
 import {FuzzySortPreparer, FUZZY_SCORE_LOWER_THRESHOLD} from "./search/FuzzySortSearcher";
-import {LunrPreparer} from "./search/LunrSearcher";
+//import {LunrPreparer} from "./search/LunrSearcher";
 import {DBConfig, DBIdentifier} from "./types/config";
 
 export abstract class SearcherPreparer {
@@ -32,8 +32,9 @@ export function getMaxScore(searcherType: SearcherType): number {
         case SearcherType.FUZZYSORT:
             return FUZZY_SCORE_LOWER_THRESHOLD;
         case SearcherType.LUNR:
+            throw new Error("Lunr is not currently implemented.");
             // TODO: some normalized value for this
-            return 25;
+            //return 25;
     }
 }
 
@@ -47,8 +48,9 @@ export function getSearcherPreparer(
         case SearcherType.FUZZYSORT:
             return new FuzzySortPreparer(dbConfig, sendLoadStateUpdate, debug);
         case SearcherType.LUNR:
+            throw new Error("Lunr is not currently implemented.");
             // TODO: implement for lunr
-            return new LunrPreparer(dbConfig, sendLoadStateUpdate, debug);
+            //return new LunrPreparer(dbConfig, sendLoadStateUpdate, debug);
     }
 }
 

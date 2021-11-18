@@ -1,1 +1,11 @@
 displayName: "Chhâ Tâi-gí!"
+defaultSubApp: "eng_poj"
+subApps:
+  eng_poj:
+    displayName: "English ↔ Pe̍h-ōe-jī"
+  eng_kip:
+    displayName: "English ↔ Kàu-io̍k-pōo"
+  mando_poj:
+    displayName: "漢字 ↔ Pe̍h-ōe-jī"
+  mando_kip:
+    displayName: "漢字 ↔ Kàu-io̍k-pōo"
