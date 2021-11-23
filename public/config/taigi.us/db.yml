@@ -6,6 +6,9 @@
 # TODO: customize searchable fields for the non-english dbs
 # TODO: "type" is actually defined per displaytype...
 # TODO: split this up into a config per db (you define one yml per csv, or have your server return the raw object form of this at startup, etc)
+# TODO: ensure that defined fields are actually present at build time
+# TODO: build a webpack-based csv / etc processor
+# TODO: instead of language, use tags defined per-field, and have subapps just include various tags? or are subapps themselves the tags?
 
 # The authoritative list of data sources this app knows about.
 dbList:
@@ -19,30 +22,52 @@ dbList:
   - ChhoeTaigi_iTaigiHoataiTuichiautian
   - ChhoeTaigi_EmbreeTaiengSutian
 
-# Which data sources are enabled in which subapp.
+# Which data sources are enabled in which subapp, with a given view if that data source has views
+# NOTE: dbs for each subapp can be filtered of irrelevant keys in serverSideCSVProcessor, to noticeably reduce file size
+# TODO: filtering of CSVs to strip certain fields or only whitelist certain fields
 enabledDBs:
   eng_poj:
-    - ChhoeTaigi_TaioanPehoeKichhooGiku
-    - ChhoeTaigi_MaryknollTaiengSutian
-    - ChhoeTaigi_EmbreeTaiengSutian
+    ChhoeTaigi_TaioanPehoeKichhooGiku: poj
+    ChhoeTaigi_MaryknollTaiengSutian: poj
+    ChhoeTaigi_EmbreeTaiengSutian: poj
   eng_kip:
-    - ChhoeTaigi_TaioanPehoeKichhooGiku
-    - ChhoeTaigi_MaryknollTaiengSutian
-    - ChhoeTaigi_EmbreeTaiengSutian
+    ChhoeTaigi_TaioanPehoeKichhooGiku: kip
+    ChhoeTaigi_MaryknollTaiengSutian: kip
+    ChhoeTaigi_EmbreeTaiengSutian: kip
   mando_poj:
-    - ChhoeTaigi_TaioanSitbutMialui
-    - ChhoeTaigi_TaijitToaSutian
-    - ChhoeTaigi_TaihoaSoanntengTuichiautian
-    - ChhoeTaigi_KauiokpooTaigiSutian
-    - ChhoeTaigi_KamJitian
-    - ChhoeTaigi_iTaigiHoataiTuichiautian
+    ChhoeTaigi_TaioanSitbutMialui: poj
+    ChhoeTaigi_TaijitToaSutian: poj
+    ChhoeTaigi_TaihoaSoanntengTuichiautian: poj
+    ChhoeTaigi_KauiokpooTaigiSutian: poj
+    ChhoeTaigi_KamJitian: poj
+    ChhoeTaigi_iTaigiHoataiTuichiautian: poj
   mando_kip:
-    - ChhoeTaigi_TaioanSitbutMialui
-    - ChhoeTaigi_TaijitToaSutian
-    - ChhoeTaigi_TaihoaSoanntengTuichiautian
-    - ChhoeTaigi_KauiokpooTaigiSutian
-    - ChhoeTaigi_KamJitian
-    - ChhoeTaigi_iTaigiHoataiTuichiautian
+    ChhoeTaigi_TaioanSitbutMialui: kip
+    ChhoeTaigi_TaijitToaSutian: kip
+    ChhoeTaigi_TaihoaSoanntengTuichiautian: kip
+    ChhoeTaigi_KauiokpooTaigiSutian: kip
+    ChhoeTaigi_KamJitian: kip
+    ChhoeTaigi_iTaigiHoataiTuichiautian: kip
+  all_poj:
+    ChhoeTaigi_TaioanPehoeKichhooGiku: poj
+    ChhoeTaigi_MaryknollTaiengSutian: poj
+    ChhoeTaigi_EmbreeTaiengSutian: poj
+    ChhoeTaigi_TaioanSitbutMialui: poj
+    ChhoeTaigi_TaijitToaSutian: poj
+    ChhoeTaigi_TaihoaSoanntengTuichiautian: poj
+    ChhoeTaigi_KauiokpooTaigiSutian: poj
+    ChhoeTaigi_KamJitian: poj
+    ChhoeTaigi_iTaigiHoataiTuichiautian: poj
+  all_kip:
+    ChhoeTaigi_TaioanPehoeKichhooGiku: kip
+    ChhoeTaigi_MaryknollTaiengSutian: kip
+    ChhoeTaigi_EmbreeTaiengSutian: kip
+    ChhoeTaigi_TaioanSitbutMialui: kip
+    ChhoeTaigi_TaijitToaSutian: kip
+    ChhoeTaigi_TaihoaSoanntengTuichiautian: kip
+    ChhoeTaigi_KauiokpooTaigiSutian: kip
+    ChhoeTaigi_KamJitian: kip
+    ChhoeTaigi_iTaigiHoataiTuichiautian: kip
 
 dbConfigs:
   ChhoeTaigi_EmbreeTaiengSutian:
@@ -50,16 +75,27 @@ dbConfigs:
       eng_us: Embree
 
     loadInfo:
-      localCSV: db/ChhoeTaigi_EmbreeTaiengSutian.csv
+      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_EmbreeTaiengSutian.csv
 
     primaryKey: DictWordID
 
+    views:
+      - poj
+      - kip
+
     searchableFields:
-      - PojUnicode
-      - PojNormalized
-      - PojInput
-      - EngBun
-      - HoaBun
+      poj:
+        - PojUnicode
+        - PojNormalized
+        - PojInput
+        - EngBun
+        - HoaBun
+      kip:
+        - KipUnicode
+        - KipNormalized
+        - KipInput
+        - EngBun
+        - HoaBun
 
     fields:
       DictWordID:
@@ -166,9 +202,13 @@ dbConfigs:
       eng_us: iTaigi
 
     loadInfo:
-      localCSV: db/ChhoeTaigi_iTaigiHoataiTuichiautian.csv
+      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_iTaigiHoataiTuichiautian.csv
 
     primaryKey: DictWordID
+
+    views:
+      - poj
+      - kip
 
     searchableFields:
       - PojUnicode
@@ -252,9 +292,13 @@ dbConfigs:
       eng_us: KamJitian
 
     loadInfo:
-      localCSV: db/ChhoeTaigi_KamJitian.csv
+      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_KamJitian.csv
 
     primaryKey: DictWordID
+
+    views:
+      - poj
+      - kip
 
     searchableFields:
       - PojUnicode
@@ -365,9 +409,13 @@ dbConfigs:
       eng_us: Kauiokpoo
 
     loadInfo:
-      localCSV: db/ChhoeTaigi_KauiokpooTaigiSutian.csv
+      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_KauiokpooTaigiSutian.csv
 
     primaryKey: DictWordID
+
+    views:
+      - poj
+      - kip
 
     searchableFields:
       - PojUnicode
@@ -532,16 +580,27 @@ dbConfigs:
       eng_us: Maryknoll
 
     loadInfo:
-      localCSV: db/ChhoeTaigi_MaryknollTaiengSutian.csv
+      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_MaryknollTaiengSutian.csv
 
     primaryKey: DictWordID
 
+    views:
+      - poj
+      - kip
+
     searchableFields:
-      - PojUnicode
-      - PojNormalized
-      - PojInput
-      - EngBun
-      - HoaBun
+      poj:
+        - PojUnicode
+        - PojNormalized
+        - PojInput
+        - EngBun
+        - HoaBun
+      kip:
+        - KipUnicode
+        - KipNormalized
+        - KipInput
+        - EngBun
+        - HoaBun
 
     fields:
       DictWordID:
@@ -612,9 +671,13 @@ dbConfigs:
       eng_us: TaihoaSoannteng
 
     loadInfo:
-      localCSV: db/ChhoeTaigi_TaihoaSoanntengTuichiautian.csv
+      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_TaihoaSoanntengTuichiautian.csv
 
     primaryKey: DictWordID
+
+    views:
+      - poj
+      - kip
 
     searchableFields:
       - PojUnicode
@@ -717,9 +780,13 @@ dbConfigs:
       eng_us: TaijitToaSutian
 
     loadInfo:
-      localCSV: db/ChhoeTaigi_TaijitToaSutian.csv
+      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_TaijitToaSutian.csv
 
     primaryKey: DictWordID
+
+    views:
+      - poj
+      - kip
 
     searchableFields:
       - PojUnicode
@@ -872,16 +939,27 @@ dbConfigs:
       eng_us: Giku
 
     loadInfo:
-      localCSV: db/ChhoeTaigi_TaioanPehoeKichhooGiku.csv
+      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_TaioanPehoeKichhooGiku.csv
 
     primaryKey: DictWordID
 
+    views:
+      - poj
+      - kip
+
     searchableFields:
-      - PojUnicode
-      - PojNormalized
-      - PojInput
-      - EngBun
-      - HoaBun
+      poj:
+        - PojUnicode
+        - PojNormalized
+        - PojInput
+        - EngBun
+        - HoaBun
+      kip:
+        - KipUnicode
+        - KipNormalized
+        - KipInput
+        - EngBun
+        - HoaBun
 
     fields:
       DictWordID:
@@ -1040,9 +1118,13 @@ dbConfigs:
       eng_us: Mialui
 
     loadInfo:
-      localCSV: db/ChhoeTaigi_TaioanSitbutMialui.csv
+      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_TaioanSitbutMialui.csv
 
     primaryKey: DictWordID
+
+    views:
+      - poj
+      - kip
 
     searchableFields:
       - PojUnicode

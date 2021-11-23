@@ -118,9 +118,9 @@ function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string): DisplayR
 //       which is a superset of its original type.
 export function convertDBRowToFuzzySortPrepared(
     unpreparedEntry: RawDBRow,
-    searchableKeys: (keyof RawDBRow)[],
+    searchableFields: (keyof RawDBRow)[],
 ): FuzzyPreparedDBEntry {
-    searchableKeys.forEach(
+    searchableFields.forEach(
         (key) => {
             unpreparedEntry[key + PREPPED_KEY_SUFFIX] = fuzzysort
                 // @ts-ignore  prepareSlow does exist

@@ -88,7 +88,7 @@ const configHandler = new ConfigHandler();
 const configPromises = [configHandler.genLoadFinalConfigLocal()];
 Promise.all(configPromises).then(([finalConfig]) => {
     const appConfig = AppConfig.from(finalConfig, "taigi.us");
-    const dbConfigs = appConfig.getAllEnabledDBConfigs(true);
+    const dbConfigs = appConfig.dbConfigHandler.getAllDBConfigs();
 
     dbConfigs.forEach((dbConfig) => {
         console.log("Started: ", dbConfig.getDBIdentifier());

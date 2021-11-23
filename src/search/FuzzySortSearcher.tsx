@@ -72,7 +72,7 @@ export class FuzzySortPreparer implements SearcherPreparer {
         this.console.time("total-" + dbIdentifier);
         this.console.time("fetch-" + dbIdentifier);
 
-        return fetch("/" + localCSV)
+        return fetch(localCSV)
             .then((response: Response) => {
                 this.sendLoadStateUpdate({isDownloaded: true});
                 return response.text();

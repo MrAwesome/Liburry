@@ -28,6 +28,7 @@ export default class SearchController {
     ) {
         const expectedNumberOfDBs = Array.from(this.getStateTyped().loadedDBs.keys()).length;
         this.console = getDebugConsole(debug);
+        // NOTE: when changing subapp, you'll need to re-create searchworkermanager since it gets subapp through appconfig... either that, or change subapp in appconfig directly, and deal with the consequences of that. should this entire component be re-created?
         this.searchWorkerManager = new SearchWorkerManager(appConfig, debug);
         this.validity = new SearchValidityManager(debug, expectedNumberOfDBs);
 

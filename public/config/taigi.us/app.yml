@@ -1,5 +1,12 @@
 displayName: "Chhâ Tâi-gí!"
 defaultSubApp: "eng_poj"
+#domainToDefaultSubAppMapping:
+#  taigi.us: "eng_poj"
+#  kip.taigi.us: "eng_kip"
+#  mandopoj.taigi.us: "mando_poj"
+#  mandokip.taigi.us: "mando_kip"
+
+# NOTE: displayNames per language can be implemented without too much trouble, if needed
 subApps:
   eng_poj:
     displayName: "English ↔ Pe̍h-ōe-jī"
@@ -9,3 +16,7 @@ subApps:
     displayName: "漢字 ↔ Pe̍h-ōe-jī"
   mando_kip:
     displayName: "漢字 ↔ Kàu-io̍k-pōo"
+  all_poj:
+    displayName: "All DBS / 所有數據庫 (Pe̍h-ōe-jī)"
+  all_kip:
+    displayName: "All DBS / 所有數據庫 (Kàu-io̍k-pōo)"

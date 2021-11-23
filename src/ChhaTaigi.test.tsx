@@ -20,7 +20,7 @@ noop(React.version);
 // TODO(low): figure out how to run componentDidMount
 
 export async function getAppConfig() {
-    const configHandler = new ConfigHandler(true);
+    const configHandler = new ConfigHandler({localMode: true});
     return configHandler.genLoadFinalConfig()
         .then((rfc) => AppConfig.from(rfc as ReturnedFinalConfig, "taigi.us"));
 }

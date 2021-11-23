@@ -50,7 +50,12 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
                 this.props.fatalError(configHandlerError);
             } else {
                 const finalConfig = finalConfigOrErr as ReturnedFinalConfig;
-                const appConfig = AppConfig.from(finalConfig, CHHA_APPNAME);
+
+
+                // TODO: XXX: yuh
+                const subAppID = "eng_poj";
+
+                const appConfig = AppConfig.from(finalConfig, CHHA_APPNAME, subAppID);
                 this.setState({appConfig})
             }
         });

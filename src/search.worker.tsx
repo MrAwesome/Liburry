@@ -4,7 +4,7 @@ import {getSearcherPreparer, OngoingSearch, Searcher, SearcherPreparer, Searcher
 import {DBConfig, DBIdentifier} from "./types/config";
 
 // NOTE: RawDBConfig is used here because we're passing between workers, and anything higher-level would lose its methods during serialization.
-import {RawDBConfig} from "./configHandler/zodConfigTypes";
+import {RawDBConfig, ViewID} from "./configHandler/zodConfigTypes";
 
 // TODO(wishlist): ensure that objects passed to/from the worker are simple objects (interface, not class)
 //                 and/or translate from simple objects to full classes (with methods) before/after message
@@ -13,7 +13,7 @@ import {RawDBConfig} from "./configHandler/zodConfigTypes";
 const ctx: Worker = self as any;
 
 export type SearchWorkerCommandMessage =
-    {command: SearchWorkerCommandType.INIT, payload: {dbIdentifier: DBIdentifier, rawDBConfig: RawDBConfig, debug: boolean, searcherType: SearcherType}} |
+    {command: SearchWorkerCommandType.INIT, payload: {dbIdentifier: DBIdentifier, rawDBConfig: RawDBConfig, viewID: ViewID | undefined, debug: boolean, searcherType: SearcherType}} |
     {command: SearchWorkerCommandType.SEARCH, payload: {query: string, searchID: number}} |
     {command: SearchWorkerCommandType.CANCEL, payload?: null} |
     {command: SearchWorkerCommandType.LOG, payload?: null} |
@@ -162,8 +162,8 @@ ctx.addEventListener("message", (e) => {
     const message: SearchWorkerCommandMessage = e.data;
     switch (message.command) {
         case SearchWorkerCommandType.INIT: {
-            const {dbIdentifier, rawDBConfig, debug, searcherType} = message.payload;
-            const dbConfig = new DBConfig(dbIdentifier, rawDBConfig);
+            const {dbIdentifier, rawDBConfig, viewID, debug, searcherType} = message.payload;
+            const dbConfig = new DBConfig(dbIdentifier, rawDBConfig, viewID);
             sw.start(dbIdentifier, dbConfig, debug, searcherType);
         }
             break;

@@ -1,4 +1,4 @@
-import {RawAllowedFieldClassifierTags, RawDBConfig} from "../configHandler/zodConfigTypes";
+import {FieldID, RawAllowedFieldClassifierTags, RawDBConfig, ViewID} from "../configHandler/zodConfigTypes";
 
 export interface DBLoadInfo {
     localCSV?: string;
@@ -7,11 +7,11 @@ export interface DBLoadInfo {
 
 export type DBIdentifier = string;
 
-// TODO: Should these be functions? (yes.)
 export class DBConfig {
     constructor(
         private dbIdentifier: DBIdentifier,
         private r: RawDBConfig,
+        private view?: ViewID,
     ) { }
 
     asRaw(): RawDBConfig {
@@ -26,8 +26,13 @@ export class DBConfig {
         return this.r.primaryKey;
     }
 
-    getSearchableFields() {
-        return this.r.searchableFields;
+    getSearchableFields(): FieldID[] {
+        if (Array.isArray(this.r.searchableFields)) {
+            return this.r.searchableFields;
+        } else {
+            // TODO: better error handling
+            return this.r.searchableFields[this.view!]!;
+        }
     }
 
     getDBIdentifier() {

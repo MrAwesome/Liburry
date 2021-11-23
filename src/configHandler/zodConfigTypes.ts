@@ -1,7 +1,10 @@
 // [] check lang names for displayName everywhere
+// [] create some test data that should fail various cases, to make sure validation is happening
+// [] create some test data that should pass various complex cases
 //
 // The types here are those which go through some sort of serialization - to/from YAML or JSON in particular.
 import {z} from "zod";
+import {DBIdentifier} from "../types/config";
 import {getRecordEntries, getRecordValues} from "../utils";
 
 ////// Utilities /////////////////////////////
@@ -16,6 +19,10 @@ function realRecord<V extends z.ZodTypeAny>(val: V) {
 function strictObject<T extends z.ZodRawShape>(obj: T): z.ZodObject<T, "strict"> {
     return z.object(obj).strict();
 }
+
+function nonEmptyStringArray() {
+    return z.array(z.string()).nonempty();
+}
 //////////////////////////////////////////////
 
 
@@ -24,13 +31,16 @@ const defaultAppID = z.literal("default");
 // TODO: use a zod schema for this.
 export type AppID = z.infer<typeof nonDefaultAppID>;
 export type SubAppID = string;
+export type ViewID = string;
+export type FieldID = string;
 
 export const rawSubAppConfigSchema = strictObject({
     displayName: z.string(),
 });
 
 export const rawAppConfigSchema = strictObject({
-    displayName: z.string(),
+    // [] TODO: use in index.html
+    displayName: z.string().describe("The display name of the app, as it will be shown to users."),
     defaultSubApp: z.string(),
     subApps: realRecord(rawSubAppConfigSchema),
 })
@@ -52,7 +62,20 @@ export type RawDialect = z.infer<typeof rawDialectSchema>;
 export const rawDBLoadInfoSchema = strictObject({
     localCSV: z.string().optional(),
     localLunr: z.string().optional(),
-});
+})
+    .superRefine((obj, ctx) => {
+        getRecordEntries(obj).forEach(([key, val]) => {
+            if (key.startsWith("local")) {
+                if (!val.startsWith("/")) {
+                    issue(ctx, `(${key}): local files must be an absolute path (start with "/"). You probably want to replace "${val}" with "/${val}".`);
+                }
+            } else if (key.startsWith("remote")) {
+                if (!val.startsWith("https://")) {
+                    issue(ctx, `(${key}): remote files must begin with "https://" (current value: "${val}").`);
+                }
+            }
+        });
+    });
 export type RawDBLoadInfo = z.infer<typeof rawDBLoadInfoSchema>;
 
 export const rawMenuLinkModeSchema = z.union([
@@ -118,13 +141,20 @@ export const rawKnownDisplayTypeEntrySchema = strictObject({
 export type RawKnownDisplayTypeEntry = z.infer<typeof rawKnownDisplayTypeEntrySchema>;
 
 export const rawAllowedFieldClassifierTagsSchema = strictObject({
-    type: rawKnownDisplayTypeEntrySchema.optional(),
-    dialect: z.union([z.string(), z.array(z.string())]).optional(),
-    delimiter: z.string().optional(),
-    delimiterRegex: z.string().optional(),
-    lengthHint: z.string().optional(),
-    status: z.string().optional(),
-    notes: z.string().optional(),
+    type: rawKnownDisplayTypeEntrySchema.optional()
+        .describe("Mapping of displayModeIDs to the type of this field in that display mode. If this is not specified, the field will never be displayed (but can still be searched)."),
+    delimiter: z.string().optional()
+        .describe("The delimiter, if any, splitting up tokens within the field (e.g. \"big,nasty,man\" would have the delimiter \",\")."),
+    delimiterRegex: z.string().optional()
+        .describe("Regular expression to find delimiters in the field's value. Takes precedence over \"delimiter\". You can wrap the regex in a negative lookup to keep it from disappearing, if desired: (?=REGEX_GOES_HERE)"),
+    dialect: z.union([z.string(), nonEmptyStringArray()]).optional()
+        .describe("[UNUSED] The human dialect (or list of dialects) of this field's data. Must be a valid DialectID (defined in lang.yml). This may be used in the future for the display of multi-language datasets."),
+    lengthHint: z.string().optional()
+        .describe("[UNUSED] This may be used in the future to help hint to the UI how much visual space to allocate to a field."),
+    status: z.string().optional()
+        .describe("[UNUSED] This may be used in the future to help hint to the UI that a field is usually empty."),
+    notes: z.string().optional()
+        .describe("[UNUSED] Simply a place to leave notes on the contents of a field. May be displayed to users someday."),
 });
 export type RawAllowedFieldClassifierTags = z.infer<typeof rawAllowedFieldClassifierTagsSchema>;
 
@@ -134,13 +164,27 @@ export const rawMenuConfigSchema = strictObject({
 export type RawMenuConfig = z.infer<typeof rawMenuConfigSchema>;
 
 const fieldsSchema = realRecord(rawAllowedFieldClassifierTagsSchema);
-export const rawDBConfigSchema = strictObject({
-    displayName: realRecord(z.string()),
-    primaryKey: z.string(),
-    searchableFields: z.array(z.string()).nonempty(),
+const rawDBConfigSchema = strictObject({
+    displayName: realRecord(z.string())
+        .describe("Mapping of DialectID to the DB's name in that language."),
+    source: z.string().url().optional()
+        .describe("Human-useful URL pointing to where the data source and its licensing information can be viewed."),
+    primaryKey: z.string()
+        .describe("Field which contains an ID unique to each entry."),
     loadInfo: rawDBLoadInfoSchema,
+
+    searchableFields: nonEmptyStringArray().or(realRecord(nonEmptyStringArray()))
+        .describe(`The fields which will be searched by the selected searching algorithm. Is either:
+                  1) A list of searchable fields.
+                  2) A mapping of ViewID to lists of searchable fields.`
+        ),
+
+    views: nonEmptyStringArray().optional()
+        .describe("List of ViewIDs defined for this data source. Views are a way to specify which fields should be searched or displayed for a particular data source."),
+
     fields: fieldsSchema,
-}).superRefine((obj, ctx) => {
+})
+.superRefine((obj, ctx) => {
     if (obj.primaryKey.length < 0) {
         issue(ctx, "primaryKey must be defined");
     }
@@ -151,39 +195,111 @@ export const rawDBConfigSchema = strictObject({
     if (displayNames.length < 1) {
         issue(ctx, "at least one displayName must be defined");
     }
-    obj.searchableFields.forEach((givenFieldName) => {
-        if (!(givenFieldName in obj.fields)) {
-            issue(ctx, `searchableField "${givenFieldName}" is not a known field`);
-        }
-    });
+
+    if (Array.isArray(obj.searchableFields)) {
+        obj.searchableFields.forEach((givenFieldName) => {
+            if (!(givenFieldName in obj.fields)) {
+                issue(ctx, `searchableField "${givenFieldName}" is not a known field`);
+            }
+        });
+    } else {
+        getRecordEntries(obj.searchableFields).forEach(([view, givenFieldNames]) => {
+            if (!obj.views?.includes(view)) {
+                issue(ctx, `given view name "${view}" is not a known view (db: "${obj.displayName}")`);
+            }
+            givenFieldNames.forEach((givenFieldName) => {
+                if (!(givenFieldName in obj.fields)) {
+                    issue(ctx, `searchableField "${givenFieldName}" is not a known field (view: "${view}"`);
+                }
+            });
+        });
+    }
 });
 export type RawDBConfig = z.infer<typeof rawDBConfigSchema>;
 
+const dbToViewMappingSchema = realRecord(z.string());
+type DBToViewMapping = z.infer<typeof dbToViewMappingSchema>;
+const enabledDBsOrDBToViewMappingSchema = nonEmptyStringArray().or(dbToViewMappingSchema);
+
+const dbListSchema = nonEmptyStringArray()
+    .describe("The authoritative list of DBIDs for this app.");
+export type RawDBList = z.infer<typeof dbListSchema>;
+
+const enabledDBsListSchema = nonEmptyStringArray()
+    .describe("List of DBIDs which are currently enabled for this app and all of its subapps. If not present, it's assumed that all DBs will be enabled.");
+const enabledDBsBySubAppSchema = realRecord(enabledDBsOrDBToViewMappingSchema)
+    .describe(`A more advanced configuration which contains a mapping of SubAppID to either: \
+    1) A list of DBIDs enabled for that subapp. \
+    2) A mapping of DBIDs to which ViewID should be used for that DB in this subapp.`);
+const enabledDBsSchema = enabledDBsListSchema.or(enabledDBsBySubAppSchema)
+export type RawEnabledDBs = z.infer<typeof enabledDBsSchema>;
+
+const dbConfigMappingSchema = realRecord(rawDBConfigSchema);
+export type RawDBConfigMapping = z.infer<typeof dbConfigMappingSchema>;
+
 export const rawAllDBConfigSchema = strictObject({
-    dbList: z.array(z.string()).nonempty(),
-    enabledDBs: realRecord(z.array(z.string()).nonempty()),
-    dbConfigs: realRecord(rawDBConfigSchema),
-}).superRefine((allDBConfig, ctx) => {
+    dbList: dbListSchema,
+    dbConfigs: dbConfigMappingSchema,
+    enabledDBs: enabledDBsSchema.optional(),
+})
+// TODO: Create test data (via zod-mock?) and create unit tests
+// TODO: just use both fields and have subapp version override enableddbs
+// TODO: validate subapp names
+.superRefine((allDBConfig, ctx) => {
     const {dbList, dbConfigs, enabledDBs} = allDBConfig;
+
+    if (Array.isArray(enabledDBs)) {
+        enabledDBs.forEach((dbName) => {
+            if (!(dbList.includes(dbName))) {
+                issue(ctx, `"${dbName}" is not a valid DB name in enabledDBs (check "dbList")`);
+            }
+        });
+    } else {
+        getRecordEntries(enabledDBs ?? {}).forEach(([subAppName, enabledDBListOrDBToViewMapping]) => {
+            let enabledDBList: DBIdentifier[];
+            if (Array.isArray(enabledDBListOrDBToViewMapping)) {
+                enabledDBList = enabledDBListOrDBToViewMapping as DBIdentifier[];
+            } else {
+                enabledDBList = Object.keys(enabledDBListOrDBToViewMapping);
+
+                const dbToViewPairs = getRecordEntries(enabledDBListOrDBToViewMapping as DBToViewMapping);
+
+                dbToViewPairs.forEach(([dbID, viewID]) => {
+                    // We check for dbID validity below so we don't need to bother checking again here
+                    const viewsForDB = dbConfigs[dbID]?.views;
+                    if (!viewsForDB?.includes(viewID)) {
+                        issue(ctx, `"${viewID}" is not a valid view for db "${dbID}" (or "${dbID}" is invalid).`);
+                    }
+                });
+            }
+            enabledDBList.forEach((dbName) => {
+                if (!(dbList.includes(dbName))) {
+                    issue(ctx, `"${dbName}" is not a valid DB name in enabledDBsBySubApp for "${subAppName}" (check "dbList")`);
+                }
+            });
+        });
+    }
+
     dbList.forEach((dbName) => {
         if (!(dbName in dbConfigs)) {
             issue(ctx, `"${dbName}" must have a config defined in "dbConfigs"`);
         }
     });
 
-    getRecordEntries(enabledDBs).forEach(([subAppName, enabledDBList]) => {
-        enabledDBList.forEach((dbName) => {
-            if (!(dbList.includes(dbName))) {
-                issue(ctx, `"${dbName}" is not a valid DB name in enabledDBs for "${subAppName}" (check "dbList")`);
-            }
-        });
-    });
 
     getRecordEntries(allDBConfig.dbConfigs).forEach(([dbName, _dbConfig]) => {
         if (!(dbList.includes(dbName))) {
             issue(ctx, `"${dbName}" is not a valid DB name in dbConfigs (check "dbList")`);
         }
     });
+}).transform((adbc) => {
+    // If enabledDBs is not given, use dbList
+    let edbs = adbc.enabledDBs ?? adbc.dbList;
+    const withFilledInEnabledDBs =  {
+        ...adbc,
+        enabledDBs: edbs,
+    };
+    return withFilledInEnabledDBs;
 });
 
 export type RawAllDBConfig = z.infer<typeof rawAllDBConfigSchema>;
@@ -229,17 +345,6 @@ type LoadedAllConfig = z.infer<typeof loadedAllConfigSchema>;
 export type LoadedConfig = LoadedAllConfig[keyof LoadedAllConfig];
 export type KnownConfigTypes = LoadedConfig["configType"];
 
-// <SIN>
-// Forgive me, for I have sinned. Just a union of the values of loadedAllConfigSchema.
-// It was unclear how to accomplish this in zod without defining a separate list for the objects.
-//type LCS = typeof loadedAllConfigSchema.shape;
-//type LCSV = LCS[keyof LCS];
-// @ts-ignore
-//const loadedConfigSchema: z.ZodUnion<[LCSV, LCSV, ...LCSV[]]> = z.union(Object.values(loadedAllConfigSchema.shape));
-// </SIN>
-
-export const configRecordSchema = loadedAllConfigSchema.partial();
-
 const mdPageSchema = strictObject({
     pageType: z.literal("markdown"),
     pageID: z.string(),
@@ -281,11 +386,19 @@ const appAllConfigSchema = rawAppLoadedAllConfigSchema.superRefine((appAllConfig
     const {enabledDBs} = allDBConfigs;
     const subAppNames = Object.keys(appConfig.subApps);
 
-    subAppNames.forEach((subAppName) => {
-        if (!(subAppName in enabledDBs)) {
-            issue(ctx, `subApp "${subAppName}" must have an entry in "enabledDBs"`);
-        }
-    });
+    if (!Array.isArray(enabledDBs)) {
+        subAppNames.forEach((subAppID) => {
+            if (!(subAppID in enabledDBs)) {
+                console.log(`subApp "${subAppID}" does not have an entry in "enabledDBs", all DBs will be assumed enabled there.`);
+            }
+        });
+
+        Object.keys(enabledDBs).forEach((subAppID) => {
+            if (!subAppNames.includes(subAppID)) {
+                issue(ctx, `invalid subApp name in "enabledDBsForSubApp": "${subAppID}"`);
+            }
+        });
+    }
 });
 
 //.superRefine((appAllConfigs, ctx) => {

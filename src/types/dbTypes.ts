@@ -38,7 +38,7 @@ export interface AnnotatedPerDictResultsRaw {
 
 export function annotateRawResults(allRes: PerDictResultsRaw, appConfig: AppConfig): AnnotatedPerDictResultsRaw {
     const {dbIdentifier} = allRes;
-    const dbConfig = appConfig.getDBConfig(dbIdentifier);
+    const dbConfig = appConfig.dbConfigHandler.getConfig(dbIdentifier);
     const results: AnnotatedSearchResultEntryRaw[] = allRes.results.map((entryRaw) => {
         const fields: AnnotatedDisplayReadyFieldRaw[] = entryRaw.fields.map((fieldRaw) => {
             const colName = fieldRaw.colName;

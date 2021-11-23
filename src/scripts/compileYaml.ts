@@ -76,7 +76,15 @@ async function handleFile(path: string, filename: string, subdirs: Array<string>
         const yamlText = (await readFile(path)).toString();
         const id = filename.replace(/.yml$/, "")
         const yamlBlob: Object = parseYaml(yamlText);
-        const validatedConfig = validateYaml(filename, yamlBlob);
+
+        let validatedConfig: LoadedConfig | null = null;
+        try {
+            validatedConfig = validateYaml(filename, yamlBlob);
+        } catch (e) {
+            console.error(`Failed validating "${path}":`);
+            throw e;
+        }
+
         if (validatedConfig !== null) {
             return {
                 type: "config",
@@ -119,18 +127,13 @@ async function handleFile(path: string, filename: string, subdirs: Array<string>
 export default function validateYaml(filename: string, yamlBlob: Object): LoadedConfig | null {
     if (filename in YAML_FILENAME_TO_SCHEMA_MAPPING) {
         const m = YAML_FILENAME_TO_SCHEMA_MAPPING[filename as keyof typeof YAML_FILENAME_TO_SCHEMA_MAPPING];
-        try {
-            // NOTE: could use safeparse instead. Just felt convenient.
-            const parsed = m.schema.parse(yamlBlob);
+        // NOTE: could use safeparse instead. Just felt convenient.
+        const parsed = m.schema.parse(yamlBlob);
 
-            return {
-                configType: m.type,
-                config: parsed,
-            } as LoadedConfig;
-        } catch (e) {
-            console.error(`Failed parsing "${filename}":`);
-            throw e;
-        }
+        return {
+            configType: m.type,
+            config: parsed,
+        } as LoadedConfig;
     } else {
         console.log(`Unknown yaml filename, ignoring: "${filename}"`);
         return null;

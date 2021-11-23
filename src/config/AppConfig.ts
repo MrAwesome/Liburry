@@ -1,10 +1,9 @@
 // TODO: move a lot of the glue code into separate modules, and have this be more the top-level type definitions (or move this to an AppConfig module)
 
-import {ReturnedFinalConfig, SubAppID} from "../configHandler/zodConfigTypes";
-import {CHHA_ALLDB} from "../constants";
+import {RawDBList, RawEnabledDBs, ReturnedFinalConfig, SubAppID, RawDBConfigMapping, AppID, ViewID} from "../configHandler/zodConfigTypes";
 import PageHandler from "../pages/PageHandler";
 import {DBConfig, DBIdentifier} from "../types/config";
-import {getRecordEntries} from "../utils";
+import {getRecordEntries, nullGuard} from "../utils";
 
 export default class AppConfig {
     private constructor(
@@ -12,51 +11,122 @@ export default class AppConfig {
         //private displayName: string,
         //private interfaceLangs: string[],
         //rawAllDBConfigs: RawAllDBConfig,
-        private dbConfigs: Map<DBIdentifier, DBConfig>,
         public pageHandler: PageHandler,
-        private enabledDBs: Map<SubAppID, Set<DBIdentifier>>,
+        public dbConfigHandler: DBConfigHandler,
         //private langConfigs: RawLangConfig[],
+        public subAppID?: SubAppID,
     ) {
     }
 
     // TODO: unit test this transition
     static from(
         finalConfig: ReturnedFinalConfig,
-        appName: string,
+        appID: AppID,
+        subAppID?: SubAppID,
     ) {
         // TODO: possibly throw a more useful error message here? Can this ever really happen?
-        const rawAppConfig = finalConfig.apps[appName]!;
+        const rawAppConfig = finalConfig.apps[appID]!;
 
-        const dbIDsToDBConfigs = new Map();
         const allConfigs = rawAppConfig.configs;
-        const {dbConfigs, enabledDBs} = allConfigs.dbConfig.config;
         // TODO: unit test enabledsubapps
-        for (const [dbIdentifier, rawDBConfig] of getRecordEntries(dbConfigs)) {
-            dbIDsToDBConfigs.set(dbIdentifier, new DBConfig(dbIdentifier, rawDBConfig));
+        const pageHandler = PageHandler.fromFinalConfig(finalConfig, appID);
+
+        const dbConfigHandler = new DBConfigHandler(allConfigs.dbConfig.config, subAppID);
+        return new AppConfig(pageHandler, dbConfigHandler, subAppID);
+    }
+}
+
+class DBConfigHandler {
+//    private bySubApp?: Map<string, Set<string>>;
+//    private byGlobalList?: Set<string>;
+    private dbIDsToDBConfigs: Map<DBIdentifier, DBConfig>;
+
+    private dbList: RawDBList;
+    private enabledDBs: RawEnabledDBs;
+
+    constructor(
+        args: {
+            dbList: RawDBList,
+            enabledDBs: RawEnabledDBs,
+            dbConfigs: RawDBConfigMapping,
+        },
+        private subAppID?: SubAppID,
+    ) {
+        this.getViewID = this.getViewID.bind(this);
+
+        const {dbList, dbConfigs, enabledDBs} = args;
+        this.dbList = dbList;
+        this.enabledDBs = enabledDBs;
+
+
+//        if (enabledDBsBySubApp !== undefined) {
+//            this.bySubApp = new Map(getRecordEntries(enabledDBsBySubApp).map(([aid, dbs]) => ([aid, new Set(dbs)])));
+//        }
+//
+//        if (enabledDBs !== undefined) {
+//            this.byGlobalList = new Set(enabledDBs);
+//        }
+
+        // EnabledDBs doesn't have views associated with it
+
+        //  TODO: look for viewids here, and pass them in based on the current subapp
+        this.dbIDsToDBConfigs = new Map(
+            getRecordEntries(dbConfigs)
+            .map(([dbID, rawConfig]) => {
+                const viewID = getViewID(subAppID, dbID, enabledDBs);
+                return ([dbID, new DBConfig(dbID, rawConfig, viewID)]);
+
+            }));
+
+    }
+
+    getViewID(dbID: DBIdentifier): ViewID | undefined {
+        return getViewID(this.subAppID, dbID, this.enabledDBs);
+    }
+
+    getConfig(dbIdentifier: DBIdentifier): DBConfig | null {
+        return this.dbIDsToDBConfigs.get(dbIdentifier) ?? null;
+    }
+
+    getAllDBConfigs(): DBConfig[] {
+        return Array.from(this.dbIDsToDBConfigs.values());
+    }
+
+    private getAllEnabledDBs(): DBIdentifier[] {
+        const {enabledDBs} = this;
+        if (!Array.isArray(enabledDBs)) {
+            if (this.subAppID !== undefined) {
+                const edbs = enabledDBs?.[this.subAppID];
+                if (edbs !== undefined) {
+                    if (!Array.isArray(edbs)) {
+                        return Object.keys(edbs);
+                    } else {
+                        return edbs;
+                    }
+                }
+            }
+        } else {
+            return enabledDBs;
         }
 
-
-        // XXX TODO: when changing subapp, the main element needs to restart its searchers, or at least handle the delta
-
-        const pageHandler = PageHandler.fromFinalConfig(finalConfig, appName);
-
-        const edbs = new Map(getRecordEntries(enabledDBs).map(([aid, dbs]) => ([aid, new Set(dbs)])));
-        return new AppConfig(dbIDsToDBConfigs, pageHandler, edbs);
+        return this.dbList;
     }
 
     getAllEnabledDBConfigs(ignoreEnabledTag?: boolean): DBConfig[] {
-        // XXX TODO
-        const subAppID = "eng_poj";
-        return Array.from(this.dbConfigs.values())
-            .filter((dbConfig) =>
-                CHHA_ALLDB ||
-                ignoreEnabledTag ||
-                this.enabledDBs.get(subAppID)?.has(dbConfig.getDBIdentifier())
-            );
+        if (ignoreEnabledTag !== undefined) {
+            return this.getAllDBConfigs();
+        }
+        return nullGuard(this.getAllEnabledDBs()
+            .map((dbID) => this.dbIDsToDBConfigs.get(dbID)));
     }
+}
 
-    getDBConfig(dbIdentifier: DBIdentifier): DBConfig | null {
-        return this.dbConfigs.get(dbIdentifier) ?? null;
+function getViewID(subAppID: SubAppID | undefined, dbID: DBIdentifier, enabledDBs: RawEnabledDBs): ViewID | undefined {
+    if (!Array.isArray(enabledDBs) && subAppID !== undefined) {
+        const edbsForSubApp = enabledDBs[subAppID];
+        if (!Array.isArray(edbsForSubApp)) {
+            return edbsForSubApp?.[dbID];
+        }
     }
-
+    return undefined;
 }

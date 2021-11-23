@@ -19,7 +19,10 @@ import type {SearchContext} from "./SearchValidityManager";
 import type AppConfig from "./config/AppConfig";
 import type {PageID} from "./configHandler/zodConfigTypes";
 
-// TODO(urgent): have build happen on AWS/etc by default (how? using webpack?)
+// TODO(urgent): finish implementing subapps/views (to allow for e.g. eng-poj). next: switcher. first commit with eng_poj hardcoded.
+// TODO(urgent): unit test subapps/views. do not submit until unit tests are functional (and maybe subapp id is no longer an optional flag everywhere, since that causes issues with calls)
+// TODO(urgent): implement language/view selection (probably through views, "blacklistFieldsByView:" or such, or maybe "blacklistLanguagesByView", something like that
+// TODO(urgent): have build happen on AWS/etc by default (use webpack to turn yaml into json and then combine the jsons)
 // TODO(urgent): fix link display in about page on nexus 5
 // TODO(urgent): add a contact page for ChhoeTaigi
 // TODO(urgent): integration tests, new unit tests for recently-added classes
@@ -115,6 +118,7 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(low): incorrect behavior of search box when using back/forward in browser
 // TODO(low): have display results limit be part of options, and pass it around for use where it's needed
 // TODO(low): take a nap
+// TODO(wishlist): config creation via a page (which has fields for the various input types based on zod shape, and has client-side validation of inputs (generate a tree, allow the user to populate with the correct values, constantly run zod on input and show errors hovered by the path from the error)
 // TODO(wishlist): keyboard shortcuts, esp for "highlight search"
 // TODO(wishlist): google translate link
 // TODO(wishlist): non-javascript support?
@@ -124,14 +128,12 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(wishlist): "lite" version speaking out to server for searches (AbortController to help with cancelation)
 // TODO(later): homepage
 // TODO(later): homepage WOTD
-// TODO(later): download CSVs, do initial processing via js, store in service worker (if possible?)
 // TODO(later): "show me random words"
 // TODO(later): "show me words of this particular word type" (see "abbreviations" field in embree)
 // TODO(later): use embree noun classifier / word type in other dbs
 // TODO(later): include soatbeng/explanations
 // TODO(later): include alternates (very hard with maryknoll)
 // TODO(later): remove parentheticals from maryknoll entries
-// TODO(later): generalize for non-english definition
 // TODO(later): word similarity analysis, link to similar/possibly-related words (this could be added to the CSVs)
 // TODO(later): allow for entries to be marked incomplete/broken
 // TODO(later): link to ChhoeTaigi for entries
@@ -215,8 +217,9 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         // State initialization
         const appConfig = this.props.appConfig;
+
         const initialDBLoadedMapping: [DBIdentifier, SingleDBLoadStatus][] =
-            appConfig.getAllEnabledDBConfigs().map((k: DBConfig) => [
+            appConfig.dbConfigHandler.getAllEnabledDBConfigs().map((k: DBConfig) => [
                 k.getDBIdentifier(),
                 {
                     isDownloaded: false,

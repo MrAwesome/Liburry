@@ -42,7 +42,7 @@ export default class SearchWorkerManager {
             /* eslint-disable import/no-webpack-loader-syntax */
             import("worker-loader!./search.worker").then((worker) => {
 
-                this.appConfig.getAllEnabledDBConfigs().forEach((dbConfig) => {
+                this.appConfig.dbConfigHandler.getAllEnabledDBConfigs().forEach((dbConfig) => {
                     const dbIdentifier = dbConfig.getDBIdentifier();
                     const searchWorker = new worker.default();
                     const rawDBConfig = dbConfig.asRaw();
@@ -52,13 +52,15 @@ export default class SearchWorkerManager {
                     );
 
                     searchWorker.onmessage = searchWorkerReplyHandler;
+                    
+                    const viewID = this.appConfig.dbConfigHandler.getViewID(dbIdentifier);
 
                     this.sendCommand(
                         dbIdentifier,
                         searchWorker,
                         {
                             command: SearchWorkerCommandType.INIT,
-                            payload: {dbIdentifier, rawDBConfig, debug: this.debug, searcherType}
+                            payload: {dbIdentifier, rawDBConfig, viewID, debug: this.debug, searcherType}
                         }
                     );
                 });
