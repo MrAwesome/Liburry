@@ -2,8 +2,6 @@ import fs from 'fs';
 import yaml from "yaml";
 import {promisify} from 'util';
 
-const PUBLIC_PREFIX = "public/";
-
 // NOTE: This needs some error-checking and handling? Right now, this will bail
 //       with "All collection items must start at the same column" after being pointed
 //       at a non-existent url
@@ -16,7 +14,7 @@ export async function loadYamlText(url: string, localMode: boolean): Promise<str
     let prom;
     if (localMode) {
         const readFile = promisify(fs.readFile);
-        prom = readFile(PUBLIC_PREFIX + url, null).then((r) => r.toString());
+        prom = readFile("public/" + url, null).then((r) => r.toString());
     } else {
         prom = fetch(url).then((r) => r.text());
     }

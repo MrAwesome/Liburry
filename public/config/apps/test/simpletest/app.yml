@@ -1,0 +1,7 @@
+displayName: "Simple Test App"
+
+# XXX XX XXXX XXX - allow for no subapps
+defaultSubApp: "broken"
+subApps:
+  broken:
+    displayName: "FFFFFF"

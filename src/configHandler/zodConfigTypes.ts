@@ -1,4 +1,5 @@
 // [] check lang names for displayName everywhere
+// [] use async node file checks when in node mode to ensure that db files exist
 // [] create some test data that should fail various cases, to make sure validation is happening
 // [] create some test data that should pass various complex cases
 //
@@ -404,20 +405,23 @@ const appAllConfigSchema = rawAppLoadedAllConfigSchema.superRefine((appAllConfig
 //.superRefine((appAllConfigs, ctx) => {
 //});
 
-const appTopLevelConfigurationSchema = strictObject({
+export const appTopLevelConfigurationSchema = strictObject({
     appID: nonDefaultAppID,
     pages: allPagesSchema,
     configs: appAllConfigSchema,
 });
+export type AppTopLevelConfiguration = z.infer<typeof appTopLevelConfigurationSchema>;
 
-const defaultTopLevelConfigurationSchema = strictObject({
+export const defaultTopLevelConfigurationSchema = strictObject({
     appID: defaultAppID,
     pages: allPagesSchema,
     configs: defaultAllConfigSchema,
 });
 
+export type DefaultTopLevelConfiguration = z.infer<typeof defaultTopLevelConfigurationSchema>;
+
 const allAppsSchema = z.object({default: z.undefined()})
-    .catchall(appTopLevelConfigurationSchema)
+    .catchall(appTopLevelConfigurationSchema.optional())
     // [] clear this up?
     .refine(
         (rec) => Object.keys(rec).length > 0,
@@ -429,7 +433,6 @@ export const returnedFinalConfigSchema = strictObject({
     apps: allAppsSchema,
 });
 export type ReturnedFinalConfig = z.infer<typeof returnedFinalConfigSchema>;
-
 
 const intermediateConfig = returnedFinalConfigSchema.deepPartial();
 export type IntermediateConfig = z.infer<typeof intermediateConfig>;

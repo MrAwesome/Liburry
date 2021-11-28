@@ -30,6 +30,8 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(urgent): error messages for if offline and no cache
 // TODO(urgent): move dbs into sub-repository?
 // TODO(high): change server script to also generate normalized_other
+// TODO(high): use CRACO or similar to allow for using webpack plugins
+// TODO(high): help page. taigi help page should mention nospaces, input beh8, hanji, english, etc
 // TODO(high): see if poj_normalized can be committed upstream
 // TODO(high): catch/fatalError on any critical path async functions in searchController / etc
 // TODO(high): figure out the easiest/simplest/best place to have a simple support forum (github?)
@@ -93,6 +95,7 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(mid): move search bar to middle of page when no results and no search yet
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
+// TODO(low): use magnifying glass for selecting searcher type, with different icon for each searcher and a language-enabled dropdown menu for the different Searcher options
 // TODO(low): fix burger menu location not changing when bar is loading (can't use absolute position, need to use fixed and change top)
 // TODO(low): only show border around title/name when there are multiple (or put border between them, or show them on separate lines)
 // TODO(low): localization for links, about section, etc

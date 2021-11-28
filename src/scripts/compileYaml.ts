@@ -7,8 +7,8 @@ import path from 'path';
 import md5File from 'md5-file';
 import {parseYaml} from "../utils/yaml";
 import {promisify} from 'util';
-import {AppID, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../configHandler/zodConfigTypes";
-import {CHHA_APPNAME, FINAL_CONFIG_LOCAL_LOCATION} from "../constants";
+import {AppID, AppTopLevelConfiguration, appTopLevelConfigurationSchema, DefaultTopLevelConfiguration, defaultTopLevelConfigurationSchema, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../configHandler/zodConfigTypes";
+import {CHHA_APPNAME, FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from "../constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
 import {getRecordEntries} from '../utils';
 import {DBConfig} from '../types/config';
@@ -16,13 +16,15 @@ import {DBConfig} from '../types/config';
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const opendir = promisify(fs.opendir);
+const mkdir = promisify(fs.mkdir);
 
+// TODO(high): use webpack to generate this, instead of .env.local
+// TODO(high): once using webpack, generate the json filenames with md5sum included in the filename, and use it when fetching them? certainly include the md5sum in the main fetch, since that isn't happening now
 const ENV_FILE = '.env.local';
 const ENV_FILE_HEADER = '# NOTE: This file is generated automatically by compileYaml.ts! ' +
     'Changes here will be overwritten during the build process.';
 const CONFIG_DIR = 'public/config/';
 
-// TODO: DB filenames are currently stored in public/db/, but their filenames are prefixed with db/ in the configs - they should probably be stored per-app, unless sharing will be common
 const PUBLIC_DIR_PREFIX = 'public/';
 const CACHE_LINE_ENV_VARNAME = 'REACT_APP_CHHA_CACHE_FILES_JSON';
 
@@ -47,7 +49,6 @@ export const YAML_FILENAME_TO_SCHEMA_MAPPING = {
 
 interface LKFMeta {
     idChain: string[],
-    app: AppID,
 }
 type LoadedFilePlusMeta = {
     type: "config",
@@ -89,7 +90,6 @@ async function handleFile(path: string, filename: string, subdirs: Array<string>
             return {
                 type: "config",
                 meta: {
-                    app: subdirs[0],
                     idChain: [...subdirs, id],
                 },
                 conf: validatedConfig,
@@ -108,12 +108,11 @@ async function handleFile(path: string, filename: string, subdirs: Array<string>
         return {
             type: "page",
             meta: {
-                app: subdirs[0],
                 idChain: [...subdirs, lang],
             },
             page: {
                 lang,
-                pageID: subdirs[1],
+                pageID: subdirs[0],
                 pageType: "markdown",
                 mdText,
             }
@@ -140,49 +139,54 @@ export default function validateYaml(filename: string, yamlBlob: Object): Loaded
     }
 }
 
-export async function parseAllYaml(): Promise<any> {
-    const appName = CHHA_APPNAME;
-    console.log(`Building app ${appName}...`);
+export async function rawParseYaml(localPrefix: string, appID: "default" | AppID): Promise<any> {
+    console.log(`Building app ${appID}...`);
 
-    // We use "any" here because we will validate using zod below once we've finished loading configs.
-    const constructedObj: any = {
-        apps: {},
+    const output: any = {
+        appID,
+        pages: {},
+        configs: {},
     };
 
-    for await (const obj of walkFileTree(CONFIG_DIR, [])) {
+    // TODO: ensure CONFIG_DIR + localPrefix + appID is a valid path
+    const appDir = path.join(CONFIG_DIR, localPrefix, appID);
+
+    for await (const obj of walkFileTree(appDir, [])) {
         if (obj === null) {
             continue;
         }
-        if (!(obj.meta.app in constructedObj.apps)) {
-            constructedObj.apps[obj.meta.app] = {
-                pages: {},
-                configs: {},
-            };
-        }
-        const appObj = constructedObj.apps[obj.meta.app]!;
         if (obj.type === "page") {
-            appObj.pages[obj.page.pageID] = obj.page;
+            output.pages[obj.page.pageID] = obj.page;
         } else if (obj.type === "config") {
-            appObj.configs[obj.conf.configType] = obj.conf;
+            output.configs[obj.conf.configType] = obj.conf;
         }
     }
 
-    const trimmedObj: any = {apps: {}};
+    return output;
+}
 
-    if (!(appName in constructedObj.apps)) {
-        throw new Error(`App "${appName}" not found! Check that you're setting the environment variable REACT_APP_CHHA_APPNAME correctly.`);
-    }
-    if (!("default" in constructedObj.apps)) {
-        throw new Error(`No "default" configuration found! Check that the "default" directory exists in ${CONFIG_DIR}.`);
-    }
+function parseDefaultApp(obj: any): DefaultTopLevelConfiguration {
+    return defaultTopLevelConfigurationSchema.parse(obj, {path: ["default"]});
+}
 
-    // NOTE: This is where we move "default" up a level in the configuration hierarchy.
-    trimmedObj.default = constructedObj.apps["default"];
-    trimmedObj.default.appID = "default";
-    trimmedObj.apps[appName] = constructedObj.apps[appName];
-    trimmedObj.apps[appName].appID = appName;
+function parseApp(obj: any): AppTopLevelConfiguration {
+    return appTopLevelConfigurationSchema.parse(obj, {path: ["apps", obj.appID]});
+}
 
-    return trimmedObj;
+async function loadFinalConfigForApps(appIDs: AppID[]): Promise<ReturnedFinalConfig> {
+    const rawdef = await rawParseYaml("", "default");
+    const def = parseDefaultApp(rawdef);
+    const apps: AppTopLevelConfiguration[] = await Promise.all(appIDs.map(async (appID) => {
+        const rawapp = await rawParseYaml("apps/", appID);
+        const app = parseApp(rawapp);
+        return app;
+    }));
+    const appEntries: [AppID, AppTopLevelConfiguration][] = apps.map((a) => ([a.appID, a]));
+    const generatedFinalConfigAttempt: any = {
+        default: def,
+        apps: Object.fromEntries(appEntries),
+    };
+    return returnedFinalConfigSchema.parse(generatedFinalConfigAttempt);
 }
 
 function getFilesToCache(finalObj: ReturnedFinalConfig): string[] {
@@ -245,18 +249,26 @@ async function genWriteEnvFile(envFileBody: string) {
 }
 
 async function genWriteFinalConfig(jsonString: string) {
-    writeFile(PUBLIC_DIR_PREFIX + FINAL_CONFIG_LOCAL_LOCATION, jsonString).then(
-        () => console.log(`* Wrote out "${FINAL_CONFIG_LOCAL_LOCATION}"...`));
+    return writeFile(path.join(PUBLIC_DIR_PREFIX, FINAL_CONFIG_LOCAL_DIR, FINAL_CONFIG_JSON_FILENAME), jsonString).then(
+        () => console.log(`* Wrote out "${FINAL_CONFIG_LOCAL_DIR}"...`));
 }
 
 (async function () {
     // TODO: abstract away
     if (!fs.existsSync("public/generated")) {
-        fs.mkdirSync("public/generated");
+        await mkdir("public/generated");
     }
 
-    const generatedFinalConfig = await parseAllYaml();
-    const checkedFinalConfig: ReturnedFinalConfig = returnedFinalConfigSchema.parse(generatedFinalConfig);
+    // TODO: write out a "build" config that lists all the apps built
+    // TODO(urgent): ensure appName is a valid directory name!
+    // [] write out appname as directory in generated
+    // [] write out default config (where should it be?)
+    // [] disallow commas in appnames
+    // go back to writing out the entire config, and still just fetch the one big config - it's not bad to fetch all configs for all apps, you just maybe don't have to pre-load every app's dbs (should you preload subapp dbs? how to decide?)
+    // XXX XXX XXX
+    console.warn("Using hardcoded list of appnames!")
+    const appIDs = ["taigi.us", "test/simpletest"];
+    const checkedFinalConfig: ReturnedFinalConfig = await loadFinalConfigForApps(appIDs);
 
     // This must be written before the env file, since we generate an md5sum of the json file for precaching
     const finalObjJsonString = JSON.stringify(checkedFinalConfig);
@@ -264,7 +276,7 @@ async function genWriteFinalConfig(jsonString: string) {
 
     const filesToCache = [
         ...getFilesToCache(checkedFinalConfig),
-        FINAL_CONFIG_LOCAL_LOCATION
+        FINAL_CONFIG_LOCAL_DIR + FINAL_CONFIG_JSON_FILENAME,
     ];
     const precacheEntries = await genPrecacheEntries(filesToCache);
     const precacheEntriesJsonString = JSON.stringify(precacheEntries);
@@ -272,5 +284,6 @@ async function genWriteFinalConfig(jsonString: string) {
 
     await genWriteEnvFile(envFileOutputText);
 }());
+
 
 // NOTE: if you don't mind locking into the app model, everything you want to read from the config can be passed in via env vars, and you don't have to bother with the fullconfiguration at all (or it can even be in an env var (check max length of env vars))

@@ -1,20 +1,29 @@
-import {FINAL_CONFIG_LOCAL_LOCATION, FINAL_CONFIG_REMOTE_LOCATION} from "../constants";
+import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR, FINAL_CONFIG_REMOTE_DIR} from "../constants";
 import {MuhError, MuhErrorType} from "../errorHandling/MuhError";
 import {nodeReadFileFromDir} from "../utils";
-import {ReturnedFinalConfig, returnedFinalConfigSchema} from "./zodConfigTypes";
+import {AppID, ReturnedFinalConfig, returnedFinalConfigSchema} from "./zodConfigTypes";
+import path from 'path';
 
+// [] ensure app names are unique
+// [] allow slashes in appnames (how to handle this in zod?)
+// [] load default.json
+// [] load appname.json
+// [] handle selecting subapp elsewhere
 
 // TODO: add app name here, in remote/local location, or base location on appname
 const chDefaultOpts = {
     localMode: false,
-    finalConfigLocalLocation: FINAL_CONFIG_LOCAL_LOCATION,
-    finalConfigRemoteLocation: FINAL_CONFIG_REMOTE_LOCATION,
+    finalConfigLocalDir: FINAL_CONFIG_LOCAL_DIR,
+    finalConfigRemoteDir: FINAL_CONFIG_REMOTE_DIR,
+    finalConfigJsonFilename: FINAL_CONFIG_JSON_FILENAME,
 };
 type CHOpts = typeof chDefaultOpts;
 
 export default class ConfigHandler {
     private opts: CHOpts;
+    private apps: Set<AppID>;
     constructor(
+        apps: AppID[],
         opts?: Partial<CHOpts>,
     ) {
         this.opts = {
@@ -22,16 +31,19 @@ export default class ConfigHandler {
             ...opts,
         };
 
-        this.fetchNode = this.fetchNode.bind(this);
+        this.apps = new Set(apps);
+        this.apps.add("default");
+
+        this.localLoadWithNode = this.localLoadWithNode.bind(this);
         this.fetchJSON = this.fetchJSON.bind(this);
         this.genLoadJSONText = this.genLoadJSONText.bind(this);
         this.genLoadFinalConfig = this.genLoadFinalConfig.bind(this);
-        this.genLoadFinalConfigLocal = this.genLoadFinalConfigLocal.bind(this);
+        this.genLoadFinalConfigLocalWILLTHROW = this.genLoadFinalConfigLocalWILLTHROW.bind(this);
     }
 
     private async genLoadJSONText(): Promise<Object> {
         if (this.opts.localMode) {
-            return this.fetchNode();
+            return this.localLoadWithNode();
         } else {
             return this.fetchJSON();
         }
@@ -52,13 +64,14 @@ export default class ConfigHandler {
         }
     }
 
-    async genLoadFinalConfigLocal(): Promise<ReturnedFinalConfig> {
+    async genLoadFinalConfigLocalWILLTHROW(): Promise<ReturnedFinalConfig> {
         return this.genLoadJSONText()
             .then((blob) => returnedFinalConfigSchema.parseAsync(blob));
     }
 
     async fetchJSON(): Promise<Object> {
-        return fetch(this.opts.finalConfigRemoteLocation)
+        // TODO: join path?
+        return fetch(this.opts.finalConfigRemoteDir + this.opts.finalConfigJsonFilename)
             .catch((err) => {
                 throw new MuhError(MuhErrorType.FETCH_THREW, err);
             }).then(async (resp: Response) => {
@@ -75,10 +88,10 @@ export default class ConfigHandler {
     }
 
 
-    async fetchNode(): Promise<Object> {
+    async localLoadWithNode(): Promise<Object> {
         return nodeReadFileFromDir(
-            "public/",
-            this.opts.finalConfigLocalLocation,
+            path.join("public/", this.opts.finalConfigLocalDir),
+            this.opts.finalConfigJsonFilename,
         ).then((text) => JSON.parse(text));
     }
 }

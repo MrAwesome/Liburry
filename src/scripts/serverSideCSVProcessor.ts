@@ -84,8 +84,8 @@ function writeFile(dbConfig: DBConfig, entries: RawDBRow[]) {
 
 }
 
-const configHandler = new ConfigHandler();
-const configPromises = [configHandler.genLoadFinalConfigLocal()];
+const configHandler = new ConfigHandler(["taigi.us"]);
+const configPromises = [configHandler.genLoadFinalConfigLocalWILLTHROW()];
 Promise.all(configPromises).then(([finalConfig]) => {
     const appConfig = AppConfig.from(finalConfig, "taigi.us");
     const dbConfigs = appConfig.dbConfigHandler.getAllDBConfigs();

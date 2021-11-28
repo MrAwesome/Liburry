@@ -25,12 +25,10 @@ export default class AppConfig {
         subAppID?: SubAppID,
     ) {
         // TODO: possibly throw a more useful error message here? Can this ever really happen?
-        const rawAppConfig = finalConfig.apps[appID]!;
 
-        const allConfigs = rawAppConfig.configs;
-        // TODO: unit test enabledsubapps
         const pageHandler = PageHandler.fromFinalConfig(finalConfig, appID);
-
+        const rawAppConfig = finalConfig.apps[appID]!;
+        const allConfigs = rawAppConfig.configs;
         const dbConfigHandler = new DBConfigHandler(allConfigs.dbConfig.config, subAppID);
         return new AppConfig(pageHandler, dbConfigHandler, subAppID);
     }
