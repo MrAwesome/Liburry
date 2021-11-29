@@ -19,6 +19,7 @@ import type {SearchContext} from "./SearchValidityManager";
 import type AppConfig from "./config/AppConfig";
 import type {PageID} from "./configHandler/zodConfigTypes";
 
+// TODO(urgent): fix double-fetching of csvs in test mode (and check that it's not happening in prod)
 // TODO(urgent): finish implementing subapps/views (to allow for e.g. eng-poj). next: switcher. first commit with eng_poj hardcoded.
 // TODO(urgent): unit test subapps/views. do not submit until unit tests are functional (and maybe subapp id is no longer an optional flag everywhere, since that causes issues with calls)
 // TODO(urgent): implement language/view selection (probably through views, "blacklistFieldsByView:" or such, or maybe "blacklistLanguagesByView", something like that
@@ -29,8 +30,9 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?). because all fonts aren't loaded, people without the correct fonts on their system *will not be able to see many characters* during dynamic loading
 // TODO(urgent): error messages for if offline and no cache
 // TODO(urgent): move dbs into sub-repository?
-// TODO(high): change server script to also generate normalized_other
 // TODO(high): use CRACO or similar to allow for using webpack plugins
+// TODO(high): change server script to also generate normalized_other
+// TODO(high): debug why autofocus doesn't work on incognito mode (is that normal, or just specific to this? most likely the second, and has to do with timing.)
 // TODO(high): help page. taigi help page should mention nospaces, input beh8, hanji, english, etc
 // TODO(high): see if poj_normalized can be committed upstream
 // TODO(high): catch/fatalError on any critical path async functions in searchController / etc
@@ -151,7 +153,7 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(maybe): allow results to hint/override where particular columns should be displayed? or a way to query server/file per db?
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
-// TODO(watch): keep an eye out for 200% CPU util. infinite search loop?
+// TODO(think): is there a privacy-safe way to log exceptions? maybe ask hacker news, or do some searching?
 //
 // https://twblg.dict.edu.tw/holodict_new/mobile/result_detail.jsp?n_no=11235&curpage=1&sample=%E9%A4%85&radiobutton=1&querytarget=1&limit=50&pagenum=1&rowcount=25
 //
