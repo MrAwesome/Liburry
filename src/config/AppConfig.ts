@@ -120,6 +120,7 @@ class DBConfigHandler {
     }
 }
 
+// TODO: handle alldb overrides here, or always just use subapp instead
 function getViewID(subAppID: SubAppID | undefined, dbID: DBIdentifier, enabledDBs: RawEnabledDBs): ViewID | undefined {
     if (!Array.isArray(enabledDBs) && subAppID !== undefined) {
         const edbsForSubApp = enabledDBs[subAppID];
