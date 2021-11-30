@@ -4,7 +4,7 @@ import ConfigLoader from "./configHandler/ConfigHandler";
 import {ProgressHandler} from "./progressBars/ProgressBars";
 
 import {CHHA_APPNAME} from "./constants";
-import AppConfig from "./config/AppConfig";
+import AppConfig from "./configHandler/AppConfig";
 import {ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 import {MuhError} from "./errorHandling/MuhError";
 

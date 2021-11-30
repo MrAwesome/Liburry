@@ -9,7 +9,7 @@ import {OldLangDB, RawDBRow} from '../types/dbTypes';
 import {fromKipUnicodeToKipNormalized, fromPojUnicodeToPojNormalized} from './languageUtils';
 
 import lunr from 'lunr';
-import AppConfig from '../config/AppConfig';
+import AppConfig from '../configHandler/AppConfig';
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
 require("lunr-languages/lunr.multi")(lunr);

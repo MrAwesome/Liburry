@@ -7,7 +7,7 @@ import {noop} from './utils';
 import {DBSearchRanking, SearcherType} from './search';
 import ConfigHandler from './configHandler/ConfigHandler';
 import {AnnotatedPerDictResults, annotateRawResults, PerDictResultsRaw} from './types/dbTypes';
-import AppConfig from './config/AppConfig';
+import AppConfig from './configHandler/AppConfig';
 import {ReturnedFinalConfig} from './configHandler/zodConfigTypes';
 
 // NOTE: just used to silence errors in node TSC.

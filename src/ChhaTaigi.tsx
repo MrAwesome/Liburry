@@ -16,7 +16,7 @@ import {runningInJest} from "./utils";
 
 import type {DBConfig, DBIdentifier} from "./types/config";
 import type {SearchContext} from "./SearchValidityManager";
-import type AppConfig from "./config/AppConfig";
+import type AppConfig from "./configHandler/AppConfig";
 import type {PageID} from "./configHandler/zodConfigTypes";
 
 // TODO(urgent): don't require final.json for tests to work? how? webpack? do split up apps, so that a change to a single yaml doesn't always trigger a rebuild of the single final json?

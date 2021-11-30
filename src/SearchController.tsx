@@ -7,7 +7,7 @@ import {AllDBLoadStats, AnnotatedPerDictResults, annotateRawResults, PerDictResu
 import {SearcherType} from "./search";
 import {GetMainState, SetMainState} from "./ChhaTaigi";
 import {DBIdentifier} from "./types/config";
-import type AppConfig from "./config/AppConfig";
+import type AppConfig from "./configHandler/AppConfig";
 
 // TODO: write tests for this, which ensure the correct messages are sent and callbacks are called
 

@@ -1,7 +1,7 @@
 import * as React from "react";
 import {isMobileDevice} from "../utils";
 import {BurgerMenu} from "../menu/BurgerMenu";
-import type AppConfig from "../config/AppConfig";
+import type AppConfig from "../configHandler/AppConfig";
 import {PageID} from "../configHandler/zodConfigTypes";
 
 import "./SearchBar.css";

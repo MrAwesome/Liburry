@@ -18,7 +18,7 @@ const opendir = promisify(fs.opendir);
 const ENV_FILE = '.env.local';
 const ENV_FILE_HEADER = '# NOTE: This file is generated automatically by compileYaml.ts! ' +
     'Changes here will be overwritten during the build process.';
-const CONFIG_DIR = 'public/config/';
+const CONFIG_DIR = 'src/config/';
 
 const PUBLIC_DIR_PREFIX = 'public/';
 

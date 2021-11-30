@@ -1,4 +1,4 @@
-import type AppConfig from "../config/AppConfig";
+import type AppConfig from "../configHandler/AppConfig";
 import type {RawAllowedFieldClassifierTags} from "../configHandler/zodConfigTypes";
 import type {DialectID} from "../languages/dialect";
 import type {DBSearchRanking} from "../search";

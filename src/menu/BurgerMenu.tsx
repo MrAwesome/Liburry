@@ -1,6 +1,6 @@
 import * as React from "react";
 import {slide as Menu, State as BurgerState} from 'react-burger-menu';
-import type AppConfig from "../config/AppConfig";
+import type AppConfig from "../configHandler/AppConfig";
 import {PageID} from "../configHandler/zodConfigTypes";
 import "./burger.css";
 
