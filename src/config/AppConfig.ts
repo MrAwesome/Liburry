@@ -111,7 +111,8 @@ class DBConfigHandler {
     }
 
     getAllEnabledDBConfigs(ignoreEnabledTag?: boolean): DBConfig[] {
-        if (ignoreEnabledTag !== undefined) {
+        // NOTE: the bypass here is for testing, and will certainly disappear.
+        if (window.location.hash.includes("ALLDB_ENABLED") || ignoreEnabledTag !== undefined) {
             return this.getAllDBConfigs();
         }
         return nullGuard(this.getAllEnabledDBs()
