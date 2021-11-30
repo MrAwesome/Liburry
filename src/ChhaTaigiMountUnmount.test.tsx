@@ -3,13 +3,13 @@ import {ChhaTaigi} from './ChhaTaigi';
 import { render } from '@testing-library/react';
 import SearchController from './SearchController';
 import {noop} from './utils';
-import {getAppConfig} from './ChhaTaigi.test';
+import {genAppConfig} from './ChhaTaigi.test';
 import OptionsChangeableByUser from './ChhaTaigiOptions';
 
 // NOTE: just used to silence errors in node TSC.
 noop(React.version);
 
-const appConfigPromise = getAppConfig();
+const appConfigPromise = genAppConfig();
 
 test('SearchController start/cleanup', async () => {
     let startW = jest.spyOn(SearchController.prototype, 'startWorkersAndListener');

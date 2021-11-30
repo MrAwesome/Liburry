@@ -19,13 +19,13 @@ noop(React.version);
 // TODO(high): test basic worker search behavior (probably not possible from jest?)
 // TODO(low): figure out how to run componentDidMount
 
-export async function getAppConfig() {
+export async function genAppConfig() {
     const configHandler = new ConfigHandler(["taigi.us"], {localMode: true});
     return configHandler.genLoadFinalConfig()
         .then((rfc) => AppConfig.from(rfc as ReturnedFinalConfig, "taigi.us"));
 }
 
-const appConfigPromise = getAppConfig();
+const appConfigPromise = genAppConfig();
 
 test('render searchbar by default', async () => {
     const appConfig = await appConfigPromise;

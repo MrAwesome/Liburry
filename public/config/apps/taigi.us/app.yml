@@ -1,6 +1,6 @@
 displayName: "Chhâ Tâi-gí!"
 defaultSubApp: "eng_poj"
-#domainToDefaultSubAppMapping:
+#domainToubefaultSubAppMapping:
 #  taigi.us: "eng_poj"
 #  kip.taigi.us: "eng_kip"
 #  mandopoj.taigi.us: "mando_poj"

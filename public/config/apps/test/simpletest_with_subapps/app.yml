@@ -1,0 +1,10 @@
+displayName: "Simple Test App (With SubApps)"
+
+defaultSubApp: "allDBs"
+subApps:
+  allDBs:
+    displayName: "All DBs"
+  happydb:
+    displayName: "Happy DB"
+  angrydb:
+    displayName: "Angry DB"
