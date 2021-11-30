@@ -32,6 +32,7 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(urgent): error messages for if offline and no cache
 // TODO(urgent): move dbs into sub-repository?
 // TODO(high): use CRACO or similar to allow for using webpack plugins
+// TODO(high): let each db config specify the number of workers to spawn off for each db, or the max number of entries per worker, then have each worker be a sub-worker of a controlling worker per db. something like that...
 // TODO(high): change server script to also generate normalized_other
 // TODO(high): debug why autofocus doesn't work on incognito mode (is that normal, or just specific to this? most likely the second, and has to do with timing.)
 // TODO(high): help page. taigi help page should mention nospaces, input beh8, hanji, english, etc
