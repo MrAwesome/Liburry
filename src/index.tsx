@@ -1,13 +1,11 @@
 import * as React from "react";
 import * as ReactDOM from 'react-dom';
 
-import "./ChhaTaigi.css";
+import "./client/ChhaTaigi.css";
 
-import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import MuhErrorBoundary from "./errorHandling/MuhErrorBoundary";
-//import reportWebVitals from "./reportWebVitals";
-
-
+import * as serviceWorkerRegistration from './client/serviceWorkerRegistration';
+import MuhErrorBoundary from "./client/errorHandling/MuhErrorBoundary";
+//import reportWebVitals from "./client/reportWebVitals";
 
 const rootElement = document.getElementById("root");
 const root = (ReactDOM as any).createRoot(rootElement);

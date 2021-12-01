@@ -8,11 +8,38 @@ import {z} from "zod";
 import {DBIdentifier} from "../types/config";
 import {getRecordEntries, getRecordValues} from "../utils";
 
+// What counts as a valid "token" - app names, dialect names, etc all will be validated against this.
+// Deliberately restrictive and ASCII-centric, for simplicity of parsing/typing.
+// Tokens should never be displayed to users (everything which has a token should also have a "displayName"
+// if it needs one), so this only affects i18n for programmers.
+const BASIC_TOKEN_REGEX: RegExp = /^[a-zA-Z0-9_/]+$/;
+const FILENAME_AND_DIRECTORY_SAFE_REGEX: RegExp = /^[a-zA-Z0-9_/.]+$/;
+
+// Token Types
+// NOTE: all of this type-glop is just to allow us to define the keys once while still being able to enforce the types of the values
+type TokenMatcher = Readonly<[RegExp, string] | null>;
+type TokenList<T extends object> = { [key in keyof T]: TokenMatcher }
+const tlist = <O extends object>(o: TokenList<O>): TokenList<O> => o;
+const tokenMatchers = tlist({
+    APP_ID: [FILENAME_AND_DIRECTORY_SAFE_REGEX, "App IDs must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
+    DIALECT_ID: [BASIC_TOKEN_REGEX, "Dialect IDs must contain only ASCII letters, numbers, and underscores."],
+    PAGE_ID: [BASIC_TOKEN_REGEX, "Page IDs must contain only ASCII letters, numbers, and underscores."],
+    FILENAME: [FILENAME_AND_DIRECTORY_SAFE_REGEX, "Filenames must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
+    DB_ID: null,
+    SUBAPP_ID: null,
+    FIELD_ID: null,
+    VIEW_ID: null,
+    // TODO: does the directory-walking function need to use this, or can we just rely on inferred appname?
+} as const);
+type TokenTypes = keyof typeof tokenMatchers;
+
 ////// Utilities /////////////////////////////
 function issue(ctx: z.RefinementCtx, message: string) {
     ctx.addIssue({code: z.ZodIssueCode.custom, message});
 }
 
+// NOTE: this can be made to validate keys by using .refine and Object.keys. However, everywhere where a token
+// is used as a key, we're defining
 function realRecord<V extends z.ZodTypeAny>(val: V) {
     return z.record(val.optional());
 }
@@ -21,13 +48,33 @@ function strictObject<T extends z.ZodRawShape>(obj: T): z.ZodObject<T, "strict">
     return z.object(obj).strict();
 }
 
-function nonEmptyStringArray() {
-    return z.array(z.string().min(1)).nonempty();
+function tokenArray(tt: TokenTypes): z.ZodArray<z.ZodString, "atleastone"> {
+    return z.array(token(tt)).nonempty();
 }
+
+function anyString(): z.ZodString {
+    return z.string().min(1);
+}
+
+function token(tt: TokenTypes): z.ZodString {
+    return matchToken(tt);
+}
+
+function matchToken(tt: TokenTypes): z.ZodString {
+    const retStr = anyString();
+    const matcher = tokenMatchers[tt];
+    if (matcher === null) {
+        return retStr;
+    } else {
+        const [regex, explanation] = matcher;
+        return retStr.regex(regex, explanation);
+    }
+}
+
 //////////////////////////////////////////////
 
 
-const nonDefaultAppID = z.string().min(1).refine((s) => s !== "default");
+const nonDefaultAppID = token("APP_ID").refine((s) => s !== "default");
 const defaultAppID = z.literal("default");
 // TODO: use a zod schema for this.
 export type AppID = z.infer<typeof nonDefaultAppID>;
@@ -36,7 +83,7 @@ export type ViewID = string;
 export type FieldID = string;
 
 export const rawSubAppConfigSchema = strictObject({
-    displayName: z.string().min(1),
+    displayName: anyString(),
 });
 
 const subAppsSchema = realRecord(rawSubAppConfigSchema).optional();
@@ -44,8 +91,8 @@ export type SubAppsMapping = z.infer<typeof subAppsSchema>;
 
 export const rawAppConfigSchema = strictObject({
     // [] TODO: use in index.html
-    displayName: z.string().min(1).describe("The display name of the app, as it will be shown to users."),
-    defaultSubApp: z.string().min(1).optional(),
+    displayName: anyString().describe("The display name of the app, as it will be shown to users."),
+    defaultSubApp: token("SUBAPP_ID").optional(),
     subApps: subAppsSchema,
 })
     .superRefine((appConfig, ctx) => {
@@ -63,14 +110,14 @@ export const rawAppConfigSchema = strictObject({
 export type RawAppConfig = z.infer<typeof rawAppConfigSchema>;
 
 export const rawDialectSchema = strictObject({
-    displayName: z.string().min(1),
-    namesForOtherDialects: realRecord(z.string().min(1)).optional(),
+    displayName: anyString(),
+    displayNamesInOtherDialects: realRecord(anyString()).optional(),
 });
 export type RawDialect = z.infer<typeof rawDialectSchema>;
 
 export const rawDBLoadInfoSchema = strictObject({
-    localCSV: z.string().min(1).optional(),
-    localLunr: z.string().min(1).optional(),
+    localCSV: token("FILENAME").optional(),
+    localLunr: token("FILENAME").optional(),
 })
     .superRefine((obj, ctx) => {
         getRecordEntries(obj).forEach(([key, val]) => {
@@ -138,7 +185,7 @@ export type RawLangConfig = z.infer<typeof rawLangConfigSchema>;
 export const rawMenuLinksSchema = realRecord(
     strictObject({
         mode: rawMenuLinkModeSchema,
-        displayNames: realRecord(z.string().min(1)),
+        displayNames: realRecord(anyString()),
     })
 );
 export type RawMenuLinks = z.infer<typeof rawMenuLinksSchema>;
@@ -152,17 +199,17 @@ export type RawKnownDisplayTypeEntry = z.infer<typeof rawKnownDisplayTypeEntrySc
 export const rawAllowedFieldClassifierTagsSchema = strictObject({
     type: rawKnownDisplayTypeEntrySchema.optional()
         .describe("Mapping of displayModeIDs to the type of this field in that display mode. If this is not specified, the field will never be displayed (but can still be searched)."),
-    delimiter: z.string().min(1).optional()
+    delimiter: anyString().optional()
         .describe("The delimiter, if any, splitting up tokens within the field (e.g. \"big,nasty,man\" would have the delimiter \",\")."),
-    delimiterRegex: z.string().min(1).optional()
-        .describe("Regular expression to find delimiters in the field's value. Takes precedence over \"delimiter\". You can wrap the regex in a negative lookup to keep it from disappearing, if desired: (?=REGEX_GOES_HERE)"),
-    dialect: z.union([z.string().min(1), nonEmptyStringArray()]).optional()
+    delimiterRegex: anyString().optional()
+        .describe("Regular expression to find delimiters in the field's value. Takes precedence over \"delimiter\". Should not be wrapped in /. You can wrap the regex in a negative lookup to keep it from disappearing, if desired: (?=REGEX_GOES_HERE)"),
+    dialect: z.union([token("DIALECT_ID"), tokenArray("DIALECT_ID")]).optional()
         .describe("[UNUSED] The human dialect (or list of dialects) of this field's data. Must be a valid DialectID (defined in lang.yml). This may be used in the future for the display of multi-language datasets."),
-    lengthHint: z.string().min(1).optional()
+    lengthHint: anyString().optional()
         .describe("[UNUSED] This may be used in the future to help hint to the UI how much visual space to allocate to a field."),
-    status: z.string().min(1).optional()
+    status: anyString().optional()
         .describe("[UNUSED] This may be used in the future to help hint to the UI that a field is usually empty."),
-    notes: z.string().min(1).optional()
+    notes: anyString().optional()
         .describe("[UNUSED] Simply a place to leave notes on the contents of a field. May be displayed to users someday."),
 });
 export type RawAllowedFieldClassifierTags = z.infer<typeof rawAllowedFieldClassifierTagsSchema>;
@@ -174,21 +221,21 @@ export type RawMenuConfig = z.infer<typeof rawMenuConfigSchema>;
 
 const fieldsSchema = realRecord(rawAllowedFieldClassifierTagsSchema);
 const rawDBConfigSchema = strictObject({
-    displayName: realRecord(z.string().min(1))
+    displayName: realRecord(anyString())
         .describe("Mapping of DialectID to the DB's name in that language."),
-    source: z.string().min(1).url().optional()
+    source: anyString().url().optional()
         .describe("Human-useful URL pointing to where the data source and its licensing information can be viewed."),
-    primaryKey: z.string().min(1)
+    primaryKey: token("FIELD_ID")
         .describe("Field which contains an ID unique to each entry."),
     loadInfo: rawDBLoadInfoSchema,
 
-    searchableFields: nonEmptyStringArray().or(realRecord(nonEmptyStringArray()))
+    searchableFields: tokenArray("FIELD_ID").or(realRecord(tokenArray("FIELD_ID")))
         .describe(`The fields which will be searched by the selected searching algorithm. Is either:
                   1) A list of searchable fields.
                   2) A mapping of ViewID to lists of searchable fields.`
         ),
 
-    views: nonEmptyStringArray().optional()
+    views: tokenArray("VIEW_ID").optional()
         .describe("List of ViewIDs defined for this data source. Views are a way to specify which fields should be searched or displayed for a particular data source."),
 
     fields: fieldsSchema,
@@ -226,15 +273,15 @@ const rawDBConfigSchema = strictObject({
 });
 export type RawDBConfig = z.infer<typeof rawDBConfigSchema>;
 
-const dbToViewMappingSchema = realRecord(z.string().min(1));
+const dbToViewMappingSchema = realRecord(token("VIEW_ID"));
 type DBToViewMapping = z.infer<typeof dbToViewMappingSchema>;
-const enabledDBsOrDBToViewMappingSchema = nonEmptyStringArray().or(dbToViewMappingSchema);
+const enabledDBsOrDBToViewMappingSchema = tokenArray("DB_ID").or(dbToViewMappingSchema);
 
-const dbListSchema = nonEmptyStringArray()
+const dbListSchema = tokenArray("DB_ID")
     .describe("The authoritative list of DBIDs for this app.");
 export type RawDBList = z.infer<typeof dbListSchema>;
 
-const enabledDBsListSchema = nonEmptyStringArray()
+const enabledDBsListSchema = tokenArray("DB_ID")
     .describe("List of DBIDs which are currently enabled for this app and all of its subapps. If not present, it's assumed that all DBs will be enabled.");
 const enabledDBsBySubAppSchema = realRecord(enabledDBsOrDBToViewMappingSchema)
     .describe(`A more advanced configuration which contains a mapping of SubAppID to either: \
@@ -358,16 +405,16 @@ export type KnownConfigTypes = LoadedConfig["configType"];
 
 const mdPageSchema = strictObject({
     pageType: z.literal("markdown"),
-    pageID: z.string().min(1),
-    mdText: z.string().min(1),
-    lang: z.string().min(1),
+    pageID: token("PAGE_ID"),
+    mdText: anyString(),
+    dialectID: token("DIALECT_ID"),
 });
 
 const htmlPageSchema = strictObject({
     pageType: z.literal("HTML_UNUSED"),
-    pageID: z.string().min(1),
-    htmlText: z.string().min(1),
-    lang: z.string().min(1),
+    pageID: token("PAGE_ID"),
+    htmlText: anyString(),
+    dialectID: token("DIALECT_ID"),
 });
 
 const loadedPageSchema = z.union([mdPageSchema, htmlPageSchema]);

@@ -151,6 +151,7 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(later): WASM fast search
 // TODO(later): browser omnibar tab search (register as search engine)
 // TODO(later): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
+// TODO(later): create an app in example/, and have that be the default app
 // TODO(maybe): install a router library for handling e.g. playground
 // TODO(maybe): allow results to hint/override where particular columns should be displayed? or a way to query server/file per db?
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?

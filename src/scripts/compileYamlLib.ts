@@ -1,18 +1,19 @@
 import fs from 'fs';
 import path from 'path';
 import md5File from 'md5-file';
-import {parseYaml} from "../utils/yaml";
+import {parseYaml} from "../client/utils/yaml";
 import {promisify} from 'util';
-import {AppID, AppTopLevelConfiguration, appTopLevelConfigurationSchema, DefaultTopLevelConfiguration, defaultTopLevelConfigurationSchema, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../configHandler/zodConfigTypes";
-import {CHHA_APPNAME, FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from "../constants";
+import {AppID, AppTopLevelConfiguration, appTopLevelConfigurationSchema, DefaultTopLevelConfiguration, defaultTopLevelConfigurationSchema, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../client/configHandler/zodConfigTypes";
+import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from "../client/constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
-import {getRecordEntries, runningInJest} from '../utils';
-import {DBConfig} from '../types/config';
+import {getRecordEntries, runningInJest} from '../client/utils';
+import {DBConfig} from '../client/types/config';
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const opendir = promisify(fs.opendir);
 
+// TODO(high): ensure that directory names are alphanumeric and underscore only
 // TODO(high): use webpack to generate this, instead of .env.local
 // TODO(high): once using webpack, generate the json filenames with md5sum included in the filename, and use it when fetching them? certainly include the md5sum in the main fetch, since that isn't happening now
 const ENV_FILE = '.env.local';
@@ -94,7 +95,7 @@ async function handleFile(path: string, filename: string, subdirs: Array<string>
         }
     } else if (path.endsWith('.md')) {
         const mdText = (await readFile(path)).toString();
-        const lang = filename.replace(/.md$/, "")
+        const dialectID = filename.replace(/.md$/, "")
         if (subdirs.length > 2) {
             console.error(`Markdown file too deeply nested! Unsure how to handle: "${path}"`)
             return null;
@@ -102,10 +103,10 @@ async function handleFile(path: string, filename: string, subdirs: Array<string>
         return {
             type: "page",
             meta: {
-                idChain: [...subdirs, lang],
+                idChain: [...subdirs, dialectID],
             },
             page: {
-                lang,
+                dialectID,
                 pageID: subdirs[0],
                 pageType: "markdown",
                 mdText,

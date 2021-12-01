@@ -4,15 +4,15 @@
 
 import fs from 'fs';
 import {promisify} from 'util';
-import {ReturnedFinalConfig} from '../configHandler/zodConfigTypes';
-import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from '../constants';
+import {ReturnedFinalConfig} from '../client/configHandler/zodConfigTypes';
+import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from '../client/constants';
 import {genPrecacheEntries, genWriteEnvFile, genWriteFinalConfig, getFilesToCache, loadFinalConfigForApps, makeEnvFileEntry} from './compileYamlLib';
 const mkdir = promisify(fs.mkdir);
 
 const CACHE_LINE_ENV_VARNAME = 'REACT_APP_CHHA_CACHE_FILES_JSON';
 
 (async function () {
-    // TODO: abstract away
+    // TODO: abstract away, use webpack, etc
     if (!fs.existsSync("public/generated")) {
         await mkdir("public/generated");
     }

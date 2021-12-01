@@ -3,13 +3,13 @@
 import fs from 'fs';
 import papaparse from "papaparse";
 import fetch from "node-fetch";
-import ConfigHandler from '../configHandler/ConfigHandler';
-import {DBConfig} from '../types/config';
-import {OldLangDB, RawDBRow} from '../types/dbTypes';
+import ConfigHandler from '../client/configHandler/ConfigHandler';
+import {DBConfig} from '../client/types/config';
+import {OldLangDB, RawDBRow} from '../client/types/dbTypes';
 import {fromKipUnicodeToKipNormalized, fromPojUnicodeToPojNormalized} from './languageUtils';
 
 import lunr from 'lunr';
-import AppConfig from '../configHandler/AppConfig';
+import AppConfig from '../client/configHandler/AppConfig';
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
 require("lunr-languages/lunr.multi")(lunr);
