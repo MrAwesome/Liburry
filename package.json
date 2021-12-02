@@ -55,6 +55,7 @@
   },
   "devDependencies": {
     "md5-file": "^5.0.0",
+    "playwright": "^1.17.1",
     "webpack-cli": "^4.7.2",
     "webpack-node-externals": "^3.0.0"
   },
