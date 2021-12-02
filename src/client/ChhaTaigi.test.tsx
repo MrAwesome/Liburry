@@ -3,6 +3,7 @@ import {MainDisplayAreaMode} from "./types/displayTypes";
 import {ChhaTaigi} from './ChhaTaigi';
 import OptionsChangeableByUser from './ChhaTaigiOptions';
 import * as React from 'react';
+import '@testing-library/jest-dom/extend-expect';
 import {noop} from './utils';
 import {DBSearchRanking, SearcherType} from './search';
 import ConfigHandler from './configHandler/ConfigHandler';
@@ -18,6 +19,7 @@ noop(React.version);
 
 // TODO(high): test basic worker search behavior (probably not possible from jest?)
 // TODO(low): figure out how to run componentDidMount
+// TODO(later): migrate to createRoot - right now, using it crashes the test runner.
 
 export async function genAppConfig() {
     const configHandler = new ConfigHandler(["taigi.us"], {localMode: true});
@@ -30,7 +32,9 @@ const appConfigPromise = genAppConfig();
 test('render searchbar by default', async () => {
     const appConfig = await appConfigPromise;
     let options = new OptionsChangeableByUser();
-    render(<ChhaTaigi appConfig={appConfig} mockOptions={options} />);
+    const app = <ChhaTaigi appConfig={appConfig} mockOptions={options} />;
+    render(app, { legacyRoot: true });
+
     const searchBar = screen.getByPlaceholderText(/Search.../);
     expect(searchBar).toBeInTheDocument();
     expect(searchBar).toBeEmptyDOMElement();
@@ -94,7 +98,8 @@ test('render single entry via override', async () => {
     const annotatedResRaw = annotateRawResults(perDictRes, appConfig);
     const annotatedRes = new AnnotatedPerDictResults(annotatedResRaw);
 
-    render(<ChhaTaigi mockOptions={options} appConfig={appConfig} mockResults={annotatedRes} />);
+    const app = <ChhaTaigi mockOptions={options} appConfig={appConfig} mockResults={annotatedRes} />;
+    render(app, { legacyRoot: true });
 
     const hoabun = screen.getByText(/法律/i);
     expect(hoabun).toBeInTheDocument();

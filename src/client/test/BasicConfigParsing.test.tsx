@@ -2,7 +2,7 @@ import * as React from 'react';
 noop(React.version);
 
 import {RawEnabledDBs, RawEnabledDBsBySubApp, ReturnedFinalConfig, SubAppsMapping} from '../configHandler/zodConfigTypes';
-import {loadFinalConfigForApps} from '../scripts/compileYamlLib';
+import {loadFinalConfigForApps} from '../../scripts/compileYamlLib';
 import {getRecordEntries, noop} from '../utils';
 
 async function genFinalConfigFromYaml(appIDs: string[]): Promise<ReturnedFinalConfig> {
