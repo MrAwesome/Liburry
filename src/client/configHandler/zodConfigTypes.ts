@@ -6,7 +6,7 @@
 // The types here are those which go through some sort of serialization - to/from YAML or JSON in particular.
 import {z} from "zod";
 import {DBIdentifier} from "../types/config";
-import {getRecordEntries, getRecordValues} from "../utils";
+import {getRecordEntries} from "../utils";
 
 // What counts as a valid "token" - app names, dialect names, etc all will be validated against this.
 // Deliberately restrictive and ASCII-centric, for simplicity of parsing/typing.
@@ -20,7 +20,7 @@ const FILENAME_AND_DIRECTORY_SAFE_REGEX: RegExp = /^[a-zA-Z0-9_/.]+$/;
 type TokenMatcher = Readonly<[RegExp, string] | null>;
 type TokenList<T extends object> = { [key in keyof T]: TokenMatcher }
 const tlist = <O extends object>(o: TokenList<O>): TokenList<O> => o;
-const tokenMatchers = tlist({
+export const tokenMatchers = tlist({
     APP_ID: [FILENAME_AND_DIRECTORY_SAFE_REGEX, "App IDs must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
     DIALECT_ID: [BASIC_TOKEN_REGEX, "Dialect IDs must contain only ASCII letters, numbers, and underscores."],
     PAGE_ID: [BASIC_TOKEN_REGEX, "Page IDs must contain only ASCII letters, numbers, and underscores."],
@@ -31,11 +31,40 @@ const tokenMatchers = tlist({
     VIEW_ID: null,
     // TODO: does the directory-walking function need to use this, or can we just rely on inferred appname?
 } as const);
-type TokenTypes = keyof typeof tokenMatchers;
+export type LiburryTokenTypes = keyof typeof tokenMatchers;
+
+export const liburryCustomErrorCodes = [
+    "invalid_subapp_name_in_edbs",
+    "enableddbs_dict_has_no_subapps",
+    "dbconfig_name_not_valid",
+    "dbname_needs_config",
+    "enabled_dbname_not_valid_dict",
+    "invalid_view_for_db",
+    "view_not_set_for_db_in_subapp",
+    "edbs_is_list_but_views_defined_dict",
+    "edbs_is_list_but_views_defined_list",
+    "enabled_dbname_not_valid_array",
+    "searchablefield_not_known_field_dict",
+    "viewid_not_known",
+    "searchablefield_not_known_field_list",
+    "searchablefield_array_but_views_defined",
+    "primarykey_known_field",
+    "remote_files_https",
+    "local_file_absolute_path",
+    "defaultsubapp_subapps_both_or_neither",
+    "defaultsubapp_defined",
+] as const;
+
+export type LiburryZodCustomTestingCode = (typeof liburryCustomErrorCodes)[number];
 
 ////// Utilities /////////////////////////////
-function issue(ctx: z.RefinementCtx, message: string) {
-    ctx.addIssue({code: z.ZodIssueCode.custom, message});
+function issue(ctx: z.RefinementCtx, _liburryCode: LiburryZodCustomTestingCode, message: string) {
+    ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        // @ts-ignore
+        _liburryCode,
+        message
+    });
 }
 
 // NOTE: this can be made to validate keys by using .refine and Object.keys. However, everywhere where a token
@@ -48,7 +77,7 @@ function strictObject<T extends z.ZodRawShape>(obj: T): z.ZodObject<T, "strict">
     return z.object(obj).strict();
 }
 
-function tokenArray(tt: TokenTypes): z.ZodArray<z.ZodString, "atleastone"> {
+function tokenArray(tt: LiburryTokenTypes): z.ZodArray<z.ZodString, "atleastone"> {
     return z.array(token(tt)).nonempty();
 }
 
@@ -56,21 +85,20 @@ function anyString(): z.ZodString {
     return z.string().min(1);
 }
 
-function token(tt: TokenTypes): z.ZodString {
+function token(tt: LiburryTokenTypes): z.ZodString {
     return matchToken(tt);
 }
 
-function matchToken(tt: TokenTypes): z.ZodString {
+function matchToken(tt: LiburryTokenTypes): z.ZodString {
     const retStr = anyString();
     const matcher = tokenMatchers[tt];
     if (matcher === null) {
         return retStr;
     } else {
         const [regex, explanation] = matcher;
-        return retStr.regex(regex, explanation);
+        return retStr.regex(regex, `[${tt}]: ${explanation}`);
     }
 }
-
 //////////////////////////////////////////////
 
 
@@ -84,7 +112,9 @@ export type FieldID = string;
 
 export const rawSubAppConfigSchema = strictObject({
     displayName: anyString(),
+    blacklistDialectsRegex: anyString().optional(),
 });
+export type RawSubAppConfig = z.infer<typeof rawSubAppConfigSchema>;
 
 const subAppsSchema = realRecord(rawSubAppConfigSchema).optional();
 export type SubAppsMapping = z.infer<typeof subAppsSchema>;
@@ -99,12 +129,12 @@ export const rawAppConfigSchema = strictObject({
         // NOTE: should path be added here
         if (appConfig.subApps !== undefined && appConfig.defaultSubApp !== undefined) {
             if (!Object.keys(appConfig.subApps).includes(appConfig.defaultSubApp)) {
-                issue(ctx, `defaultSubApp "${appConfig.defaultSubApp}" not found in subApps: "${Object.keys(appConfig.subApps)}"`)
+                issue(ctx, "defaultsubapp_defined", `defaultSubApp "${appConfig.defaultSubApp}" not found in subApps: "${Object.keys(appConfig.subApps)}"`)
             }
         }
 
         if ((appConfig.subApps !== undefined) !== (appConfig.defaultSubApp !== undefined)) {
-            issue(ctx, "If either subApps or defaultSubApp is defined, both must be defined.")
+            issue(ctx, "defaultsubapp_subapps_both_or_neither", "If either subApps or defaultSubApp is defined, both must be defined.")
         }
     });
 export type RawAppConfig = z.infer<typeof rawAppConfigSchema>;
@@ -123,11 +153,11 @@ export const rawDBLoadInfoSchema = strictObject({
         getRecordEntries(obj).forEach(([key, val]) => {
             if (key.startsWith("local")) {
                 if (!val.startsWith("/")) {
-                    issue(ctx, `(${key}): local files must be an absolute path (start with "/"). You probably want to replace "${val}" with "/${val}".`);
+                    issue(ctx, "local_file_absolute_path", `(${key}): local files must be an absolute path (start with "/"). You probably want to replace "${val}" with "/${val}".`);
                 }
             } else if (key.startsWith("remote")) {
                 if (!val.startsWith("https://")) {
-                    issue(ctx, `(${key}): remote files must begin with "https://" (current value: "${val}").`);
+                    issue(ctx, "remote_files_https", `(${key}): remote files must begin with "https://" (current value: "${val}").`);
                 }
             }
         });
@@ -146,6 +176,8 @@ export const fakeMTGDisplayTypeSchema = z.union([
     z.literal("mtg_fake"),
 ]);
 
+// TODO(high): split these into used and unused fields (for ease of knowing what's worth bothering to tag)
+// TODO: .map z.literal
 export const rawDictionaryFieldDisplayTypeSchema = z.union([
     z.literal("base_phrase"),
     z.literal("channel_name"),
@@ -203,6 +235,7 @@ export const rawAllowedFieldClassifierTagsSchema = strictObject({
         .describe("The delimiter, if any, splitting up tokens within the field (e.g. \"big,nasty,man\" would have the delimiter \",\")."),
     delimiterRegex: anyString().optional()
         .describe("Regular expression to find delimiters in the field's value. Takes precedence over \"delimiter\". Should not be wrapped in /. You can wrap the regex in a negative lookup to keep it from disappearing, if desired: (?=REGEX_GOES_HERE)"),
+    // TODO: when this is used, ensure that the values given are actually valid dialects from lang configs
     dialect: z.union([token("DIALECT_ID"), tokenArray("DIALECT_ID")]).optional()
         .describe("[UNUSED] The human dialect (or list of dialects) of this field's data. Must be a valid DialectID (defined in lang.yml). This may be used in the future for the display of multi-language datasets."),
     lengthHint: anyString().optional()
@@ -241,31 +274,26 @@ const rawDBConfigSchema = strictObject({
     fields: fieldsSchema,
 })
 .superRefine((obj, ctx) => {
-    if (obj.primaryKey.length < 0) {
-        issue(ctx, "primaryKey must be defined");
-    }
     if (!(obj.primaryKey in obj.fields)) {
-        issue(ctx, `primaryKey "${obj.primaryKey}" is not a known field`);
+        issue(ctx, "primarykey_known_field", `primaryKey "${obj.primaryKey}" is not a known field`);
     }
-    const displayNames = getRecordValues(obj.displayName);
-    if (displayNames.length < 1) {
-        issue(ctx, "at least one displayName must be defined");
-    }
-
     if (Array.isArray(obj.searchableFields)) {
+        if (obj.views !== undefined) {
+            issue(ctx, "searchablefield_array_but_views_defined", `"searchableFields" must be a dictionary if "views" are defined. Current value: "${obj.searchableFields}"`);
+        }
         obj.searchableFields.forEach((givenFieldName) => {
             if (!(givenFieldName in obj.fields)) {
-                issue(ctx, `searchableField "${givenFieldName}" is not a known field`);
+                issue(ctx, "searchablefield_not_known_field_list", `searchableField "${givenFieldName}" is not a known field`);
             }
         });
     } else {
         getRecordEntries(obj.searchableFields).forEach(([view, givenFieldNames]) => {
             if (!obj.views?.includes(view)) {
-                issue(ctx, `given view name "${view}" is not a known view (db: "${obj.displayName}")`);
+                issue(ctx, "viewid_not_known", `given viewid "${view}" is not a known view (db: "${obj.displayName}")`);
             }
             givenFieldNames.forEach((givenFieldName) => {
                 if (!(givenFieldName in obj.fields)) {
-                    issue(ctx, `searchableField "${givenFieldName}" is not a known field (view: "${view}"`);
+                    issue(ctx, "searchablefield_not_known_field_dict", `searchableField "${givenFieldName}" is not a known field (view: "${view}")`);
                 }
             });
         });
@@ -273,8 +301,7 @@ const rawDBConfigSchema = strictObject({
 });
 export type RawDBConfig = z.infer<typeof rawDBConfigSchema>;
 
-const dbToViewMappingSchema = realRecord(token("VIEW_ID"));
-type DBToViewMapping = z.infer<typeof dbToViewMappingSchema>;
+const dbToViewMappingSchema = realRecord(token("VIEW_ID").nullable());
 const enabledDBsOrDBToViewMappingSchema = tokenArray("DB_ID").or(dbToViewMappingSchema);
 
 const dbListSchema = tokenArray("DB_ID")
@@ -309,30 +336,46 @@ export const rawAllDBConfigSchema = strictObject({
     if (Array.isArray(enabledDBs)) {
         enabledDBs.forEach((dbName) => {
             if (!(dbList.includes(dbName))) {
-                issue(ctx, `"${dbName}" is not a valid DB name in enabledDBs (check "dbList")`);
+                issue(ctx, "enabled_dbname_not_valid_array", `"${dbName}" is not a valid DB name in enabledDBs (check "dbList")`);
+            }
+            if (dbConfigs[dbName]?.views !== undefined) {
+                issue(ctx, "edbs_is_list_but_views_defined_list", `"views" are defined for db "${dbName}", but "enabledDBs" is a list. Views are intended for use with subApps.`);
             }
         });
     } else {
-        getRecordEntries(enabledDBs ?? {}).forEach(([subAppName, enabledDBListOrDBToViewMapping]) => {
+        getRecordEntries(enabledDBs ?? {}).forEach(([subAppID, enabledDBListOrDBToViewMapping]) => {
+            // For the valid db name in subapp check below, either infer the enabled db list, or use the explicitly defined one
             let enabledDBList: DBIdentifier[];
             if (Array.isArray(enabledDBListOrDBToViewMapping)) {
-                enabledDBList = enabledDBListOrDBToViewMapping as DBIdentifier[];
+                enabledDBList = enabledDBListOrDBToViewMapping;
+
+                enabledDBList.forEach((dbName) => {
+                    if (dbConfigs[dbName]?.views !== undefined) {
+                        issue(ctx, "edbs_is_list_but_views_defined_dict", `"views" are defined for db "${dbName}", but "enabledDBs" for subApp "${subAppID}" is a list.`);
+                    }
+                });
             } else {
                 enabledDBList = Object.keys(enabledDBListOrDBToViewMapping);
 
-                const dbToViewPairs = getRecordEntries(enabledDBListOrDBToViewMapping as DBToViewMapping);
+                const dbToViewPairs = getRecordEntries(enabledDBListOrDBToViewMapping);
 
                 dbToViewPairs.forEach(([dbID, viewID]) => {
                     // We check for dbID validity below so we don't need to bother checking again here
                     const viewsForDB = dbConfigs[dbID]?.views;
-                    if (!viewsForDB?.includes(viewID)) {
-                        issue(ctx, `"${viewID}" is not a valid view for db "${dbID}" (or "${dbID}" is invalid).`);
+                    if (viewsForDB !== undefined) {
+                        if (viewID === null) {
+                                issue(ctx, "view_not_set_for_db_in_subapp", `view is not set for db "${dbID}" for subApp "${subAppID}", but that db has views defined: "${viewsForDB}".`);
+                        } else {
+                            if (!viewsForDB.includes(viewID)) {
+                                issue(ctx, "invalid_view_for_db", `"${viewID}" is not a valid view for db "${dbID}" for subApp "${subAppID}".`);
+                            }
+                        }
                     }
                 });
             }
             enabledDBList.forEach((dbName) => {
                 if (!(dbList.includes(dbName))) {
-                    issue(ctx, `"${dbName}" is not a valid DB name in enabledDBsBySubApp for "${subAppName}" (check "dbList")`);
+                    issue(ctx, "enabled_dbname_not_valid_dict", `"${dbName}" is not a valid DB name in enabledDBsBySubApp for "${subAppID}" (check "dbList")`);
                 }
             });
         });
@@ -340,14 +383,14 @@ export const rawAllDBConfigSchema = strictObject({
 
     dbList.forEach((dbName) => {
         if (!(dbName in dbConfigs)) {
-            issue(ctx, `"${dbName}" must have a config defined in "dbConfigs"`);
+            issue(ctx, "dbname_needs_config", `"${dbName}" must have a config defined in "dbConfigs"`);
         }
     });
 
 
     getRecordEntries(allDBConfig.dbConfigs).forEach(([dbName, _dbConfig]) => {
         if (!(dbList.includes(dbName))) {
-            issue(ctx, `"${dbName}" is not a valid DB name in dbConfigs (check "dbList")`);
+            issue(ctx, "dbconfig_name_not_valid", `"${dbName}" is not a valid DB name in dbConfigs (check "dbList")`);
         }
     });
 }).transform((adbc) => {
@@ -407,14 +450,14 @@ const mdPageSchema = strictObject({
     pageType: z.literal("markdown"),
     pageID: token("PAGE_ID"),
     mdText: anyString(),
-    dialectID: token("DIALECT_ID"),
+    dialect: token("DIALECT_ID"),
 });
 
 const htmlPageSchema = strictObject({
     pageType: z.literal("HTML_UNUSED"),
     pageID: token("PAGE_ID"),
     htmlText: anyString(),
-    dialectID: token("DIALECT_ID"),
+    dialect: token("DIALECT_ID"),
 });
 
 const loadedPageSchema = z.union([mdPageSchema, htmlPageSchema]);
@@ -443,8 +486,11 @@ const appAllConfigSchema = rawAppLoadedAllConfigSchema.superRefine((appAllConfig
 
     const {enabledDBs} = allDBConfigs;
 
-
-    if (appConfig.subApps !== undefined) {
+    if (appConfig.subApps === undefined) {
+        if (!Array.isArray(enabledDBs)) {
+            issue(ctx, "enableddbs_dict_has_no_subapps", `enabledDBs is a dict, but there are no subApps defined for this app.`);
+        }
+    } else {
         const subAppNames = Object.keys(appConfig.subApps);
 
         if (!Array.isArray(enabledDBs)) {
@@ -456,13 +502,9 @@ const appAllConfigSchema = rawAppLoadedAllConfigSchema.superRefine((appAllConfig
 
             Object.keys(enabledDBs).forEach((subAppID) => {
                 if (!subAppNames.includes(subAppID)) {
-                    issue(ctx, `invalid subApp name in "enabledDBsForSubApp": "${subAppID}"`);
+                    issue(ctx, "invalid_subapp_name_in_edbs", `invalid subApp name in "enabledDBs": "${subAppID}"`);
                 }
             });
-        }
-    } else {
-        if (!Array.isArray(enabledDBs)) {
-            issue(ctx, `enabledDBs is a dict, but there are no subApps defined.`);
         }
     }
 });

@@ -1,0 +1,12 @@
+displayName: "Simple Test App (With SubApps And Views)"
+
+defaultSubApp: "dbs_mixed"
+subApps:
+  dbs_mixed:
+    displayName: "All DBs Mixed"
+  happydb_dict:
+    displayName: "Happy DB Dict"
+  happydb_list:
+    displayName: "Happy DB List"
+  angrydb:
+    displayName: "Angry DB"

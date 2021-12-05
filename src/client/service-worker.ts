@@ -27,9 +27,9 @@ const customTargetsJsonString = process.env.REACT_APP_CHHA_CACHE_FILES_JSON;
 if (customTargetsJsonString !== undefined) {
     try {
         const customTargets = JSON.parse(customTargetsJsonString);
-        console.log("Loaded custom targets: ", customTargets);
+        console.log("[Liburry Service Worker] Loaded custom targets: ", customTargets);
         precacheTargets = [...precacheTargets, ...customTargets];
-        console.log("All precache targets: ", precacheTargets);
+        console.log("[Liburry Service Worker] All precache targets: ", precacheTargets);
     } catch (e) {
         console.warn("Failed to load custom targets!", e);
     }

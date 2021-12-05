@@ -1,0 +1,84 @@
+dbList:
+    - angry
+    - hapy
+
+enabledDBs:
+  dbs_mixed:
+    angry: lol
+    happy: BROEN_FAKE
+  angydb:
+    - angry
+  lolman:
+    angry: UGH
+    happy:
+
+dbConfigs:
+  angry:
+    displayName:
+      eng_us: Angry!
+
+    loadInfo:
+      localCSV: /db/test/an\\gry.csv
+
+    primaryKey: FAKE
+
+    views:
+      - yell_only
+      - person_target
+
+    searchableFields:
+      yell_only:
+        - yell
+      person_target:
+        - person
+        - taget
+      yelly:
+        - lol
+
+    fields:
+      id:
+        type:
+          dictionary: id
+
+      person:
+        type:
+          dictionary: vocab
+
+      target:
+        type:
+          dictionary: vocab_other
+        dialect: xXxFAK\\ExXx
+
+      yell:
+        type:
+          dictionary: definition
+
+  happy:
+    displayName:
+      yus: yus
+
+    loadInfo:
+      localCSV: db/test/happy.csv
+
+    primaryKey: id
+
+    views:
+      - lol
+
+    searchableFields:
+      - company
+      - slogan
+      - brogan
+
+    fields:
+      id:
+        type:
+          dictionary: id
+
+      company:
+        type:
+          dictionary: vocab
+
+      slogan:
+        type:
+          dictionary: definition

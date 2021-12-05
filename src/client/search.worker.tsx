@@ -13,7 +13,7 @@ import {RawDBConfig, ViewID} from "./configHandler/zodConfigTypes";
 const ctx: Worker = self as any;
 
 export type SearchWorkerCommandMessage =
-    {command: SearchWorkerCommandType.INIT, payload: {dbIdentifier: DBIdentifier, rawDBConfig: RawDBConfig, viewID: ViewID | undefined, debug: boolean, searcherType: SearcherType}} |
+    {command: SearchWorkerCommandType.INIT, payload: {dbIdentifier: DBIdentifier, rawDBConfig: RawDBConfig, viewID: ViewID | null | undefined, debug: boolean, searcherType: SearcherType}} |
     {command: SearchWorkerCommandType.SEARCH, payload: {query: string, searchID: number}} |
     {command: SearchWorkerCommandType.CANCEL, payload?: null} |
     {command: SearchWorkerCommandType.LOG, payload?: null} |
@@ -95,6 +95,7 @@ class SearchWorkerHelper {
         }).catch((err) => {
             console.warn("DB preparation failure!", this, err);
             this.state = {dbIdentifier, dbConfig, init: WorkerInitState.FAILED_TO_PREPARE};
+            throw err;
         });
     }
 

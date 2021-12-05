@@ -10,6 +10,7 @@ import ConfigHandler from './configHandler/ConfigHandler';
 import {AnnotatedPerDictResults, annotateRawResults, PerDictResultsRaw} from './types/dbTypes';
 import AppConfig from './configHandler/AppConfig';
 import {ReturnedFinalConfig} from './configHandler/zodConfigTypes';
+import {MuhError} from './errorHandling/MuhError';
 
 // NOTE: just used to silence errors in node TSC.
 noop(React.version);
@@ -21,18 +22,21 @@ noop(React.version);
 // TODO(low): figure out how to run componentDidMount
 // TODO(later): migrate to createRoot - right now, using it crashes the test runner.
 
-export async function genAppConfig() {
+export async function genRFC(): Promise<ReturnedFinalConfig> {
     const configHandler = new ConfigHandler(["taigi.us"], {localMode: true});
-    return configHandler.genLoadFinalConfig()
-        .then((rfc) => AppConfig.from(rfc as ReturnedFinalConfig, "taigi.us"));
+    const maybeError = await configHandler.genLoadFinalConfig();
+    if ((maybeError as MuhError).muhErrType !== undefined) {
+        throw maybeError;
+    } else {
+        return maybeError as ReturnedFinalConfig;
+    }
+
 }
 
-const appConfigPromise = genAppConfig();
-
 test('render searchbar by default', async () => {
-    const appConfig = await appConfigPromise;
+    const rfc = await genRFC();
     let options = new OptionsChangeableByUser();
-    const app = <ChhaTaigi appConfig={appConfig} mockOptions={options} />;
+    const app = <ChhaTaigi rfc={rfc} mockOptions={options} />;
     render(app, { legacyRoot: true });
 
     const searchBar = screen.getByPlaceholderText(/Search.../);
@@ -93,12 +97,13 @@ test('render single entry via override', async () => {
         results: [res1],
     };
 
-    const appConfig = await appConfigPromise;
+    const rfc = await genRFC();
 
+    const appConfig = AppConfig.from(rfc, "taigi.us");
     const annotatedResRaw = annotateRawResults(perDictRes, appConfig);
     const annotatedRes = new AnnotatedPerDictResults(annotatedResRaw);
 
-    const app = <ChhaTaigi mockOptions={options} appConfig={appConfig} mockResults={annotatedRes} />;
+    const app = <ChhaTaigi mockOptions={options} rfc={rfc} mockResults={annotatedRes} />;
     render(app, { legacyRoot: true });
 
     const hoabun = screen.getByText(/法律/i);

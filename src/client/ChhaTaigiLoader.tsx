@@ -3,8 +3,6 @@ import {ChhaTaigi} from "./ChhaTaigi";
 import ConfigLoader from "./configHandler/ConfigHandler";
 import {ProgressHandler} from "./progressBars/ProgressBars";
 
-import {CHHA_APPNAME} from "./constants";
-import AppConfig from "./configHandler/AppConfig";
 import {ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 import {MuhError} from "./errorHandling/MuhError";
 
@@ -13,7 +11,7 @@ interface ChhaTaigiLoaderProps {
 }
 
 interface ChhaTaigiLoaderState {
-    appConfig?: AppConfig,
+    rfc?: ReturnedFinalConfig,
 }
 
 export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaTaigiLoaderState> {
@@ -49,14 +47,8 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
                 console.error("ConfigHandler Error: ", configHandlerError);
                 this.props.fatalError(configHandlerError);
             } else {
-                const finalConfig = finalConfigOrErr as ReturnedFinalConfig;
-
-
-                // TODO: XXX: yuh
-                const subAppID = "eng_poj";
-
-                const appConfig = AppConfig.from(finalConfig, CHHA_APPNAME, subAppID);
-                this.setState({appConfig})
+                const rfc = finalConfigOrErr as ReturnedFinalConfig;
+                this.setState({rfc})
             }
         });
     }
@@ -67,11 +59,11 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
     }
 
     render() {
-        const {appConfig} = this.state;
+        const {rfc} = this.state;
 
-        let mainApp = appConfig !== undefined
+        let mainApp = rfc !== undefined
             ? <ChhaTaigi
-                appConfig={appConfig}
+                rfc={rfc}
                 updateDisplayForDBLoadEvent={this.progress.updateDisplayForDBLoadEvent}
                 updateDisplayForSearchEvent={this.progress.updateDisplayForSearchEvent}
                 key="ChhaTaigi"

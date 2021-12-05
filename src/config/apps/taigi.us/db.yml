@@ -22,6 +22,16 @@ dbList:
   - ChhoeTaigi_iTaigiHoataiTuichiautian
   - ChhoeTaigi_EmbreeTaiengSutian
 
+
+
+
+
+# TODO: make allfields_slow view for each db/view, which has description etc enabled
+# TODO: have views/searchablefields be defined by *type* instead of just field name?
+
+
+
+
 # Which data sources are enabled in which subapp, with a given view if that data source has views
 # NOTE: dbs for each subapp can be filtered of irrelevant keys in serverSideCSVProcessor, to noticeably reduce file size
 # TODO: filtering of CSVs to strip certain fields or only whitelist certain fields
@@ -440,11 +450,20 @@ dbConfigs:
       - poj
       - kip
 
+    # TODO: use others?
+    # TODO: use hanji?
     searchableFields:
-      - PojUnicode
-      - PojNormalized
-      - PojInput
-      - HoaBun
+      poj:
+        - PojUnicode
+        - PojNormalized
+        - PojInput
+        - HoaBun
+      kip:
+        - KipUnicode
+        - KipNormalized
+        - KipInput
+        - HoaBun
+
 
     fields:
       DictWordID:
@@ -702,11 +721,18 @@ dbConfigs:
       - poj
       - kip
 
+    # TODO: search more fields
     searchableFields:
-      - PojUnicode
-      - PojNormalized
-      - PojInput
-      - HoaBun
+      poj:
+        - PojUnicode
+        - PojNormalized
+        - PojInput
+        - HoaBun
+      kip:
+        - KipUnicode
+        - KipNormalized
+        - KipInput
+        - HoaBun
 
     fields:
       DictWordID:
@@ -812,9 +838,16 @@ dbConfigs:
       - kip
 
     searchableFields:
-      - PojUnicode
-      - PojNormalized
-      - PojInput
+      poj:
+        - PojUnicode
+        - PojNormalized
+        - PojInput
+        - HanLoTaibunPoj
+      kip:
+        - KipUnicode
+        - KipNormalized
+        - KipInput
+        - HanLoTaibunKip
 
     fields:
       DictWordID:

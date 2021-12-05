@@ -16,6 +16,8 @@ const PAGE = "p";
 const DEBUG = "debug";
 const SEARCHER = "searcher";
 const PLAYGROUND = "playground";
+const APP = "app";
+const SUBAPP = "subapp";
 
 const QS_SORT_FN = (a: string, b: string) => {
     if (a === b) {
@@ -103,6 +105,8 @@ export default class QueryStringParser {
         const parsed = this.parseInternal();
         const q = parsed[QUERY];
         const searcher = parsed[SEARCHER];
+        const appID = parsed[APP];
+        const subAppID = parsed[SUBAPP];
 
         if (typeof q === "string") {
             options.savedQuery = q;
@@ -128,6 +132,14 @@ export default class QueryStringParser {
             if (searcherUpper in SearcherType) {
                 options.searcherType = SearcherType[searcherUpper as keyof typeof SearcherType];
             }
+        }
+
+        if (typeof appID === "string") {
+            options.appID = appID;
+        }
+
+        if (typeof subAppID === "string") {
+            options.subAppID = subAppID;
         }
 
         return options;

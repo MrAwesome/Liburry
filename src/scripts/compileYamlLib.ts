@@ -95,7 +95,7 @@ async function handleFile(path: string, filename: string, subdirs: Array<string>
         }
     } else if (path.endsWith('.md')) {
         const mdText = (await readFile(path)).toString();
-        const dialectID = filename.replace(/.md$/, "")
+        const dialect = filename.replace(/.md$/, "")
         if (subdirs.length > 2) {
             console.error(`Markdown file too deeply nested! Unsure how to handle: "${path}"`)
             return null;
@@ -103,10 +103,10 @@ async function handleFile(path: string, filename: string, subdirs: Array<string>
         return {
             type: "page",
             meta: {
-                idChain: [...subdirs, dialectID],
+                idChain: [...subdirs, dialect],
             },
             page: {
-                dialectID,
+                dialect,
                 pageID: subdirs[0],
                 pageType: "markdown",
                 mdText,
@@ -122,7 +122,10 @@ export default function validateYaml(filename: string, yamlBlob: Object): Loaded
     if (filename in YAML_FILENAME_TO_SCHEMA_MAPPING) {
         const m = YAML_FILENAME_TO_SCHEMA_MAPPING[filename as keyof typeof YAML_FILENAME_TO_SCHEMA_MAPPING];
         // NOTE: could use safeparse instead. Just felt convenient.
-        const parsed = m.schema.parse(yamlBlob);
+        //const parsed = m.schema.parse(yamlBlob);
+        //NOTE: parsing/validation no longer happens here, it's done after everything is loaded so that we
+        //      get paths. if a return to this is desired, you just need to make sure this has a way to safeparse.
+        const parsed = yamlBlob as ReturnType<typeof m.schema.parse>;
 
         return {
             configType: m.type,
@@ -171,11 +174,23 @@ function parseApp(obj: any): AppTopLevelConfiguration {
 }
 
 export async function loadFinalConfigForApps(appIDs: AppID[]): Promise<ReturnedFinalConfig> {
+    const generatedFinalConfigAttempt = await loadFinalConfigForAppsInternal(appIDs);
+    return returnedFinalConfigSchema.parse(generatedFinalConfigAttempt);
+}
+
+export async function loadFinalConfigForAppsSafe(appIDs: AppID[]): Promise<ReturnType<typeof returnedFinalConfigSchema.safeParse>> {
+    const generatedFinalConfigAttempt = await loadFinalConfigForAppsInternal(appIDs);
+    return returnedFinalConfigSchema.safeParse(generatedFinalConfigAttempt);
+}
+
+async function loadFinalConfigForAppsInternal(appIDs: AppID[]): Promise<any> {
     const rawdef = await rawParseYaml("", "default");
-    const def = parseDefaultApp(rawdef);
+    //const def = parseDefaultApp(rawdef);
+    const def = rawdef as DefaultTopLevelConfiguration;
     const apps: AppTopLevelConfiguration[] = await Promise.all(appIDs.map(async (appID) => {
         const rawapp = await rawParseYaml("apps/", appID);
-        const app = parseApp(rawapp);
+        //const app = parseApp(rawapp);
+        const app = rawapp as AppTopLevelConfiguration;
         return app;
     }));
     const appEntries: [AppID, AppTopLevelConfiguration][] = apps.map((a) => ([a.appID, a]));
@@ -183,7 +198,7 @@ export async function loadFinalConfigForApps(appIDs: AppID[]): Promise<ReturnedF
         default: def,
         apps: Object.fromEntries(appEntries),
     };
-    return returnedFinalConfigSchema.parse(generatedFinalConfigAttempt);
+    return generatedFinalConfigAttempt;
 }
 
 export function getFilesToCache(finalObj: ReturnedFinalConfig): string[] {

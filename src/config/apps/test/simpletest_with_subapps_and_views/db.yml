@@ -1,0 +1,78 @@
+dbList:
+    - angry
+    - happy
+
+enabledDBs:
+  dbs_mixed:
+    angry: yell_only
+    happy:
+  happydb_list:
+    - happy
+  happydb_dict:
+    happy:
+  angrydb:
+    angry: person_target
+
+dbConfigs:
+  angry:
+    displayName:
+      eng_us: Angry!
+
+    loadInfo:
+      localCSV: /db/test/angry.csv
+
+    primaryKey: id
+
+    views:
+      - yell_only
+      - person_target
+
+    searchableFields:
+      yell_only:
+        - yell
+      person_target:
+        - person
+        - target
+
+    fields:
+      id:
+        type:
+          dictionary: id
+
+      person:
+        type:
+          dictionary: vocab
+
+      target:
+        type:
+          dictionary: vocab_other
+
+      yell:
+        type:
+          dictionary: definition
+
+  happy:
+    displayName:
+      eng_us: Happy!
+
+    loadInfo:
+      localCSV: /db/test/happy.csv
+
+    primaryKey: id
+
+    searchableFields:
+      - company
+      - slogan
+
+    fields:
+      id:
+        type:
+          dictionary: id
+
+      company:
+        type:
+          dictionary: vocab
+
+      slogan:
+        type:
+          dictionary: definition

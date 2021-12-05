@@ -1,0 +1,12 @@
+displayName: "Very Broken Test App"
+
+defaultSubApp: "f_lol"
+subApps:
+  dbs_mixed:
+    displayName: "All DBs Mixed"
+  happydb_dict:
+    displayName: "Happy DB Dict"
+  happydb_list:
+    displayName: "Happy DB List"
+  angrydb:
+    displayName: "Angry DB"

@@ -11,7 +11,7 @@ export class DBConfig {
     constructor(
         private dbIdentifier: DBIdentifier,
         private r: RawDBConfig,
-        private view?: ViewID,
+        private view?: ViewID | null,
     ) { }
 
     asRaw(): RawDBConfig {
@@ -30,7 +30,8 @@ export class DBConfig {
         if (Array.isArray(this.r.searchableFields)) {
             return this.r.searchableFields;
         } else {
-            // TODO: better error handling
+            // TODO: decide what to do if this.view somehow is null. Just throw? zod should guarantee that view is always defined
+            //       when searchablefields is a dict
             return this.r.searchableFields[this.view!]!;
         }
     }

@@ -13,12 +13,14 @@ import {CombinedPageElement} from "./pages/Page";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {SearchBar} from "./components/SearchBar";
 import {runningInJest} from "./utils";
+import AppConfig from "./configHandler/AppConfig";
+import {CHHA_APPNAME} from "./constants";
 
 import type {DBConfig, DBIdentifier} from "./types/config";
 import type {SearchContext} from "./SearchValidityManager";
-import type AppConfig from "./configHandler/AppConfig";
-import type {PageID} from "./configHandler/zodConfigTypes";
+import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 
+// TODO(urgent): page, press back error
 // TODO(urgent): don't require final.json for tests to work? how? webpack? do split up apps, so that a change to a single yaml doesn't always trigger a rebuild of the single final json?
 // TODO(urgent): fix double-fetching of csvs in test mode (and check that it's not happening in prod)
 // TODO(urgent): finish implementing subapps/views (to allow for e.g. eng-poj). next: switcher. first commit with eng_poj hardcoded.
@@ -32,6 +34,7 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(urgent): error messages for if offline and no cache
 // TODO(urgent): move dbs into sub-repository?
 // TODO(high): use CRACO or similar to allow for using webpack plugins
+// TODO(high): determine which fields to make searchable in in ~/Liburry/src/config/apps/taigi.us/db.yml
 // TODO(high): let each db config specify the number of workers to spawn off for each db, or the max number of entries per worker, then have each worker be a sub-worker of a controlling worker per db. something like that...
 // TODO(high): change server script to also generate normalized_other
 // TODO(high): debug why autofocus doesn't work on incognito mode (is that normal, or just specific to this? most likely the second, and has to do with timing.)
@@ -133,6 +136,7 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 // TODO(wishlist): engaging buttons - random words, random search, etc
 // TODO(wishlist): typing / sentence construction mode. clicking a sentence/word adds it to a list, and clicking on it in that list deletes it (or selects it for replacement?)
 // TODO(wishlist): "lite" version speaking out to server for searches (AbortController to help with cancelation)
+// TODO(later): use leafletjs to create a map aggregation mode
 // TODO(later): homepage
 // TODO(later): homepage WOTD
 // TODO(later): "show me random words"
@@ -193,7 +197,7 @@ import type {PageID} from "./configHandler/zodConfigTypes";
 //      8) create settings page with language toggle?
 
 export interface ChhaTaigiProps {
-    appConfig: AppConfig,
+    rfc: ReturnedFinalConfig,
     // TODO: always annotate results with the current displaytype's info (one re-search when you change displaytype is well worth being able to calculate before render time (preferably in another thread))
     mockOptions?: OptionsChangeableByUser,
     mockResults?: AnnotatedPerDictResults,
@@ -217,17 +221,22 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     searchBar: React.RefObject<SearchBar>;
     console: StubConsole;
     newestQuery: string;
+    appConfig: AppConfig;
 
     searchController: SearchController;
 
     constructor(props: ChhaTaigiProps) {
         super(props);
 
+        const options = this.props.mockOptions ?? this.qs.parse();
+
         // State initialization
-        const appConfig = this.props.appConfig;
+        // TODO: decide how CHHA_APPNAME should look
+        // TODO: force reload, or unmount/remount, on app change?
+        this.appConfig = AppConfig.from(this.props.rfc, options.appID ?? CHHA_APPNAME, options.subAppID);
 
         const initialDBLoadedMapping: [DBIdentifier, SingleDBLoadStatus][] =
-            appConfig.dbConfigHandler.getAllEnabledDBConfigs().map((k: DBConfig) => [
+            this.appConfig.dbConfigHandler.getAllEnabledDBConfigs().map((k: DBConfig) => [
                 k.getDBIdentifier(),
                 {
                     isDownloaded: false,
@@ -237,7 +246,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             ]);
 
         this.state = {
-            options: this.props.mockOptions ?? this.qs.parse(),
+            options,
             loadedDBs: new LoadedDBsMap(initialDBLoadedMapping),
             resultsHolder: new SearchResultsHolder(),
         };
@@ -271,7 +280,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             this.getStateTyped,
             this.setStateTyped,
             this.getNewestQuery,
-            appConfig,
+            this.appConfig,
             this.props.updateDisplayForDBLoadEvent,
             this.props.updateDisplayForSearchEvent,
         );
@@ -407,6 +416,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             <AgnosticEntryContainer
                 debug={options.debug}
                 entry={entry}
+                blacklistDialectsRegex={this.appConfig.getDialectBlacklistRegex()}
                 key={entry.getDisplayKey()} />
         );
 
@@ -420,7 +430,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             case MainDisplayAreaMode.PAGE:
                 // TODO: why the ?? ""?
                 return <CombinedPageElement
-                    perAppPages={this.props.appConfig.pageHandler.getPagesForPageID(this.state.options.pageID ?? "")} />
+                    perAppPages={this.appConfig.pageHandler.getPagesForPageID(this.state.options.pageID ?? "")} />
         }
     }
 
@@ -446,7 +456,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         return (
             <div className="ChhaTaigi">
                 <SearchBar
-                    appConfig={this.props.appConfig}
+                    appConfig={this.appConfig}
                     ref={this.searchBar}
                     searchQuery={this.searchQuery}
                     saveNewestQuery={this.saveNewestQuery}

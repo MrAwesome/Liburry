@@ -10,13 +10,19 @@ defaultSubApp: "eng_poj"
 subApps:
   eng_poj:
     displayName: "English ↔ Pe̍h-ōe-jī"
+    blacklistDialectsRegex: kip
   eng_kip:
     displayName: "English ↔ Kàu-io̍k-pōo"
+    blacklistDialectsRegex: poj
   mando_poj:
     displayName: "漢字 ↔ Pe̍h-ōe-jī"
+    blacklistDialectsRegex: kip
   mando_kip:
     displayName: "漢字 ↔ Kàu-io̍k-pōo"
+    blacklistDialectsRegex: poj
   all_poj:
     displayName: "All DBS / 所有數據庫 (Pe̍h-ōe-jī)"
+    blacklistDialectsRegex: kip
   all_kip:
     displayName: "All DBS / 所有數據庫 (Kàu-io̍k-pōo)"
+    blacklistDialectsRegex: poj
