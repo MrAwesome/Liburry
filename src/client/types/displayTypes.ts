@@ -1,6 +1,7 @@
 import {RawKnownDisplayTypeEntry} from "../configHandler/zodConfigTypes";
 
 export enum MainDisplayAreaMode {
+    DEFAULT = "DEFAULT",
     SEARCH = "SEARCH",
     PAGE = "PAGE",
 }

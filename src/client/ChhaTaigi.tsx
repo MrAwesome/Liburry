@@ -357,10 +357,10 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.searchController.cleanup();
     }
 
+    // These two are their own functions to allow visibility from Jest
     subscribeHash() {
         window.addEventListener("hashchange", this.hashChange);
     }
-
     unsubscribeHash() {
         window.removeEventListener("hashchange", this.hashChange);
     }
@@ -427,12 +427,17 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
     mainDisplayArea(mode: MainDisplayAreaMode): JSX.Element {
         switch (mode) {
-            case MainDisplayAreaMode.SEARCH:
-                return this.getEntryComponents();
             case MainDisplayAreaMode.PAGE:
-                // TODO: why the ?? ""?
-                return <CombinedPageElement
-                    perAppPages={this.appConfig.pageHandler.getPagesForPageID(this.state.options.pageID ?? "")} />
+                const {pageID} = this.state.options;
+                if (pageID !== null) {
+                    return <CombinedPageElement perAppPages={this.appConfig.pageHandler.getPagesForPageID(pageID)} />
+                } else {
+                    // TODO: make this point to whatever "home" ends up being
+                    return this.mainDisplayArea(MainDisplayAreaMode.DEFAULT);
+                }
+            case MainDisplayAreaMode.SEARCH:
+            case MainDisplayAreaMode.DEFAULT:
+                return this.getEntryComponents();
         }
     }
 

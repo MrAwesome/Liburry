@@ -34,6 +34,7 @@ const QS_SORT_FN = (a: string, b: string) => {
 const QS_PARSE_OPTS = {delimiter: ';'};
 const QS_STRINGIFY_OPTS = {delimiter: ';', sort: QS_SORT_FN};
 
+// TODO: make this take a partial object of desired updates to values, and have a single set and get
 export default class QueryStringParser {
     private testString?: string;
     constructor(testString?: string) {
