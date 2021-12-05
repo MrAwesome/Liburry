@@ -26,7 +26,7 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
     }
 
     componentDidMount() {
-        const configLoader = new ConfigLoader(["test/simpletest"]);
+        const configLoader = new ConfigLoader();
         const configPromises = [configLoader.genLoadFinalConfig()];
         this.progress.numConfigsToLoad = configPromises.length;
 

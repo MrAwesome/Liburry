@@ -23,7 +23,7 @@ noop(React.version);
 // TODO(later): migrate to createRoot - right now, using it crashes the test runner.
 
 export async function genRFC(): Promise<ReturnedFinalConfig> {
-    const configHandler = new ConfigHandler(["taigi.us"], {localMode: true});
+    const configHandler = new ConfigHandler({localMode: true});
     const maybeError = await configHandler.genLoadFinalConfig();
     if ((maybeError as MuhError).muhErrType !== undefined) {
         throw maybeError;

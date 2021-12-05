@@ -1,7 +1,7 @@
 import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR, FINAL_CONFIG_REMOTE_DIR} from "../constants";
 import {MuhError, MuhErrorType} from "../errorHandling/MuhError";
 import {nodeReadFileFromDir} from "../utils";
-import {AppID, ReturnedFinalConfig, returnedFinalConfigSchema} from "./zodConfigTypes";
+import {ReturnedFinalConfig, returnedFinalConfigSchema} from "./zodConfigTypes";
 import path from 'path';
 
 // [] ensure app names are unique
@@ -21,18 +21,13 @@ type CHOpts = typeof chDefaultOpts;
 
 export default class ConfigHandler {
     private opts: CHOpts;
-    private apps: Set<AppID>;
     constructor(
-        apps: AppID[],
         opts?: Partial<CHOpts>,
     ) {
         this.opts = {
             ...chDefaultOpts,
             ...opts,
         };
-
-        this.apps = new Set(apps);
-        this.apps.add("default");
 
         this.localLoadWithNode = this.localLoadWithNode.bind(this);
         this.fetchJSON = this.fetchJSON.bind(this);

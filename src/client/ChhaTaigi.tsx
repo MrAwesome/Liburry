@@ -20,7 +20,7 @@ import type {DBConfig, DBIdentifier} from "./types/config";
 import type {SearchContext} from "./SearchValidityManager";
 import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 
-// TODO(urgent): page, press back error
+// TODO(urgent): determine why a hard-reset is needed for app change, and why taigi.us is ignoring app
 // TODO(urgent): don't require final.json for tests to work? how? webpack? do split up apps, so that a change to a single yaml doesn't always trigger a rebuild of the single final json?
 // TODO(urgent): fix double-fetching of csvs in test mode (and check that it's not happening in prod)
 // TODO(urgent): finish implementing subapps/views (to allow for e.g. eng-poj). next: switcher. first commit with eng_poj hardcoded.
