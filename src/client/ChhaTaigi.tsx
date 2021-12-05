@@ -33,6 +33,7 @@ import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 // TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?). because all fonts aren't loaded, people without the correct fonts on their system *will not be able to see many characters* during dynamic loading
 // TODO(urgent): error messages for if offline and no cache
 // TODO(urgent): move dbs into sub-repository?
+// TODO(high): background color hex code available as an option for a db? or field? or language?
 // TODO(high): use CRACO or similar to allow for using webpack plugins
 // TODO(high): determine which fields to make searchable in in ~/Liburry/src/config/apps/taigi.us/db.yml
 // TODO(high): let each db config specify the number of workers to spawn off for each db, or the max number of entries per worker, then have each worker be a sub-worker of a controlling worker per db. something like that...
@@ -102,6 +103,7 @@ import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 // TODO(mid): move search bar to middle of page when no results and no search yet
 // TODO(mid): button for "get all results", default to 10-20
 // TODO(mid): visual indication that there were more results
+// TODO(low): delimiter can be affected by <mark> placement if it's able to be searched
 // TODO(low): use magnifying glass for selecting searcher type, with different icon for each searcher and a language-enabled dropdown menu for the different Searcher options
 // TODO(low): fix burger menu location not changing when bar is loading (can't use absolute position, need to use fixed and change top)
 // TODO(low): only show border around title/name when there are multiple (or put border between them, or show them on separate lines)

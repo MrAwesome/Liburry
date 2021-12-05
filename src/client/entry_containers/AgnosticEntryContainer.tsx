@@ -40,6 +40,7 @@ type AECDisplayArea =
     "debug_metadata";
 
 
+// TODO: add these title strings to LANG_CONFIG
 // TODO: more generic way of representing titles, and more language-agnostic way of displaying titles.
 //       both can and probably should should live in yaml configs
 const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDisplayType> = area("container", [

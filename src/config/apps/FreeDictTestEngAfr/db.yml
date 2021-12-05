@@ -1,0 +1,79 @@
+dbList:
+  - eng_afr
+  - afr_eng
+
+enabledDBs:
+  engToAfr:
+    - eng_afr
+  afrToEng:
+    - afr_eng
+  both:
+    - eng_afr
+    - afr_eng
+
+dbConfigs:
+  eng_afr:
+    displayName:
+      eng_us: English → Afrikaans
+
+    source: https://freedict.org/downloads/
+
+    loadInfo:
+      localCSV: /db/FreeDictTestEngAfr/eng_afr.csv
+
+    primaryKey: Id
+
+    searchableFields:
+      - English
+      - Afrikaans
+
+    fields:
+      Id:
+        type:
+          dictionary: id
+
+      English:
+        type:
+          dictionary: vocab
+
+      EnglishIPA:
+        type:
+          dictionary: vocab_other
+
+      Afrikaans:
+        type:
+          dictionary: definition
+        delimiter: ❄
+
+  afr_eng:
+    displayName:
+      eng_us: Afrikaans → English
+
+    source: https://freedict.org/downloads/
+
+    loadInfo:
+      localCSV: /db/FreeDictTestEngAfr/afr_eng.csv
+
+    primaryKey: Id
+
+    searchableFields:
+      - Afrikaans
+      - English
+
+    fields:
+      Id:
+        type:
+          dictionary: id
+
+      Afrikaans:
+        type:
+          dictionary: vocab
+
+      AfrikaansIPA:
+        type:
+          dictionary: vocab_other
+
+      English:
+        type:
+          dictionary: definition
+        delimiter: ❄

@@ -1,0 +1,9 @@
+displayName: "Afrikaans - English Test (Hi Riz!)"
+defaultSubApp: both
+subApps:
+  engToAfr:
+    displayName: "English To Afrikaans"
+  afrToEng:
+    displayName: "Afrikaans na Engels"
+  both:
+    displayName: "Both Ways / Beide Kante"

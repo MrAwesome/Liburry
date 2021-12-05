@@ -25,7 +25,7 @@ const CACHE_LINE_ENV_VARNAME = 'REACT_APP_CHHA_CACHE_FILES_JSON';
     // go back to writing out the entire config, and still just fetch the one big config - it's not bad to fetch all configs for all apps, you just maybe don't have to pre-load every app's dbs (should you preload subapp dbs? how to decide?)
     // XXX XXX XXX
     console.warn("Using hardcoded list of appnames!")
-    const appIDs = ["taigi.us", "test/simpletest"];
+    const appIDs = ["taigi.us", "test/simpletest", "FreeDictTestEngAfr"];
     const checkedFinalConfig: ReturnedFinalConfig = await loadFinalConfigForApps(appIDs);
 
     // This must be written before the env file, since we generate an md5sum of the json file for precaching
