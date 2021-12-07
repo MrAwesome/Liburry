@@ -1,18 +1,11 @@
 import * as React from 'react';
 noop(React.version);
 
-import {liburryCustomErrorCodes, LiburryTokenTypes, LiburryZodCustomTestingCode, RawEnabledDBs, RawEnabledDBsBySubApp, ReturnedFinalConfig, SubAppsMapping, tokenMatchers} from '../configHandler/zodConfigTypes';
-import {loadFinalConfigForApps, loadFinalConfigForAppsSafe} from '../../scripts/compileYamlLib';
+import {liburryCustomErrorCodes, LiburryTokenTypes, LiburryZodCustomTestingCode, RawEnabledDBs, RawEnabledDBsBySubApp, SubAppsMapping, tokenMatchers} from '../configHandler/zodConfigTypes';
+import {loadFinalConfigForAppsSafe} from '../../scripts/compileYamlLib';
 import {getRecordEntries, noop} from '../utils';
 import {z} from 'zod';
-
-async function genFinalConfigFromYaml(appIDs: string[]): Promise<ReturnedFinalConfig> {
-    // NOTE: This loads configs straight from yaml.
-    const rfc = await loadFinalConfigForApps(appIDs);
-    // Always sanity check that we're actually loading something:
-    expect(rfc.default.configs.langConfig.config.dialects.eng_us?.displayName).toBe("English (US)");
-    return rfc;
-}
+import {genFinalConfigFromYaml} from './testUtils';
 
 // TODO: test taigi.us and other major configs here too? ensure all prod configs pass as a test?
 test('validate test config', async () => {

@@ -3,7 +3,7 @@
 import {RawDBList, RawEnabledDBs, ReturnedFinalConfig, SubAppID, RawDBConfigMapping, AppID, ViewID, RawSubAppConfig} from "../configHandler/zodConfigTypes";
 import PageHandler from "../pages/PageHandler";
 import {DBConfig, DBIdentifier} from "../types/config";
-import {getRecordEntries, nullGuard} from "../utils";
+import {getRecordEntries, nullGuard, runningInJest} from "../utils";
 
 export default class AppConfig {
     private constructor(
@@ -34,7 +34,22 @@ export default class AppConfig {
         const pageHandler = PageHandler.fromFinalConfig(rfc, appID);
         const rawAppConfig = rfc.apps[appID]!;
         const allConfigs = rawAppConfig.configs;
-        const subAppID = subAppIDOverride ?? rawAppConfig.configs.appConfig.config.defaultSubApp;
+
+        // TODO: unit test this logic
+        const {defaultSubApp, subApps} = rawAppConfig.configs.appConfig.config;
+        let subAppID = defaultSubApp;
+        if (subAppIDOverride !== undefined && subApps !== undefined) {
+            if (subAppIDOverride in subApps) {
+                subAppID = subAppIDOverride;
+            } else {
+                if (!runningInJest()) {
+                    const subAppList = Object.keys(subApps).join(", ");
+                    console.error(`A subapp override was given ("${subAppIDOverride}"), but it was not found in the subapps for this app: (app: "${appID}", subapps: (${subAppList}))`);
+                    console.error(`Using default subapp: "${defaultSubApp}"`);
+                }
+            }
+        }
+
         const dbConfigHandler = new DBConfigHandler(allConfigs.dbConfig.config, subAppID);
         return new AppConfig(rfc, pageHandler, dbConfigHandler, appID, subAppID);
     }

@@ -20,6 +20,11 @@ import type {DBConfig, DBIdentifier} from "./types/config";
 import type {SearchContext} from "./SearchValidityManager";
 import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 
+// TODO(urgent): move to webpack from current method
+// TODO(urgent): add an autoplay/pause button for search, to make things better on slower machines
+// TODO(urgent): add a timeout to save current query to history (200 ms, something like that)
+// TODO(urgent): add env variable for default subapp?
+// TODO(urgent): add view of currently-loaded dbs, and option to clear cache or pre-load other apps?
 // TODO(urgent): determine why a hard-reset is needed for app change, and why taigi.us is ignoring app
 // TODO(urgent): don't require final.json for tests to work? how? webpack? do split up apps, so that a change to a single yaml doesn't always trigger a rebuild of the single final json?
 // TODO(urgent): fix double-fetching of csvs in test mode (and check that it's not happening in prod)
@@ -64,7 +69,7 @@ import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 //             have generated CSVs include the dbname for each entry? or set it when pulling in from papaparse?
 // TODO(high): more evenly split the work between large/small databases, and possibly return results immediately and batch renders
 // TODO(high): implement select bar
-// TODO(high): debug and address firefox flash of blankness during font load
+// TODO(high): debug and address firefox flash of blankness during font load (seems like best solution is to just download full font pack)
 // TODO(high): chase down error causing duplicate search entries
 // TODO(high): create side box for dbname/alttext/etc, differentiate it with vertical line?
 // TODO(high): better styling, fewer borders
@@ -132,6 +137,7 @@ import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 // TODO(low): take a nap
 // TODO(wishlist): config creation via a page (which has fields for the various input types based on zod shape, and has client-side validation of inputs (generate a tree, allow the user to populate with the correct values, constantly run zod on input and show errors hovered by the path from the error)
 // TODO(wishlist): keyboard shortcuts, esp for "highlight search"
+// TODO(wishlist): custom actions for particular results (how would these be defined? how could they be specified in configs?)
 // TODO(wishlist): google translate link
 // TODO(wishlist): non-javascript support?
 // TODO(wishlist): dark and light themes
@@ -139,6 +145,7 @@ import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 // TODO(wishlist): typing / sentence construction mode. clicking a sentence/word adds it to a list, and clicking on it in that list deletes it (or selects it for replacement?)
 // TODO(wishlist): "lite" version speaking out to server for searches (AbortController to help with cancelation)
 // TODO(later): use leafletjs to create a map aggregation mode
+// TODO(later): mailing list / forum
 // TODO(later): homepage
 // TODO(later): homepage WOTD
 // TODO(later): "show me random words"
@@ -159,6 +166,7 @@ import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 // TODO(later): setTimeout for search / intensive computation? (in case of infinite loops) (ensure warn on timeout)
 // TODO(later): create an app in example/, and have that be the default app
 // TODO(maybe): install a router library for handling e.g. playground
+// TODO(maybe): markdown home pages?
 // TODO(maybe): allow results to hint/override where particular columns should be displayed? or a way to query server/file per db?
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
