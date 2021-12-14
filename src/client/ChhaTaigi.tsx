@@ -20,6 +20,8 @@ import type {DBConfig, DBIdentifier} from "./types/config";
 import type {SearchContext} from "./SearchValidityManager";
 import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 
+// TODO(urgent): install react-select and use it to select apps and subapps
+// TODO(urgent): have zod do existence checks / warnings on CSVs: do they exist, are they smaller than 10MB
 // TODO(urgent): move to webpack from current method
 // TODO(urgent): add an autoplay/pause button for search, to make things better on slower machines
 // TODO(urgent): add a timeout to save current query to history (200 ms, something like that)
