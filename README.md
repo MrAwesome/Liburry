@@ -95,9 +95,16 @@ The client-side architecture obviously does not lend itself well to searching ve
 ### Configuration
 Add your app in the `src/config` folder (see `src/config/taigi.us` for an example).
 
-Set the name of the environment variable `REACT_APP_CHHA_APPNAME` to be the name of your directory in `src/config`:
+Set the name of the environment variable `REACT_APP_LIBURRY_BUILD_APPS` to be a comma-separated list of app IDs (the path, including slashes, of your directory in `src/config/apps`):
 ``` lang=sh
-export REACT_APP_CHHA_APPNAME=<your_app_name>
+# REQUIRED: Set the apps you will be using.
+export REACT_APP_LIBURRY_BUILD_APPS='taigi.us,test/simpletest'
+```
+
+The first app listed will be used as the default app, unless `REACT_APP_LIBURRY_DEFAULT_APP` is set.
+``` lang=sh
+# OPTIONAL: Explicitly name your default app.
+export REACT_APP_LIBURRY_DEFAULT_APP='test/simpletest'
 ```
 
 ### Testing locally

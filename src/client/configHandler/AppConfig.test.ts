@@ -39,4 +39,3 @@ test('load basic AppConfig with subapps', async () => {
 // TODO: test multiples of same app name
 // TODO: test non-existent appid on creation (should throw? or default to CHHA_APPNAME in .from?)
 // TODO: should AppConfig expose a way to change subapps? or should it always just be App + SubApp, and changes should be handled upstream? should there be a callback function on appconfig that notifies the main element when app or subapp has changed?
-// TODO: setup CHHA_APPNAMES, DEFAULT_CHHA_APPNAME, DEFAULT_CHHA_SUBAPPNAME, change all to LIBURRY

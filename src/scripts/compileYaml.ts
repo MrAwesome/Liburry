@@ -5,11 +5,12 @@
 import fs from 'fs';
 import {promisify} from 'util';
 import {ReturnedFinalConfig} from '../client/configHandler/zodConfigTypes';
-import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from '../client/constants';
+import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR, LIBURRY_BUILD_APPS} from '../client/constants';
 import {genPrecacheEntries, genWriteEnvFile, genWriteFinalConfig, getFilesToCache, loadFinalConfigForApps, makeEnvFileEntry} from './compileYamlLib';
 const mkdir = promisify(fs.mkdir);
 
-const CACHE_LINE_ENV_VARNAME = 'REACT_APP_CHHA_CACHE_FILES_JSON';
+// TODO: only precache the files for the default app
+export const CACHE_LINE_ENV_VARNAME = 'REACT_APP_CHHA_CACHE_FILES_JSON';
 
 (async function () {
     // TODO: abstract away, use webpack, etc
@@ -18,14 +19,13 @@ const CACHE_LINE_ENV_VARNAME = 'REACT_APP_CHHA_CACHE_FILES_JSON';
     }
 
     // TODO: write out a "build" config that lists all the apps built
-    // TODO(urgent): ensure appName is a valid directory name!
+    // TODO(urgent): ensure appName actually points to a directory?
     // [] write out appname as directory in generated
     // [] write out default config (where should it be?)
-    // [] disallow commas in appnames
     // go back to writing out the entire config, and still just fetch the one big config - it's not bad to fetch all configs for all apps, you just maybe don't have to pre-load every app's dbs (should you preload subapp dbs? how to decide?)
     // XXX XXX XXX
     console.warn("Using hardcoded list of appnames!")
-    const appIDs = ["taigi.us", "test/simpletest", "FreeDictTestEngAfr"];
+    const appIDs = LIBURRY_BUILD_APPS;
     const checkedFinalConfig: ReturnedFinalConfig = await loadFinalConfigForApps(appIDs);
 
     // This must be written before the env file, since we generate an md5sum of the json file for precaching

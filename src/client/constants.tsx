@@ -1,7 +1,55 @@
-// TODO: use zod to verify values from env vars
-export const REPO_LINK: string = "https://github.com/MrAwesome/Liburry";
-// [] make a comma-separated list if from env var
-export const CHHA_APPNAME: string = process.env.REACT_APP_CHHA_APPNAME || "taigi.us";
+import {z} from 'zod';
+import {token} from './configHandler/zodConfigTypes';
+
+const DEFAULT_FALLBACK_APP = "taigi.us";
+
+const appIDTok = token('APP_ID');
+const appIDTokArray = z.preprocess(
+    (envvar) => {
+        if (envvar === undefined) {
+            console.log(`Environment variable REACT_APP_LIBURRY_BUILD_APPS not set, assuming ${DEFAULT_FALLBACK_APP}`);
+            return DEFAULT_FALLBACK_APP;
+        } else {
+            return String(envvar).split(",");
+        }
+    },
+    z.array(token('APP_ID')).nonempty()
+);
+
+////////////////////////////////XXX REQUIRED XXX//////////////////////////////////////////////
+// env(REACT_APP_LIBURRY_BUILD_APPS)
+//   This single env variable is required at build time
+//   to indicate which apps should be built.
+//   It should be a comma-separated list of appIDs.
+//
+//  ex.:
+//    export REACT_APP_LIBURRY_BUILD_APPS="taigi.us,test/simpletest"
+////////////////////////////////XXX REQUIRED XXX//////////////////////////////////////////////
+export const LIBURRY_BUILD_APPS: [string, ...string[]] =
+ appIDTokArray.parse(process.env.REACT_APP_LIBURRY_BUILD_APPS);
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// env(REACT_APP_LIBURRY_DEFAULT_APP)
+//   Used to set the default app. If not provided,
+//   defaults to the first app in LIBURRY_BUILD_APPS.
+//
+// ex.:
+//    export REACT_APP_LIBURRY_DEFAULT_APP="taigi.us"
+//////////////////////////////////////////////////////////////////////////////////////////////
+export const LIBURRY_DEFAULT_APP: string =
+    appIDTok.parse(process.env.REACT_APP_LIBURRY_DEFAULT_APP || LIBURRY_BUILD_APPS[0]);
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// env(REACT_APP_REPO_LINK)
+//   Used to change the repository link displayed on the about page.
+//////////////////////////////////////////////////////////////////////////////////////////////
+export const REPO_LINK: string = process.env.REACT_APP_REPO_LINK || "https://github.com/MrAwesome/Liburry";
+
+
+/////////////////////////////////// INTERNAL ////////////////////////////////////////////////////
+// These env vars are used for advanced configuration of builds,
+// and most likely can be ignored by most users.
+//////////////////////////////////////////////////////////////////////////////////////////////
 // TODO: enforce that this must be an absolute path
 export const FINAL_CONFIG_LOCAL_DIR: string = process.env.REACT_APP_FINAL_CONFIG_LOCAL_DIR ||
     ((process.env.PUBLIC_URL ?? "") + "/generated/");

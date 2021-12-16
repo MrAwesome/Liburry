@@ -13,6 +13,7 @@ import {ExpirationPlugin} from 'workbox-expiration';
 import {precacheAndRoute, createHandlerBoundToURL} from 'workbox-precaching';
 import {registerRoute} from 'workbox-routing';
 import {StaleWhileRevalidate, CacheFirst} from 'workbox-strategies';
+import {CACHE_LINE_ENV_VARNAME} from '../scripts/compileYaml';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -23,7 +24,7 @@ clientsClaim();
 // This variable must be present somewhere in your service worker file,
 // even if you decide not to use precaching. See https://cra.link/PWA
 let precacheTargets = [...self.__WB_MANIFEST];
-const customTargetsJsonString = process.env.REACT_APP_CHHA_CACHE_FILES_JSON;
+const customTargetsJsonString = process.env[CACHE_LINE_ENV_VARNAME];
 if (customTargetsJsonString !== undefined) {
     try {
         const customTargets = JSON.parse(customTargetsJsonString);

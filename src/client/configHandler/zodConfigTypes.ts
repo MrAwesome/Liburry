@@ -21,6 +21,7 @@ type TokenMatcher = Readonly<[RegExp, string] | null>;
 type TokenList<T extends object> = { [key in keyof T]: TokenMatcher }
 const tlist = <O extends object>(o: TokenList<O>): TokenList<O> => o;
 export const tokenMatchers = tlist({
+    // NOTE: APP_ID could be more permissive, but absolutely must not contain commas.
     APP_ID: [FILENAME_AND_DIRECTORY_SAFE_REGEX, "App IDs must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
     DIALECT_ID: [BASIC_TOKEN_REGEX, "Dialect IDs must contain only ASCII letters, numbers, and underscores."],
     PAGE_ID: [BASIC_TOKEN_REGEX, "Page IDs must contain only ASCII letters, numbers, and underscores."],
@@ -85,7 +86,7 @@ function anyString(): z.ZodString {
     return z.string().min(1);
 }
 
-function token(tt: LiburryTokenTypes): z.ZodString {
+export function token(tt: LiburryTokenTypes): z.ZodString {
     return matchToken(tt);
 }
 

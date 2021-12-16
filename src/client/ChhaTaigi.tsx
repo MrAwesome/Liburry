@@ -14,7 +14,7 @@ import {MainDisplayAreaMode} from "./types/displayTypes";
 import {SearchBar} from "./components/SearchBar";
 import {runningInJest} from "./utils";
 import AppConfig from "./configHandler/AppConfig";
-import {CHHA_APPNAME} from "./constants";
+import {LIBURRY_DEFAULT_APP} from "./constants";
 
 import type {DBConfig, DBIdentifier} from "./types/config";
 import type {SearchContext} from "./SearchValidityManager";
@@ -243,9 +243,8 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         const options = this.props.mockOptions ?? this.qs.parse();
 
         // State initialization
-        // TODO: decide how CHHA_APPNAME should look
         // TODO: force reload, or unmount/remount, on app change?
-        this.appConfig = AppConfig.from(this.props.rfc, options.appID ?? CHHA_APPNAME, options.subAppID);
+        this.appConfig = AppConfig.from(this.props.rfc, options.appID ?? LIBURRY_DEFAULT_APP, options.subAppID);
 
         const initialDBLoadedMapping: [DBIdentifier, SingleDBLoadStatus][] =
             this.appConfig.dbConfigHandler.getAllEnabledDBConfigs().map((k: DBConfig) => [
