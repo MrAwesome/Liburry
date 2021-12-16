@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 
 import "./client/ChhaTaigi.css";
 
-import * as serviceWorkerRegistration from './client/serviceWorkerRegistration';
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import MuhErrorBoundary from "./client/errorHandling/MuhErrorBoundary";
 //import reportWebVitals from "./client/reportWebVitals";
 

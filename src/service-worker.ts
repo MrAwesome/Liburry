@@ -13,7 +13,7 @@ import {ExpirationPlugin} from 'workbox-expiration';
 import {precacheAndRoute, createHandlerBoundToURL} from 'workbox-precaching';
 import {registerRoute} from 'workbox-routing';
 import {StaleWhileRevalidate, CacheFirst} from 'workbox-strategies';
-import {CACHE_LINE_ENV_VARNAME} from '../scripts/compileYaml';
+import {CACHE_LINE_ENV_VARNAME} from './scripts/common';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -74,10 +74,7 @@ registerRoute(
     // Add in any other file extensions or routing criteria as needed.
     // TODO: check against google fonts? any other checks?
     // url.origin === self.location.origin &&
-    ({url}) => {
-        console.log("Fetching potential font: ", url.pathname);
-        return url.pathname.endsWith('.woff2');
-    },
+    ({url}) => url.pathname.endsWith('.woff2'),
     // Customize this strategy as needed, e.g., by changing to CacheFirst.
     new StaleWhileRevalidate({
         cacheName: 'fonts',

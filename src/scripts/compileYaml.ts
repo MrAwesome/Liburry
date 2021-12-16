@@ -6,11 +6,9 @@ import fs from 'fs';
 import {promisify} from 'util';
 import {ReturnedFinalConfig} from '../client/configHandler/zodConfigTypes';
 import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR, LIBURRY_BUILD_APPS} from '../client/constants';
+import {CACHE_LINE_ENV_VARNAME} from './common';
 import {genPrecacheEntries, genWriteEnvFile, genWriteFinalConfig, getFilesToCache, loadFinalConfigForApps, makeEnvFileEntry} from './compileYamlLib';
 const mkdir = promisify(fs.mkdir);
-
-// TODO: only precache the files for the default app
-export const CACHE_LINE_ENV_VARNAME = 'REACT_APP_CHHA_CACHE_FILES_JSON';
 
 (async function () {
     // TODO: abstract away, use webpack, etc
