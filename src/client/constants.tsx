@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import {token} from './configHandler/zodConfigTypes';
 
+// TODO: default to an app with help messages / docs?
 const DEFAULT_FALLBACK_APP = "taigi.us";
 
 const appIDTok = token('APP_ID');
@@ -8,7 +9,7 @@ const appIDTokArray = z.preprocess(
     (envvar) => {
         if (envvar === undefined) {
             console.log(`Environment variable REACT_APP_LIBURRY_BUILD_APPS not set, assuming ${DEFAULT_FALLBACK_APP}`);
-            return DEFAULT_FALLBACK_APP;
+            return [DEFAULT_FALLBACK_APP];
         } else {
             return String(envvar).split(",");
         }
