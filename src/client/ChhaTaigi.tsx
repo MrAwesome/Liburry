@@ -20,6 +20,7 @@ import type {DBConfig, DBIdentifier} from "./types/config";
 import type {SearchContext} from "./SearchValidityManager";
 import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 
+// TODO(urgent): debug service worker not working locally
 // TODO(urgent): install react-select and use it to select apps and subapps
 // TODO(urgent): have zod do existence checks / warnings on CSVs: do they exist, are they smaller than 10MB
 // TODO(urgent): move to webpack from current method
@@ -40,6 +41,7 @@ import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 // TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?). because all fonts aren't loaded, people without the correct fonts on their system *will not be able to see many characters* during dynamic loading
 // TODO(urgent): error messages for if offline and no cache
 // TODO(urgent): move dbs into sub-repository?
+// TODO(high): update web_accessible_resources in manifest.json
 // TODO(high): background color hex code available as an option for a db? or field? or language?
 // TODO(high): use CRACO or similar to allow for using webpack plugins
 // TODO(high): determine which fields to make searchable in in ~/Liburry/src/config/apps/taigi.us/db.yml

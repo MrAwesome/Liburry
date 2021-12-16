@@ -24,6 +24,8 @@ clientsClaim();
 // This variable must be present somewhere in your service worker file,
 // even if you decide not to use precaching. See https://cra.link/PWA
 let precacheTargets = [...self.__WB_MANIFEST];
+
+// TODO: remove dbs from this, as the extra complexity adds more harm than good
 const customTargetsJsonString = process.env[CACHE_LINE_ENV_VARNAME];
 if (customTargetsJsonString !== undefined) {
     try {
@@ -72,7 +74,10 @@ registerRoute(
     // Add in any other file extensions or routing criteria as needed.
     // TODO: check against google fonts? any other checks?
     // url.origin === self.location.origin &&
-    ({url}) => url.pathname.endsWith('.woff2'),
+    ({url}) => {
+        console.log("Fetching potential font: ", url.pathname);
+        return url.pathname.endsWith('.woff2');
+    },
     // Customize this strategy as needed, e.g., by changing to CacheFirst.
     new StaleWhileRevalidate({
         cacheName: 'fonts',
