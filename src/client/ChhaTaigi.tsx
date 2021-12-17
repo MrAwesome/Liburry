@@ -41,6 +41,7 @@ import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 // TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?). because all fonts aren't loaded, people without the correct fonts on their system *will not be able to see many characters* during dynamic loading
 // TODO(urgent): error messages for if offline and no cache
 // TODO(urgent): move dbs into sub-repository?
+// TODO(high): store fonts locally: https://usefulangle.com/post/74/javascript-dynamic-font-loading
 // TODO(high): update web_accessible_resources in manifest.json
 // TODO(high): background color hex code available as an option for a db? or field? or language?
 // TODO(high): use CRACO or similar to allow for using webpack plugins
@@ -143,6 +144,7 @@ import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 // TODO(wishlist): keyboard shortcuts, esp for "highlight search"
 // TODO(wishlist): custom actions for particular results (how would these be defined? how could they be specified in configs?)
 // TODO(wishlist): google translate link
+// TODO(wishlist): real download progress: https://usefulangle.com/post/74/javascript-dynamic-font-loading
 // TODO(wishlist): non-javascript support?
 // TODO(wishlist): dark and light themes
 // TODO(wishlist): engaging buttons - random words, random search, etc
@@ -354,11 +356,17 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             }
         }, 1);
 
-        // TODO: determine where this should live, and allow it to be configured via env var
-        WebFont.load({
-            google: {
-                families: ['Noto Sans TC:400,400i,700&display=swap'],
-            }
+        // TODO: add fields for these to YAML configs, to allow apps to specify their own fonts (be sure to force /fonts/ prefix)
+        const fontpairs: [string, string, FontFaceDescriptors?][] = [
+            ['Noto Sans TC', '/fonts/NotoSansTC-Regular.woff2'],
+            ['Noto Sans TC', '/fonts/NotoSansTC-Bold.woff2', {weight: "700"}],
+        ];
+
+        const fonts = fontpairs.map(([family, url, desc]) => new FontFace(family, `url(${url})`, {...desc, display: "swap"}));
+        fonts.forEach((font) => {
+            font.load().then(function(loaded_face) {
+                document.fonts.add(loaded_face);
+            });
         });
     }
 
