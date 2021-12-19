@@ -41,7 +41,7 @@ import {getFontLoader} from "./fonts/FontLoader";
 // TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?). because all fonts aren't loaded, people without the correct fonts on their system *will not be able to see many characters* during dynamic loading
 // TODO(urgent): error messages for if offline and no cache
 // TODO(urgent): move dbs into sub-repository?
-// TODO(high): store fonts locally: https://usefulangle.com/post/74/javascript-dynamic-font-loading
+// TODO(high): modify font loader to actually change body (or otherwise?) to use those fonts
 // TODO(high): update web_accessible_resources in manifest.json
 // TODO(high): background color hex code available as an option for a db? or field? or language?
 // TODO(high): use CRACO or similar to allow for using webpack plugins
