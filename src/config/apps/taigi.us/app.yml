@@ -26,3 +26,16 @@ subApps:
   all_kip:
     displayName: "All DBS / 所有數據庫 (Kàu-io̍k-pōo)"
     blacklistDialectsRegex: poj
+
+# NOTE: font sets per subapp can be implemented, but it's likely that per-app is more than sufficient for most use cases
+fonts:
+  -
+    type: "custom"
+    family: "Noto Sans TC"
+    localUrl: "/fonts/NotoSansTC-Regular.woff2"
+  -
+    type: "custom"
+    family: "Noto Sans TC"
+    localUrl: "/fonts/NotoSansTC-Bold.woff2"
+    descriptors:
+      weight: "700"

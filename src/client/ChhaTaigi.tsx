@@ -5,7 +5,6 @@ import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import QueryStringHandler from "./QueryStringHandler";
 import SearchController from "./SearchController";
 import SearchResultsHolder from "./SearchResultsHolder";
-import WebFont from "webfontloader";
 
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {AllDBLoadStats, AnnotatedPerDictResults, LoadedDBsMap, SingleDBLoadStatus} from "./types/dbTypes";
@@ -19,6 +18,7 @@ import {LIBURRY_DEFAULT_APP} from "./constants";
 import type {DBConfig, DBIdentifier} from "./types/config";
 import type {SearchContext} from "./SearchValidityManager";
 import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
+import {getFontLoader} from "./fonts/FontLoader";
 
 // TODO(urgent): debug service worker not working locally
 // TODO(urgent): install react-select and use it to select apps and subapps
@@ -74,7 +74,6 @@ import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 //             have generated CSVs include the dbname for each entry? or set it when pulling in from papaparse?
 // TODO(high): more evenly split the work between large/small databases, and possibly return results immediately and batch renders
 // TODO(high): implement select bar
-// TODO(high): debug and address firefox flash of blankness during font load (seems like best solution is to just download full font pack)
 // TODO(high): chase down error causing duplicate search entries
 // TODO(high): create side box for dbname/alttext/etc, differentiate it with vertical line?
 // TODO(high): better styling, fewer borders
@@ -83,7 +82,6 @@ import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
 // TODO(high): decide how to handle hoabun vs taibun, settings for display
 // TODO(high): show/search typing input
 // TODO(high): make fonts bigger across the board
-// TODO(high): asynchronous font loading: https://css-tricks.com/the-best-font-loading-strategies-and-how-to-execute-them/
 // TODO(high): let hyphens and spaces be interchangeable in search
 // TODO(high): determine why duplicate search results are sometimes returned (see "a" results for giku)
 // TODO(high): fix icon sizes/manifest: https://github.com/facebook/create-react-app/blob/master/packages/cra-template/template/public/manifest.json (both ico and icon)
@@ -351,24 +349,15 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             if (this.currentMountAttempt === savedMountAttempt) {
                 this.searchController.startWorkersAndListener(options.searcherType);
                 this.subscribeHash();
+                const fontLoader = getFontLoader(this.appConfig);
+                fontLoader.load();
             } else {
                 console.warn("Detected double-mount, not starting workers...");
             }
         }, 1);
-
-        // TODO: add fields for these to YAML configs, to allow apps to specify their own fonts (be sure to force /fonts/ prefix)
-        const fontpairs: [string, string, FontFaceDescriptors?][] = [
-            ['Noto Sans TC', '/fonts/NotoSansTC-Regular.woff2'],
-            ['Noto Sans TC', '/fonts/NotoSansTC-Bold.woff2', {weight: "700"}],
-        ];
-
-        const fonts = fontpairs.map(([family, url, desc]) => new FontFace(family, `url(${url})`, {...desc, display: "swap"}));
-        fonts.forEach((font) => {
-            font.load().then(function(loaded_face) {
-                document.fonts.add(loaded_face);
-            });
-        });
     }
+
+
 
     componentWillUnmount() {
         this.currentMountAttempt += 1;

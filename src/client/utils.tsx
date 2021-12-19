@@ -11,8 +11,8 @@ export function runningInJest() {
     return process.env.JEST_WORKER_ID !== undefined;
 }
 
-export function nullGuard<T>(arr: (T | undefined | null)[]): T[] {
-    return arr.filter((x) => (x !== undefined && x !== null)) as T[];
+export function nullGuard<T>(obj: T | undefined | null): obj is T {
+    return !!obj;
 }
 
 export function makeCancelable<T>(promise: Promise<T>): CancelablePromise<T> {

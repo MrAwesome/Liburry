@@ -3,7 +3,8 @@
 import {RawDBList, RawEnabledDBs, ReturnedFinalConfig, SubAppID, RawDBConfigMapping, AppID, ViewID, RawSubAppConfig} from "../configHandler/zodConfigTypes";
 import PageHandler from "../pages/PageHandler";
 import {DBConfig, DBIdentifier} from "../types/config";
-import {getRecordEntries, nullGuard, runningInJest} from "../utils";
+import {getRecordEntries, getRecordValues, nullGuard, runningInJest} from "../utils";
+import {FontConfig} from "./zodFontConfigTypes";
 
 export default class AppConfig {
     private constructor(
@@ -65,6 +66,14 @@ export default class AppConfig {
         return undefined;
     }
 
+    // NOTE: Could get fonts from "default" here, if there's ever a reason for that.
+    getAllFontConfigs(): FontConfig[] {
+        return getRecordValues(this.rfc.apps)
+            .map((app) => app.configs.appConfig.config.fonts)
+            .filter(nullGuard).flat();
+
+    }
+
     // TODO: decide if RFC should return created objects (and compileyaml should write the raw version out after just verifying)
     //       if so, make regex fields there be refined into actual regex on parse (and/or just parse directly into an AppConfig, etc)
     getDialectBlacklistRegex(): RegExp | undefined {
@@ -77,8 +86,8 @@ export default class AppConfig {
 }
 
 class DBConfigHandler {
-//    private bySubApp?: Map<string, Set<string>>;
-//    private byGlobalList?: Set<string>;
+    //    private bySubApp?: Map<string, Set<string>>;
+    //    private byGlobalList?: Set<string>;
     private dbIDsToDBConfigs: Map<DBIdentifier, DBConfig>;
 
     private dbList: RawDBList;
@@ -99,24 +108,24 @@ class DBConfigHandler {
         this.enabledDBs = enabledDBs;
 
 
-//        if (enabledDBsBySubApp !== undefined) {
-//            this.bySubApp = new Map(getRecordEntries(enabledDBsBySubApp).map(([aid, dbs]) => ([aid, new Set(dbs)])));
-//        }
-//
-//        if (enabledDBs !== undefined) {
-//            this.byGlobalList = new Set(enabledDBs);
-//        }
+        //        if (enabledDBsBySubApp !== undefined) {
+        //            this.bySubApp = new Map(getRecordEntries(enabledDBsBySubApp).map(([aid, dbs]) => ([aid, new Set(dbs)])));
+        //        }
+        //
+        //        if (enabledDBs !== undefined) {
+        //            this.byGlobalList = new Set(enabledDBs);
+        //        }
 
         // EnabledDBs doesn't have views associated with it
 
         //  TODO: look for viewids here, and pass them in based on the current subapp
         this.dbIDsToDBConfigs = new Map(
             getRecordEntries(dbConfigs)
-            .map(([dbID, rawConfig]) => {
-                const viewID = getViewID(subAppID, dbID, enabledDBs);
-                return ([dbID, new DBConfig(dbID, rawConfig, viewID)]);
+                .map(([dbID, rawConfig]) => {
+                    const viewID = getViewID(subAppID, dbID, enabledDBs);
+                    return ([dbID, new DBConfig(dbID, rawConfig, viewID)]);
 
-            }));
+                }));
 
     }
 
@@ -154,8 +163,9 @@ class DBConfigHandler {
 
     getAllEnabledDBConfigs(): DBConfig[] {
         // NOTE: the bypass here is for testing, and will certainly disappear.
-        return nullGuard(this.getAllEnabledDBs()
-            .map((dbID) => this.dbIDsToDBConfigs.get(dbID)));
+        return this.getAllEnabledDBs()
+            .map((dbID) => this.dbIDsToDBConfigs.get(dbID))
+            .filter(nullGuard);
     }
 }
 

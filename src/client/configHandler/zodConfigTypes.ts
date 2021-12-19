@@ -7,6 +7,7 @@
 import {z} from "zod";
 import {DBIdentifier} from "../types/config";
 import {getRecordEntries} from "../utils";
+import {fontConfigSchema} from "./zodFontConfigTypes";
 
 // What counts as a valid "token" - app names, dialect names, etc all will be validated against this.
 // Deliberately restrictive and ASCII-centric, for simplicity of parsing/typing.
@@ -125,6 +126,7 @@ export const rawAppConfigSchema = strictObject({
     displayName: anyString().describe("The display name of the app, as it will be shown to users."),
     defaultSubApp: token("SUBAPP_ID").optional(),
     subApps: subAppsSchema,
+    fonts: z.array(fontConfigSchema).optional(),
 })
     .superRefine((appConfig, ctx) => {
         // NOTE: should path be added here
@@ -540,6 +542,7 @@ export const returnedFinalConfigSchema = strictObject({
     default: defaultTopLevelConfigurationSchema,
     apps: allAppsSchema,
 });
+// TODO: make a wrapper class to make operations on this easier once it's loaded
 export type ReturnedFinalConfig = z.infer<typeof returnedFinalConfigSchema>;
 
 const intermediateConfig = returnedFinalConfigSchema.deepPartial();
