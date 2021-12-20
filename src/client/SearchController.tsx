@@ -3,74 +3,88 @@ import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.wo
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import SearchWorkerManager from "./SearchWorkerManager";
 import SearchValidityManager, {SearchContext} from "./SearchValidityManager";
-import {AllDBLoadStats, AnnotatedPerDictResults, annotateRawResults, PerDictResultsRaw, SingleDBLoadStatus} from "./types/dbTypes";
+import {AllDBLoadStats, AnnotatedPerDictResults, annotateRawResults, LoadedDBsMap, PerDictResultsRaw, SingleDBLoadStatus} from "./types/dbTypes";
 import {SearcherType} from "./search";
 import {GetMainState, SetMainState} from "./ChhaTaigi";
-import {DBIdentifier} from "./types/config";
+import {DBConfig, DBIdentifier} from "./types/config";
 import type AppConfig from "./configHandler/AppConfig";
 
 // TODO: write tests for this, which ensure the correct messages are sent and callbacks are called
+
+interface SearchControllerArgs {
+    debug: boolean,
+    getStateTyped: GetMainState,
+    setStateTyped: SetMainState,
+    getNewestQuery: () => string,
+    appConfig: AppConfig,
+    updateDisplayForDBLoadEvent?: (dbStats: AllDBLoadStats | {didReload: true}) => void,
+    updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
+}
 
 export default class SearchController {
     private searchWorkerManager: SearchWorkerManager;
     private validity: SearchValidityManager;
     private console: StubConsole;
+    private loadedDBs: LoadedDBsMap;
 
     constructor(
-        debug: boolean,
-        private getStateTyped: GetMainState,
-        private setStateTyped: SetMainState,
-        private getNewestQuery: () => string,
-        //private getCurrentMountAttempt: () => number,
-        private appConfig: AppConfig,
-        private updateDisplayForDBLoadEvent?: (dbStats: AllDBLoadStats) => void,
-        private updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
+        private r: SearchControllerArgs,
     ) {
-        const expectedNumberOfDBs = Array.from(this.getStateTyped().loadedDBs.keys()).length;
-        this.console = getDebugConsole(debug);
+        const initialDBLoadedMapping: [DBIdentifier, SingleDBLoadStatus][] =
+            this.r.appConfig.dbConfigHandler.getAllEnabledDBConfigs().map((k: DBConfig) => [
+                k.getDBIdentifier(),
+                {
+                    isDownloaded: false,
+                    isParsed: false,
+                    isLoaded: false,
+                }
+            ]);
+
+        this.loadedDBs = new LoadedDBsMap(initialDBLoadedMapping);
+        const expectedNumberOfDBs = Array.from(this.loadedDBs.keys()).length;
+        this.console = getDebugConsole(this.r.debug);
         // NOTE: when changing subapp, you'll need to re-create searchworkermanager since it gets subapp through appconfig... either that, or change subapp in appconfig directly, and deal with the consequences of that. should this entire component be re-created?
-        this.searchWorkerManager = new SearchWorkerManager(appConfig, debug);
-        this.validity = new SearchValidityManager(debug, expectedNumberOfDBs);
+        this.searchWorkerManager = new SearchWorkerManager(this.r.appConfig, this.r.debug);
+        this.validity = new SearchValidityManager(this.r.debug, expectedNumberOfDBs);
 
         // Callbacks for the search controller to use to communicate changes back to the main component.
         this.addResultsCallback = this.addResultsCallback.bind(this);
+        this.clearResultsCallback = this.clearResultsCallback.bind(this);
         this.dbLoadStateUpdateCallback = this.dbLoadStateUpdateCallback.bind(this);
         this.getCurrentQueryCallback = this.getCurrentQueryCallback.bind(this);
         this.checkIfAllDBLoadedCallback = this.checkIfAllDBLoadedCallback.bind(this);
-        this.clearResultsCallback = this.clearResultsCallback.bind(this);
 
         this.search = this.search.bind(this);
         this.searchWorkerReplyHandler = this.searchWorkerReplyHandler.bind(this);
         this.startWorkersAndListener = this.startWorkersAndListener.bind(this);
+
     }
 
     async addResultsCallback(rawResults: PerDictResultsRaw) {
         // NOTE: this is where results are annotated with metadata about each column.
         //       if this becomes computationally significant, the work can be moved
         //       to its own thread (as can the entire controller, for that matter)
-        const resultsRaw = annotateRawResults(rawResults, this.appConfig);
+        const resultsRaw = annotateRawResults(rawResults, this.r.appConfig);
         const results = new AnnotatedPerDictResults(resultsRaw);
 
-        this.setStateTyped((state) => state.resultsHolder.addResults(results));
-    }
-
-    async dbLoadStateUpdateCallback(dbIdentifier: DBIdentifier, stateDelta: Partial<SingleDBLoadStatus>) {
-        this.setStateTyped((state) => {
-            state.loadedDBs.setLoadState(dbIdentifier, stateDelta);
-            this.updateDisplayForDBLoadEvent?.(state.loadedDBs.getLoadStats());
-        });
+        this.r.setStateTyped((state) => state.resultsHolder.addResults(results));
     }
 
     async clearResultsCallback() {
-        this.setStateTyped((state) => state.resultsHolder.clear());
+        this.r.setStateTyped((state) => state.resultsHolder.clear());
+    }
+
+    async dbLoadStateUpdateCallback(dbIdentifier: DBIdentifier, stateDelta: Partial<SingleDBLoadStatus>) {
+        this.loadedDBs.setLoadState(dbIdentifier, stateDelta);
+        this.r.updateDisplayForDBLoadEvent?.(this.loadedDBs.getLoadStats());
     }
 
     checkIfAllDBLoadedCallback(): boolean {
-        return Array.from(this.getStateTyped().loadedDBs.values()).every(x => x);
+        return Array.from(this.loadedDBs.values()).every(x => x);
     }
 
     getCurrentQueryCallback(): string {
-        return this.getNewestQuery();
+        return this.r.getNewestQuery();
     }
 
     async startWorkersAndListener(searcherType: SearcherType) {
@@ -78,6 +92,7 @@ export default class SearchController {
     }
 
     async cleanup() {
+        this.clearResultsCallback();
         this.searchWorkerManager.stopAll();
     }
 
@@ -91,13 +106,13 @@ export default class SearchController {
         if (query === "") {
             this.searchWorkerManager.cancelAllCurrent();
             this.clearResultsCallback();
-            this.updateDisplayForSearchEvent?.(null);
+            this.r.updateDisplayForSearchEvent?.(null);
         } else {
             const activeDBs = this.searchWorkerManager.getIdentifiersForAllActiveDBs();
             this.validity.startSearches(searchID, query, activeDBs);
             this.searchWorkerManager.searchAll(query, searchID);
             this.validity.bump();
-            this.updateDisplayForSearchEvent?.(searchContext);
+            this.r.updateDisplayForSearchEvent?.(searchContext);
         }
     }
 
@@ -110,7 +125,7 @@ export default class SearchController {
 
                 const wasInvalidated = this.validity.isInvalidated(searchID);
                 if (!wasInvalidated) {
-                    this.updateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
+                    this.r.updateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
                 }
             }
                 break;
@@ -121,7 +136,7 @@ export default class SearchController {
                 if (!wasInvalidated) {
                     this.addResultsCallback(results);
                     this.validity.markSearchCompleted(dbIdentifier, searchID);
-                    this.updateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
+                    this.r.updateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
                 }
             }
                 break;
@@ -139,7 +154,7 @@ export default class SearchController {
                         console.error(msg + "Ran out of retries!");
                     }
 
-                    this.updateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
+                    this.r.updateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
                 } else {
                     this.console.log("Requested to retry an invalidated search: ", message.payload);
                 }

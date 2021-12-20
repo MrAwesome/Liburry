@@ -7,7 +7,7 @@ import SearchController from "./SearchController";
 import SearchResultsHolder from "./SearchResultsHolder";
 
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import {AllDBLoadStats, AnnotatedPerDictResults, LoadedDBsMap, SingleDBLoadStatus} from "./types/dbTypes";
+import {AllDBLoadStats, AnnotatedPerDictResults} from "./types/dbTypes";
 import {CombinedPageElement} from "./pages/Page";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {SearchBar} from "./components/SearchBar";
@@ -15,10 +15,10 @@ import {runningInJest} from "./utils";
 import AppConfig from "./configHandler/AppConfig";
 import {LIBURRY_DEFAULT_APP} from "./constants";
 
-import type {DBConfig, DBIdentifier} from "./types/config";
 import type {SearchContext} from "./SearchValidityManager";
-import type {PageID, ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
+import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
 import {getFontLoader} from "./fonts/FontLoader";
+import AppSelector from "./AppSelector";
 
 // TODO(urgent): debug service worker not working locally
 // TODO(urgent): install react-select and use it to select apps and subapps
@@ -215,14 +215,13 @@ export interface ChhaTaigiProps {
     // TODO: always annotate results with the current displaytype's info (one re-search when you change displaytype is well worth being able to calculate before render time (preferably in another thread))
     mockOptions?: OptionsChangeableByUser,
     mockResults?: AnnotatedPerDictResults,
-    updateDisplayForDBLoadEvent?: (dbStatus: AllDBLoadStats) => void,
+    updateDisplayForDBLoadEvent?: (dbStatus: AllDBLoadStats | {didReload: true}) => void,
     updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
 };
 
 export interface ChhaTaigiState {
     options: OptionsChangeableByUser,
     resultsHolder: SearchResultsHolder,
-    loadedDBs: LoadedDBsMap,
 }
 
 export type GetMainState = () => ChhaTaigiState;
@@ -237,7 +236,9 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     newestQuery: string;
     appConfig: AppConfig;
 
-    searchController: SearchController;
+    // This should always be set, but TypeScript isn't quite smart enough to know
+    // that startSearchController sets it for us
+    searchController: SearchController | undefined;
 
     constructor(props: ChhaTaigiProps) {
         super(props);
@@ -248,19 +249,8 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         // TODO: force reload, or unmount/remount, on app change?
         this.appConfig = AppConfig.from(this.props.rfc, options.appID ?? LIBURRY_DEFAULT_APP, options.subAppID);
 
-        const initialDBLoadedMapping: [DBIdentifier, SingleDBLoadStatus][] =
-            this.appConfig.dbConfigHandler.getAllEnabledDBConfigs().map((k: DBConfig) => [
-                k.getDBIdentifier(),
-                {
-                    isDownloaded: false,
-                    isParsed: false,
-                    isLoaded: false,
-                }
-            ]);
-
         this.state = {
             options,
-            loadedDBs: new LoadedDBsMap(initialDBLoadedMapping),
             resultsHolder: new SearchResultsHolder(),
         };
 
@@ -271,11 +261,14 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.searchBar = React.createRef();
 
         // Bind functions
+        this.getAppSelector = this.getAppSelector.bind(this);
         this.getCurrentMountAttempt = this.getCurrentMountAttempt.bind(this);
         this.getEntryComponents = this.getEntryComponents.bind(this);
         this.getNewestQuery = this.getNewestQuery.bind(this);
         this.getStateTyped = this.getStateTyped.bind(this);
         this.hashChange = this.hashChange.bind(this);
+        this.handleAppChange = this.handleAppChange.bind(this);
+        this.handleSubAppChange = this.handleSubAppChange.bind(this);
         this.loadPage = this.loadPage.bind(this);
         this.goHome = this.goHome.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
@@ -283,23 +276,33 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.saveNewestQuery = this.saveNewestQuery.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
         this.setStateTyped = this.setStateTyped.bind(this);
+        this.startSearchController = this.startSearchController.bind(this);
         this.subscribeHash = this.subscribeHash.bind(this);
         this.unsubscribeHash = this.unsubscribeHash.bind(this);
         this.updateSearchBar = this.updateSearchBar.bind(this);
 
-        // Start the search controller, and allow it to send/receive changes to the state of this element
-        this.searchController = new SearchController(
-            this.state.options.debug,
-            this.getStateTyped,
-            this.setStateTyped,
-            this.getNewestQuery,
-            this.appConfig,
-            this.props.updateDisplayForDBLoadEvent,
-            this.props.updateDisplayForSearchEvent,
-        );
+        this.startSearchController();
 
         // Allow for overriding results from Jest.
         this.overrideResultsForTests();
+    }
+
+    startSearchController() {
+        const {getStateTyped, setStateTyped, getNewestQuery, appConfig} = this;
+        const {updateDisplayForDBLoadEvent, updateDisplayForSearchEvent} = this.props;
+        const {debug} = this.state.options;
+
+        this.searchController = new SearchController({
+            debug,
+            getStateTyped,
+            setStateTyped,
+            getNewestQuery,
+            appConfig,
+            updateDisplayForDBLoadEvent,
+            updateDisplayForSearchEvent,
+        });
+
+        return this.searchController;
     }
 
     getNewestQuery() {
@@ -347,7 +350,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         // (prevents double-loading DBs on localhost)
         protecc(() => {
             if (this.currentMountAttempt === savedMountAttempt) {
-                this.searchController.startWorkersAndListener(options.searcherType);
+                this.searchController?.startWorkersAndListener(options.searcherType);
                 this.subscribeHash();
                 const fontLoader = getFontLoader(this.appConfig);
                 fontLoader.load();
@@ -357,12 +360,10 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         }, 1);
     }
 
-
-
     componentWillUnmount() {
         this.currentMountAttempt += 1;
         this.unsubscribeHash();
-        this.searchController.cleanup();
+        this.searchController?.cleanup();
     }
 
     // These two are their own functions to allow visibility from Jest
@@ -388,6 +389,33 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.setStateTyped({options: newOptions});
     }
 
+    async restartSearchController() {
+        this.props.updateDisplayForDBLoadEvent?.({didReload: true});
+        this.props.updateDisplayForSearchEvent?.(null);
+        this.searchController?.cleanup()
+            .then(this.startSearchController)
+            .then((sc) => sc.startWorkersAndListener(this.state.options.searcherType));
+    }
+
+    // TODO: either just reset everything (which will lose queries)
+    //       or specifically restart SearchController (move loadeddbs into searchcontroller?)
+    handleAppChange(appID: AppID) {
+        this.appConfig = AppConfig.from(this.props.rfc, appID, undefined);
+        this.restartSearchController();
+        this.qs.setApp(appID);
+        if (this.appConfig.subAppID !== undefined) {
+            this.qs.setSubApp(this.appConfig.subAppID);
+        } else {
+            this.qs.clearSubApp();
+        }
+    }
+
+    handleSubAppChange(subAppID: SubAppID) {
+        this.appConfig = AppConfig.from(this.props.rfc, this.appConfig.appID, subAppID);
+        this.restartSearchController();
+        this.qs.setSubApp(subAppID);
+    }
+
     setMode(mode: MainDisplayAreaMode) {
         if (mode !== MainDisplayAreaMode.PAGE) {
             this.clearPage();
@@ -411,11 +439,16 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     searchQuery(query: string) {
-        this.searchController.search(query);
+        this.searchController?.search(query);
         this.setNewestQuery(query);
 
         this.qs.updateQueryWithoutHistoryChange(query);
-        this.setMode(MainDisplayAreaMode.SEARCH);
+
+        this.setMode(
+            query ?
+                MainDisplayAreaMode.SEARCH :
+                MainDisplayAreaMode.DEFAULT);
+
     }
 
     getEntryComponents(): JSX.Element {
@@ -433,6 +466,16 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         return <>{entryContainers}</>;
     }
 
+    getAppSelector() {
+        return <AppSelector
+            rfc={this.props.rfc}
+            currentAppID={this.appConfig.appID}
+            currentSubAppID={this.appConfig.subAppID}
+            handleAppChange={this.handleAppChange}
+            handleSubAppChange={this.handleSubAppChange}
+        />;
+    }
+
     mainDisplayArea(mode: MainDisplayAreaMode): JSX.Element {
         switch (mode) {
             case MainDisplayAreaMode.PAGE:
@@ -444,8 +487,9 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                     return this.mainDisplayArea(MainDisplayAreaMode.DEFAULT);
                 }
             case MainDisplayAreaMode.SEARCH:
-            case MainDisplayAreaMode.DEFAULT:
                 return this.getEntryComponents();
+            case MainDisplayAreaMode.DEFAULT:
+                return <></>;
         }
     }
 
@@ -462,12 +506,16 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     goHome() {
-        this.setMode(MainDisplayAreaMode.SEARCH);
+        this.setMode(this.getNewestQuery() ?
+            MainDisplayAreaMode.SEARCH :
+            MainDisplayAreaMode.DEFAULT)
     }
 
     render() {
         const {options} = this.getStateTyped();
 
+        // NOTE: it will be very nice to be able to change the apps while searches are typed, but you'll need to clear the existing search
+        //       each time app or subapp changes (otherwise, things stick around and change based on what you switch to)
         return (
             <div className="ChhaTaigi">
                 <SearchBar
@@ -478,6 +526,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                     loadPage={this.loadPage}
                     goHome={this.goHome}
                 />
+                {this.getAppSelector()}
                 {this.mainDisplayArea(options.mainMode)}
             </div>
         );

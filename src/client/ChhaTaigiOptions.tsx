@@ -3,7 +3,7 @@ import {SearcherType} from "./search";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
 export default class OptionsChangeableByUser {
-    mainMode: MainDisplayAreaMode = MainDisplayAreaMode.SEARCH;
+    mainMode: MainDisplayAreaMode = MainDisplayAreaMode.DEFAULT;
     searcherType: SearcherType = SearcherType.FUZZYSORT;
     debug: boolean = false;
     savedQuery: string = "";

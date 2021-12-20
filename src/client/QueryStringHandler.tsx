@@ -1,6 +1,6 @@
 import qs from "qs";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
-import {PageID} from "./configHandler/zodConfigTypes";
+import {AppID, PageID, SubAppID} from "./configHandler/zodConfigTypes";
 import {SearcherType} from "./search";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
@@ -55,6 +55,18 @@ export default class QueryStringParser {
 
     setMode(mode: MainDisplayAreaMode) {
         this.update(MODE, mode);
+    }
+
+    setApp(appID: AppID) {
+        this.update(APP, appID);
+    }
+
+    setSubApp(subAppID: SubAppID) {
+        this.update(SUBAPP, subAppID);
+    }
+
+    clearSubApp() {
+        this.update(SUBAPP, null);
     }
 
     setPage(page: PageID) {

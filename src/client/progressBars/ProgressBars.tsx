@@ -71,7 +71,16 @@ export class ProgressHandler {
 
     // NOTE: this should be generalized (each DB having its own display area?) such that
     //       new display events don't need code changes here
-    updateDisplayForDBLoadEvent(dbStats: AllDBLoadStats) {
+    updateDisplayForDBLoadEvent(dbStats: AllDBLoadStats | {didReload: true}) {
+        // NOTE: this should maybe be another function, or something more generic
+        if ("didReload" in dbStats) {
+            this.progress.dbDownload = 0;
+            this.progress.dbParsed = 0;
+            this.progress.dbLoad = 0;
+            this.shouldShow.dbLoad = true;
+            this.updateDisplay();
+            return;
+        }
         const {numDownloaded, numParsed, numLoaded, numDBs} = dbStats;
 
         const percentDownloaded = (numDownloaded / numDBs) || 0;
@@ -93,6 +102,7 @@ export class ProgressHandler {
 
     updateDisplayForSearchEvent(searchContext: SearchContext | null) {
         if (searchContext === null) {
+            this.progress.search = 0;
             this.shouldShow.search = false;
             this.updateDisplay();
             return;

@@ -21,10 +21,10 @@ subApps:
     displayName: "漢字 ↔ Kàu-io̍k-pōo"
     blacklistDialectsRegex: poj
   all_poj:
-    displayName: "All DBS / 所有數據庫 (Pe̍h-ōe-jī)"
+    displayName: "All DBs / 所有數據庫 (Pe̍h-ōe-jī)"
     blacklistDialectsRegex: kip
   all_kip:
-    displayName: "All DBS / 所有數據庫 (Kàu-io̍k-pōo)"
+    displayName: "All DBs / 所有數據庫 (Kàu-io̍k-pōo)"
     blacklistDialectsRegex: poj
 
 # NOTE: font sets per subapp can be implemented, but it's likely that per-app is more than sufficient for most use cases
