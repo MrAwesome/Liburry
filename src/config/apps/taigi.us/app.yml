@@ -28,6 +28,7 @@ subApps:
     blacklistDialectsRegex: poj
 
 # NOTE: font sets per subapp can be implemented, but it's likely that per-app is more than sufficient for most use cases
+# NOTE: font families listed here are applied globally, in the order they are first seen.
 fonts:
   -
     type: "custom"
@@ -39,3 +40,6 @@ fonts:
     localUrl: "/fonts/NotoSansTC-Bold.woff2"
     descriptors:
       weight: "700"
+  -
+    type: "system"
+    family: "sans-serif"

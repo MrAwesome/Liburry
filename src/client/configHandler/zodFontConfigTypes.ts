@@ -22,16 +22,20 @@ const fontFaceDescriptorsSchema = fontFaceDescriptorsSchemaMatchesUpstream.exten
     display: z.string().default("swap"),
 });
 
-const fontConfigTypeSchema = z.enum(["custom"]);
-
 const customFontConfigSchema = z.object({
-    type: fontConfigTypeSchema,
+    type: z.literal("custom"),
     family: z.string().nonempty(),
     localUrl: z.string().nonempty(), // TODO: verify starts with /fonts/
     descriptors: fontFaceDescriptorsSchema.default({display: "swap"}),
 });
 export type CustomFontConfig = z.infer<typeof customFontConfigSchema>;
 
+const systemFontConfigSchema = z.object({
+    type: z.literal("system"),
+    family: z.string().nonempty(),
+});
+export type SystemFontConfig = z.infer<typeof systemFontConfigSchema>;
+
 // NOTE: when more config types are added, this can be z.union([blah, blah])
-export const fontConfigSchema = customFontConfigSchema;
+export const fontConfigSchema = z.union([customFontConfigSchema, systemFontConfigSchema]);
 export type FontConfig = z.infer<typeof fontConfigSchema>;
