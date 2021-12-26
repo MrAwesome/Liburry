@@ -20,9 +20,7 @@ import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler
 import {getFontLoader} from "./fonts/FontLoader";
 import AppSelector from "./AppSelector";
 
-// TODO(urgent): debug service worker not working locally
-// TODO(urgent): install react-select and use it to select apps and subapps
-// TODO(urgent): have zod do existence checks / warnings on CSVs: do they exist, are they smaller than 10MB
+// TODO(next): make contains/includes search (use index and place mark) (check perf of index v. regex etc)
 // TODO(urgent): move to webpack from current method
 // TODO(urgent): add an autoplay/pause button for search, to make things better on slower machines
 // TODO(urgent): add a timeout to save current query to history (200 ms, something like that)
@@ -41,7 +39,9 @@ import AppSelector from "./AppSelector";
 // TODO(urgent): more consistent caching/loading of fonts (host locally? how will that affect hosting bandwidth?). because all fonts aren't loaded, people without the correct fonts on their system *will not be able to see many characters* during dynamic loading
 // TODO(urgent): error messages for if offline and no cache
 // TODO(urgent): move dbs into sub-repository?
-// TODO(high): modify font loader to actually change body (or otherwise?) to use those fonts
+// TODO(urgent): have zod do existence checks / warnings on CSVs: do they exist, are they smaller than 10MB
+// TODO(urgent): debug service worker not working locally (is this still happening?)
+// TODO(high): mag glass clickable menu. affordances for whether or not a searcher is online or offline. if online, aff. of whether it is available, if offline, aff. of whether it is cached/ready
 // TODO(high): update web_accessible_resources in manifest.json
 // TODO(high): background color hex code available as an option for a db? or field? or language?
 // TODO(high): use CRACO or similar to allow for using webpack plugins
@@ -175,6 +175,12 @@ import AppSelector from "./AppSelector";
 // TODO(other): reclassify maryknoll sentences as examples? or just as not-words?
 // TODO(other): reclassify maryknoll alternates, possibly cross-reference most taibun from others into it?
 // TODO(think): is there a privacy-safe way to log exceptions? maybe ask hacker news, or do some searching?
+//
+// Posts:
+// [] Forumosa
+// [] Taigi Discord
+// [] /r/ohtaigi
+// [] HN
 //
 // https://twblg.dict.edu.tw/holodict_new/mobile/result_detail.jsp?n_no=11235&curpage=1&sample=%E9%A4%85&radiobutton=1&querytarget=1&limit=50&pagenum=1&rowcount=25
 //
