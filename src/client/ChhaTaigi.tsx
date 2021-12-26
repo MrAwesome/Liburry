@@ -251,8 +251,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         const options = this.props.mockOptions ?? this.qs.parse();
 
-        // State initialization
-        // TODO: force reload, or unmount/remount, on app change?
         this.appConfig = AppConfig.from(this.props.rfc, options.appID ?? LIBURRY_DEFAULT_APP, options.subAppID);
 
         this.state = {
@@ -403,8 +401,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             .then((sc) => sc.startWorkersAndListener(this.state.options.searcherType));
     }
 
-    // TODO: either just reset everything (which will lose queries)
-    //       or specifically restart SearchController (move loadeddbs into searchcontroller?)
     handleAppChange(appID: AppID) {
         this.appConfig = AppConfig.from(this.props.rfc, appID, undefined);
         this.restartSearchController();
@@ -489,7 +485,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 if (pageID !== null) {
                     return <CombinedPageElement perAppPages={this.appConfig.pageHandler.getPagesForPageID(pageID)} />
                 } else {
-                    // TODO: make this point to whatever "home" ends up being
                     return this.mainDisplayArea(MainDisplayAreaMode.DEFAULT);
                 }
             case MainDisplayAreaMode.SEARCH:
@@ -536,7 +531,5 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 {this.mainDisplayArea(options.mainMode)}
             </div>
         );
-        // TODO: place a filler element inside SelectBar with the same height, at the bottom of the page
-        //{options.debug ? <SelectBar /> : null}
     }
 }
