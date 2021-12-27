@@ -1,7 +1,7 @@
 import type AppConfig from "../configHandler/AppConfig";
 import type {RawAllowedFieldClassifierTags} from "../configHandler/zodConfigTypes";
 import type {DialectID} from "../languages/dialect";
-import type {DBSearchRanking} from "../search";
+import type {SearcherType} from "../search/searchers/Searcher";
 import type {DBIdentifier} from "./config";
 import type {DataType, DisplayType} from "./displayTypes";
 
@@ -292,3 +292,10 @@ export interface SingleDBLoadStatus {
     isParsed: boolean,
     isLoaded: boolean,
 }
+
+// TODO: make a helper function to compare two search results, and use in SearchResultsHolder
+export interface DBSearchRanking {
+    searcherType: SearcherType;
+    score: number;
+}
+

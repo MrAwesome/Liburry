@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ChhaTaigi} from './ChhaTaigi';
 import { render } from '@testing-library/react';
-import SearchController from './SearchController';
+import SearchController from "./search/orchestration/SearchController";
 import {noop} from './utils';
 import {genRFC} from './ChhaTaigi.test';
 import OptionsChangeableByUser from './ChhaTaigiOptions';

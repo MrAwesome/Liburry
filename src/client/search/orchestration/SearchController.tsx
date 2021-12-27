@@ -1,13 +1,13 @@
 import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.worker";
 
-import getDebugConsole, {StubConsole} from "./getDebugConsole";
+import getDebugConsole, {StubConsole} from "../../getDebugConsole";
 import SearchWorkerManager from "./SearchWorkerManager";
 import SearchValidityManager, {SearchContext} from "./SearchValidityManager";
-import {AllDBLoadStats, AnnotatedPerDictResults, annotateRawResults, LoadedDBsMap, PerDictResultsRaw, SingleDBLoadStatus} from "./types/dbTypes";
-import {SearcherType} from "./search";
-import {GetMainState, SetMainState} from "./ChhaTaigi";
-import {DBConfig, DBIdentifier} from "./types/config";
-import type AppConfig from "./configHandler/AppConfig";
+import {AllDBLoadStats, AnnotatedPerDictResults, annotateRawResults, LoadedDBsMap, PerDictResultsRaw, SingleDBLoadStatus} from "../../types/dbTypes";
+import {SearcherType} from "../../search/searchers/Searcher";
+import {GetMainState, SetMainState} from "../../ChhaTaigi";
+import {DBConfig, DBIdentifier} from "../../types/config";
+import type AppConfig from "../../configHandler/AppConfig";
 
 // TODO: write tests for this, which ensure the correct messages are sent and callbacks are called
 

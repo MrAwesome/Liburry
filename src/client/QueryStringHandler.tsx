@@ -1,7 +1,7 @@
 import qs from "qs";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import {AppID, PageID, SubAppID} from "./configHandler/zodConfigTypes";
-import {SearcherType} from "./search";
+import {SearcherType} from "./search/searchers/Searcher";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
 // HACK to allow web worker loader to work:

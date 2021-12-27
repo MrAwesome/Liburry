@@ -1,5 +1,5 @@
 import {AppID, PageID, SubAppID} from "./configHandler/zodConfigTypes";
-import {SearcherType} from "./search";
+import {SearcherType} from "./search/searchers/Searcher";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
 export default class OptionsChangeableByUser {

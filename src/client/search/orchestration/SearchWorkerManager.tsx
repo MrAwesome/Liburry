@@ -2,11 +2,11 @@
 //import type Worker from "worker-loader!./search.worker";
 
 import {SearchWorkerCommandMessage, SearchWorkerCommandType, SearchWorkerResponseMessage} from "./search.worker";
-import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import {SearcherType} from "./search";
-import {runningInJest} from "./utils";
-import {DBIdentifier} from "./types/config";
-import type AppConfig from "./configHandler/AppConfig";
+import getDebugConsole, {StubConsole} from "../../getDebugConsole";
+import {SearcherType} from "../../search/searchers/Searcher";
+import {runningInJest} from "../../utils";
+import {DBIdentifier} from "../../types/config";
+import type AppConfig from "../../configHandler/AppConfig";
 
 export default class SearchWorkerManager {
     private searchWorkers: Map<DBIdentifier, Worker> = new Map();

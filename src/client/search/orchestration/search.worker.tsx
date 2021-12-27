@@ -1,10 +1,10 @@
-import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import type {PerDictResultsRaw, SingleDBLoadStatus} from "./types/dbTypes";
-import {getSearcherPreparer, OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "./search";
-import {DBConfig, DBIdentifier} from "./types/config";
+import getDebugConsole, {StubConsole} from "../../getDebugConsole";
+import type {PerDictResultsRaw, SingleDBLoadStatus} from "../../types/dbTypes";
+import {getSearcherPreparer, OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "../../search/searchers/Searcher";
+import {DBConfig, DBIdentifier} from "../../types/config";
 
 // NOTE: RawDBConfig is used here because we're passing between workers, and anything higher-level would lose its methods during serialization.
-import {RawDBConfig, ViewID} from "./configHandler/zodConfigTypes";
+import {RawDBConfig, ViewID} from "../../configHandler/zodConfigTypes";
 
 // TODO(wishlist): ensure that objects passed to/from the worker are simple objects (interface, not class)
 //                 and/or translate from simple objects to full classes (with methods) before/after message

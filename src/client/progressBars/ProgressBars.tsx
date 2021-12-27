@@ -1,5 +1,5 @@
 import * as React from "react";
-import {SearchContext} from "../SearchValidityManager";
+import {SearchContext} from "../search/orchestration/SearchValidityManager";
 import {AllDBLoadStats} from "../types/dbTypes";
 import "./style.css";
 

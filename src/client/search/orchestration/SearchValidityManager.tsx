@@ -1,7 +1,7 @@
-import getDebugConsole, {StubConsole} from "./getDebugConsole";
-import {RETRY_ATTEMPTS} from "./searchSettings";
-import {DBIdentifier} from "./types/config";
-import {mod} from "./utils";
+import getDebugConsole, {StubConsole} from "../../getDebugConsole";
+import {RETRY_ATTEMPTS} from "../../search/searchers/constants";
+import {DBIdentifier} from "../../types/config";
+import {mod} from "../../utils";
 
 export class SearchContext {
     query: string = "";

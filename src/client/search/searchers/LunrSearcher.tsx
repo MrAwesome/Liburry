@@ -1,14 +1,14 @@
-import type {RawDBRow, PerDictResultsRaw, SingleDBLoadStatus} from "../types/dbTypes";
+import type {DBSearchRanking, RawDBRow, PerDictResultsRaw, SingleDBLoadStatus} from "../../types/dbTypes";
 
-import {DISPLAY_RESULTS_LIMIT} from "../searchSettings";
-import getDebugConsole, {StubConsole} from "../getDebugConsole";
-import {DBSearchRanking, OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "../search";
-import {makeCancelable} from "../utils";
-import {getEntriesFromPreparedCSV} from "../common/csvUtils";
+import {DISPLAY_RESULTS_LIMIT} from "../../search/searchers/constants";
+import getDebugConsole, {StubConsole} from "../../getDebugConsole";
+import {OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "../../search/searchers/Searcher";
+import {makeCancelable} from "../../utils";
+import {getEntriesFromPreparedCSV} from "../../common/csvUtils";
 import {vanillaDBEntryToResult} from "./utils";
 
 import lunr from "lunr";
-import {DBConfig, DBIdentifier} from "../types/config";
+import {DBConfig, DBIdentifier} from "../../types/config";
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
 

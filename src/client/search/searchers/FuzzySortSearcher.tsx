@@ -1,14 +1,14 @@
 import fuzzysort from "fuzzysort";
 
-import {FuzzyKeysOptions, FuzzyPreparedDBEntry} from "../types/fuzzySortTypes";
-import {OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "../search";
-import {RawDBRow, SingleDBLoadStatus} from "../types/dbTypes";
-import getDebugConsole, {StubConsole} from "../getDebugConsole";
-import {getEntriesFromPreparedCSV} from "../common/csvUtils";
-import {makeCancelable} from "../utils";
-import {convertDBRowToFuzzySortPrepared, parseFuzzySortResultsForRender} from "../fuzzySortUtils";
-import {SEARCH_RESULTS_LIMIT} from "../searchSettings";
-import {DBConfig} from "../types/config";
+import {FuzzyKeysOptions, FuzzyPreparedDBEntry} from "../../types/fuzzySortTypes";
+import {OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "../../search/searchers/Searcher";
+import {RawDBRow, SingleDBLoadStatus} from "../../types/dbTypes";
+import getDebugConsole, {StubConsole} from "../../getDebugConsole";
+import {getEntriesFromPreparedCSV} from "../../common/csvUtils";
+import {makeCancelable} from "../../utils";
+import {convertDBRowToFuzzySortPrepared, parseFuzzySortResultsForRender} from "../../fuzzySortUtils";
+import {SEARCH_RESULTS_LIMIT} from "../../search/searchers/constants";
+import {DBConfig} from "../../types/config";
 
 // TODO: give slight preference for poj-unicode/poj-normalized in fuzzy settings, so that e.g. "iong" will show up first in a search for itself
 // TODO: handle hyphens vs spaces

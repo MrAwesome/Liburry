@@ -1,6 +1,5 @@
-import {DBSearchRanking} from "../search";
-import {DBIdentifier} from "../types/config";
-import {RawDBRow, getDBRowKeys, SearchResultEntryRaw} from "../types/dbTypes";
+import {DBIdentifier} from "../../types/config";
+import {DBSearchRanking, RawDBRow, getDBRowKeys, SearchResultEntryRaw} from "../../types/dbTypes";
 
 export function vanillaDBEntryToResult(
     dbIdentifier: DBIdentifier,

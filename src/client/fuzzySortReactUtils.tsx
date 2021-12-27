@@ -1,4 +1,4 @@
-import {MATCH_END, MATCH_START} from "./search/constants";
+import {MATCH_END, MATCH_START} from "./search/searchers/constants";
 
 function replaceAll(input: string, search: string, replace: string) { return input.split(search).join(replace); }
 

@@ -1,6 +1,6 @@
-import {typeGuard} from "./typeguard";
-import {DBIdentifier} from "./types/config";
-import {AnnotatedPerDictResults, AnnotatedSearchResultEntry} from "./types/dbTypes";
+import {typeGuard} from "../../typeguard";
+import {DBIdentifier} from "../../types/config";
+import {AnnotatedPerDictResults, AnnotatedSearchResultEntry} from "../../types/dbTypes";
 
 // NOTE: storing results per-dict is almost certainly not necessary anymore
 //       instead, this should use a worker-unique ID (which, for now, is the DB name)

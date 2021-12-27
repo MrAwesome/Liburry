@@ -3,8 +3,8 @@ import * as React from "react";
 import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import QueryStringHandler from "./QueryStringHandler";
-import SearchController from "./SearchController";
-import SearchResultsHolder from "./SearchResultsHolder";
+import SearchController from "./search/orchestration/SearchController";
+import SearchResultsHolder from "./search/orchestration/SearchResultsHolder";
 
 import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {AllDBLoadStats, AnnotatedPerDictResults} from "./types/dbTypes";
@@ -15,7 +15,7 @@ import {runningInJest} from "./utils";
 import AppConfig from "./configHandler/AppConfig";
 import {LIBURRY_DEFAULT_APP} from "./constants";
 
-import type {SearchContext} from "./SearchValidityManager";
+import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
 import {getFontLoader} from "./fonts/FontLoader";
 import AppSelector from "./AppSelector";

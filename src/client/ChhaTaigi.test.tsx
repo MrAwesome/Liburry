@@ -5,7 +5,7 @@ import OptionsChangeableByUser from './ChhaTaigiOptions';
 import * as React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import {noop} from './utils';
-import {DBSearchRanking, SearcherType} from './search';
+import {SearcherType} from './search/searchers/Searcher';
 import ConfigHandler from './configHandler/ConfigHandler';
 import {AnnotatedPerDictResults, annotateRawResults, PerDictResultsRaw} from './types/dbTypes';
 import AppConfig from './configHandler/AppConfig';
@@ -56,7 +56,7 @@ test('render single entry via override', async () => {
 
     const marked = `hoat-<mark>lu̍t</mark>`;
 
-    const dbSearchRanking = {searcherType: SearcherType.LUNR, score: -3} as DBSearchRanking;
+    const dbSearchRanking = {searcherType: SearcherType.LUNR, score: -3};
     let res1 = {
         key: `${dbIdentifier}-${rowID}`,
         rowID,
