@@ -87,7 +87,7 @@ function appSelectorHelper(options: SelectOption[], selected: SelectOption, onCh
     />
 }
 
-export default class AppSelector extends React.Component<ASProps, ASState> {
+export default class AppSelector extends React.PureComponent<ASProps, ASState> {
     constructor(props: ASProps) {
         super(props);
         this.handleAppChangeINTERNAL = this.handleAppChangeINTERNAL.bind(this);

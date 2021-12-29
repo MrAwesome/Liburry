@@ -76,12 +76,8 @@ export default class AppConfig {
 
     // TODO: decide if RFC should return created objects (and compileyaml should write the raw version out after just verifying)
     //       if so, make regex fields there be refined into actual regex on parse (and/or just parse directly into an AppConfig, etc)
-    getDialectBlacklistRegex(): RegExp | undefined {
-        const reggie = this.getRawSubAppConfig()?.blacklistDialectsRegex;
-        if (reggie !== undefined) {
-            return new RegExp(reggie, "g");
-        }
-        return undefined;
+    getDialectBlacklistRegex(): string | undefined {
+        return this.getRawSubAppConfig()?.blacklistDialectsRegex;
     }
 }
 

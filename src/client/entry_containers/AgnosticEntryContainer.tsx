@@ -16,7 +16,7 @@ import {area, AreaNode, LocationTreeHandler} from "./utils";
 type AECProps = {
     debug: boolean,
     entry: AnnotatedSearchResultEntry,
-    blacklistDialectsRegex?: RegExp,
+    blacklistDialectsRegex?: string,
 }
 
 type AECDisplayArea =
@@ -97,21 +97,19 @@ export default class AgnosticEntryContainer
         entry.getFields().forEach((field) => {
             const maybeDialect = field.getDialect();
             if (maybeDialect !== null && blacklistDialectsRegex !== undefined) {
-                    // XXX TODO: use actual dialects from chosen options. this is a temporary restraining order against KIP.
-                    // note KaisoehHanLoKip - it seems like you may need a "primary vocabulary" to be able to differentiate between various forms?
-                    // XXX TODO: decide if "KipDictDialects" is worth the trouble (some "ignore dialects" override field?)
+                // note KaisoehHanLoKip - it seems like you may need a "primary vocabulary" to be able to differentiate between various forms?
+                const reg = new RegExp(blacklistDialectsRegex, "g");
                 if ((maybeDialect as string).trimEnd !== undefined) {
                     const singleDialect = maybeDialect as string;
-                    if (singleDialect.match(blacklistDialectsRegex)) {
+                    if (singleDialect.match(reg)) {
                         return;
                     }
                 } else if ((maybeDialect as string[]).flatMap !== undefined) {
                     const dialects = maybeDialect as string[];
-                    if (dialects.some(d => d.match(blacklistDialectsRegex))) {
+                    if (dialects.some(d => d.match(reg))) {
                         return;
                     }
                 }
-                //if dialect?.contains("kip")
 
             }
             const maybeFieldType = field.getDataTypeForDisplayType("dictionary");

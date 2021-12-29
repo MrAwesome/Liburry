@@ -21,7 +21,9 @@ import {getFontLoader} from "./fonts/FontLoader";
 import AppSelector from "./AppSelector";
 
 // TODO(next): make contains/includes search (use index and place mark) (check perf of index v. regex etc)
+// TODO(urgent): debug recent performance hits
 // TODO(urgent): move to webpack from current method
+// TODO(urgent): debug empty entry: https://taigi.us/#m=SEARCH;q=%E6%93%94%E5%BF%83
 // TODO(urgent): add an autoplay/pause button for search, to make things better on slower machines
 // TODO(urgent): add a timeout to save current query to history (200 ms, something like that)
 // TODO(urgent): add env variable for default subapp?
