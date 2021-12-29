@@ -227,7 +227,6 @@ export class AnnotatedSearchResultEntry {
     }
 }
 
-// TODO: search for \<id\> - instead of hardcoding "id", use dbconfig.dbbbb.primaryKey
 export interface RawDBRow {
     [s: string]: string,
 }

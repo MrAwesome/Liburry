@@ -159,13 +159,13 @@ export class LunrSearcher implements Searcher {
             const dbSearchRanking = {
                 searcherType: SearcherType.LUNR,
                 score: lunrRes.score
-            } as DBSearchRanking;
+            };
             return vanillaDBEntryToResult(dbIdentifier, entry, dbSearchRanking, this.primaryKey);
         });
         this.console.timeEnd("lunr-getEntries-" + dbIdentifier);
         return {
             dbIdentifier,
             results: matchingEntries,
-        } as PerDictResultsRaw;
+        };
     }
 }

@@ -30,6 +30,10 @@ export function makeCancelable<T>(promise: Promise<T>): CancelablePromise<T> {
     return wrappedPromise as CancelablePromise<T>;
 }
 
+export function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // TODO: make this more generic for places where it's needed
 interface HasName {shortName: string}
 

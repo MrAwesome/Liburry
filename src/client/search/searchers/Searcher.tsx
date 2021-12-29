@@ -4,6 +4,8 @@ import {CancelablePromise} from "../../types/general";
 import {FuzzySortPreparer, FUZZY_SCORE_LOWER_THRESHOLD} from "./FuzzySortSearcher";
 //import {LunrPreparer} from "./search/searchers/LunrSearcher";
 import {DBConfig, DBIdentifier} from "../../types/config";
+import {SEARCH_RESULTS_LIMIT} from "./constants";
+import {IncludesPreparer} from "./IncludesSearcher";
 
 export abstract class SearcherPreparer {
     abstract prepare(): Promise<Searcher>;
@@ -16,7 +18,8 @@ export abstract class Searcher {
 
 export enum SearcherType {
     FUZZYSORT = "FUZZYSORT",
-    LUNR = "LUNR"
+    LUNR = "LUNR",
+    INCLUDES = "INCLUDES",
 }
 
 // TODO: store this information further away from this module, closer to where searchers are defined
@@ -29,6 +32,8 @@ export function getMaxScore(searcherType: SearcherType): number {
             throw new Error("Lunr is not currently implemented.");
             // TODO: some normalized value for this
             //return 25;
+        case SearcherType.INCLUDES:
+            return SEARCH_RESULTS_LIMIT + 1;
     }
 }
 
@@ -45,6 +50,8 @@ export function getSearcherPreparer(
             throw new Error("Lunr is not currently implemented.");
             // TODO: implement for lunr
             //return new LunrPreparer(dbConfig, sendLoadStateUpdate, debug);
+        case SearcherType.INCLUDES:
+            return new IncludesPreparer(dbConfig, sendLoadStateUpdate, debug, {});
     }
 }
 
