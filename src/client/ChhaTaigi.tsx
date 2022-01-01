@@ -358,6 +358,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                     const fontLoader = getFontLoader(this.appConfig);
                     fontLoader.load();
                 }
+                this.qs.anchor();
             } else {
                 console.warn("Detected double-mount, not starting workers...");
             }

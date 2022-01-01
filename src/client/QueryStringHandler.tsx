@@ -81,6 +81,16 @@ export default class QueryStringParser {
         this.update(PAGE, null);
     }
 
+    // Used to create a history entry on load, so that the back button will load
+    // the original state after typing.
+    anchor() {
+        if (window.history.length < 3) {
+            const parsed = this.parseInternal();
+            const newHashString = this.stringifyInternal(parsed);
+            window.history.pushState(parsed, '', "#" + newHashString);
+        }
+    }
+
     private parseInternal() {
         return qs.parse(this.getString(), QS_PARSE_OPTS);
     }
@@ -112,6 +122,7 @@ export default class QueryStringParser {
             const args: [Object, string, string] = [parsed, '', "#" + newHashString];
             const shouldSave = !(opts?.doNotModifyHistory);
             if (shouldSave) {
+                console.trace("PUSH STATE", args);
                 window.history.pushState(...args);
             } else {
                 window.history.replaceState(...args);
