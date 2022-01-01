@@ -4,6 +4,10 @@ import {AppID, PageID, SubAppID} from "./configHandler/zodConfigTypes";
 import {SearcherType} from "./search/searchers/Searcher";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 
+// TODO: fix double-back being necessary
+// TODO: allow for bundled updates
+// TODO: cache values for faster checking (check browser state?)
+
 // HACK to allow web worker loader to work:
 // https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/24#issuecomment-672853561
 (global as any).$RefreshReg$ = () => {};
@@ -54,7 +58,7 @@ export default class QueryStringParser {
     }
 
     setMode(mode: MainDisplayAreaMode) {
-        this.update(MODE, mode);
+        this.update(MODE, mode, {doNotModifyHistory: true});
     }
 
     setApp(appID: AppID) {
@@ -92,8 +96,9 @@ export default class QueryStringParser {
             doNotModifyHistory?: boolean
         }
     ) {
-        const shouldSave = !(opts?.doNotModifyHistory);
         const parsed = this.parseInternal();
+
+        // null for value is shorthand for "delete the field entirely".
         if (value === null) {
             delete parsed[field];
         } else {
@@ -105,6 +110,7 @@ export default class QueryStringParser {
             this.testString = newHashString;
         } else {
             const args: [Object, string, string] = [parsed, '', "#" + newHashString];
+            const shouldSave = !(opts?.doNotModifyHistory);
             if (shouldSave) {
                 window.history.pushState(...args);
             } else {

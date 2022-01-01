@@ -10,6 +10,7 @@ interface SearchBarProps {
     appConfig: AppConfig,
     searchQuery(query: string): void,
     saveNewestQuery(): void,
+    getNewestQuery(): string,
     loadPage: (pageID: PageID) => void,
     goHome: () => void,
 }
@@ -43,6 +44,11 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
     onChange(e: React.ChangeEvent<HTMLInputElement>) {
         const query = e.target.value;
         this.props.searchQuery(query);
+        setTimeout(async () => {
+            if (query === this.props.getNewestQuery()) {
+                this.props.saveNewestQuery();
+            }
+        }, 2000);
     }
 
     onSubmit(e: React.FormEvent) {

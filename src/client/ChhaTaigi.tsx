@@ -314,10 +314,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         return this.newestQuery;
     }
 
-    setNewestQuery(query: string) {
-        this.newestQuery = query;
-    }
-
     getCurrentMountAttempt() {
         return this.currentMountAttempt;
     }
@@ -423,7 +419,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     setMode(mode: MainDisplayAreaMode) {
-        if (mode !== MainDisplayAreaMode.PAGE) {
+        if (mode !== MainDisplayAreaMode.PAGE && this.state.options.pageID !== null) {
             this.clearPage();
         }
         this.setStateTyped((state) => ({options: {...state.options, mainMode: mode}}));
@@ -440,21 +436,25 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     // TODO: this should happen after a timeout when the user stops typing
     saveNewestQuery() {
         const query = this.newestQuery;
-        this.setStateTyped((state) => ({options: {...state.options, savedQuery: query}}));
-        this.qs.saveQuery(query);
+        if (this.state.options.savedQuery !== query) {
+            this.setStateTyped((state) => ({options: {...state.options, savedQuery: query}}));
+            this.qs.saveQuery(query);
+        }
     }
 
     searchQuery(query: string) {
         this.searchController?.search(query);
-        this.setNewestQuery(query);
 
+        const desiredMode = query ?
+            MainDisplayAreaMode.SEARCH :
+            MainDisplayAreaMode.DEFAULT;
+
+        if (this.state.options.mainMode !== desiredMode) {
+            this.setMode(desiredMode);
+        }
+
+        this.newestQuery = query;
         this.qs.updateQueryWithoutHistoryChange(query);
-
-        this.setMode(
-            query ?
-                MainDisplayAreaMode.SEARCH :
-                MainDisplayAreaMode.DEFAULT);
-
     }
 
     getEntryComponents(): JSX.Element {
@@ -528,6 +528,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                     ref={this.searchBar}
                     searchQuery={this.searchQuery}
                     saveNewestQuery={this.saveNewestQuery}
+                    getNewestQuery={this.getNewestQuery}
                     loadPage={this.loadPage}
                     goHome={this.goHome}
                 />
