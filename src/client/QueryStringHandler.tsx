@@ -122,7 +122,6 @@ export default class QueryStringParser {
             const args: [Object, string, string] = [parsed, '', "#" + newHashString];
             const shouldSave = !(opts?.doNotModifyHistory);
             if (shouldSave) {
-                console.trace("PUSH STATE", args);
                 window.history.pushState(...args);
             } else {
                 window.history.replaceState(...args);
