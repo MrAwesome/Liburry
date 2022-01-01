@@ -17,7 +17,7 @@ describe("Main End-To-End Tests", () => {
         await browser?.close();
     });
 
-    test("searchbar loads", async () => {
+    test.skip("searchbar loads", async () => {
         // Get the HTTP status code of the response. A 200 means it loaded successfully!
         expect(response?.status()).toBe(200);
         const inputElem = await page?.waitForSelector("input");
@@ -25,7 +25,7 @@ describe("Main End-To-End Tests", () => {
         expect(await placeholderObj.jsonValue()).toBe("Search...");
     });
 
-    test("taigi.us specific POJ search", async () => {
+    test.skip("taigi.us specific POJ search", async () => {
         const vocabElem = await page?.waitForSelector(".vocab-element");
         const myname = vocabElem.asElement();
         expect(await myname.innerText()).toBe("A-le̍k-san-tāi");

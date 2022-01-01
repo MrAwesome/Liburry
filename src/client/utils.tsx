@@ -11,6 +11,16 @@ export function runningInJest() {
     return process.env.JEST_WORKER_ID !== undefined;
 }
 
+export function runningInProduction() {
+    return process.env.NODE_ENV === "production";
+}
+
+export function getProtecc() {
+    return (runningInJest() || runningInProduction())
+            ? (f: Function) => f()
+            : setTimeout;
+}
+
 export function nullGuard<T>(obj: T | undefined | null): obj is T {
     return !!obj;
 }
