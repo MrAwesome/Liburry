@@ -15,9 +15,9 @@ import {runningInJest} from "./utils";
 import AppConfig from "./configHandler/AppConfig";
 import {LIBURRY_DEFAULT_APP} from "./constants";
 
+
 import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
-import {getFontLoader} from "./fonts/FontLoader";
 import AppSelector from "./AppSelector";
 
 // TODO(next): make contains/includes search (use index and place mark) (check perf of index v. regex etc)
@@ -358,8 +358,13 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             if (this.currentMountAttempt === savedMountAttempt) {
                 this.searchController?.startWorkersAndListener(options.searcherType);
                 this.subscribeHash();
-                const fontLoader = getFontLoader(this.appConfig);
-                fontLoader.load();
+                if (!runningInJest()) {
+                    (async () => {
+                        const {getFontLoader} = await import("./fonts/FontLoader");
+                        const fontLoader = getFontLoader(this.appConfig);
+                        fontLoader.load();
+                    })()
+                }
             } else {
                 console.warn("Detected double-mount, not starting workers...");
             }
