@@ -2,7 +2,7 @@ import * as React from "react";
 
 import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
-import QueryStringHandler from "./QueryStringHandler";
+import QueryStringHandler, {QSUpdateOpts} from "./QueryStringHandler";
 import SearchController from "./search/orchestration/SearchController";
 import SearchResultsHolder from "./search/orchestration/SearchResultsHolder";
 
@@ -371,6 +371,14 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.searchController?.cleanup();
     }
 
+    async restartSearchController() {
+        this.props.updateDisplayForDBLoadEvent?.({didReload: true});
+        this.props.updateDisplayForSearchEvent?.(null);
+        this.searchController?.cleanup()
+            .then(this.startSearchController)
+            .then((sc) => sc.startWorkersAndListener(this.state.options.searcherType));
+    }
+
     // These two are their own functions to allow visibility from Jest
     subscribeHash() {
         window.addEventListener("hashchange", this.hashChange);
@@ -394,37 +402,38 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.setStateTyped({options: newOptions});
     }
 
-    async restartSearchController() {
-        this.props.updateDisplayForDBLoadEvent?.({didReload: true});
-        this.props.updateDisplayForSearchEvent?.(null);
-        this.searchController?.cleanup()
-            .then(this.startSearchController)
-            .then((sc) => sc.startWorkersAndListener(this.state.options.searcherType));
+    updateQs(updates: Partial<OptionsChangeableByUser>, opts?: QSUpdateOpts, frontendOpts?: {skipRender?: true}) {
+        this.qs.update(updates, opts);
+
+        if (!frontendOpts?.skipRender) {
+            this.setStateTyped({});
+        }
     }
 
     handleAppChange(appID: AppID) {
-        this.appConfig = AppConfig.from(this.props.rfc, appID, undefined);
+        this.appConfig = AppConfig.from(this.props.rfc, appID, null);
         this.restartSearchController();
-        this.qs.setApp(appID);
-        if (this.appConfig.subAppID !== undefined) {
-            this.qs.setSubApp(this.appConfig.subAppID);
-        } else {
-            this.qs.clearSubApp();
-        }
+        this.updateQs({appID, subAppID: this.appConfig.subAppID ?? null});
     }
 
     handleSubAppChange(subAppID: SubAppID) {
         this.appConfig = AppConfig.from(this.props.rfc, this.appConfig.appID, subAppID);
         this.restartSearchController();
-        this.qs.setSubApp(subAppID);
+        this.updateQs({subAppID});
     }
 
-    setMode(mode: MainDisplayAreaMode) {
-        if (mode !== MainDisplayAreaMode.PAGE && this.state.options.pageID !== null) {
-            this.clearPage();
+    setMode(mainMode: MainDisplayAreaMode) {
+        let qsDelta: Partial<OptionsChangeableByUser> = {mainMode}
+        let optsDelta: Partial<OptionsChangeableByUser> = {mainMode};
+
+        // Clear pageID in options and the querystring if it isn't specified
+        if (mainMode !== MainDisplayAreaMode.PAGE && this.state.options.pageID !== null) {
+            optsDelta.pageID = null;
+            qsDelta.pageID = null;
         }
-        this.setStateTyped((state) => ({options: {...state.options, mainMode: mode}}));
-        this.qs.setMode(mode);
+
+        this.setStateTyped((state) => ({options: {...state.options, ...optsDelta}}));
+        this.updateQs(qsDelta, {modifyHistInPlace: true});
     }
 
     updateSearchBar(query: string) {
@@ -438,8 +447,9 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     saveNewestQuery() {
         const query = this.newestQuery;
         if (this.state.options.savedQuery !== query) {
+            // TODO: COMBINE INTO ONE FUNC
             this.setStateTyped((state) => ({options: {...state.options, savedQuery: query}}));
-            this.qs.saveQuery(query);
+            this.updateQs({savedQuery: query});
         }
     }
 
@@ -455,7 +465,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         }
 
         this.newestQuery = query;
-        this.qs.updateQueryWithoutHistoryChange(query);
+        this.updateQs({savedQuery: query}, {modifyHistInPlace: true});
     }
 
     getEntryComponents(): JSX.Element {
@@ -501,14 +511,9 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
     loadPage(pageID: PageID) {
         // NOTE: this will probably cause a double-render - setMode should probably be changed
-        this.setStateTyped((state) => ({options: {...state.options, pageID}}));
         this.setMode(MainDisplayAreaMode.PAGE);
-        this.qs.setPage(pageID);
-    }
-
-    clearPage() {
-        this.setStateTyped((state) => ({options: {...state.options, pageID: null}}));
-        this.qs.clearPage();
+        this.setStateTyped((state) => ({options: {...state.options, pageID}}));
+        this.updateQs({pageID});
     }
 
     goHome() {

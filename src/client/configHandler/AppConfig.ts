@@ -28,7 +28,7 @@ export default class AppConfig {
     static from(
         rfc: ReturnedFinalConfig,
         appID: AppID,
-        subAppIDOverride?: SubAppID,
+        subAppIDOverride: SubAppID | null,
     ) {
         // TODO: possibly throw a more useful error message here? Can this ever really happen?
 
@@ -39,7 +39,7 @@ export default class AppConfig {
         // TODO: unit test this logic
         const {defaultSubApp, subApps} = rawAppConfig.configs.appConfig.config;
         let subAppID = defaultSubApp;
-        if (subAppIDOverride !== undefined && subApps !== undefined) {
+        if (subAppIDOverride !== null && subApps !== undefined) {
             if (subAppIDOverride in subApps) {
                 subAppID = subAppIDOverride;
             } else {

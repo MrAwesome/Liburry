@@ -5,7 +5,7 @@ test('load basic AppConfig', async () => {
     const appID = "test/simpletest";
     const rfc = await genFinalConfigFromYaml([appID]);
 
-    const ac = AppConfig.from(rfc, appID);
+    const ac = AppConfig.from(rfc, appID, null);
     const dbcs = ac.dbConfigHandler.getAllEnabledDBConfigs();
     expect(dbcs.find((dbc) => dbc.getDBIdentifier() === "happy")).toBeDefined();
 });
@@ -16,7 +16,7 @@ test('load basic AppConfig with subapps', async () => {
     const defaultSubApp = rfc.apps[appID]?.configs.appConfig.config.defaultSubApp;
     expect(defaultSubApp).toBeDefined();
 
-    const ac_no_override = AppConfig.from(rfc, appID);
+    const ac_no_override = AppConfig.from(rfc, appID, null);
     const dbcs = ac_no_override.dbConfigHandler.getAllEnabledDBConfigs();
     expect(dbcs.find((dbc) => dbc.getDBIdentifier() === "happy")).toBeDefined();
     expect(ac_no_override.subAppID).toBeDefined();

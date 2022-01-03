@@ -9,6 +9,6 @@ export default class OptionsChangeableByUser {
     savedQuery: string = "";
     playground: boolean = false;
     pageID: PageID | null = null;
-    appID: AppID | undefined = undefined;
-    subAppID: SubAppID | undefined = undefined;
+    appID: AppID | null = null;
+    subAppID: SubAppID | null = null;
 }

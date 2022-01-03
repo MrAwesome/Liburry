@@ -1,8 +1,10 @@
 import qs from "qs";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
-import {AppID, PageID, SubAppID} from "./configHandler/zodConfigTypes";
+import {PageID} from "./configHandler/zodConfigTypes";
 import {SearcherType} from "./search/searchers/Searcher";
 import {MainDisplayAreaMode} from "./types/displayTypes";
+import {getRecordEntries, noop} from "./utils";
+import {TypeEquals} from "./utils/typeEquality";
 
 // TODO: fix double-back being necessary
 // TODO: allow for bundled updates
@@ -22,6 +24,29 @@ const SEARCHER = "searcher";
 const PLAYGROUND = "playground";
 const APP = "app";
 const SUBAPP = "subapp";
+
+const FIELDTYPE_TO_FIELDKEY_MAPPING = {
+    savedQuery: QUERY,
+    mainMode: MODE,
+    pageID: PAGE,
+    debug: DEBUG,
+    searcherType: SEARCHER,
+    playground: PLAYGROUND,
+    appID: APP,
+    subAppID: SUBAPP,
+} as const;
+
+export type QueryStringFieldType = keyof typeof FIELDTYPE_TO_FIELDKEY_MAPPING;
+
+const _optsSame: TypeEquals<keyof OptionsChangeableByUser, QueryStringFieldType> = true;
+noop(_optsSame);
+
+//type QueryStringActualKey = typeof FIELDTYPE_TO_FIELDKEY_MAPPING[QueryStringFieldType];
+
+
+export type QSUpdateOpts = {
+    modifyHistInPlace?: boolean
+}
 
 const QS_SORT_FN = (a: string, b: string) => {
     if (a === b) {
@@ -45,50 +70,8 @@ export default class QueryStringParser {
         this.testString = testString;
     }
 
-    getString(): string {
+    private getString(): string {
         return this.testString ?? window.location.hash.replace(/^#/, "");
-    }
-
-    updateQueryWithoutHistoryChange(query: string) {
-        this.update(QUERY, query, {doNotModifyHistory: true});
-    }
-
-    saveQuery(query: string) {
-        this.update(QUERY, query);
-    }
-
-    setMode(mode: MainDisplayAreaMode) {
-        this.update(MODE, mode, {doNotModifyHistory: true});
-    }
-
-    setApp(appID: AppID) {
-        this.update(APP, appID);
-    }
-
-    setSubApp(subAppID: SubAppID) {
-        this.update(SUBAPP, subAppID);
-    }
-
-    clearSubApp() {
-        this.update(SUBAPP, null);
-    }
-
-    setPage(page: PageID) {
-        this.update(PAGE, page);
-    }
-
-    clearPage() {
-        this.update(PAGE, null);
-    }
-
-    // Used to create a history entry on load, so that the back button will load
-    // the original state after typing.
-    anchor() {
-        if (window.history.length < 3) {
-            const parsed = this.parseInternal();
-            const newHashString = this.stringifyInternal(parsed);
-            window.history.pushState(parsed, '', "#" + newHashString);
-        }
     }
 
     private parseInternal() {
@@ -99,30 +82,52 @@ export default class QueryStringParser {
         return qs.stringify(parsed, QS_STRINGIFY_OPTS);
     }
 
-    private update(
-        field: string,
-        value: string | null,
-        opts?: {
-            doNotModifyHistory?: boolean
+    // Used to create a history entry on load, so that the back button will load
+    // the original state after typing.
+    anchor() {
+        if (window.history.length < 3) {
+            this.update({});
         }
+    }
+
+    update(
+        updates: Partial<OptionsChangeableByUser>,
+        opts?: QSUpdateOpts,
     ) {
+        //const oldHashString = this.getString();
         const parsed = this.parseInternal();
 
-        // null for value is shorthand for "delete the field entirely".
-        if (value === null) {
-            delete parsed[field];
-        } else {
-            parsed[field] = value;
-        }
+        getRecordEntries(updates).forEach(([fieldType, value]) => {
+            const fieldKey = FIELDTYPE_TO_FIELDKEY_MAPPING[fieldType as QueryStringFieldType];
+
+            // null for value is shorthand for "delete the field entirely".
+            if (value === null) {
+                delete parsed[fieldKey];
+            } else {
+                if (typeof value === "boolean") {
+                    parsed[fieldKey] = value ? "true" : "false";
+                } else {
+                    parsed[fieldKey] = value;
+                }
+            }
+        });
+
         const newHashString = this.stringifyInternal(parsed);
 
         if (this.testString) {
             this.testString = newHashString;
         } else {
             const args: [Object, string, string] = [parsed, '', "#" + newHashString];
-            const shouldSave = !(opts?.doNotModifyHistory);
+            const shouldSave = !(opts?.modifyHistInPlace);
             if (shouldSave) {
                 window.history.pushState(...args);
+
+                // Prevent a second back button press being needed after saving an entry. (Since there's no pop state action when we detect a duplicate, and we have to push onto the stack to "save" an entry)
+                // Doesn't seem to work :(
+                // TODO: push early, when a "new search" is detected (typing *after* the timeout, or at the beginning, then modify that until the timeout is hit)
+                //if (oldString === newHashString) {
+                //window.history.back();
+                //}
             } else {
                 window.history.replaceState(...args);
             }
@@ -132,13 +137,13 @@ export default class QueryStringParser {
     parse(): OptionsChangeableByUser {
         let options = new OptionsChangeableByUser();
         const parsed = this.parseInternal();
-        const q = parsed[QUERY];
+        const query = parsed[QUERY];
         const searcher = parsed[SEARCHER];
         const appID = parsed[APP];
         const subAppID = parsed[SUBAPP];
 
-        if (typeof q === "string") {
-            options.savedQuery = q;
+        if (typeof query === "string") {
+            options.savedQuery = query;
         }
         const mode = parsed[MODE];
         if (typeof mode === "string") {
@@ -153,8 +158,8 @@ export default class QueryStringParser {
         }
 
         // TODO: abstract away this process
-        options.debug = parsed[DEBUG] !== undefined;
-        options.playground = parsed[PLAYGROUND] !== undefined;
+        options.debug = parsed[DEBUG] !== "false" && parsed[DEBUG] !== undefined;
+        options.playground = parsed[PLAYGROUND] !== "false" && parsed[PLAYGROUND] !== undefined;
 
         if (typeof searcher === "string") {
             const searcherUpper = searcher.toUpperCase();

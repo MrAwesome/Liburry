@@ -99,7 +99,7 @@ test('render single entry via override', async () => {
 
     const rfc = await genRFC();
 
-    const appConfig = AppConfig.from(rfc, "taigi.us");
+    const appConfig = AppConfig.from(rfc, "taigi.us", null);
     const annotatedResRaw = annotateRawResults(perDictRes, appConfig);
     const annotatedRes = new AnnotatedPerDictResults(annotatedResRaw);
 
