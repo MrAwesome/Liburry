@@ -402,38 +402,35 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.setStateTyped({options: newOptions});
     }
 
-    updateQs(updates: Partial<OptionsChangeableByUser>, opts?: QSUpdateOpts, frontendOpts?: {skipRender?: true}) {
+    updateQs(updates: Partial<OptionsChangeableByUser>, opts?: QSUpdateOpts, frontendOpts?: {skipStateUpdate?: true}) {
         this.qs.update(updates, opts);
 
-        if (!frontendOpts?.skipRender) {
-            this.setStateTyped({});
+        if (!frontendOpts?.skipStateUpdate) {
+            this.setStateTyped((state) => ({options: {...state.options, ...updates}}));
         }
     }
 
     handleAppChange(appID: AppID) {
         this.appConfig = AppConfig.from(this.props.rfc, appID, null);
         this.restartSearchController();
-        this.updateQs({appID, subAppID: this.appConfig.subAppID ?? null});
+        this.updateQs({appID, subAppID: this.appConfig.subAppID}, {}, {skipStateUpdate: true});
     }
 
     handleSubAppChange(subAppID: SubAppID) {
         this.appConfig = AppConfig.from(this.props.rfc, this.appConfig.appID, subAppID);
         this.restartSearchController();
-        this.updateQs({subAppID});
+        this.updateQs({subAppID}, {}, {skipStateUpdate: true});
     }
 
-    setMode(mainMode: MainDisplayAreaMode) {
-        let qsDelta: Partial<OptionsChangeableByUser> = {mainMode}
-        let optsDelta: Partial<OptionsChangeableByUser> = {mainMode};
+    setMode(mainMode: MainDisplayAreaMode, optsDeltaAdditional?: Partial<OptionsChangeableByUser>) {
+        let optsDelta: Partial<OptionsChangeableByUser> = {mainMode, ...optsDeltaAdditional ?? {}};
 
         // Clear pageID in options and the querystring if it isn't specified
         if (mainMode !== MainDisplayAreaMode.PAGE && this.state.options.pageID !== null) {
             optsDelta.pageID = null;
-            qsDelta.pageID = null;
         }
 
-        this.setStateTyped((state) => ({options: {...state.options, ...optsDelta}}));
-        this.updateQs(qsDelta, {modifyHistInPlace: true});
+        this.updateQs(optsDelta, {modifyHistInPlace: true});
     }
 
     updateSearchBar(query: string) {
@@ -447,8 +444,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     saveNewestQuery() {
         const query = this.newestQuery;
         if (this.state.options.savedQuery !== query) {
-            // TODO: COMBINE INTO ONE FUNC
-            this.setStateTyped((state) => ({options: {...state.options, savedQuery: query}}));
             this.updateQs({savedQuery: query});
         }
     }
@@ -465,7 +460,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         }
 
         this.newestQuery = query;
-        this.updateQs({savedQuery: query}, {modifyHistInPlace: true});
+        this.updateQs({savedQuery: query}, {modifyHistInPlace: true}, {skipStateUpdate: true});
     }
 
     getEntryComponents(): JSX.Element {
@@ -511,9 +506,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
     loadPage(pageID: PageID) {
         // NOTE: this will probably cause a double-render - setMode should probably be changed
-        this.setMode(MainDisplayAreaMode.PAGE);
-        this.setStateTyped((state) => ({options: {...state.options, pageID}}));
-        this.updateQs({pageID});
+        this.setMode(MainDisplayAreaMode.PAGE, {pageID});
     }
 
     goHome() {

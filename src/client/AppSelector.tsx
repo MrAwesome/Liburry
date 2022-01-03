@@ -9,7 +9,7 @@ import "./AppSelector.css";
 type ASProps = {
     rfc: ReturnedFinalConfig,
     currentAppID: AppID,
-    currentSubAppID: SubAppID | undefined,
+    currentSubAppID: SubAppID | null,
     handleAppChange: (appID: AppID) => void,
     handleSubAppChange: (subAppID: SubAppID) => void,
 };
@@ -40,15 +40,15 @@ function getKnownApp(rfc: ReturnedFinalConfig, appID: AppID): {appID: AppID, dis
     return {appID, displayName};
 }
 
-function getSubApp(rfc: ReturnedFinalConfig, appID: AppID, subAppID: SubAppID | undefined): {subAppID: AppID, displayName: string} | undefined {
-    if (subAppID === undefined) {
-        return undefined;
+function getSubApp(rfc: ReturnedFinalConfig, appID: AppID, subAppID: SubAppID | null): {subAppID: AppID, displayName: string} | null {
+    if (subAppID === null) {
+        return null;
     }
     const appConf = getKnownAppConfig(rfc, appID);
     const subApp = appConf.configs.appConfig.config.subApps?.[subAppID];
 
     if (subApp === undefined) {
-        return undefined;
+        return null;
     }
     const {displayName} = subApp;
 
@@ -120,7 +120,7 @@ export default class AppSelector extends React.PureComponent<ASProps, ASState> {
         if (allSubApps !== undefined && allSubApps.length > 1) {
             const selectedSubAppRaw = getSubApp(rfc, currentAppID, currentSubAppID);
             const allSubAppDisplayVals = allSubApps.map(subAppToReactSelectOption);
-            const selectedSubApp = (selectedSubAppRaw !== undefined) ? subAppToReactSelectOption(selectedSubAppRaw) : allSubAppDisplayVals[0];
+            const selectedSubApp = (selectedSubAppRaw !== null) ? subAppToReactSelectOption(selectedSubAppRaw) : allSubAppDisplayVals[0];
             subAppSelector = appSelectorHelper(allSubAppDisplayVals, selectedSubApp, this.handleSubAppChangeINTERNAL);
         }
 

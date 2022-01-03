@@ -17,7 +17,7 @@ export default class AppConfig {
         public dbConfigHandler: DBConfigHandler,
         //private langConfigs: RawLangConfig[],
         public appID: AppID,
-        public subAppID?: SubAppID,
+        public subAppID: SubAppID | null,
     ) {
         this.getRawAppConfig = this.getRawAppConfig.bind(this);
         this.getRawSubAppConfig = this.getRawSubAppConfig.bind(this);
@@ -52,7 +52,7 @@ export default class AppConfig {
         }
 
         const dbConfigHandler = new DBConfigHandler(allConfigs.dbConfig.config, subAppID);
-        return new AppConfig(rfc, pageHandler, dbConfigHandler, appID, subAppID);
+        return new AppConfig(rfc, pageHandler, dbConfigHandler, appID, subAppID ?? null);
     }
 
     private getRawAppConfig() {
@@ -60,7 +60,7 @@ export default class AppConfig {
     }
 
     private getRawSubAppConfig(): RawSubAppConfig | undefined {
-        if (this.subAppID !== undefined) {
+        if (this.subAppID !== null) {
             return this.getRawAppConfig().configs.appConfig.config.subApps?.[this.subAppID];
         }
         return undefined;
