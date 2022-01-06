@@ -5,7 +5,6 @@ import SearchWorkerManager from "./SearchWorkerManager";
 import SearchValidityManager, {SearchContext} from "./SearchValidityManager";
 import {AllDBLoadStats, AnnotatedPerDictResults, annotateRawResults, LoadedDBsMap, PerDictResultsRaw, SingleDBLoadStatus} from "../../types/dbTypes";
 import {SearcherType} from "../../search/searchers/Searcher";
-import {GetMainState, SetMainState} from "../../ChhaTaigi";
 import {DBConfig, DBIdentifier} from "../../types/config";
 import type AppConfig from "../../configHandler/AppConfig";
 
@@ -13,12 +12,12 @@ import type AppConfig from "../../configHandler/AppConfig";
 
 interface SearchControllerArgs {
     debug: boolean,
-    getStateTyped: GetMainState,
-    setStateTyped: SetMainState,
     getNewestQuery: () => string,
     appConfig: AppConfig,
-    updateDisplayForDBLoadEvent?: (dbStats: AllDBLoadStats | {didReload: true}) => void,
-    updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
+    genAddResultsCallback: (results: AnnotatedPerDictResults) => Promise<void>
+    genClearResultsCallback: () => Promise<void>
+    genUpdateDisplayForDBLoadEvent?: (dbStats: AllDBLoadStats | {didReload: true}) => Promise<void>,
+    genUpdateDisplayForSearchEvent?: (searchContext: SearchContext | null) => Promise<void>,
 }
 
 export default class SearchController {
@@ -48,7 +47,7 @@ export default class SearchController {
         this.validity = new SearchValidityManager(this.r.debug, expectedNumberOfDBs);
 
         // Callbacks for the search controller to use to communicate changes back to the main component.
-        this.addResultsCallback = this.addResultsCallback.bind(this);
+        this.addResults = this.addResults.bind(this);
         this.clearResultsCallback = this.clearResultsCallback.bind(this);
         this.dbLoadStateUpdateCallback = this.dbLoadStateUpdateCallback.bind(this);
         this.getCurrentQueryCallback = this.getCurrentQueryCallback.bind(this);
@@ -60,23 +59,23 @@ export default class SearchController {
 
     }
 
-    async addResultsCallback(rawResults: PerDictResultsRaw) {
+    async addResults(rawResults: PerDictResultsRaw) {
         // NOTE: this is where results are annotated with metadata about each column.
         //       if this becomes computationally significant, the work can be moved
         //       to its own thread (as can the entire controller, for that matter)
         const resultsRaw = annotateRawResults(rawResults, this.r.appConfig);
         const results = new AnnotatedPerDictResults(resultsRaw);
 
-        this.r.setStateTyped((state) => state.resultsHolder.addResults(results));
+        this.r.genAddResultsCallback(results);
     }
 
     async clearResultsCallback() {
-        this.r.setStateTyped((state) => state.resultsHolder.clear());
+        this.r.genClearResultsCallback();
     }
 
     async dbLoadStateUpdateCallback(dbIdentifier: DBIdentifier, stateDelta: Partial<SingleDBLoadStatus>) {
         this.loadedDBs.setLoadState(dbIdentifier, stateDelta);
-        this.r.updateDisplayForDBLoadEvent?.(this.loadedDBs.getLoadStats());
+        this.r.genUpdateDisplayForDBLoadEvent?.(this.loadedDBs.getLoadStats());
     }
 
     checkIfAllDBLoadedCallback(): boolean {
@@ -106,13 +105,13 @@ export default class SearchController {
         if (query === "") {
             this.searchWorkerManager.cancelAllCurrent();
             this.clearResultsCallback();
-            this.r.updateDisplayForSearchEvent?.(null);
+            this.r.genUpdateDisplayForSearchEvent?.(null);
         } else {
             const activeDBs = this.searchWorkerManager.getIdentifiersForAllActiveDBs();
             this.validity.startSearches(searchID, query, activeDBs);
             this.searchWorkerManager.searchAll(query, searchID);
             this.validity.bump();
-            this.r.updateDisplayForSearchEvent?.(searchContext);
+            this.r.genUpdateDisplayForSearchEvent?.(searchContext);
         }
     }
 
@@ -125,7 +124,7 @@ export default class SearchController {
 
                 const wasInvalidated = this.validity.isInvalidated(searchID);
                 if (!wasInvalidated) {
-                    this.r.updateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
+                    this.r.genUpdateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
                 }
             }
                 break;
@@ -134,9 +133,9 @@ export default class SearchController {
 
                 const wasInvalidated = this.validity.isInvalidated(searchID);
                 if (!wasInvalidated) {
-                    this.addResultsCallback(results);
+                    this.addResults(results);
                     this.validity.markSearchCompleted(dbIdentifier, searchID);
-                    this.r.updateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
+                    this.r.genUpdateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
                 }
             }
                 break;
@@ -154,7 +153,7 @@ export default class SearchController {
                         console.error(msg + "Ran out of retries!");
                     }
 
-                    this.r.updateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
+                    this.r.genUpdateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
                 } else {
                     this.console.log("Requested to retry an invalidated search: ", message.payload);
                 }

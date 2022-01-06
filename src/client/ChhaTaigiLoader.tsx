@@ -22,7 +22,7 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
         super(props);
         this.state = {};
 
-        this.progress = new ProgressHandler(() => this.setState({}));
+        this.progress = new ProgressHandler(async () => this.setState({}));
     }
 
     componentDidMount() {
@@ -36,7 +36,7 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
             prom.then(() => {
                 if (originalMountAttempt === this.mountAttempt) {
                     this.progress.numConfigsLoaded += 1;
-                    this.progress.updateDisplayForConfigEvent();
+                    this.progress.genUpdateDisplayForConfigEvent();
                 }
             });
         });
@@ -60,12 +60,13 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
 
     render() {
         const {rfc} = this.state;
+        const {genUpdateDisplayForDBLoadEvent, genUpdateDisplayForSearchEvent} = this.progress;
 
         let mainApp = rfc !== undefined
             ? <ChhaTaigi
                 rfc={rfc}
-                updateDisplayForDBLoadEvent={this.progress.updateDisplayForDBLoadEvent}
-                updateDisplayForSearchEvent={this.progress.updateDisplayForSearchEvent}
+                genUpdateDisplayForDBLoadEvent={genUpdateDisplayForDBLoadEvent}
+                genUpdateDisplayForSearchEvent={genUpdateDisplayForSearchEvent}
                 key="ChhaTaigi"
             />
             : null;

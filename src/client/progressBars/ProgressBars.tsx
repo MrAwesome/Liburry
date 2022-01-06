@@ -27,13 +27,13 @@ export class ProgressHandler {
     }
 
     constructor(
-        private updateDisplay: () => void
+        private genUpdateDisplay: () => Promise<void>
     ) {
         this.getBars = this.getBars.bind(this);
         this.shouldShowProgressBars = this.shouldShowProgressBars.bind(this);
-        this.updateDisplayForConfigEvent = this.updateDisplayForConfigEvent.bind(this);
-        this.updateDisplayForDBLoadEvent = this.updateDisplayForDBLoadEvent.bind(this);
-        this.updateDisplayForSearchEvent = this.updateDisplayForSearchEvent.bind(this);
+        this.genUpdateDisplayForConfigEvent = this.genUpdateDisplayForConfigEvent.bind(this);
+        this.genUpdateDisplayForDBLoadEvent = this.genUpdateDisplayForDBLoadEvent.bind(this);
+        this.genUpdateDisplayForSearchEvent = this.genUpdateDisplayForSearchEvent.bind(this);
     }
 
     shouldShowProgressBars(): boolean {
@@ -56,29 +56,29 @@ export class ProgressHandler {
         </div>
     }
 
-    updateDisplayForConfigEvent() {
+    async genUpdateDisplayForConfigEvent() {
         const percent = this.numConfigsLoaded / this.numConfigsToLoad || 0;
         this.progress.config = percent;
-        this.updateDisplay();
+        this.genUpdateDisplay();
 
         if (this.numConfigsToLoad <= 0 || percent >= 1) {
             setTimeout(() => {
                 this.shouldShow.config = false;
-                this.updateDisplay();
+                this.genUpdateDisplay();
             }, PROGRESS_BAR_HEIGHT_ANIMATION_LENGTH);
         }
     }
 
     // NOTE: this should be generalized (each DB having its own display area?) such that
     //       new display events don't need code changes here
-    updateDisplayForDBLoadEvent(dbStats: AllDBLoadStats | {didReload: true}) {
+    async genUpdateDisplayForDBLoadEvent(dbStats: AllDBLoadStats | {didReload: true}) {
         // NOTE: this should maybe be another function, or something more generic
         if ("didReload" in dbStats) {
             this.progress.dbDownload = 0;
             this.progress.dbParsed = 0;
             this.progress.dbLoad = 0;
             this.shouldShow.dbLoad = true;
-            this.updateDisplay();
+            this.genUpdateDisplay();
             return;
         }
         const {numDownloaded, numParsed, numLoaded, numDBs} = dbStats;
@@ -90,21 +90,21 @@ export class ProgressHandler {
         this.progress.dbDownload = percentDownloaded;
         this.progress.dbParsed = percentParsed;
         this.progress.dbLoad = percentLoaded;
-        this.updateDisplay();
+        this.genUpdateDisplay();
 
         if (numDBs <= 0 || percentLoaded >= 1) {
             setTimeout(() => {
                 this.shouldShow.dbLoad = false;
-                this.updateDisplay();
+                this.genUpdateDisplay();
             }, PROGRESS_BAR_HEIGHT_ANIMATION_LENGTH);
         }
     }
 
-    updateDisplayForSearchEvent(searchContext: SearchContext | null) {
+    async genUpdateDisplayForSearchEvent(searchContext: SearchContext | null) {
         if (searchContext === null) {
             this.progress.search = 0;
             this.shouldShow.search = false;
-            this.updateDisplay();
+            this.genUpdateDisplay();
             return;
         }
 
@@ -114,12 +114,12 @@ export class ProgressHandler {
         const percent = completedDBs / totalDBs || 0;
 
         this.progress.search = percent;
-        this.updateDisplay();
+        this.genUpdateDisplay();
 
         if (totalDBs <= 0 || percent >= 1) {
             setTimeout(() => {
                 this.shouldShow.search = false;
-                this.updateDisplay();
+                this.genUpdateDisplay();
             }, PROGRESS_BAR_HEIGHT_ANIMATION_LENGTH);
         }
     }

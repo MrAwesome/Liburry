@@ -8,8 +8,7 @@ import "./SearchBar.css";
 
 interface SearchBarProps {
     appConfig: AppConfig,
-    searchQuery(query: string): void,
-    saveNewestQuery(): void,
+    searchQuery(query: string, opts?: {isFromUserTyping: boolean}): Promise<void>,
     getNewestQuery(): string,
     loadPage: (pageID: PageID) => void,
     goHome: () => void,
@@ -43,17 +42,11 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
 
     onChange(e: React.ChangeEvent<HTMLInputElement>) {
         const query = e.target.value;
-        this.props.searchQuery(query);
-        setTimeout(async () => {
-            if (query === this.props.getNewestQuery()) {
-                this.props.saveNewestQuery();
-            }
-        }, 2000);
+        this.props.searchQuery(query, {isFromUserTyping: true});
     }
 
     onSubmit(e: React.FormEvent) {
         e.preventDefault();
-        this.props.saveNewestQuery();
 
         // If the user clicks submit on mobile, dismiss the keyboard:
         if (isMobileDevice()) {

@@ -19,13 +19,11 @@ import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
 import AppSelector from "./AppSelector";
 
-// TODO(next): make contains/includes search (use index and place mark) (check perf of index v. regex etc)
-// TODO(urgent): debug recent performance hits
+// TODO(next): try fuzzball or js-search?
+// TODO(next): load new datasets (maybe create submodules?)
 // TODO(urgent): move to webpack from current method
 // TODO(urgent): debug empty entry: https://taigi.us/#m=SEARCH;q=%E6%93%94%E5%BF%83
 // TODO(urgent): add an autoplay/pause button for search, to make things better on slower machines
-// TODO(urgent): add a timeout to save current query to history (200 ms, something like that)
-// TODO(urgent): add env variable for default subapp?
 // TODO(urgent): add view of currently-loaded dbs, and option to clear cache or pre-load other apps?
 // TODO(urgent): determine why a hard-reset is needed for app change, and why taigi.us is ignoring app
 // TODO(urgent): don't require final.json for tests to work? how? webpack? do split up apps, so that a change to a single yaml doesn't always trigger a rebuild of the single final json?
@@ -199,52 +197,38 @@ import AppSelector from "./AppSelector";
 //          a) DONE: entries, when results are populated
 //          b) about/contact/etc pages, when appropriate MainDisplayAreaMode is set
 //          c) inverse when above aren't true
-//
-// Project: Stateful non-search area
-//      1) Clean up menu code
-//      2) Make area disappear during search, but maintain its current state (aka have a non-search-results entity)
-//      3) Determine which areas to add and what they will look like
-//
-// Project: Taibun definitions
-//      1) DONE: generalize "english" to definition
-//      2) DONE: create more flexible data structure
-//      3) DONE(ish): handle poj_normalized and kip_normalized
-//
-//      4) DONE: Add configuration for all
-//         4) create a better config format (yaml?)
-//      5) note (in configuration) which text an alt text is for?
-//      6) regenerate fuzzy index (and lunr?) on the fly when objects change
-//      7) test performance
-//      8) create settings page with language toggle?
+
+type Timer = ReturnType<typeof setTimeout>;
+const TYPING_TIMEOUT_MS = 1000;
 
 export interface ChhaTaigiProps {
     rfc: ReturnedFinalConfig,
     // TODO: always annotate results with the current displaytype's info (one re-search when you change displaytype is well worth being able to calculate before render time (preferably in another thread))
     mockOptions?: OptionsChangeableByUser,
     mockResults?: AnnotatedPerDictResults,
-    updateDisplayForDBLoadEvent?: (dbStatus: AllDBLoadStats | {didReload: true}) => void,
-    updateDisplayForSearchEvent?: (searchContext: SearchContext | null) => void,
+    genUpdateDisplayForDBLoadEvent?: (dbStatus: AllDBLoadStats | {didReload: true}) => Promise<void>,
+    genUpdateDisplayForSearchEvent?: (searchContext: SearchContext | null) => Promise<void>,
 };
 
 export interface ChhaTaigiState {
     options: OptionsChangeableByUser,
     resultsHolder: SearchResultsHolder,
+    isTyping: boolean,
 }
-
-export type GetMainState = () => ChhaTaigiState;
-export type SetMainState = (state: Partial<ChhaTaigiState> | ((prevState: ChhaTaigiState) => any)) => void;
 
 export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     private qs = new QueryStringHandler();
 
     private currentMountAttempt = 0;
+
     searchBar: React.RefObject<SearchBar>;
     console: StubConsole;
     newestQuery: string;
     appConfig: AppConfig;
+    typingTimerIDs: ReturnType<typeof setTimeout>[] = []; // Object to satisfy Node typing
 
     // This should always be set, but TypeScript isn't quite smart enough to know
-    // that startSearchController sets it for us
+    // that genStartSearchController sets it for us
     searchController: SearchController | undefined;
 
     constructor(props: ChhaTaigiProps) {
@@ -257,6 +241,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.state = {
             options,
             resultsHolder: new SearchResultsHolder(),
+            isTyping: false,
         };
 
         this.newestQuery = this.state.options.savedQuery;
@@ -266,10 +251,17 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.searchBar = React.createRef();
 
         // Bind functions
+        this.genStartSearchController = this.genStartSearchController.bind(this);
+        this.genRestartSearchController = this.genRestartSearchController.bind(this);
+        this.genUpdateQs = this.genUpdateQs.bind(this);
+
+        this.genAddResultsCallback = this.genAddResultsCallback.bind(this);
+        this.genClearResultsCallback = this.genClearResultsCallback.bind(this);
         this.getAppSelector = this.getAppSelector.bind(this);
         this.getCurrentMountAttempt = this.getCurrentMountAttempt.bind(this);
         this.getEntryComponents = this.getEntryComponents.bind(this);
         this.getNewestQuery = this.getNewestQuery.bind(this);
+        this.getPageView = this.getPageView.bind(this);
         this.getStateTyped = this.getStateTyped.bind(this);
         this.hashChange = this.hashChange.bind(this);
         this.handleAppChange = this.handleAppChange.bind(this);
@@ -278,36 +270,51 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.goHome = this.goHome.bind(this);
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
         this.overrideResultsForTests = this.overrideResultsForTests.bind(this);
-        this.saveNewestQuery = this.saveNewestQuery.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
         this.setStateTyped = this.setStateTyped.bind(this);
-        this.startSearchController = this.startSearchController.bind(this);
         this.subscribeHash = this.subscribeHash.bind(this);
         this.unsubscribeHash = this.unsubscribeHash.bind(this);
         this.updateSearchBar = this.updateSearchBar.bind(this);
 
-        this.startSearchController();
+        this.genStartSearchController();
 
         // Allow for overriding results from Jest.
         this.overrideResultsForTests();
     }
 
-    startSearchController() {
-        const {getStateTyped, setStateTyped, getNewestQuery, appConfig} = this;
-        const {updateDisplayForDBLoadEvent, updateDisplayForSearchEvent} = this.props;
+    async genStartSearchController() {
+        const {genAddResultsCallback, genClearResultsCallback, getNewestQuery, appConfig} = this;
+        const {genUpdateDisplayForDBLoadEvent, genUpdateDisplayForSearchEvent} = this.props;
         const {debug} = this.state.options;
 
         this.searchController = new SearchController({
             debug,
-            getStateTyped,
-            setStateTyped,
+            genAddResultsCallback,
+            genClearResultsCallback,
             getNewestQuery,
             appConfig,
-            updateDisplayForDBLoadEvent,
-            updateDisplayForSearchEvent,
+            genUpdateDisplayForDBLoadEvent,
+            genUpdateDisplayForSearchEvent,
         });
 
         return this.searchController;
+    }
+
+    async genAddResultsCallback(results: AnnotatedPerDictResults) {
+        this.setStateTyped((state) => state.resultsHolder.addResults(results));
+    }
+
+    async genClearResultsCallback() {
+        this.setStateTyped((state) => state.resultsHolder.clear());
+    }
+
+    async genRestartSearchController() {
+        this.props.genUpdateDisplayForDBLoadEvent?.({didReload: true});
+        this.props.genUpdateDisplayForSearchEvent?.(null);
+
+        return this.searchController?.cleanup()
+            .then(this.genStartSearchController)
+            .then((sc) => sc.startWorkersAndListener(this.state.options.searcherType));
     }
 
     getNewestQuery() {
@@ -330,9 +337,8 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.setState(state)
     }
 
-    // TODO: get rid of this now that state is typed?
     getStateTyped(): ChhaTaigiState {
-        return this.state as ChhaTaigiState;
+        return this.state;
     }
 
     componentDidMount() {
@@ -371,14 +377,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.searchController?.cleanup();
     }
 
-    async restartSearchController() {
-        this.props.updateDisplayForDBLoadEvent?.({didReload: true});
-        this.props.updateDisplayForSearchEvent?.(null);
-        this.searchController?.cleanup()
-            .then(this.startSearchController)
-            .then((sc) => sc.startWorkersAndListener(this.state.options.searcherType));
-    }
-
     // These two are their own functions to allow visibility from Jest
     subscribeHash() {
         window.addEventListener("hashchange", this.hashChange);
@@ -402,8 +400,12 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.setStateTyped({options: newOptions});
     }
 
-    updateQs(updates: Partial<OptionsChangeableByUser>, opts?: QSUpdateOpts, frontendOpts?: {skipStateUpdate?: true}) {
-        this.qs.update(updates, opts);
+    async genUpdateQs(
+        updates: Partial<OptionsChangeableByUser>,
+        queryStringOpts?: QSUpdateOpts,
+        frontendOpts?: {skipStateUpdate?: true}
+    ) {
+        this.qs.update(updates, queryStringOpts);
 
         if (!frontendOpts?.skipStateUpdate) {
             this.setStateTyped((state) => ({options: {...state.options, ...updates}}));
@@ -412,14 +414,15 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
     handleAppChange(appID: AppID) {
         this.appConfig = AppConfig.from(this.props.rfc, appID, null);
-        this.restartSearchController();
-        this.updateQs({appID, subAppID: this.appConfig.subAppID}, {}, {skipStateUpdate: true});
+        const {subAppID} = this.appConfig;
+        this.genRestartSearchController();
+        this.genUpdateQs({appID, subAppID});
     }
 
     handleSubAppChange(subAppID: SubAppID) {
         this.appConfig = AppConfig.from(this.props.rfc, this.appConfig.appID, subAppID);
-        this.restartSearchController();
-        this.updateQs({subAppID}, {}, {skipStateUpdate: true});
+        this.genRestartSearchController();
+        this.genUpdateQs({subAppID});
     }
 
     setMode(mainMode: MainDisplayAreaMode, optsDeltaAdditional?: Partial<OptionsChangeableByUser>) {
@@ -430,7 +433,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             optsDelta.pageID = null;
         }
 
-        this.updateQs(optsDelta, {modifyHistInPlace: true});
+        this.genUpdateQs(optsDelta, {modifyHistInPlace: true});
     }
 
     updateSearchBar(query: string) {
@@ -439,16 +442,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         }
     }
 
-    // TODO: this should give some visual indication of the saved search
-    // TODO: this should happen after a timeout when the user stops typing
-    saveNewestQuery() {
-        const query = this.newestQuery;
-        if (this.state.options.savedQuery !== query) {
-            this.updateQs({savedQuery: query});
-        }
-    }
-
-    searchQuery(query: string) {
+    async searchQuery(query: string, opts?: {isFromUserTyping: boolean}) {
         this.searchController?.search(query);
 
         const desiredMode = query ?
@@ -460,7 +454,23 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         }
 
         this.newestQuery = query;
-        this.updateQs({savedQuery: query}, {modifyHistInPlace: true}, {skipStateUpdate: true});
+
+
+        if (opts?.isFromUserTyping) {
+            // Clear old timers in an async-safe way
+            while (this.typingTimerIDs.length !== 0) {
+                const oldTimerID = this.typingTimerIDs.shift();
+                clearTimeout(oldTimerID as Timer);
+            }
+
+            const typingTimerID = setTimeout(() => {this.setState({isTyping: false})}, TYPING_TIMEOUT_MS);
+            this.typingTimerIDs.push(typingTimerID);
+
+            const modifyHistInPlace = this.state.isTyping;
+            this.setState({isTyping: true});
+
+            this.genUpdateQs({savedQuery: query}, {modifyHistInPlace}, {skipStateUpdate: true});
+        }
     }
 
     getEntryComponents(): JSX.Element {
@@ -478,6 +488,15 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         return <>{entryContainers}</>;
     }
 
+    getPageView(): JSX.Element {
+        const {pageID} = this.state.options;
+        if (pageID !== null) {
+            return <CombinedPageElement perAppPages={this.appConfig.pageHandler.getPagesForPageID(pageID)} />
+        } else {
+            return this.mainDisplayArea(MainDisplayAreaMode.DEFAULT);
+        }
+    }
+
     getAppSelector() {
         return <AppSelector
             rfc={this.props.rfc}
@@ -491,12 +510,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     mainDisplayArea(mode: MainDisplayAreaMode): JSX.Element {
         switch (mode) {
             case MainDisplayAreaMode.PAGE:
-                const {pageID} = this.state.options;
-                if (pageID !== null) {
-                    return <CombinedPageElement perAppPages={this.appConfig.pageHandler.getPagesForPageID(pageID)} />
-                } else {
-                    return this.mainDisplayArea(MainDisplayAreaMode.DEFAULT);
-                }
+                return this.getPageView();
             case MainDisplayAreaMode.SEARCH:
                 return this.getEntryComponents();
             case MainDisplayAreaMode.DEFAULT:
@@ -518,22 +532,17 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     render() {
         const {options} = this.getStateTyped();
 
-        // NOTE: it will be very nice to be able to change the apps while searches are typed, but you'll need to clear the existing search
-        //       each time app or subapp changes (otherwise, things stick around and change based on what you switch to)
-        return (
-            <div className="ChhaTaigi">
-                <SearchBar
-                    appConfig={this.appConfig}
-                    ref={this.searchBar}
-                    searchQuery={this.searchQuery}
-                    saveNewestQuery={this.saveNewestQuery}
-                    getNewestQuery={this.getNewestQuery}
-                    loadPage={this.loadPage}
-                    goHome={this.goHome}
-                />
-                {this.getAppSelector()}
-                {this.mainDisplayArea(options.mainMode)}
-            </div>
-        );
+        return <div className="ChhaTaigi">
+            <SearchBar
+                appConfig={this.appConfig}
+                ref={this.searchBar}
+                searchQuery={this.searchQuery}
+                getNewestQuery={this.getNewestQuery}
+                loadPage={this.loadPage}
+                goHome={this.goHome}
+            />
+            {this.getAppSelector()}
+            {this.mainDisplayArea(options.mainMode)}
+        </div>
     }
 }

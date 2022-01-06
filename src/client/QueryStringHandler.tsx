@@ -121,13 +121,6 @@ export default class QueryStringParser {
             const shouldSave = !(opts?.modifyHistInPlace);
             if (shouldSave) {
                 window.history.pushState(...args);
-
-                // Prevent a second back button press being needed after saving an entry. (Since there's no pop state action when we detect a duplicate, and we have to push onto the stack to "save" an entry)
-                // Doesn't seem to work :(
-                // TODO: push early, when a "new search" is detected (typing *after* the timeout, or at the beginning, then modify that until the timeout is hit)
-                //if (oldString === newHashString) {
-                //window.history.back();
-                //}
             } else {
                 window.history.replaceState(...args);
             }
