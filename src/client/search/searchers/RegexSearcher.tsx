@@ -8,35 +8,36 @@ import {SEARCH_RESULTS_LIMIT} from "../../search/searchers/constants";
 import {vanillaDBEntryToResult} from "./utils";
 import {CancelablePromise} from "../../types/general";
 
-export const LOWERCASE_KEY_SUFFIX = "_zzlc"
 const NUM_TO_PROCESS_BEFORE_CANCEL_CHECK = 5000;
 
-interface IncludesSearcherOpts {
-    lowercase?: boolean,
+export class RegexSearcherOpts {
+    caseInsensitive?: boolean = true; // TODO: add selector
+    fullUnicode?: boolean = true; // TODO: add selector
+    showMatches?: boolean = false; // TODO: implement
 }
 
-export class IncludesSearcher implements Searcher {
-    searcherType = SearcherType.INCLUDES;
+export class RegexSearcher implements Searcher {
+    searcherType = SearcherType.REGEX;
 
     constructor(
-        private includesDict: IncludesSearchableDict,
+        private regexDict: RegexSearchableDict,
     ) {}
 
     search(query: string): OngoingSearch | SearchFailure {
-        return this.includesDict.search(query);
+        return this.regexDict.search(query);
     }
 
 }
 
-export class IncludesPreparer implements SearcherPreparer {
+export class RegexPreparer implements SearcherPreparer {
     console: StubConsole;
-    opts: IncludesSearcherOpts;
+    opts: RegexSearcherOpts;
 
     constructor(
         private dbConfig: DBConfig,
         private sendLoadStateUpdate: (stateDelta: Partial<SingleDBLoadStatus>) => void,
         private debug: boolean,
-        opts?: IncludesSearcherOpts,
+        opts?: RegexSearcherOpts,
     ) {
         this.console = getDebugConsole(debug);
         this.prepare = this.prepare.bind(this);
@@ -47,16 +48,16 @@ export class IncludesPreparer implements SearcherPreparer {
     async prepare(): Promise<Searcher> {
         return this
             .fetchAndPrepare()
-            .then((includesDict) => {
-                return new IncludesSearcher(includesDict);
+            .then((regexDict) => {
+                return new RegexSearcher(regexDict);
             });
     }
 
-    async fetchAndPrepare(): Promise<IncludesSearchableDict> {
+    async fetchAndPrepare(): Promise<RegexSearchableDict> {
         const dbIdentifier = this.dbConfig.getDBIdentifier();
         const {localCSV} = this.dbConfig.getDBLoadInfo();
         if (localCSV === undefined) {
-            const errMsg = `Includes search requires a local CSV to be defined! (${dbIdentifier})`;
+            const errMsg = `Regex search requires a local CSV to be defined! (${dbIdentifier})`;
             throw new Error(errMsg);
         }
         this.console.time("total-" + dbIdentifier);
@@ -69,11 +70,11 @@ export class IncludesPreparer implements SearcherPreparer {
             })
             .then((text: string) => {
                 this.sendLoadStateUpdate({isParsed: true});
-                return this.convertCSVToIncludesSearchableDict(text);
+                return this.convertCSVToRegexSearchableDict(text);
             });
     }
 
-    convertCSVToIncludesSearchableDict(text: string): IncludesSearchableDict {
+    convertCSVToRegexSearchableDict(text: string): RegexSearchableDict {
         const dbIdentifier = this.dbConfig.getDBIdentifier();
         this.console.timeEnd("fetch-" + dbIdentifier);
 
@@ -81,28 +82,16 @@ export class IncludesPreparer implements SearcherPreparer {
         const entries: RawDBRow[] = getEntriesFromPreparedCSV(text);
         this.console.timeEnd("csvConvertPrePrepped-" + dbIdentifier);
 
-
-        if (this.opts?.lowercase) {
-            this.console.time("lowercase-" + dbIdentifier);
-            entries.forEach((entry) => {
-                Object.keys(entry).forEach((key) => {
-                    entry[key + LOWERCASE_KEY_SUFFIX] = entry[key].toLowerCase()
-                });
-            });
-            this.console.timeEnd("lowercase-" + dbIdentifier);
-        }
-
-
         this.console.timeEnd("total-" + dbIdentifier);
 
         const primaryKey = this.dbConfig.getPrimaryKey();
 
-        return new IncludesSearchableDict(this.dbConfig, entries, this.debug, primaryKey, this.opts);
+        return new RegexSearchableDict(this.dbConfig, entries, this.debug, primaryKey, this.opts);
     }
 
 }
 
-class IncludesSearchableDict {
+class RegexSearchableDict {
     console: StubConsole;
 
     constructor(
@@ -110,7 +99,7 @@ class IncludesSearchableDict {
         private entries: Array<RawDBRow>,
         private debug: boolean,
         private primaryKey: string,
-        private opts: IncludesSearcherOpts,
+        private opts: RegexSearcherOpts,
     ) {
         this.console = getDebugConsole(debug);
         this.search = this.search.bind(this);
@@ -120,22 +109,22 @@ class IncludesSearchableDict {
         let isCanceled = false;
 
         const wrappedPromise: Partial<CancelablePromise<RawDBRow[]>> = new Promise(async (resolve, _reject) => {
-            let q = query;
-            let i = 0;
+            let flags = "";
+            const {caseInsensitive, fullUnicode} = this.opts;
 
-            if (this.opts.lowercase) {
-                q = query.toLowerCase();
-            }
+            if (caseInsensitive) { flags += "i"; }
+            if (fullUnicode) { flags += "u"; }
 
-            let numMatches = 0;
+            const regex = new RegExp(query, flags);
 
             const results = [];
-
+            let numMatches = 0;
+            let i = 0;
             for (const entry of this.entries) {
                 if (isCanceled) { resolve([]); break; }
 
                 if (numMatches < SEARCH_RESULTS_LIMIT) {
-                    const isMatch = this.checkEntry(q, entry)
+                    const isMatch = this.checkEntry(regex, entry)
                     if (isMatch) {
                         results.push(entry);
                         numMatches++;
@@ -155,18 +144,13 @@ class IncludesSearchableDict {
         return wrappedPromise as CancelablePromise<RawDBRow[]>;
     }
 
-    checkEntry(q: string, entry: RawDBRow) {
+    checkEntry(r: RegExp, entry: RawDBRow) {
         const searchableFields = this.dbConfig.getSearchableFields();
         return searchableFields.some((fieldName) => {
-            let f = fieldName;
-            if (this.opts.lowercase) {
-                f = fieldName + LOWERCASE_KEY_SUFFIX;
-            }
-
-            if (f in entry) {
-                return entry[f].includes(q);
+            if (fieldName in entry) {
+                return r.test(entry[fieldName]);
             } else {
-                this.console.warn(`Unknown key "${f}":`, entry);
+                this.console.warn(`Unknown key "${fieldName}":`, entry);
                 return false;
             }
         });
@@ -184,7 +168,7 @@ class IncludesSearchableDict {
                     this.dbConfig.getDBIdentifier(),
                     row,
                     {
-                        searcherType: SearcherType.INCLUDES,
+                        searcherType: SearcherType.REGEX,
                         score: index,
                     },
                     this.primaryKey,

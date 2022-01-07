@@ -6,6 +6,7 @@ import {FuzzySortPreparer, FUZZY_SCORE_LOWER_THRESHOLD} from "./FuzzySortSearche
 import {DBConfig, DBIdentifier} from "../../types/config";
 import {SEARCH_RESULTS_LIMIT} from "./constants";
 import {IncludesPreparer} from "./IncludesSearcher";
+import {RegexPreparer, RegexSearcherOpts} from "./RegexSearcher";
 
 export abstract class SearcherPreparer {
     abstract prepare(): Promise<Searcher>;
@@ -20,6 +21,7 @@ export enum SearcherType {
     FUZZYSORT = "FUZZYSORT",
     LUNR = "LUNR",
     INCLUDES = "INCLUDES",
+    REGEX = "REGEX",
 }
 
 // TODO: store this information further away from this module, closer to where searchers are defined
@@ -33,6 +35,8 @@ export function getMaxScore(searcherType: SearcherType): number {
             // TODO: some normalized value for this
             //return 25;
         case SearcherType.INCLUDES:
+            return SEARCH_RESULTS_LIMIT + 1;
+        case SearcherType.REGEX:
             return SEARCH_RESULTS_LIMIT + 1;
     }
 }
@@ -52,6 +56,8 @@ export function getSearcherPreparer(
             //return new LunrPreparer(dbConfig, sendLoadStateUpdate, debug);
         case SearcherType.INCLUDES:
             return new IncludesPreparer(dbConfig, sendLoadStateUpdate, debug, {});
+        case SearcherType.REGEX:
+            return new RegexPreparer(dbConfig, sendLoadStateUpdate, debug, new RegexSearcherOpts());
     }
 }
 
