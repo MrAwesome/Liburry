@@ -8,12 +8,15 @@ import {SEARCH_RESULTS_LIMIT} from "../../search/searchers/constants";
 import {vanillaDBEntryToResult} from "./utils";
 import {CancelablePromise} from "../../types/general";
 
+// TODO: add selector for options
+// TODO: catch regex parse errors, show red around searchbar
+
 const NUM_TO_PROCESS_BEFORE_CANCEL_CHECK = 5000;
 
 export class RegexSearcherOpts {
     caseInsensitive?: boolean = true; // TODO: add selector
     fullUnicode?: boolean = true; // TODO: add selector
-    showMatches?: boolean = false; // TODO: implement
+    showMatches?: boolean = false; // TODO: implement, add selector
 }
 
 export class RegexSearcher implements Searcher {
