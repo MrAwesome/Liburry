@@ -21,8 +21,6 @@ const mkdir = promisify(fs.mkdir);
     // [] write out appname as directory in generated
     // [] write out default config (where should it be?)
     // go back to writing out the entire config, and still just fetch the one big config - it's not bad to fetch all configs for all apps, you just maybe don't have to pre-load every app's dbs (should you preload subapp dbs? how to decide?)
-    // XXX XXX XXX
-    console.warn("Using hardcoded list of appnames!")
     const appIDs = LIBURRY_BUILD_APPS;
     const checkedFinalConfig: ReturnedFinalConfig = await loadFinalConfigForApps(appIDs);
 
