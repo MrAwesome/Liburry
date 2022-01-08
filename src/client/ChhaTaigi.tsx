@@ -19,8 +19,9 @@ import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
 import AppSelector from "./AppSelector";
 
-// TODO(next): try fuzzball or js-search? REGEX
+// TODO(next): fix index.html to use Liburry, with overrides from env vars or configs
 // TODO(next): load new datasets (maybe create submodules?)
+// TODO(urgent): register liburry TLDs
 // TODO(urgent): move to webpack from current method
 // TODO(urgent): debug empty entry: https://taigi.us/#m=SEARCH;q=%E6%93%94%E5%BF%83
 // TODO(urgent): add an autoplay/pause button for search, to make things better on slower machines
