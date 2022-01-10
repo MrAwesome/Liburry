@@ -19,11 +19,12 @@ const FILENAME_AND_DIRECTORY_SAFE_REGEX: RegExp = /^[a-zA-Z0-9_/.]+$/;
 // Token Types
 // NOTE: all of this type-glop is just to allow us to define the keys once while still being able to enforce the types of the values
 type TokenMatcher = Readonly<[RegExp, string] | null>;
-type TokenList<T extends object> = { [key in keyof T]: TokenMatcher }
+type TokenList<T extends object> = {[key in keyof T]: TokenMatcher}
 const tlist = <O extends object>(o: TokenList<O>): TokenList<O> => o;
 export const tokenMatchers = tlist({
     // NOTE: APP_ID could be more permissive, but absolutely must not contain commas.
     APP_ID: [FILENAME_AND_DIRECTORY_SAFE_REGEX, "App IDs must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
+    BUILD_ID: [BASIC_TOKEN_REGEX, "Build IDs must contain only ASCII letters, numbers, and underscores."],
     DIALECT_ID: [BASIC_TOKEN_REGEX, "Dialect IDs must contain only ASCII letters, numbers, and underscores."],
     PAGE_ID: [BASIC_TOKEN_REGEX, "Page IDs must contain only ASCII letters, numbers, and underscores."],
     FILENAME: [FILENAME_AND_DIRECTORY_SAFE_REGEX, "Filenames must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
@@ -105,13 +106,44 @@ function matchToken(tt: LiburryTokenTypes): z.ZodString {
 
 
 const nonDefaultAppID = token("APP_ID").refine((s) => s !== "default");
+const nonDefaultBuildID = token("BUILD_ID").refine((s) => s !== "default");
 const defaultAppID = z.literal("default");
 // TODO: use a zod schema for this.
 export type AppID = z.infer<typeof nonDefaultAppID>;
 export type SubAppID = string;
 export type ViewID = string;
 export type FieldID = string;
+export type BuildID = z.infer<typeof nonDefaultBuildID>;
 
+///////  Builds  //////////
+const defaultIndexHtmlConfigSchema = strictObject({
+    themeColor: anyString(),
+    og: strictObject({
+        title: anyString(),
+        imageFullURL: anyString().url(),
+        description: anyString(),
+    }),
+});
+
+export const rawDefaultBuildConfigSchema = strictObject({
+    displayName: anyString(),
+    apps: tokenArray("APP_ID").or(z.literal("all")),
+    indexHtml: defaultIndexHtmlConfigSchema,
+});
+
+export type RawDefaultBuildConfig = z.infer<typeof rawDefaultBuildConfigSchema>;
+
+const indexHtmlConfigSchema = strictObject({
+    noscript: anyString().optional(),
+}).merge(defaultIndexHtmlConfigSchema.deepPartial());
+
+const rawBuildConfigSchema = rawDefaultBuildConfigSchema.deepPartial().merge(strictObject({
+    indexHtml: indexHtmlConfigSchema.optional(),
+    buildID: nonDefaultBuildID,
+}));
+export type RawBuildConfig = z.infer<typeof rawBuildConfigSchema>;
+
+///////  Apps  //////////
 export const rawSubAppConfigSchema = strictObject({
     displayName: anyString(),
     blacklistDialectsRegex: anyString().optional(),
@@ -276,32 +308,32 @@ const rawDBConfigSchema = strictObject({
 
     fields: fieldsSchema,
 })
-.superRefine((obj, ctx) => {
-    if (!(obj.primaryKey in obj.fields)) {
-        issue(ctx, "primarykey_known_field", `primaryKey "${obj.primaryKey}" is not a known field`);
-    }
-    if (Array.isArray(obj.searchableFields)) {
-        if (obj.views !== undefined) {
-            issue(ctx, "searchablefield_array_but_views_defined", `"searchableFields" must be a dictionary if "views" are defined. Current value: "${obj.searchableFields}"`);
+    .superRefine((obj, ctx) => {
+        if (!(obj.primaryKey in obj.fields)) {
+            issue(ctx, "primarykey_known_field", `primaryKey "${obj.primaryKey}" is not a known field`);
         }
-        obj.searchableFields.forEach((givenFieldName) => {
-            if (!(givenFieldName in obj.fields)) {
-                issue(ctx, "searchablefield_not_known_field_list", `searchableField "${givenFieldName}" is not a known field`);
+        if (Array.isArray(obj.searchableFields)) {
+            if (obj.views !== undefined) {
+                issue(ctx, "searchablefield_array_but_views_defined", `"searchableFields" must be a dictionary if "views" are defined. Current value: "${obj.searchableFields}"`);
             }
-        });
-    } else {
-        getRecordEntries(obj.searchableFields).forEach(([view, givenFieldNames]) => {
-            if (!obj.views?.includes(view)) {
-                issue(ctx, "viewid_not_known", `given viewid "${view}" is not a known view (db: "${obj.displayName}")`);
-            }
-            givenFieldNames.forEach((givenFieldName) => {
+            obj.searchableFields.forEach((givenFieldName) => {
                 if (!(givenFieldName in obj.fields)) {
-                    issue(ctx, "searchablefield_not_known_field_dict", `searchableField "${givenFieldName}" is not a known field (view: "${view}")`);
+                    issue(ctx, "searchablefield_not_known_field_list", `searchableField "${givenFieldName}" is not a known field`);
                 }
             });
-        });
-    }
-});
+        } else {
+            getRecordEntries(obj.searchableFields).forEach(([view, givenFieldNames]) => {
+                if (!obj.views?.includes(view)) {
+                    issue(ctx, "viewid_not_known", `given viewid "${view}" is not a known view (db: "${obj.displayName}")`);
+                }
+                givenFieldNames.forEach((givenFieldName) => {
+                    if (!(givenFieldName in obj.fields)) {
+                        issue(ctx, "searchablefield_not_known_field_dict", `searchableField "${givenFieldName}" is not a known field (view: "${view}")`);
+                    }
+                });
+            });
+        }
+    });
 export type RawDBConfig = z.infer<typeof rawDBConfigSchema>;
 
 const dbToViewMappingSchema = realRecord(token("VIEW_ID").nullable());
@@ -330,81 +362,81 @@ export const rawAllDBConfigSchema = strictObject({
     dbConfigs: dbConfigMappingSchema,
     enabledDBs: enabledDBsSchema.optional(),
 })
-// TODO: Create test data (via zod-mock?) and create unit tests
-// TODO: just use both fields and have subapp version override enableddbs
-// TODO: validate subapp names
-.superRefine((allDBConfig, ctx) => {
-    const {dbList, dbConfigs, enabledDBs} = allDBConfig;
+    // TODO: Create test data (via zod-mock?) and create unit tests
+    // TODO: just use both fields and have subapp version override enableddbs
+    // TODO: validate subapp names
+    .superRefine((allDBConfig, ctx) => {
+        const {dbList, dbConfigs, enabledDBs} = allDBConfig;
 
-    if (Array.isArray(enabledDBs)) {
-        enabledDBs.forEach((dbName) => {
-            if (!(dbList.includes(dbName))) {
-                issue(ctx, "enabled_dbname_not_valid_array", `"${dbName}" is not a valid DB name in enabledDBs (check "dbList")`);
-            }
-            if (dbConfigs[dbName]?.views !== undefined) {
-                issue(ctx, "edbs_is_list_but_views_defined_list", `"views" are defined for db "${dbName}", but "enabledDBs" is a list. Views are intended for use with subApps.`);
-            }
-        });
-    } else {
-        getRecordEntries(enabledDBs ?? {}).forEach(([subAppID, enabledDBListOrDBToViewMapping]) => {
-            // For the valid db name in subapp check below, either infer the enabled db list, or use the explicitly defined one
-            let enabledDBList: DBIdentifier[];
-            if (Array.isArray(enabledDBListOrDBToViewMapping)) {
-                enabledDBList = enabledDBListOrDBToViewMapping;
-
-                enabledDBList.forEach((dbName) => {
-                    if (dbConfigs[dbName]?.views !== undefined) {
-                        issue(ctx, "edbs_is_list_but_views_defined_dict", `"views" are defined for db "${dbName}", but "enabledDBs" for subApp "${subAppID}" is a list.`);
-                    }
-                });
-            } else {
-                enabledDBList = Object.keys(enabledDBListOrDBToViewMapping);
-
-                const dbToViewPairs = getRecordEntries(enabledDBListOrDBToViewMapping);
-
-                dbToViewPairs.forEach(([dbID, viewID]) => {
-                    // We check for dbID validity below so we don't need to bother checking again here
-                    const viewsForDB = dbConfigs[dbID]?.views;
-                    if (viewsForDB !== undefined) {
-                        if (viewID === null) {
-                                issue(ctx, "view_not_set_for_db_in_subapp", `view is not set for db "${dbID}" for subApp "${subAppID}", but that db has views defined: "${viewsForDB}".`);
-                        } else {
-                            if (!viewsForDB.includes(viewID)) {
-                                issue(ctx, "invalid_view_for_db", `"${viewID}" is not a valid view for db "${dbID}" for subApp "${subAppID}".`);
-                            }
-                        }
-                    }
-                });
-            }
-            enabledDBList.forEach((dbName) => {
+        if (Array.isArray(enabledDBs)) {
+            enabledDBs.forEach((dbName) => {
                 if (!(dbList.includes(dbName))) {
-                    issue(ctx, "enabled_dbname_not_valid_dict", `"${dbName}" is not a valid DB name in enabledDBsBySubApp for "${subAppID}" (check "dbList")`);
+                    issue(ctx, "enabled_dbname_not_valid_array", `"${dbName}" is not a valid DB name in enabledDBs (check "dbList")`);
+                }
+                if (dbConfigs[dbName]?.views !== undefined) {
+                    issue(ctx, "edbs_is_list_but_views_defined_list", `"views" are defined for db "${dbName}", but "enabledDBs" is a list. Views are intended for use with subApps.`);
                 }
             });
+        } else {
+            getRecordEntries(enabledDBs ?? {}).forEach(([subAppID, enabledDBListOrDBToViewMapping]) => {
+                // For the valid db name in subapp check below, either infer the enabled db list, or use the explicitly defined one
+                let enabledDBList: DBIdentifier[];
+                if (Array.isArray(enabledDBListOrDBToViewMapping)) {
+                    enabledDBList = enabledDBListOrDBToViewMapping;
+
+                    enabledDBList.forEach((dbName) => {
+                        if (dbConfigs[dbName]?.views !== undefined) {
+                            issue(ctx, "edbs_is_list_but_views_defined_dict", `"views" are defined for db "${dbName}", but "enabledDBs" for subApp "${subAppID}" is a list.`);
+                        }
+                    });
+                } else {
+                    enabledDBList = Object.keys(enabledDBListOrDBToViewMapping);
+
+                    const dbToViewPairs = getRecordEntries(enabledDBListOrDBToViewMapping);
+
+                    dbToViewPairs.forEach(([dbID, viewID]) => {
+                        // We check for dbID validity below so we don't need to bother checking again here
+                        const viewsForDB = dbConfigs[dbID]?.views;
+                        if (viewsForDB !== undefined) {
+                            if (viewID === null) {
+                                issue(ctx, "view_not_set_for_db_in_subapp", `view is not set for db "${dbID}" for subApp "${subAppID}", but that db has views defined: "${viewsForDB}".`);
+                            } else {
+                                if (!viewsForDB.includes(viewID)) {
+                                    issue(ctx, "invalid_view_for_db", `"${viewID}" is not a valid view for db "${dbID}" for subApp "${subAppID}".`);
+                                }
+                            }
+                        }
+                    });
+                }
+                enabledDBList.forEach((dbName) => {
+                    if (!(dbList.includes(dbName))) {
+                        issue(ctx, "enabled_dbname_not_valid_dict", `"${dbName}" is not a valid DB name in enabledDBsBySubApp for "${subAppID}" (check "dbList")`);
+                    }
+                });
+            });
+        }
+
+        dbList.forEach((dbName) => {
+            if (!(dbName in dbConfigs)) {
+                issue(ctx, "dbname_needs_config", `"${dbName}" must have a config defined in "dbConfigs"`);
+            }
         });
-    }
 
-    dbList.forEach((dbName) => {
-        if (!(dbName in dbConfigs)) {
-            issue(ctx, "dbname_needs_config", `"${dbName}" must have a config defined in "dbConfigs"`);
-        }
+
+        getRecordEntries(allDBConfig.dbConfigs).forEach(([dbName, _dbConfig]) => {
+            if (!(dbList.includes(dbName))) {
+                issue(ctx, "dbconfig_name_not_valid", `"${dbName}" is not a valid DB name in dbConfigs (check "dbList")`);
+            }
+        });
+    }).transform((adbc) => {
+        // If enabledDBs is not given, use dbList
+        let edbs = adbc.enabledDBs ?? adbc.dbList;
+        const withFilledInEnabledDBs = {
+            ...adbc,
+            enabledDBs: edbs,
+        };
+        return withFilledInEnabledDBs;
     });
-
-
-    getRecordEntries(allDBConfig.dbConfigs).forEach(([dbName, _dbConfig]) => {
-        if (!(dbList.includes(dbName))) {
-            issue(ctx, "dbconfig_name_not_valid", `"${dbName}" is not a valid DB name in dbConfigs (check "dbList")`);
-        }
-    });
-}).transform((adbc) => {
-    // If enabledDBs is not given, use dbList
-    let edbs = adbc.enabledDBs ?? adbc.dbList;
-    const withFilledInEnabledDBs =  {
-        ...adbc,
-        enabledDBs: edbs,
-    };
-    return withFilledInEnabledDBs;
-});
 
 export type RawAllDBConfig = z.infer<typeof rawAllDBConfigSchema>;
 
@@ -428,6 +460,11 @@ const menuConfigSchema = strictObject({
     config: rawMenuConfigSchema,
 });
 
+const defaultBuildConfigSchema = strictObject({
+    configType: z.literal("defaultBuildConfig"),
+    config: rawDefaultBuildConfigSchema,
+});
+
 // Which configs must/can be present for a given app.
 const rawAppLoadedAllConfigSchema = strictObject({
     appConfig: appConfigSchema,
@@ -440,6 +477,7 @@ const rawAppLoadedAllConfigSchema = strictObject({
 const rawDefaultLoadedAllConfigSchema = strictObject({
     langConfig: langConfigSchema,
     menuConfig: menuConfigSchema,
+    defaultBuildConfig: defaultBuildConfigSchema,
 });
 
 const loadedAllConfigSchema = rawDefaultLoadedAllConfigSchema.merge(rawAppLoadedAllConfigSchema).required();
@@ -526,6 +564,7 @@ export const defaultTopLevelConfigurationSchema = strictObject({
     appID: defaultAppID,
     pages: allPagesSchema,
     configs: defaultAllConfigSchema,
+    build: defaultBuildConfigSchema,
 });
 
 export type DefaultTopLevelConfiguration = z.infer<typeof defaultTopLevelConfigurationSchema>;
@@ -541,7 +580,9 @@ const allAppsSchema = z.object({default: z.undefined()})
 export const returnedFinalConfigSchema = strictObject({
     default: defaultTopLevelConfigurationSchema,
     apps: allAppsSchema,
+    buildConfig: rawBuildConfigSchema.optional(),
 });
+
 // TODO: make a wrapper class to make operations on this easier once it's loaded
 export type ReturnedFinalConfig = z.infer<typeof returnedFinalConfigSchema>;
 

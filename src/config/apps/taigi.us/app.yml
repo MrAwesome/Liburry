@@ -1,3 +1,4 @@
+# TODO: make this the title in JS, not just index.html?
 displayName: "Chhâ Tâi-gí!"
 defaultSubApp: "eng_poj"
 #domainToubefaultSubAppMapping:
@@ -43,3 +44,14 @@ fonts:
   -
     type: "system"
     family: "sans-serif"
+
+
+# TODO: implement defaults (in 'default', or just in index.html?
+# TODO: implement default manifest.json
+# TODO: implement default favicon.ico
+#
+# REACT_APP_LIBURRY_HTML_THEME_COLOR
+# REACT_APP_LIBURRY_HTML_OG_TITLE
+# REACT_APP_LIBURRY_HTML_OG_IMAGE
+# REACT_APP_LIBURRY_HTML_OG_DESCRIPTION
+# REACT_APP_LIBURRY_HTML_NOSCRIPT_ADDENDUM

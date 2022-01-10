@@ -3,24 +3,25 @@
 
 <head>
 	<meta charset="utf-8">
-    <meta property="og:title" content="Chhâ Tâi-gí!">
-    <meta property="og:image" content="https://taigi.us/icons/tw-flag-full.png">
-    <meta property="og:description" content="A local search engine for researching words and phrases in Tâi-gí.">
+    <meta property="og:title" content="REACT_APP_LIBURRY_HTML_OG_TITLE">
+    <meta property="og:image" content="%REACT_APP_LIBURRY_HTML_OG_IMAGE%">
+    <meta property="og:description" content="%REACT_APP_LIBURRY_HTML_OG_DESCRIPTION%">
 
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<meta name="theme-color" content="#000000">
+	<meta name="theme-color" content="%REACT_APP_LIBURRY_HTML_THEME_COLOR%">
 
+    <!-- [] XXX TODO: hoist config dir favico / manifest.json to build dir (use webpack?) -->
 	<link rel="manifest" href="%PUBLIC_URL%/manifest.json?v=6">
 	<link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
 
-	<title>Chhâ Tâi-gí!</title>
+	<title>%REACT_APP_LIBURRY_HTML_TITLE%</title>
 </head>
 
 <body>
 	<noscript>
-        This website relies heavily on Javascript for live search. If you are interested in a non-JS version of this website, please create an issue <a href="https://github.com/MrAwesome/Liburry/">here</a>.
+    This website relies heavily on Javascript for live search. If you are interested in a non-JS version of this website, please create an issue <a href="https://github.com/MrAwesome/Liburry/">here</a>.
 
-        For Taiwanese, you can also try out  <a href="https://chhoe.taigi.info/">ChhoeTaigi</a>, which was an inspiration for this site.
+    %REACT_APP_LIBURRY_HTML_NOSCRIPT_ADDENDUM%
 	</noscript>
 	<div id="root"></div>
 </body>

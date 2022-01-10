@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {token} from './configHandler/zodConfigTypes';
+import {BuildID, token} from './configHandler/zodConfigTypes';
 
 // TODO: default to an app with help messages / docs?
 const DEFAULT_FALLBACK_APP = "taigi.us";
@@ -17,6 +17,10 @@ const appIDTokArray = z.preprocess(
     z.array(token('APP_ID')).nonempty()
 );
 
+
+/// TODO: document, note that this is now the required var
+export const LIBURRY_BUILD: BuildID | undefined = token('BUILD_ID').optional().parse(process.env.REACT_APP_LIBURRY_BUILD);
+
 ////////////////////////////////XXX REQUIRED XXX//////////////////////////////////////////////
 // env(REACT_APP_LIBURRY_BUILD_APPS)
 //   This single env variable is required at build time
@@ -32,7 +36,7 @@ export const LIBURRY_BUILD_APPS: [string, ...string[]] =
 //////////////////////////////////////////////////////////////////////////////////////////////
 // env(REACT_APP_LIBURRY_DEFAULT_APP)
 //   Used to set the default app. If not provided,
-//   defaults to the first app in LIBURRY_BUILD_APPS.
+//   defaults to the first app in LIBURRY_BUILD_APPS or the build named in LIBURRY_BUILD.
 //
 // ex.:
 //    export REACT_APP_LIBURRY_DEFAULT_APP="taigi.us"

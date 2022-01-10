@@ -1,0 +1,12 @@
+displayName: "Liburry Search"
+apps:
+  - taigi.us
+  - FreeDictTestEngAfr
+
+indexHtml:
+  themeColor: "#000000"
+  og:
+    title: "Liburry Search"
+    # TODO XXX: replace with better default
+    imageFullURL: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Chheh-k%C3%A8.png"
+    description: "An offline-first search engine for things that matter."

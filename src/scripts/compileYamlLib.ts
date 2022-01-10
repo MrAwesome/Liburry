@@ -3,7 +3,7 @@ import path from 'path';
 import md5File from 'md5-file';
 import {parseYaml} from "../client/utils/yaml";
 import {promisify} from 'util';
-import {AppID, AppTopLevelConfiguration, appTopLevelConfigurationSchema, DefaultTopLevelConfiguration, defaultTopLevelConfigurationSchema, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../client/configHandler/zodConfigTypes";
+import {AppID, AppTopLevelConfiguration, appTopLevelConfigurationSchema, BuildID, defaultTopLevelConfigurationSchema, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, RawBuildConfig, RawDefaultBuildConfig, rawDefaultBuildConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../client/configHandler/zodConfigTypes";
 import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from "../client/constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
 import {getRecordEntries, runningInJest} from '../client/utils';
@@ -35,6 +35,10 @@ export const YAML_FILENAME_TO_SCHEMA_MAPPING = {
     "lang.yml": {
         type: "langConfig",
         schema: rawLangConfigSchema,
+    },
+    "build.yml": {
+        type: "defaultBuildConfig",
+        schema: rawDefaultBuildConfigSchema,
     },
     "menu.yml": {
         type: "menuConfig",
@@ -127,6 +131,7 @@ export default function validateYaml(filename: string, yamlBlob: Object): Loaded
         //      get paths. if a return to this is desired, you just need to make sure this has a way to safeparse.
         const parsed = yamlBlob as ReturnType<typeof m.schema.parse>;
 
+        // TODO: remove as
         return {
             configType: m.type,
             config: parsed,
@@ -137,7 +142,8 @@ export default function validateYaml(filename: string, yamlBlob: Object): Loaded
     }
 }
 
-export async function rawParseYaml(localPrefix: string, appID: "default" | AppID): Promise<any> {
+// TODO: separate out parsing logic for "default", since it's not just apps
+export async function rawParseAppYaml(localPrefix: string, appID: "default" | AppID): Promise<any> {
     if (!runningInJest()) {
         console.log(`Building app ${appID}...`);
     }
@@ -147,6 +153,19 @@ export async function rawParseYaml(localPrefix: string, appID: "default" | AppID
         pages: {},
         configs: {},
     };
+
+    // TODO: clean up this terrible one-off
+    if (appID === "default") {
+        const buildDir = path.join(CONFIG_DIR, "default", "build.yml");
+        const lkfPlusMeta = await handleFile(buildDir, "build.yml", []);
+
+        if (lkfPlusMeta?.type === "config") {
+            output.build = lkfPlusMeta.conf;
+        } else {
+            console.log(lkfPlusMeta);
+            throw new Error("Error loading default build.yml!");
+        }
+    }
 
     // TODO: ensure CONFIG_DIR + localPrefix + appID is a valid path
     const appDir = path.join(CONFIG_DIR, localPrefix, appID);
@@ -165,38 +184,81 @@ export async function rawParseYaml(localPrefix: string, appID: "default" | AppID
     return output;
 }
 
-function parseDefaultApp(obj: any): DefaultTopLevelConfiguration {
-    return defaultTopLevelConfigurationSchema.parse(obj, {path: ["default"]});
+async function loadBuildYaml(buildID: BuildID, path: string): Promise<any> {
+    const yamlText = (await readFile(path)).toString();
+    const yamlBlob: any = parseYaml(yamlText);
+    yamlBlob.buildID = buildID;
+    return yamlBlob;
 }
 
-function parseApp(obj: any): AppTopLevelConfiguration {
-    return appTopLevelConfigurationSchema.parse(obj, {path: ["apps", obj.appID]});
+export async function rawParseBuildYaml(localPrefix: string, buildID: BuildID): Promise<any> {
+    if (!runningInJest()) {
+        console.log(`Building build ${buildID}...`);
+    }
+
+    // TODO: ensure is a valid path
+    const fileName = `${buildID}.yml`;
+    const buildPath = path.join(CONFIG_DIR, localPrefix, fileName);
+
+    return await loadBuildYaml(buildID, buildPath);
 }
 
-export async function loadFinalConfigForApps(appIDs: AppID[]): Promise<ReturnedFinalConfig> {
-    const generatedFinalConfigAttempt = await loadFinalConfigForAppsInternal(appIDs);
+export async function loadFinalConfigForApps(appIDs: string[]): Promise<ReturnedFinalConfig> {
+    const generatedFinalConfigAttempt = await loadFinalConfigInternal({appIDsOverride: appIDs});
     return returnedFinalConfigSchema.parse(generatedFinalConfigAttempt);
 }
 
-export async function loadFinalConfigForAppsSafe(appIDs: AppID[]): Promise<ReturnType<typeof returnedFinalConfigSchema.safeParse>> {
-    const generatedFinalConfigAttempt = await loadFinalConfigForAppsInternal(appIDs);
+export async function loadFinalConfigForAppsSafe(appIDs: string[]): Promise<ReturnType<typeof returnedFinalConfigSchema.safeParse>> {
+    const generatedFinalConfigAttempt = await loadFinalConfigInternal({appIDsOverride: appIDs});
     return returnedFinalConfigSchema.safeParse(generatedFinalConfigAttempt);
 }
 
-async function loadFinalConfigForAppsInternal(appIDs: AppID[]): Promise<any> {
-    const rawdef = await rawParseYaml("", "default");
-    //const def = parseDefaultApp(rawdef);
-    const def = rawdef as DefaultTopLevelConfiguration;
+export async function loadFinalConfigForBuild(buildID: BuildID | undefined): Promise<ReturnedFinalConfig> {
+    const generatedFinalConfigAttempt = await loadFinalConfigInternal({buildID});
+    return returnedFinalConfigSchema.parse(generatedFinalConfigAttempt);
+}
+
+export async function loadFinalConfigForBuildSafe(buildID: BuildID | undefined): Promise<ReturnType<typeof returnedFinalConfigSchema.safeParse>> {
+    const generatedFinalConfigAttempt = await loadFinalConfigInternal({buildID});
+    return returnedFinalConfigSchema.safeParse(generatedFinalConfigAttempt);
+}
+
+// TODO: change to take buildname, determine apps for build
+async function loadFinalConfigInternal(
+    opts: {
+        appIDsOverride?: string[],
+        buildID?: BuildID,
+    }
+): Promise<any> {
+    const {appIDsOverride, buildID} = opts;
+    const rawdef = await rawParseAppYaml("", "default");
+    const defaultConfigs = defaultTopLevelConfigurationSchema.parse(rawdef, {path: ["default"]});
+
+    if (buildID === undefined) {
+        console.warn("LIBURRY_BUILD not set, will use default build settings.");
+    }
+    const buildConfig: RawBuildConfig = buildID === undefined
+        ? undefined :
+        await rawParseBuildYaml("builds/", buildID);
+    console.log("BUILD CONFIG", buildConfig);
+    const appIDsFromBuild = buildConfig?.apps ?? defaultConfigs.build.config.apps;
+
+    // TODO: walk the app dir and get all app names
+    if (appIDsFromBuild === "all") {
+        throw new Error("allmode is not yet implemented!");
+    }
+
+    let appIDs = appIDsOverride ?? appIDsFromBuild;
+
     const apps: AppTopLevelConfiguration[] = await Promise.all(appIDs.map(async (appID) => {
-        const rawapp = await rawParseYaml("apps/", appID);
-        //const app = parseApp(rawapp);
-        const app = rawapp as AppTopLevelConfiguration;
-        return app;
+        const rawapp = await rawParseAppYaml("apps/", appID);
+        return appTopLevelConfigurationSchema.parse(rawapp, {path: ["apps", appID]});
     }));
     const appEntries: [AppID, AppTopLevelConfiguration][] = apps.map((a) => ([a.appID, a]));
     const generatedFinalConfigAttempt: any = {
-        default: def,
+        default: defaultConfigs,
         apps: Object.fromEntries(appEntries),
+        buildConfig: buildConfig,
     };
     return generatedFinalConfigAttempt;
 }
@@ -245,6 +307,45 @@ export async function genPrecacheEntries(filenames: string[]): Promise<PrecacheE
             return entry;
         });
     }));
+}
+
+interface IndexHtmlEnvVarPairs {
+    REACT_APP_LIBURRY_HTML_TITLE: string,
+    REACT_APP_LIBURRY_HTML_THEME_COLOR: string,
+    REACT_APP_LIBURRY_HTML_OG_TITLE: string,
+    REACT_APP_LIBURRY_HTML_OG_IMAGE: string,
+    REACT_APP_LIBURRY_HTML_OG_DESCRIPTION: string,
+    REACT_APP_LIBURRY_HTML_NOSCRIPT_ADDENDUM?: string,
+};
+
+export function getIndexHTMLEnvVarPairs(
+    defaultBuildConfig: RawDefaultBuildConfig,
+    buildConfig?: RawBuildConfig,
+): IndexHtmlEnvVarPairs {
+    // TODO: recursively overwrite defaultconfig with buildconfig
+    // TODO: read in configs
+    const noscript = buildConfig?.indexHtml?.noscript;
+
+    const displayName = buildConfig?.displayName ?? defaultBuildConfig.displayName;
+
+    const themeColor = buildConfig?.indexHtml?.themeColor ?? defaultBuildConfig.indexHtml.themeColor;
+
+    // NOTE: if the build has a displayName, use that for og:title before falling back to the default buildconfig
+    const title = buildConfig?.indexHtml?.og?.title ??
+        buildConfig?.displayName ??
+        defaultBuildConfig.indexHtml.og.title;
+    const imageFullURL = buildConfig?.indexHtml?.og?.imageFullURL ?? defaultBuildConfig.indexHtml.og.imageFullURL;
+    const description = buildConfig?.indexHtml?.og?.description ?? defaultBuildConfig.indexHtml.og.description;
+
+    return {
+        REACT_APP_LIBURRY_HTML_TITLE: displayName,
+        REACT_APP_LIBURRY_HTML_THEME_COLOR: themeColor,
+        REACT_APP_LIBURRY_HTML_OG_TITLE: title,
+        REACT_APP_LIBURRY_HTML_OG_IMAGE: imageFullURL,
+        REACT_APP_LIBURRY_HTML_OG_DESCRIPTION: description,
+        REACT_APP_LIBURRY_HTML_NOSCRIPT_ADDENDUM: noscript,
+    };
+
 }
 
 export function makeEnvFileEntry(varname: string, value: string) {

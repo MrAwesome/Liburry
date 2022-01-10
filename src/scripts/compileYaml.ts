@@ -5,9 +5,9 @@
 import fs from 'fs';
 import {promisify} from 'util';
 import {ReturnedFinalConfig} from '../client/configHandler/zodConfigTypes';
-import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR, LIBURRY_BUILD_APPS} from '../client/constants';
+import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR, LIBURRY_BUILD} from '../client/constants';
 import {CACHE_LINE_ENV_VARNAME} from './common';
-import {genPrecacheEntries, genWriteEnvFile, genWriteFinalConfig, getFilesToCache, loadFinalConfigForApps, makeEnvFileEntry} from './compileYamlLib';
+import {genPrecacheEntries, genWriteEnvFile, genWriteFinalConfig, getFilesToCache, getIndexHTMLEnvVarPairs, loadFinalConfigForBuild, makeEnvFileEntry} from './compileYamlLib';
 const mkdir = promisify(fs.mkdir);
 
 (async function () {
@@ -21,8 +21,8 @@ const mkdir = promisify(fs.mkdir);
     // [] write out appname as directory in generated
     // [] write out default config (where should it be?)
     // go back to writing out the entire config, and still just fetch the one big config - it's not bad to fetch all configs for all apps, you just maybe don't have to pre-load every app's dbs (should you preload subapp dbs? how to decide?)
-    const appIDs = LIBURRY_BUILD_APPS;
-    const checkedFinalConfig: ReturnedFinalConfig = await loadFinalConfigForApps(appIDs);
+    const buildID = LIBURRY_BUILD;
+    const checkedFinalConfig: ReturnedFinalConfig = await loadFinalConfigForBuild(buildID);
 
     // This must be written before the env file, since we generate an md5sum of the json file for precaching
     const finalObjJsonString = JSON.stringify(checkedFinalConfig);
@@ -34,7 +34,24 @@ const mkdir = promisify(fs.mkdir);
     ];
     const precacheEntries = await genPrecacheEntries(filesToCache);
     const precacheEntriesJsonString = JSON.stringify(precacheEntries);
-    const envFileOutputText = makeEnvFileEntry(CACHE_LINE_ENV_VARNAME, precacheEntriesJsonString);
+
+    const defaultBuildConfig = checkedFinalConfig.default.build.config;
+
+    if (LIBURRY_BUILD !== undefined) {
+    }
+
+    const buildConfig = checkedFinalConfig.buildConfig;
+
+    const indexHtmlEnvVarPairs = getIndexHTMLEnvVarPairs(defaultBuildConfig, buildConfig);
+    let envFileOutputText = "";
+    envFileOutputText += makeEnvFileEntry(CACHE_LINE_ENV_VARNAME, precacheEntriesJsonString);
+    let envVarName: keyof typeof indexHtmlEnvVarPairs;
+    for (envVarName in indexHtmlEnvVarPairs) {
+        const envVarVal = indexHtmlEnvVarPairs[envVarName];
+        if (envVarVal !== undefined) {
+            envFileOutputText += makeEnvFileEntry(envVarName, envVarVal);
+        }
+    }
 
     await genWriteEnvFile(envFileOutputText);
 }());
