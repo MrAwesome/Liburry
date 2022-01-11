@@ -118,6 +118,8 @@ export type BuildID = z.infer<typeof nonDefaultBuildID>;
 ///////  Builds  //////////
 const defaultIndexHtmlConfigSchema = strictObject({
     themeColor: anyString(),
+    manifest: token("FILENAME"),
+    favicon: token("FILENAME"),
     og: strictObject({
         title: anyString(),
         imageFullURL: anyString().url(),

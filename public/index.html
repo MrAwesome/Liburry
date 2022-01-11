@@ -2,17 +2,34 @@
 <html lang="en">
 
 <head>
-	<meta charset="utf-8">
-    <meta property="og:title" content="REACT_APP_LIBURRY_HTML_OG_TITLE">
-    <meta property="og:image" content="%REACT_APP_LIBURRY_HTML_OG_IMAGE%">
-    <meta property="og:description" content="%REACT_APP_LIBURRY_HTML_OG_DESCRIPTION%">
+	<meta charset="utf-8" />
 
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<meta name="theme-color" content="%REACT_APP_LIBURRY_HTML_THEME_COLOR%">
+    <!-- NOTE: If you use environment variables here, they must be
+               added to IndexHtmlEnvVarPairs for type safety. -->
+    <meta property="og:title" content="%REACT_APP_LIBURRY_HTML_OG_TITLE%" />
+    <meta property="og:image" content="%REACT_APP_LIBURRY_HTML_OG_IMAGE%" />
+    <meta property="og:description" content="%REACT_APP_LIBURRY_HTML_OG_DESCRIPTION%" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+	<meta name="theme-color" content="%REACT_APP_LIBURRY_HTML_THEME_COLOR%" />
 
     <!-- [] XXX TODO: hoist config dir favico / manifest.json to build dir (use webpack?) -->
-	<link rel="manifest" href="%PUBLIC_URL%/manifest.json?v=6">
-	<link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    <!-- [] generate icons for manifest.json -->
+    <!-- [] store icons in generally-available place for now -->
+    <!-- [] allow for build-specific favicon.ico -->
+    <!-- [] allow for build-specific manifest.json, including version string -->
+
+
+    <!-- [] TODO: implement-->
+    <!-- <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" /> i
+
+            <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    -->
+
+	<link rel="manifest" href="%PUBLIC_URL%/%REACT_APP_LIBURRY_MANIFEST_JSON_PATH%" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/%REACT_APP_LIBURRY_FAVICON_PATH%" />
 
 	<title>%REACT_APP_LIBURRY_HTML_TITLE%</title>
 </head>

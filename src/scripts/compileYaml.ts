@@ -7,7 +7,7 @@ import {promisify} from 'util';
 import {ReturnedFinalConfig} from '../client/configHandler/zodConfigTypes';
 import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR, LIBURRY_BUILD} from '../client/constants';
 import {CACHE_LINE_ENV_VARNAME} from './common';
-import {genPrecacheEntries, genWriteEnvFile, genWriteFinalConfig, getFilesToCache, getIndexHTMLEnvVarPairs, loadFinalConfigForBuild, makeEnvFileEntry} from './compileYamlLib';
+import {genPrecacheEntries, genWriteEnvFile, genWriteFinalConfig, getFilesToCache, genIndexHTMLEnvVarPairs, loadFinalConfigForBuild, makeEnvFileEntry} from './compileYamlLib';
 const mkdir = promisify(fs.mkdir);
 
 (async function () {
@@ -42,7 +42,7 @@ const mkdir = promisify(fs.mkdir);
 
     const buildConfig = checkedFinalConfig.buildConfig;
 
-    const indexHtmlEnvVarPairs = getIndexHTMLEnvVarPairs(defaultBuildConfig, buildConfig);
+    const indexHtmlEnvVarPairs = await genIndexHTMLEnvVarPairs(defaultBuildConfig, buildConfig);
     let envFileOutputText = "";
     envFileOutputText += makeEnvFileEntry(CACHE_LINE_ENV_VARNAME, precacheEntriesJsonString);
     let envVarName: keyof typeof indexHtmlEnvVarPairs;

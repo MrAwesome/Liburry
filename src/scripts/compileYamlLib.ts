@@ -197,7 +197,7 @@ export async function rawParseBuildYaml(localPrefix: string, buildID: BuildID): 
     }
 
     // TODO: ensure is a valid path
-    const fileName = `${buildID}.yml`;
+    const fileName = `${buildID}/build.yml`;
     const buildPath = path.join(CONFIG_DIR, localPrefix, fileName);
 
     return await loadBuildYaml(buildID, buildPath);
@@ -240,7 +240,6 @@ async function loadFinalConfigInternal(
     const buildConfig: RawBuildConfig = buildID === undefined
         ? undefined :
         await rawParseBuildYaml("builds/", buildID);
-    console.log("BUILD CONFIG", buildConfig);
     const appIDsFromBuild = buildConfig?.apps ?? defaultConfigs.build.config.apps;
 
     // TODO: walk the app dir and get all app names
@@ -309,33 +308,47 @@ export async function genPrecacheEntries(filenames: string[]): Promise<PrecacheE
     }));
 }
 
-interface IndexHtmlEnvVarPairs {
+export type IndexHtmlEnvVarPairs = {
     REACT_APP_LIBURRY_HTML_TITLE: string,
     REACT_APP_LIBURRY_HTML_THEME_COLOR: string,
     REACT_APP_LIBURRY_HTML_OG_TITLE: string,
     REACT_APP_LIBURRY_HTML_OG_IMAGE: string,
     REACT_APP_LIBURRY_HTML_OG_DESCRIPTION: string,
-    REACT_APP_LIBURRY_HTML_NOSCRIPT_ADDENDUM?: string,
-};
+    REACT_APP_LIBURRY_MANIFEST_JSON_PATH: string,
+    REACT_APP_LIBURRY_FAVICON_PATH: string,
+} & IndexHtmlEnvVarPairsOptionals;
 
-export function getIndexHTMLEnvVarPairs(
+interface IndexHtmlEnvVarPairsOptionals {
+    REACT_APP_LIBURRY_HTML_NOSCRIPT_ADDENDUM?: string,
+}
+
+export async function genIndexHTMLEnvVarPairs(
     defaultBuildConfig: RawDefaultBuildConfig,
     buildConfig?: RawBuildConfig,
-): IndexHtmlEnvVarPairs {
+): Promise<IndexHtmlEnvVarPairs> {
     // TODO: recursively overwrite defaultconfig with buildconfig
     // TODO: read in configs
-    const noscript = buildConfig?.indexHtml?.noscript;
 
     const displayName = buildConfig?.displayName ?? defaultBuildConfig.displayName;
-
     const themeColor = buildConfig?.indexHtml?.themeColor ?? defaultBuildConfig.indexHtml.themeColor;
 
     // NOTE: if the build has a displayName, use that for og:title before falling back to the default buildconfig
+    // //TODO: UNIT TEST
     const title = buildConfig?.indexHtml?.og?.title ??
         buildConfig?.displayName ??
         defaultBuildConfig.indexHtml.og.title;
     const imageFullURL = buildConfig?.indexHtml?.og?.imageFullURL ?? defaultBuildConfig.indexHtml.og.imageFullURL;
     const description = buildConfig?.indexHtml?.og?.description ?? defaultBuildConfig.indexHtml.og.description;
+
+    const manifest = buildConfig?.indexHtml?.manifest ?? defaultBuildConfig.indexHtml.manifest;
+    const favicon = buildConfig?.indexHtml?.favicon ?? defaultBuildConfig.indexHtml.favicon;
+
+    const noscript = buildConfig?.indexHtml?.noscript;
+
+    const optionals: IndexHtmlEnvVarPairsOptionals = {};
+    if (noscript !== undefined) {
+        optionals.REACT_APP_LIBURRY_HTML_NOSCRIPT_ADDENDUM = noscript;
+    }
 
     return {
         REACT_APP_LIBURRY_HTML_TITLE: displayName,
@@ -343,7 +356,9 @@ export function getIndexHTMLEnvVarPairs(
         REACT_APP_LIBURRY_HTML_OG_TITLE: title,
         REACT_APP_LIBURRY_HTML_OG_IMAGE: imageFullURL,
         REACT_APP_LIBURRY_HTML_OG_DESCRIPTION: description,
-        REACT_APP_LIBURRY_HTML_NOSCRIPT_ADDENDUM: noscript,
+        REACT_APP_LIBURRY_MANIFEST_JSON_PATH: manifest,
+        REACT_APP_LIBURRY_FAVICON_PATH: favicon,
+        ...optionals,
     };
 
 }

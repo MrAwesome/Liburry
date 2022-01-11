@@ -4,6 +4,13 @@ apps:
   - FreeDictTestEngAfr
 
 indexHtml:
+  # TODO: add to zod, implement overrides
+  # TODO: fix icon paths in current manifest.json
+  # TODO: make a default liburry manifest.json
+  # TODO: XXX: md5sum the manifest file and append it as a version string (and do this for all files?)
+  # TODO(low)(convenience): ensure all files mentioned are present on the filesystem
+  manifest: "manifest.json"
+  favicon: "favicon.ico"
   themeColor: "#000000"
   og:
     title: "Liburry Search"
