@@ -290,22 +290,38 @@ export function getFilesToCache(finalObj: ReturnedFinalConfig): string[] {
     return filesToCache;
 }
 
+function getPublicPrefixes(filename: string): {withPublicPrefix: string, noPublicPrefix: string} {
+    let withPublicPrefix = filename;
+    if (!filename.startsWith(PUBLIC_DIR_PREFIX)) {
+        withPublicPrefix = PUBLIC_DIR_PREFIX + filename;
+    }
+    const noPublicPrefix = withPublicPrefix.slice(PUBLIC_DIR_PREFIX.length);
+    return {withPublicPrefix, noPublicPrefix};
+}
+
 export async function genPrecacheEntries(filenames: string[]): Promise<PrecacheEntry[]> {
     return Promise.all(filenames.map(async (filename) => {
-        let withPublicPrefix = filename;
-        if (!filename.startsWith(PUBLIC_DIR_PREFIX)) {
-            withPublicPrefix = PUBLIC_DIR_PREFIX + filename;
-        }
-        const noPublicPrefix = withPublicPrefix.slice(PUBLIC_DIR_PREFIX.length);
+        const {withPublicPrefix, noPublicPrefix} = getPublicPrefixes(filename);
         return md5File(withPublicPrefix).then((md5sum) => {
             const entry: PrecacheEntry = {
                 url: noPublicPrefix,
                 revision: md5sum,
-                //integrity: ,
             };
             return entry;
         });
     }));
+}
+
+async function genLocalURLWithMD5Version(filename: string): Promise<string> {
+    const {withPublicPrefix, noPublicPrefix} = getPublicPrefixes(filename);
+
+    if (runningInJest()) {
+        return `${noPublicPrefix}?v=${noPublicPrefix}_MD5`;
+    }
+
+    return md5File(withPublicPrefix).then((md5sum) => {
+        return `${noPublicPrefix}?v=${md5sum}`;
+    });
 }
 
 export type IndexHtmlEnvVarPairs = {
@@ -340,7 +356,8 @@ export async function genIndexHTMLEnvVarPairs(
     const imageFullURL = buildConfig?.indexHtml?.og?.imageFullURL ?? defaultBuildConfig.indexHtml.og.imageFullURL;
     const description = buildConfig?.indexHtml?.og?.description ?? defaultBuildConfig.indexHtml.og.description;
 
-    const manifest = buildConfig?.indexHtml?.manifest ?? defaultBuildConfig.indexHtml.manifest;
+    const manifestUNFINISHED = buildConfig?.indexHtml?.manifest ?? defaultBuildConfig.indexHtml.manifest;
+    const manifest = await genLocalURLWithMD5Version(manifestUNFINISHED);
     const favicon = buildConfig?.indexHtml?.favicon ?? defaultBuildConfig.indexHtml.favicon;
 
     const noscript = buildConfig?.indexHtml?.noscript;

@@ -10,6 +10,7 @@ indexHtml:
   # TODO: XXX: md5sum the manifest file and append it as a version string (and do this for all files?)
   # TODO(low)(convenience): ensure all files mentioned are present on the filesystem
   manifest: "manifest.json"
+  brokenmanifestfixlinks: "PLEASE"
   favicon: "favicon.ico"
   themeColor: "#000000"
   og:
