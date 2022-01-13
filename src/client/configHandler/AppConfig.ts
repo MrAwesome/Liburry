@@ -27,10 +27,12 @@ export default class AppConfig {
     // TODO: unit test this transition
     static from(
         rfc: ReturnedFinalConfig,
-        appID: AppID,
+        appID: AppID | null,
         subAppIDOverride: SubAppID | null,
     ) {
-        // TODO: possibly throw a more useful error message here? Can this ever really happen?
+        if (appID === null) {
+            appID = rfc.default.build.config.apps[0];
+        }
 
         const pageHandler = PageHandler.fromFinalConfig(rfc, appID);
         const rawAppConfig = rfc.apps[appID]!;

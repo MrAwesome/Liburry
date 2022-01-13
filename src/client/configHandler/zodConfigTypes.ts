@@ -14,7 +14,8 @@ import {fontConfigSchema} from "./zodFontConfigTypes";
 // Tokens should never be displayed to users (everything which has a token should also have a "displayName"
 // if it needs one), so this only affects i18n for programmers.
 const BASIC_TOKEN_REGEX: RegExp = /^[a-zA-Z0-9_/]+$/;
-const FILENAME_AND_DIRECTORY_SAFE_REGEX: RegExp = /^[a-zA-Z0-9_/.]+$/;
+const FILENAME_AND_DIRECTORY_SAFE_REGEX: RegExp = /^[a-zA-Z0-9_\/\.]+$/;
+const LOCAL_FILENAME_AND_DIRECTORY_SAFE_REGEX: RegExp = /^\/[a-zA-Z0-9_\/\.]+$/;
 
 // Token Types
 // NOTE: all of this type-glop is just to allow us to define the keys once while still being able to enforce the types of the values
@@ -28,6 +29,7 @@ export const tokenMatchers = tlist({
     DIALECT_ID: [BASIC_TOKEN_REGEX, "Dialect IDs must contain only ASCII letters, numbers, and underscores."],
     PAGE_ID: [BASIC_TOKEN_REGEX, "Page IDs must contain only ASCII letters, numbers, and underscores."],
     FILENAME: [FILENAME_AND_DIRECTORY_SAFE_REGEX, "Filenames must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
+    LOCAL_FILENAME: [LOCAL_FILENAME_AND_DIRECTORY_SAFE_REGEX, "Local filenames must begin with a '/' and must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
     DB_ID: null,
     SUBAPP_ID: null,
     FIELD_ID: null,
@@ -108,6 +110,7 @@ function matchToken(tt: LiburryTokenTypes): z.ZodString {
 const nonDefaultAppID = token("APP_ID").refine((s) => s !== "default");
 const nonDefaultBuildID = token("BUILD_ID").refine((s) => s !== "default");
 const defaultAppID = z.literal("default");
+
 // TODO: use a zod schema for this.
 export type AppID = z.infer<typeof nonDefaultAppID>;
 export type SubAppID = string;
@@ -118,8 +121,8 @@ export type BuildID = z.infer<typeof nonDefaultBuildID>;
 ///////  Builds  //////////
 const defaultIndexHtmlConfigSchema = strictObject({
     themeColor: anyString(),
-    manifest: token("FILENAME"),
-    favicon: token("FILENAME"),
+    manifest: token("LOCAL_FILENAME"),
+    favicon: token("LOCAL_FILENAME"),
     og: strictObject({
         title: anyString(),
         imageFullURL: anyString().url(),

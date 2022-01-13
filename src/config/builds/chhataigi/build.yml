@@ -3,8 +3,8 @@ apps:
   - taigi.us
 
 indexHtml:
-  manifest: "manifest.json"
-  favicon: "favicon.ico"
+  manifest: "/manifests/chhataigi/manifest.json"
+  favicon: "/icons/chhataigi/favicon.ico"
   themeColor: "#000000"
   og:
     imageFullURL: "https://taigi.us/icons/chhataigi/tw-flag-full.png"

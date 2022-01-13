@@ -37,6 +37,7 @@ test('render searchbar by default', async () => {
     const rfc = await genRFC();
     let options = new OptionsChangeableByUser();
     const app = <ChhaTaigi rfc={rfc} mockOptions={options} />;
+    // @ts-ignore
     render(app, { legacyRoot: true });
 
     const searchBar = screen.getByPlaceholderText(/Search.../);
@@ -104,6 +105,7 @@ test('render single entry via override', async () => {
     const annotatedRes = new AnnotatedPerDictResults(annotatedResRaw);
 
     const app = <ChhaTaigi mockOptions={options} rfc={rfc} mockResults={annotatedRes} />;
+    // @ts-ignore
     render(app, { legacyRoot: true });
 
     const hoabun = screen.getByText(/法律/i);

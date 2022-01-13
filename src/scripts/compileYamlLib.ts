@@ -3,7 +3,7 @@ import path from 'path';
 import md5File from 'md5-file';
 import {parseYaml} from "../client/utils/yaml";
 import {promisify} from 'util';
-import {AppID, AppTopLevelConfiguration, appTopLevelConfigurationSchema, BuildID, defaultTopLevelConfigurationSchema, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, RawBuildConfig, RawDefaultBuildConfig, rawDefaultBuildConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../client/configHandler/zodConfigTypes";
+import {AppID, AppTopLevelConfiguration, BuildID, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, RawBuildConfig, RawDefaultBuildConfig, rawDefaultBuildConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../client/configHandler/zodConfigTypes";
 import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from "../client/constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
 import {getRecordEntries, runningInJest} from '../client/utils';
@@ -13,6 +13,7 @@ const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const opendir = promisify(fs.opendir);
 
+// TODO(high): check that all referenced files in public actually exist
 // TODO(high): ensure that directory names are alphanumeric and underscore only
 // TODO(high): use webpack to generate this, instead of .env.local
 // TODO(high): once using webpack, generate the json filenames with md5sum included in the filename, and use it when fetching them? certainly include the md5sum in the main fetch, since that isn't happening now
@@ -232,7 +233,7 @@ async function loadFinalConfigInternal(
 ): Promise<any> {
     const {appIDsOverride, buildID} = opts;
     const rawdef = await rawParseAppYaml("", "default");
-    const defaultConfigs = defaultTopLevelConfigurationSchema.parse(rawdef, {path: ["default"]});
+    //const defaultConfigs = defaultTopLevelConfigurationSchema.parse(rawdef, {path: ["default"]});
 
     if (buildID === undefined) {
         console.warn("LIBURRY_BUILD not set, will use default build settings.");
@@ -240,7 +241,7 @@ async function loadFinalConfigInternal(
     const buildConfig: RawBuildConfig = buildID === undefined
         ? undefined :
         await rawParseBuildYaml("builds/", buildID);
-    const appIDsFromBuild = buildConfig?.apps ?? defaultConfigs.build.config.apps;
+    const appIDsFromBuild = buildConfig?.apps ?? rawdef.build.config.apps;
 
     // TODO: walk the app dir and get all app names
     if (appIDsFromBuild === "all") {
@@ -249,13 +250,14 @@ async function loadFinalConfigInternal(
 
     let appIDs = appIDsOverride ?? appIDsFromBuild;
 
-    const apps: AppTopLevelConfiguration[] = await Promise.all(appIDs.map(async (appID) => {
+    const apps: AppTopLevelConfiguration[] = await Promise.all(appIDs.map(async (appID: string) => {
         const rawapp = await rawParseAppYaml("apps/", appID);
-        return appTopLevelConfigurationSchema.parse(rawapp, {path: ["apps", appID]});
+        return rawapp;
+        //return appTopLevelConfigurationSchema.parse(rawapp, {path: ["apps", appID]});
     }));
     const appEntries: [AppID, AppTopLevelConfiguration][] = apps.map((a) => ([a.appID, a]));
     const generatedFinalConfigAttempt: any = {
-        default: defaultConfigs,
+        default: rawdef,
         apps: Object.fromEntries(appEntries),
         buildConfig: buildConfig,
     };

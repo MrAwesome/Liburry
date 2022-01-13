@@ -13,7 +13,6 @@ import {MainDisplayAreaMode} from "./types/displayTypes";
 import {SearchBar} from "./components/SearchBar";
 import {getProtecc, runningInJest} from "./utils";
 import AppConfig from "./configHandler/AppConfig";
-import {LIBURRY_DEFAULT_APP} from "./constants";
 
 import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
@@ -238,7 +237,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         const options = this.props.mockOptions ?? this.qs.parse();
 
-        this.appConfig = AppConfig.from(this.props.rfc, options.appID ?? LIBURRY_DEFAULT_APP, options.subAppID);
+        this.appConfig = AppConfig.from(this.props.rfc, options.appID, options.subAppID);
 
         this.state = {
             options,

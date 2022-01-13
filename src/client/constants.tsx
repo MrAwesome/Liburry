@@ -8,7 +8,6 @@ const appIDTok = token('APP_ID');
 const appIDTokArray = z.preprocess(
     (envvar) => {
         if (envvar === undefined) {
-            console.log(`Environment variable REACT_APP_LIBURRY_BUILD_APPS not set, assuming ${DEFAULT_FALLBACK_APP}`);
             return [DEFAULT_FALLBACK_APP];
         } else {
             return String(envvar).split(",");
@@ -30,8 +29,13 @@ export const LIBURRY_BUILD: BuildID | undefined = token('BUILD_ID').optional().p
 //  ex.:
 //    export REACT_APP_LIBURRY_BUILD_APPS="taigi.us,test/simpletest"
 ////////////////////////////////XXX REQUIRED XXX//////////////////////////////////////////////
-export const LIBURRY_BUILD_APPS: [string, ...string[]] =
- appIDTokArray.parse(process.env.REACT_APP_LIBURRY_BUILD_APPS);
+const buildApps: string | undefined = process.env.REACT_APP_LIBURRY_BUILD_APPS;
+
+export const LIBURRY_BUILD_APPS: [string, ...string[]] | undefined =
+    buildApps !== undefined
+        ? appIDTokArray.parse(buildApps)
+        : undefined;
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // env(REACT_APP_LIBURRY_DEFAULT_APP)
@@ -41,8 +45,11 @@ export const LIBURRY_BUILD_APPS: [string, ...string[]] =
 // ex.:
 //    export REACT_APP_LIBURRY_DEFAULT_APP="taigi.us"
 //////////////////////////////////////////////////////////////////////////////////////////////
-export const LIBURRY_DEFAULT_APP: string =
-    appIDTok.parse(process.env.REACT_APP_LIBURRY_DEFAULT_APP || LIBURRY_BUILD_APPS[0]);
+const defaultApp: string | undefined = process.env.REACT_APP_LIBURRY_DEFAULT_APP;
+export const LIBURRY_DEFAULT_APP_OVERRIDE: string | undefined =
+    defaultApp !== undefined
+        ? appIDTok.parse(defaultApp)
+        : undefined;
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // env(REACT_APP_REPO_LINK)
