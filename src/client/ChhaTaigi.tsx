@@ -19,6 +19,7 @@ import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
 import AppSelector from "./AppSelector";
 
+// TODO(next): fix back button behavior
 // TODO(next): fix index.html to use Liburry, with overrides from env vars or configs
 // TODO(next): load new datasets (maybe create submodules?)
 // TODO(urgent): register liburry TLDs
