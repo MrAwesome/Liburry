@@ -18,7 +18,7 @@ export default class PageHandler {
     ) {
         // NOTE: default is second, so that page-specific info comes first
 
-        const thisApp = finalConfig.apps[selectedAppID];
+        const thisApp = finalConfig.appConfigs[selectedAppID];
         if (thisApp === undefined) {
             throw new Error(`App not found: ${selectedAppID}`);
         }

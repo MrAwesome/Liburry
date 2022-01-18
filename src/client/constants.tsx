@@ -16,36 +16,42 @@ const appIDTokArray = z.preprocess(
     z.array(token('APP_ID')).nonempty()
 );
 
-/// TODO: document, note that this is now the required var
-export const LIBURRY_BUILD: BuildID | undefined = token('BUILD_ID').optional().parse(process.env.REACT_APP_LIBURRY_BUILD);
-
-////////////////////////////////XXX REQUIRED XXX//////////////////////////////////////////////
-// env(REACT_APP_LIBURRY_BUILD_APPS)
-//   This single env variable is required at build time
-//   to indicate which apps should be built.
-//   It should be a comma-separated list of appIDs.
+//////////////////////////////////////////////////////////////////////////////////////////////
+// env(REACT_APP_LIBURRY_BUILD)
+//   The name of a single BuildID.
 //
-//  ex.:
-//    export REACT_APP_LIBURRY_BUILD_APPS="taigi.us,test/simpletest"
-////////////////////////////////XXX REQUIRED XXX//////////////////////////////////////////////
-const buildApps: string | undefined = process.env.REACT_APP_LIBURRY_BUILD_APPS;
+// ex.:
+//   export REACT_APP_LIBURRY_BUILD="chhataigi"
+export const LIBURRY_BUILD: BuildID | undefined = token('BUILD_ID').optional().parse(process.env.REACT_APP_LIBURRY_BUILD);
+//////////////////////////////////////////////////////////////////////////////////////////////
 
-export const LIBURRY_BUILD_APPS: [string, ...string[]] | undefined =
+//////////////////////////////////////////////////////////////////////////////////////////////
+// env(REACT_APP_LIBURRY_APPS_OVERRIDE)
+//   Should be a comma-separated list of "AppID"s. This will override the apps defined
+//   in the configuration for LIBURRY_BUILD, if it is given.
+//
+// ex.:
+//   export REACT_APP_LIBURRY_APPS_OVERRIDE="taigi.us,test/simpletest"
+//////////////////////////////////////////////////////////////////////////////////////////////
+const buildApps: string | undefined = process.env.REACT_APP_LIBURRY_APPS_OVERRIDE;
+
+export const LIBURRY_APPS_OVERRIDE: [string, ...string[]] | undefined =
     buildApps !== undefined
         ? appIDTokArray.parse(buildApps)
         : undefined;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// env(REACT_APP_LIBURRY_DEFAULT_APP)
-//   Used to set the default app. If not provided,
-//   defaults to the first app in LIBURRY_BUILD_APPS or the build named in LIBURRY_BUILD.
+// env(REACT_APP_LIBURRY_INITIAL_APP_OVERRIDE)
+//   Used to set the app which will be loaded initially. If not provided,
+//   defaults to the first app in LIBURRY_BUILD_APPS or the app list
+//   for the build named in LIBURRY_BUILD.
 //
 // ex.:
-//    export REACT_APP_LIBURRY_DEFAULT_APP="taigi.us"
+//    export REACT_APP_LIBURRY_INITIAL_APP_OVERRIDE="taigi.us"
 //////////////////////////////////////////////////////////////////////////////////////////////
-const defaultApp: string | undefined = process.env.REACT_APP_LIBURRY_DEFAULT_APP;
-export const LIBURRY_DEFAULT_APP_OVERRIDE: string | undefined =
+const defaultApp: string | undefined = process.env.REACT_APP_LIBURRY_INITIAL_APP_OVERRIDE;
+export const LIBURRY_INITIAL_APP_OVERRIDE: string | undefined =
     defaultApp !== undefined
         ? appIDTok.parse(defaultApp)
         : undefined;

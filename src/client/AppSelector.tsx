@@ -19,14 +19,14 @@ type SelectOption = {value: any, label: string};
 
 // TODO: move to dynamic class version of rfc
 function getAllApps(rfc: ReturnedFinalConfig): {appID: AppID, displayName: string}[] {
-    return getRecordEntries(rfc.apps).map(([appID, appConf]) => {
+    return getRecordEntries(rfc.appConfigs).map(([appID, appConf]) => {
         const {displayName} = appConf.configs.appConfig.config;
         return {appID, displayName};
     });
 }
 
 function getKnownAppConfig(rfc: ReturnedFinalConfig, appID: AppID): AppTopLevelConfiguration {
-    const appConf = rfc.apps[appID];
+    const appConf = rfc.appConfigs[appID];
     if (appConf === undefined) {
         throw new Error(`Attempted to load unknown appID: "${appID}"`);
     } else {

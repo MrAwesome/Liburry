@@ -1,19 +1,24 @@
-import {genFinalConfigFromYaml} from "../test/testUtils";
+import {genLoadFinalConfigWILLTHROW} from "../../scripts/compileYamlLib";
 import AppConfig from "./AppConfig";
+import {AppID} from "./zodConfigTypes";
 
 test('load basic AppConfig', async () => {
     const appID = "test/simpletest";
-    const rfc = await genFinalConfigFromYaml([appID]);
+    const appIDs: [AppID, ...AppID[]] = [appID];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
 
     const ac = AppConfig.from(rfc, appID, null);
     const dbcs = ac.dbConfigHandler.getAllEnabledDBConfigs();
+
+    // simpletest-specific values:
     expect(dbcs.find((dbc) => dbc.getDBIdentifier() === "happy")).toBeDefined();
 });
 
 test('load basic AppConfig with subapps', async () => {
     const appID = "test/simpletest_with_subapps";
-    const rfc = await genFinalConfigFromYaml([appID]);
-    const defaultSubApp = rfc.apps[appID]?.configs.appConfig.config.defaultSubApp;
+    const appIDs: [AppID, ...AppID[]] = [appID];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+    const defaultSubApp = rfc.appConfigs[appID]?.configs.appConfig.config.defaultSubApp;
     expect(defaultSubApp).toBeDefined();
 
     const ac_no_override = AppConfig.from(rfc, appID, null);
@@ -35,7 +40,17 @@ test('load basic AppConfig with subapps', async () => {
     expect(ac_with_bad_override.subAppID).toEqual(defaultSubApp);
 });
 
-// TODO: test multiple apps load
-// TODO: test multiples of same app name
-// TODO: test non-existent appid on creation (should throw? or default to CHHA_APPNAME in .from?)
+test('load multiple apps via AppConfig', async () => {
+    const app1 = "test/simpletest";
+    const app2 = "test/simpletest_with_subapps";
+    const appIDs: [AppID, ...AppID[]] = [app1, app2];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+
+    const ac1 = AppConfig.from(rfc, app1, null);
+    expect(ac1.appID).toBe(app1);
+    const ac2 = AppConfig.from(rfc, app2, null);
+    expect(ac2.appID).toBe(app2);
+});
+
+
 // TODO: should AppConfig expose a way to change subapps? or should it always just be App + SubApp, and changes should be handled upstream? should there be a callback function on appconfig that notifies the main element when app or subapp has changed?

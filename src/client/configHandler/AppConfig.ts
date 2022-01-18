@@ -35,7 +35,7 @@ export default class AppConfig {
         }
 
         const pageHandler = PageHandler.fromFinalConfig(rfc, appID);
-        const rawAppConfig = rfc.apps[appID]!;
+        const rawAppConfig = rfc.appConfigs[appID]!;
         const allConfigs = rawAppConfig.configs;
 
         // TODO: unit test this logic
@@ -58,7 +58,7 @@ export default class AppConfig {
     }
 
     private getRawAppConfig() {
-        return this.rfc.apps[this.appID]!;
+        return this.rfc.appConfigs[this.appID]!;
     }
 
     private getRawSubAppConfig(): RawSubAppConfig | undefined {
@@ -70,7 +70,7 @@ export default class AppConfig {
 
     // NOTE: Could get fonts from "default" here, if there's ever a reason for that.
     getAllFontConfigs(): FontConfig[] {
-        return getRecordValues(this.rfc.apps)
+        return getRecordValues(this.rfc.appConfigs)
             .map((app) => app.configs.appConfig.config.fonts)
             .filter(nullGuard).flat();
 

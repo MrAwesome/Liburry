@@ -3,7 +3,7 @@ import path from 'path';
 import md5File from 'md5-file';
 import {parseYaml} from "../client/utils/yaml";
 import {promisify} from 'util';
-import {AppID, AppTopLevelConfiguration, BuildID, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, RawBuildConfig, RawDefaultBuildConfig, rawDefaultBuildConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../client/configHandler/zodConfigTypes";
+import {AppID, AppIDList, AppTopLevelConfiguration, BuildID, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, RawBuildConfig, RawDefaultBuildConfig, rawDefaultBuildConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../client/configHandler/zodConfigTypes";
 import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from "../client/constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
 import {getRecordEntries, runningInJest} from '../client/utils';
@@ -143,6 +143,7 @@ export default function validateYaml(filename: string, yamlBlob: Object): Loaded
     }
 }
 
+// TODO: flatten out ".config" and just use discriminated unions (will greatly simplify parsing and accessing)
 // TODO: separate out parsing logic for "default", since it's not just apps
 export async function rawParseAppYaml(localPrefix: string, appID: "default" | AppID): Promise<any> {
     if (!runningInJest()) {
@@ -155,7 +156,7 @@ export async function rawParseAppYaml(localPrefix: string, appID: "default" | Ap
         configs: {},
     };
 
-    // TODO: clean up this terrible one-off
+    // TODO: XXX: move this into its own function (and then parse as app separately?)
     if (appID === "default") {
         const buildDir = path.join(CONFIG_DIR, "default", "build.yml");
         const lkfPlusMeta = await handleFile(buildDir, "build.yml", []);
@@ -204,67 +205,75 @@ export async function rawParseBuildYaml(localPrefix: string, buildID: BuildID): 
     return await loadBuildYaml(buildID, buildPath);
 }
 
-export async function loadFinalConfigForApps(appIDs: string[]): Promise<ReturnedFinalConfig> {
-    const generatedFinalConfigAttempt = await loadFinalConfigInternal({appIDsOverride: appIDs});
+export async function genLoadFinalConfigWILLTHROW(opts?: {
+    buildID?: BuildID,
+    appIDs?: AppIDList,
+}): Promise<ReturnedFinalConfig> {
+    const {buildID, appIDs} = opts ?? {};
+    const generatedFinalConfigAttempt = await genLoadFinalConfigAttemptInternal({buildID, appIDsOverride: appIDs});
     return returnedFinalConfigSchema.parse(generatedFinalConfigAttempt);
 }
 
-export async function loadFinalConfigForAppsSafe(appIDs: string[]): Promise<ReturnType<typeof returnedFinalConfigSchema.safeParse>> {
-    const generatedFinalConfigAttempt = await loadFinalConfigInternal({appIDsOverride: appIDs});
+export async function genLoadFinalConfigSafe(opts: {
+    buildID?: BuildID,
+    appIDs?: AppIDList,
+}): Promise<ReturnType<typeof returnedFinalConfigSchema.safeParse>> {
+    const {buildID, appIDs} = opts;
+    const generatedFinalConfigAttempt = await genLoadFinalConfigAttemptInternal({buildID, appIDsOverride: appIDs});
     return returnedFinalConfigSchema.safeParse(generatedFinalConfigAttempt);
 }
 
-export async function loadFinalConfigForBuild(buildID: BuildID | undefined): Promise<ReturnedFinalConfig> {
-    const generatedFinalConfigAttempt = await loadFinalConfigInternal({buildID});
-    return returnedFinalConfigSchema.parse(generatedFinalConfigAttempt);
-}
-
-export async function loadFinalConfigForBuildSafe(buildID: BuildID | undefined): Promise<ReturnType<typeof returnedFinalConfigSchema.safeParse>> {
-    const generatedFinalConfigAttempt = await loadFinalConfigInternal({buildID});
-    return returnedFinalConfigSchema.safeParse(generatedFinalConfigAttempt);
-}
-
-// TODO: change to take buildname, determine apps for build
-async function loadFinalConfigInternal(
+// NOTE: this function returns what it thinks is a ReturnedFinalConfig, but because the yaml parsing functions return "any", we don't try to say that we have an RFC until it is parsed via zod above.
+async function genLoadFinalConfigAttemptInternal(
     opts: {
-        appIDsOverride?: string[],
+        appIDsOverride?: AppIDList,
         buildID?: BuildID,
     }
 ): Promise<any> {
-    const {appIDsOverride, buildID} = opts;
+    let {appIDsOverride, buildID} = opts;
+
     const rawdef = await rawParseAppYaml("", "default");
-    //const defaultConfigs = defaultTopLevelConfigurationSchema.parse(rawdef, {path: ["default"]});
 
     const buildConfig: RawBuildConfig = buildID === undefined
         ? undefined :
         await rawParseBuildYaml("builds/", buildID);
-    const appIDsFromBuild = buildConfig?.apps ?? rawdef.build.config.apps;
+
+    let appIDs: [AppID, ...AppID[]] | "all" = appIDsOverride ??
+        buildConfig?.apps ??
+        rawdef.build.config.apps;
 
     // TODO: walk the app dir and get all app names
-    if (appIDsFromBuild === "all") {
+    if (appIDs === "all") {
         throw new Error("allmode is not yet implemented!");
+        // appIDs = walkAppDirAndGetAllAppIDs();
     }
 
-    let appIDs = appIDsOverride ?? appIDsFromBuild;
+    appIDs = Array.from(new Set(appIDs)) as [AppID, ...AppID[]];
 
     const apps: AppTopLevelConfiguration[] = await Promise.all(appIDs.map(async (appID: string) => {
         const rawapp = await rawParseAppYaml("apps/", appID);
         return rawapp;
-        //return appTopLevelConfigurationSchema.parse(rawapp, {path: ["apps", appID]});
     }));
     const appEntries: [AppID, AppTopLevelConfiguration][] = apps.map((a) => ([a.appID, a]));
-    const generatedFinalConfigAttempt: any = {
+
+    const generatedFinalConfigAttempt: ReturnedFinalConfig = {
         default: rawdef,
-        apps: Object.fromEntries(appEntries),
+        appConfigs: Object.fromEntries(appEntries),
         buildConfig: buildConfig,
     };
+
+    if (appIDsOverride !== undefined) {
+        generatedFinalConfigAttempt.debug = {
+            appIDsOverride,
+        };
+    }
     return generatedFinalConfigAttempt;
 }
 
 export function getFilesToCache(finalObj: ReturnedFinalConfig): string[] {
     const filesToCache = [];
-    for (const appName in finalObj.apps) {
-        const allAppConfigs = finalObj.apps[appName];
+    for (const appName in finalObj.appConfigs) {
+        const allAppConfigs = finalObj.appConfigs[appName];
         if (allAppConfigs === undefined) {
             throw new Error("Undefined appconfig: " + appName);
         }

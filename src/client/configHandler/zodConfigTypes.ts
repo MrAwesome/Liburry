@@ -131,9 +131,14 @@ const defaultIndexHtmlConfigSchema = strictObject({
     }),
 });
 
+const appIDListSchema = tokenArray("APP_ID").or(z.literal("all"));
+export type AppIDList = z.infer<typeof appIDListSchema>;
+
 export const rawDefaultBuildConfigSchemaForMerge = strictObject({
     displayName: anyString(),
-    apps: tokenArray("APP_ID").or(z.literal("all")),
+    apps: appIDListSchema,
+    // initialApp is optional in normal build configs,
+    // which default to the first app listed.
     initialApp: token("APP_ID"),
     indexHtml: defaultIndexHtmlConfigSchema,
 });
@@ -591,8 +596,13 @@ const allAppsSchema = z.object({default: z.undefined()})
 
 export const returnedFinalConfigSchema = strictObject({
     default: defaultTopLevelConfigurationSchema,
-    apps: allAppsSchema,
+    appConfigs: allAppsSchema,
     buildConfig: rawBuildConfigSchema.optional(),
+
+    // This is not used anywhere, but is included to aid in debugging:
+    debug: z.object({
+        appIDsOverride: appIDListSchema.optional(),
+    }).optional(),
 });
 
 // TODO: make a wrapper class to make operations on this easier once it's loaded

@@ -1,5 +1,53 @@
-import {RawBuildConfig, RawDefaultBuildConfig} from "../client/configHandler/zodConfigTypes";
-import {genIndexHTMLEnvVarPairs, IndexHtmlEnvVarPairs} from "./compileYamlLib";
+import {AppID, RawBuildConfig, RawDefaultBuildConfig} from "../client/configHandler/zodConfigTypes";
+import {genIndexHTMLEnvVarPairs, genLoadFinalConfigWILLTHROW, IndexHtmlEnvVarPairs} from "./compileYamlLib";
+
+test('load only defaults and sanity check', async () => {
+    const rfc = await genLoadFinalConfigWILLTHROW();
+    expect(rfc.default.configs.langConfig.config.dialects.eng_us?.displayName).toBe("English (US)");
+    expect(rfc.buildConfig).toBe(undefined);
+    expect(rfc.default.build.config.indexHtml.themeColor).toBeTruthy();
+});
+
+test('load single app and sanity check', async () => {
+    const appID = "test/simpletest";
+    const appIDs: [AppID, ...AppID[]] = [appID];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+
+    expect(rfc.default.configs.langConfig.config.dialects.eng_us?.displayName).toBe("English (US)");
+    expect(rfc.buildConfig).toBe(undefined);
+    expect(Object.keys(rfc.appConfigs)).toEqual(appIDs);
+    expect(rfc.default.build.config.indexHtml.themeColor).toBeTruthy();
+
+    expect(rfc.appConfigs[appID]?.appID).toBe(appID);
+    expect(rfc.appConfigs[appID]?.configs.appConfig.config.displayName).toBe("Simple Test App");
+});
+
+test('load multiple apps via override', async () => {
+    const appIDs: [AppID, ...AppID[]] = ["test/simpletest", "test/simpletest_with_subapps"];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+    expect(Object.keys(rfc.appConfigs)).toEqual(appIDs);
+});
+
+test('load multiple apps with same name via override', async () => {
+    const appID = "test/simpletest";
+    const appIDs: [AppID, ...AppID[]] = [appID, appID];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+    expect(Object.keys(rfc.appConfigs)).toEqual([appID]);
+    expect(rfc.debug?.appIDsOverride).toEqual(appIDs);
+});
+
+// TODO: test loading by build
+// TODO: test default load behavior for builds
+// TODO: test default load behavior for builds
+    //expect(rfc.default.configs.langConfig.config.dialects.eng_us?.displayName).toBe("English (US)");
+    //expect(rfc.buildConfig?.buildID).toBe(buildID);
+test('load via build', async () => {
+    const appIDs: [AppID, ...AppID[]] = ["test/simpletest", "test/simpletest_with_subapps"];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+    expect(Object.keys(rfc.appConfigs)).toEqual(appIDs);
+});
+
+// TODO: test non-existent appid on creation (should throw? or default to CHHA_APPNAME in .from?)
 
 test('create expected env vars', async () => {
     const expectedBase: IndexHtmlEnvVarPairs = {
@@ -26,6 +74,7 @@ test('create expected env vars', async () => {
     const defaultBuildConfig: RawDefaultBuildConfig = {
         displayName: "ORIG_DISPLAYNAME",
         apps: ["fake"],
+        initialApp: "fake",
         indexHtml: {
             themeColor: "ORIG_THEME_COLOR",
             manifest: "ORIG_MANIFEST",

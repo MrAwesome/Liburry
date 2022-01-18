@@ -93,18 +93,32 @@ The client-side architecture obviously does not lend itself well to searching ve
 (NOTE: this section is currently in flux, as a recent change breaks AWS and other cloud providers which perform the builds in the cloud)
 
 ### Configuration
-Add your app in the `src/config` folder (see `src/config/taigi.us` for an example).
+Add your app (or apps) in the `src/config/apps` directory, then either:
 
-Set the name of the environment variable `REACT_APP_LIBURRY_BUILD_APPS` to be a comma-separated list of app IDs (the path, including slashes, of your directory in `src/config/apps`):
-``` lang=sh
-# REQUIRED: Set the apps you will be using.
-export REACT_APP_LIBURRY_BUILD_APPS='taigi.us,test/simpletest'
+1) Create a build configuration in `src/config/builds` which includes your app's ID (its path relative to `src/config/apps`) in its list of `apps`:
+
+```
+displayName: "Engels ↔ Afrikaans Woordeboek"
+apps:
+  - FreeDictTestEngAfr
+  - test/simpletest
 ```
 
-The first app listed will be used as the default app, unless `REACT_APP_LIBURRY_DEFAULT_APP` is set.
+> NOTE: if you want to host all known apps, you can set `apps` to "all":
+
+displayName: "Liburry Search (Everything)"
+apps: "all"
+
+
+2) Set the name of the environment variable `REACT_APP_LIBURRY_APPS_OVERRIDE` to be a comma-separated list of app IDs. It can also be the special value "all", which will cause all known apps to be built and included.
 ``` lang=sh
-# OPTIONAL: Explicitly name your default app.
-export REACT_APP_LIBURRY_DEFAULT_APP='test/simpletest'
+export REACT_APP_LIBURRY_APPS_OVERRIDE='FreeDictTestEngAfr,test/simpletest'
+```
+
+The first app listed will be used as the initial app, unless `REACT_APP_LIBURRY_INITIAL_APP_OVERRIDE` is set.
+``` lang=sh
+# OPTIONAL: Explicitly name the initial app.
+export REACT_APP_LIBURRY_INITIAL_APP_OVERRIDE='test/simpletest'
 ```
 
 ### Testing locally

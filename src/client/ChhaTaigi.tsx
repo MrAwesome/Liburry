@@ -18,11 +18,10 @@ import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
 import AppSelector from "./AppSelector";
 
-// TODO(next): clean up build settings and commit
-// TODO(next): make build for Afrikaans
+// TODO(next): update build vars for azure and gcloud build/push
 // TODO(next): fix back button behavior
-// TODO(next): fix index.html to use Liburry, with overrides from env vars or configs
 // TODO(next): load custom manifest.json, with default having icons from new SVG
+// TODO(next): use icons from contractor
 // TODO(next): load new datasets (maybe create submodules?)
 // TODO(urgent): register liburry TLDs
 // TODO(urgent): move to webpack from current method

@@ -12,7 +12,7 @@ test('finalconfig check', async () => {
         throw (finalConfig as MuhError);
     }
     const rfc = finalConfig as ReturnedFinalConfig;
-    expect(rfc).toHaveProperty("apps");
-    expect(Object.keys(rfc.apps).length).toBeGreaterThan(0);
+    expect(rfc).toHaveProperty("appConfigs");
+    expect(Object.keys(rfc.appConfigs).length).toBeGreaterThan(0);
     expect(rfc.default.configs.langConfig.config.dialects.eng_us!.displayName).toBe("English (US)");
 });
