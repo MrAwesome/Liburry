@@ -16,7 +16,6 @@ const appIDTokArray = z.preprocess(
     z.array(token('APP_ID')).nonempty()
 );
 
-
 /// TODO: document, note that this is now the required var
 export const LIBURRY_BUILD: BuildID | undefined = token('BUILD_ID').optional().parse(process.env.REACT_APP_LIBURRY_BUILD);
 

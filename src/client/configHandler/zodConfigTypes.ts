@@ -6,7 +6,7 @@
 // The types here are those which go through some sort of serialization - to/from YAML or JSON in particular.
 import {z} from "zod";
 import {DBIdentifier} from "../types/config";
-import {getRecordEntries} from "../utils";
+import {getRecordEntries, runningInJest} from "../utils";
 import {fontConfigSchema} from "./zodFontConfigTypes";
 
 // What counts as a valid "token" - app names, dialect names, etc all will be validated against this.
@@ -14,8 +14,8 @@ import {fontConfigSchema} from "./zodFontConfigTypes";
 // Tokens should never be displayed to users (everything which has a token should also have a "displayName"
 // if it needs one), so this only affects i18n for programmers.
 const BASIC_TOKEN_REGEX: RegExp = /^[a-zA-Z0-9_/]+$/;
-const FILENAME_AND_DIRECTORY_SAFE_REGEX: RegExp = /^[a-zA-Z0-9_\/\.]+$/;
-const LOCAL_FILENAME_AND_DIRECTORY_SAFE_REGEX: RegExp = /^\/[a-zA-Z0-9_\/\.]+$/;
+const FILENAME_AND_DIRECTORY_SAFE_REGEX: RegExp = /^[a-zA-Z0-9_/.]+$/;
+const LOCAL_FILENAME_AND_DIRECTORY_SAFE_REGEX: RegExp = /^\/[a-zA-Z0-9_/.]+$/;
 
 // Token Types
 // NOTE: all of this type-glop is just to allow us to define the keys once while still being able to enforce the types of the values
@@ -58,6 +58,7 @@ export const liburryCustomErrorCodes = [
     "local_file_absolute_path",
     "defaultsubapp_subapps_both_or_neither",
     "defaultsubapp_defined",
+    "build_defaultapp_defined",
 ] as const;
 
 export type LiburryZodCustomTestingCode = (typeof liburryCustomErrorCodes)[number];
@@ -130,10 +131,18 @@ const defaultIndexHtmlConfigSchema = strictObject({
     }),
 });
 
-export const rawDefaultBuildConfigSchema = strictObject({
+export const rawDefaultBuildConfigSchemaForMerge = strictObject({
     displayName: anyString(),
     apps: tokenArray("APP_ID").or(z.literal("all")),
+    initialApp: token("APP_ID"),
     indexHtml: defaultIndexHtmlConfigSchema,
+});
+
+export const rawDefaultBuildConfigSchema = rawDefaultBuildConfigSchemaForMerge.superRefine((defBuildConf, ctx) => {
+    const {apps, initialApp} = defBuildConf;
+    if (!apps.includes(initialApp)) {
+        issue(ctx, "build_defaultapp_defined", `app "${initialApp}" not found in the build's apps: ${apps}`)
+    }
 });
 
 export type RawDefaultBuildConfig = z.infer<typeof rawDefaultBuildConfigSchema>;
@@ -142,7 +151,7 @@ const indexHtmlConfigSchema = strictObject({
     noscript: anyString().optional(),
 }).merge(defaultIndexHtmlConfigSchema.deepPartial());
 
-const rawBuildConfigSchema = rawDefaultBuildConfigSchema.deepPartial().merge(strictObject({
+const rawBuildConfigSchema = rawDefaultBuildConfigSchemaForMerge.deepPartial().merge(strictObject({
     indexHtml: indexHtmlConfigSchema.optional(),
     buildID: nonDefaultBuildID,
 }));
@@ -369,7 +378,6 @@ export const rawAllDBConfigSchema = strictObject({
 })
     // TODO: Create test data (via zod-mock?) and create unit tests
     // TODO: just use both fields and have subapp version override enableddbs
-    // TODO: validate subapp names
     .superRefine((allDBConfig, ctx) => {
         const {dbList, dbConfigs, enabledDBs} = allDBConfig;
 
@@ -542,7 +550,9 @@ const appAllConfigSchema = rawAppLoadedAllConfigSchema.superRefine((appAllConfig
         if (!Array.isArray(enabledDBs)) {
             subAppNames.forEach((subAppID) => {
                 if (!(subAppID in enabledDBs)) {
-                    console.log(`subApp "${subAppID}" does not have an entry in "enabledDBs", all DBs will be assumed enabled there.`);
+                    if (!runningInJest()) {
+                        console.info(`subApp "${subAppID}" does not have an entry in "enabledDBs", all DBs will be assumed enabled there.`);
+                    }
                 }
             });
 
@@ -554,9 +564,6 @@ const appAllConfigSchema = rawAppLoadedAllConfigSchema.superRefine((appAllConfig
         }
     }
 });
-
-//.superRefine((appAllConfigs, ctx) => {
-//});
 
 export const appTopLevelConfigurationSchema = strictObject({
     appID: nonDefaultAppID,

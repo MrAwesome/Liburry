@@ -1,6 +1,7 @@
 # TODO: make this the title in JS, not just index.html?
 displayName: "Chhâ Tâi-gí!"
 defaultSubApp: "eng_poj"
+
 #domainToubefaultSubAppMapping:
 #  taigi.us: "eng_poj"
 #  kip.taigi.us: "eng_kip"

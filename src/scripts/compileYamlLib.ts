@@ -146,7 +146,7 @@ export default function validateYaml(filename: string, yamlBlob: Object): Loaded
 // TODO: separate out parsing logic for "default", since it's not just apps
 export async function rawParseAppYaml(localPrefix: string, appID: "default" | AppID): Promise<any> {
     if (!runningInJest()) {
-        console.log(`Building app ${appID}...`);
+        console.log(`Building app "${appID}"...`);
     }
 
     const output: any = {
@@ -235,9 +235,6 @@ async function loadFinalConfigInternal(
     const rawdef = await rawParseAppYaml("", "default");
     //const defaultConfigs = defaultTopLevelConfigurationSchema.parse(rawdef, {path: ["default"]});
 
-    if (buildID === undefined) {
-        console.warn("LIBURRY_BUILD not set, will use default build settings.");
-    }
     const buildConfig: RawBuildConfig = buildID === undefined
         ? undefined :
         await rawParseBuildYaml("builds/", buildID);

@@ -1,4 +1,5 @@
 displayName: "Liburry Search"
+initialApp: "taigi.us"
 apps:
   - taigi.us
   - FreeDictTestEngAfr

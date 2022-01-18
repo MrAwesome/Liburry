@@ -1,4 +1,5 @@
 const path = require("path");
+//const spawn = require('child_process').spawn;
 const nodeExternals = require("webpack-node-externals");
 
 const entry = { server: "./src/scripts/compileYaml.ts" };
@@ -31,6 +32,32 @@ module.exports = {
           },
         ],
       },
+//      {
+//        test: /\.ya?ml$/,
+//        type: 'json',
+//        use: [
+//          {
+//            loader: "yaml-loader",
+//          },
+//        ],
+//      },
     ],
   },
+//  plugins: [
+//    {
+//      apply: (compiler) => {
+//        compiler.hooks.afterEmit.tap('AfterEmitPlugin', (compilation) => {
+//          const bin = path.join(compilation.options.output.path, compilation.options.output.filename);
+//
+//          const child = spawn("node", [bin]);
+//          child.stdout.on('data', function (data) {
+//              process.stdout.write(data);
+//          });
+//          child.stderr.on('data', function (data) {
+//              process.stderr.write(data);
+//          });
+//        });
+//      }
+//    }
+//  ],
 };

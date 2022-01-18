@@ -31,7 +31,7 @@ export default class AppConfig {
         subAppIDOverride: SubAppID | null,
     ) {
         if (appID === null) {
-            appID = rfc.default.build.config.apps[0];
+            appID = getDefaultApp(rfc);
         }
 
         const pageHandler = PageHandler.fromFinalConfig(rfc, appID);
@@ -177,4 +177,18 @@ function getViewID(subAppID: SubAppID | undefined, dbID: DBIdentifier, enabledDB
         }
     }
     return undefined;
+}
+
+function getDefaultApp(rfc: ReturnedFinalConfig): AppID {
+    if (rfc.buildConfig !== undefined) {
+        const {apps, initialApp} = rfc.buildConfig;
+        if (apps !== undefined && apps !== "all") {
+            if (initialApp !== undefined) {
+                return initialApp;
+            } else {
+                return apps[0];
+            }
+        }
+    }
+    return rfc.default.build.config.initialApp;
 }
