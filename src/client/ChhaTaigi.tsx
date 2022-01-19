@@ -42,6 +42,7 @@ import AppSelector from "./AppSelector";
 // TODO(urgent): move dbs into sub-repository?
 // TODO(urgent): have zod do existence checks / warnings on CSVs: do they exist, are they smaller than 10MB
 // TODO(urgent): debug service worker not working locally (is this still happening?)
+// TODO(high): move this todo text to TODO.md or similar
 // TODO(high): mag glass clickable menu. affordances for whether or not a searcher is online or offline. if online, aff. of whether it is available, if offline, aff. of whether it is cached/ready
 // TODO(high): update web_accessible_resources in manifest.json
 // TODO(high): background color hex code available as an option for a db? or field? or language?
