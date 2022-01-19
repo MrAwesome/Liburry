@@ -1,0 +1,4 @@
+displayName: "A test build config"
+apps:
+  - test/simpletest
+  - test/simpletest_with_subapps

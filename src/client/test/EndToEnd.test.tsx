@@ -1,5 +1,11 @@
 import { chromium, Browser, Page, Response as Resp } from "playwright";
 
+// TODO: have skipped tests only run if a certain env var is set
+
+const expensiveTest = process.env.REACT_APP_LIBURRY_RUN_E2E_TESTS === "true" ?
+    test :
+    test.skip;
+
 // NOTE: each test here starts a new browser, so add new ones sparingly
 describe("Main End-To-End Tests", () => {
     let response: Resp | null;
@@ -17,7 +23,7 @@ describe("Main End-To-End Tests", () => {
         await browser?.close();
     });
 
-    test.skip("searchbar loads", async () => {
+    expensiveTest("searchbar loads", async () => {
         // Get the HTTP status code of the response. A 200 means it loaded successfully!
         expect(response?.status()).toBe(200);
         const inputElem = await page?.waitForSelector("input");
@@ -25,7 +31,7 @@ describe("Main End-To-End Tests", () => {
         expect(await placeholderObj.jsonValue()).toBe("Search...");
     });
 
-    test.skip("taigi.us specific POJ search", async () => {
+    expensiveTest("taigi.us specific POJ search", async () => {
         const vocabElem = await page?.waitForSelector(".vocab-element");
         const myname = vocabElem.asElement();
         expect(await myname.innerText()).toBe("A-le̍k-san-tāi");

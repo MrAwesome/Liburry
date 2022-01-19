@@ -42,9 +42,10 @@ test('load multiple apps with same name via override', async () => {
     //expect(rfc.default.configs.langConfig.config.dialects.eng_us?.displayName).toBe("English (US)");
     //expect(rfc.buildConfig?.buildID).toBe(buildID);
 test('load via build', async () => {
-    const appIDs: [AppID, ...AppID[]] = ["test/simpletest", "test/simpletest_with_subapps"];
-    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
-    expect(Object.keys(rfc.appConfigs)).toEqual(appIDs);
+    const buildID = 'test/basic';
+    const rfc = await genLoadFinalConfigWILLTHROW({buildID});
+    expect(Object.keys(rfc.appConfigs)).toEqual(["test/simpletest", "test/simpletest_with_subapps"]);
+    expect(rfc.buildConfig?.displayName).toBe("A test build config");
 });
 
 // TODO: test non-existent appid on creation (should throw? or default to CHHA_APPNAME in .from?)
