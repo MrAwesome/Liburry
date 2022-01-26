@@ -40,7 +40,7 @@
     "react-burger-menu": "^3.0.6",
     "react-dom": "^18.0.0-alpha-67f38366a-20210830",
     "react-markdown": "6",
-    "react-scripts": "^4.0.3",
+    "react-scripts": "^5.0.0",
     "react-select": "^5.1.0",
     "source-map-loader": "^2.0.1",
     "stacktrace-js": "^2.0.2",
@@ -55,15 +55,22 @@
     "zod": "^3.11.6"
   },
   "devDependencies": {
+    "@swc/core": "^1.2.133",
+    "@swc/helpers": "^0.3.2",
+    "@types/webpack-node-externals": "^2.5.3",
+    "copy-webpack-plugin": "^10.2.1",
     "md5-file": "^5.0.0",
     "playwright": "^1.17.1",
+    "react-app-rewired": "^2.1.11",
+    "regenerator-runtime": "^0.13.9",
+    "ts-node": "^10.4.0",
     "webpack-cli": "^4.7.2",
     "webpack-node-externals": "^3.0.0"
   },
   "scripts": {
-    "start": "yarn run webpack --config webpack.build.js && node build/compileYaml.js && react-scripts start",
-    "build": "yarn run webpack --config webpack.build.js && node build/compileYaml.js && react-scripts build",
-    "test": "react-scripts test --env=jsdom",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

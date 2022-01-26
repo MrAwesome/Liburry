@@ -397,11 +397,11 @@ export function makeEnvFileEntry(varname: string, value: string) {
 export async function genWriteEnvFile(envFileBody: string) {
     const output = `${ENV_FILE_HEADER}\n${envFileBody}`;
 
-    writeFile(ENV_FILE, output).then(
+    return await writeFile(ENV_FILE, output).then(
         () => console.log(`* Wrote out "${ENV_FILE}"...`));
 }
 
 export async function genWriteFinalConfig(jsonString: string) {
-    return writeFile(path.join(PUBLIC_DIR_PREFIX, FINAL_CONFIG_LOCAL_DIR, FINAL_CONFIG_JSON_FILENAME), jsonString).then(
+    return await writeFile(path.join(PUBLIC_DIR_PREFIX, FINAL_CONFIG_LOCAL_DIR, FINAL_CONFIG_JSON_FILENAME), jsonString).then(
         () => console.log(`* Wrote out "${FINAL_CONFIG_LOCAL_DIR}"...`));
 }

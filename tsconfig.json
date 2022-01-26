@@ -20,6 +20,13 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS"
+    },
+    "transpileOnly": true,
+    "transpiler": "ts-node/transpilers/swc-experimental"
+  },
   "include": [
     "src",
     "src/types"

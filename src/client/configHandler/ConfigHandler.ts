@@ -2,7 +2,6 @@ import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR, FINAL_CONFIG_REMOTE_
 import {MuhError, MuhErrorType} from "../errorHandling/MuhError";
 import {nodeReadFileFromDir} from "../utils";
 import {ReturnedFinalConfig, returnedFinalConfigSchema} from "./zodConfigTypes";
-import path from 'path';
 
 // [] ensure app names are unique
 // [] allow slashes in appnames (how to handle this in zod?)
@@ -49,6 +48,7 @@ export default class ConfigHandler {
         try {
             const blob = await this.genLoadJSONText();
             const parseRes = await returnedFinalConfigSchema.spa(blob);
+            console.log(parseRes);
             if (parseRes.success === true) {
                 return parseRes.data;
             } else {
@@ -65,7 +65,6 @@ export default class ConfigHandler {
     }
 
     async fetchJSON(): Promise<Object> {
-        // TODO: join path?
         return fetch(this.opts.finalConfigRemoteDir + this.opts.finalConfigJsonFilename)
             .catch((err) => {
                 throw new MuhError(MuhErrorType.FETCH_THREW, err);
@@ -84,6 +83,7 @@ export default class ConfigHandler {
 
 
     async localLoadWithNode(): Promise<Object> {
+        const path = await import("path");
         return nodeReadFileFromDir(
             path.join("public/", this.opts.finalConfigLocalDir),
             this.opts.finalConfigJsonFilename,

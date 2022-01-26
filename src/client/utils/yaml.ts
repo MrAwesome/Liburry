@@ -1,6 +1,4 @@
-import fs from 'fs';
 import yaml from "yaml";
-import {promisify} from 'util';
 
 // NOTE: This needs some error-checking and handling? Right now, this will bail
 //       with "All collection items must start at the same column" after being pointed
@@ -11,6 +9,9 @@ export async function loadYaml<T>(url: string, localMode: boolean): Promise<T> {
 }
 
 export async function loadYamlText(url: string, localMode: boolean): Promise<string> {
+    const fs = await import('fs');
+    const {promisify} = await import('util');
+
     let prom;
     if (localMode) {
         const readFile = promisify(fs.readFile);
@@ -22,6 +23,8 @@ export async function loadYamlText(url: string, localMode: boolean): Promise<str
 }
 
 export async function loadTestYaml<T>(filename: string): Promise<T> {
+    const fs = await import('fs');
+    const {promisify} = await import('util');
     const readFile = promisify(fs.readFile);
     return readFile(filename, null).then((r) => parseYaml(r.toString()));
 }

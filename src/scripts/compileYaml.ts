@@ -56,7 +56,5 @@ const mkdir = promisify(fs.mkdir);
     }
 
     await genWriteEnvFile(envFileOutputText);
+    console.log("DONE.");
 }());
-
-
-// NOTE: if you don't mind locking into the app model, everything you want to read from the config can be passed in via env vars, and you don't have to bother with the fullconfiguration at all (or it can even be in an env var (check max length of env vars))
