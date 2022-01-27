@@ -29,7 +29,6 @@
     "transpiler": "ts-node/transpilers/swc-experimental"
   },
   "include": [
-    "src",
-    "src/types"
+    "src"
   ]
 }

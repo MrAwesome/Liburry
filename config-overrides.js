@@ -13,6 +13,10 @@ module.exports = {
       {
         apply: (compiler) => {
           compiler.hooks.afterEmit.tap('CompileLiburryYaml', (compilation) => {
+            // This is run here to allow yaml configs to be recompiled in dev mode. There's an initial run in
+            // "prebuild" in package.json which is necessary for the assets to be included in builds.
+            // The typescript compilation is unchecked, since the ts files in question are typechecked
+            // during our normal builds and not re-checking them saves ~6 seconds per run.
             exec('yarn run ts-node src/scripts/compileYaml.ts', (err, stdout, stderr) => {
               if (stdout) process.stdout.write(stdout);
               if (stderr) process.stderr.write(stderr);
