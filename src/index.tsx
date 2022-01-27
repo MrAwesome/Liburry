@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from 'react-dom';
 
+import "setimmediate";
 import "./client/ChhaTaigi.css";
 
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';

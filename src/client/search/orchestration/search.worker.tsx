@@ -1,3 +1,4 @@
+import "setimmediate";
 import getDebugConsole, {StubConsole} from "../../getDebugConsole";
 import type {PerDictResultsRaw, SingleDBLoadStatus} from "../../types/dbTypes";
 import {getSearcherPreparer, OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "../../search/searchers/Searcher";

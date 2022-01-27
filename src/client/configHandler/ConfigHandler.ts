@@ -48,7 +48,6 @@ export default class ConfigHandler {
         try {
             const blob = await this.genLoadJSONText();
             const parseRes = await returnedFinalConfigSchema.spa(blob);
-            console.log(parseRes);
             if (parseRes.success === true) {
                 return parseRes.data;
             } else {
