@@ -3,6 +3,11 @@ const CopyPlugin = require("copy-webpack-plugin");
 const {IgnorePlugin} = require("webpack");
 const yaml = require('yaml');
 
+let compileYaml = {
+  failed: false,
+  output: {stdout: null, stderr: null, err: null},
+}
+
 module.exports = {
   webpack: function (config, env) {
     config.resolve.fallback = config.resolve.fallback ?? {};
@@ -12,14 +17,35 @@ module.exports = {
     config.plugins.push(
       {
         apply: (compiler) => {
-          compiler.hooks.afterEmit.tap('AfterEmitPlugin', (compilation) => {
+          compiler.hooks.beforeRun.tap('CompileLiburryYaml', (compilation) => {
             exec('yarn run ts-node src/scripts/compileYaml.ts', (err, stdout, stderr) => {
               if (stdout) process.stdout.write(stdout);
               if (stderr) process.stderr.write(stderr);
               if (err) {
-                throw err;
+                console.log(err);
+                compileYaml.failed = true;
+                compileYaml.output = {stdout, stderr, err};
               }
             });
+          });
+        }
+      },
+      {
+        apply: (compiler) => {
+          compiler.hooks.afterEmit.tap('AfterEmitPlugin', (compilation) => {
+            if (compileYaml.failed) {
+              console.log("====== YAML COMPILATION FAILED ======");
+
+              const {stdout, stderr, err} = compileYaml.output;
+              if (stdout) process.stdout.write(stdout);
+              if (stderr) process.stderr.write(stderr);
+
+              console.log("=====================================");
+
+              if (err) {
+                throw err;
+              }
+            }
           });
         }
       }
