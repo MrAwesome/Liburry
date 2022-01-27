@@ -17,7 +17,7 @@ module.exports = {
     config.plugins.push(
       {
         apply: (compiler) => {
-          compiler.hooks.beforeRun.tap('CompileLiburryYaml', (compilation) => {
+          compiler.hooks.environment.tap('CompileLiburryYaml', (compilation) => {
             exec('yarn run ts-node src/scripts/compileYaml.ts', (err, stdout, stderr) => {
               if (stdout) process.stdout.write(stdout);
               if (stderr) process.stderr.write(stderr);
