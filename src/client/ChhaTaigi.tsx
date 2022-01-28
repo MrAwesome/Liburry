@@ -25,6 +25,7 @@ import AppSelector from "./AppSelector";
 // [] Taigi Discord
 // [] /r/ohtaigi
 // [] HN
+// [] aiong, podcasters, chhoetaigi folks, etc
 //
 // https://twblg.dict.edu.tw/holodict_new/mobile/result_detail.jsp?n_no=11235&curpage=1&sample=%E9%A4%85&radiobutton=1&querytarget=1&limit=50&pagenum=1&rowcount=25
 //
