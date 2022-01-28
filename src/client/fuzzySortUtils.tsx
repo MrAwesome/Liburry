@@ -1,5 +1,5 @@
 import fuzzysort from "fuzzysort";
-import type {SearchResultEntryRaw, DisplayReadyFieldRaw, RawDBRow} from "./types/dbTypes";
+import type {SearchResultEntryRaw, DisplayReadyFieldRaw, RawDBRow, DBSearchRanking} from "./types/dbTypes";
 
 import type {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedDBEntry} from "./types/fuzzySortTypes";
 
@@ -30,11 +30,11 @@ function fuzzySortResultToSearchResultEntry(
     dbIdentifier: DBIdentifier,
     primaryKey: string,
     fuzzysortResult: FuzzyKeyResults,
-) {
+): SearchResultEntryRaw {
     const obj = fuzzysortResult.obj;
     const rowID = obj[primaryKey] as string;
 
-    const dbSearchRanking = {
+    const dbSearchRanking: DBSearchRanking = {
         searcherType: SearcherType.FUZZYSORT,
         score: fuzzysortResult.score
     };

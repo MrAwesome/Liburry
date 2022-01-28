@@ -205,32 +205,27 @@ export async function rawParseBuildYaml(localPrefix: string, buildID: BuildID): 
     return await loadBuildYaml(buildID, buildPath);
 }
 
-export async function genLoadFinalConfigWILLTHROW(opts?: {
+export interface GLFCOpts {
     buildID?: BuildID,
     appIDs?: AppIDList,
-}): Promise<ReturnedFinalConfig> {
+}
+
+export async function genLoadFinalConfigWILLTHROW(opts?: GLFCOpts): Promise<ReturnedFinalConfig> {
     const {buildID, appIDs} = opts ?? {};
-    const generatedFinalConfigAttempt = await genLoadFinalConfigAttemptInternal({buildID, appIDsOverride: appIDs});
+    const generatedFinalConfigAttempt = await genLoadFinalConfigAttemptINTERNAL({buildID, appIDs});
     return returnedFinalConfigSchema.parse(generatedFinalConfigAttempt);
 }
 
-export async function genLoadFinalConfigSafe(opts: {
-    buildID?: BuildID,
-    appIDs?: AppIDList,
-}): Promise<ReturnType<typeof returnedFinalConfigSchema.safeParse>> {
-    const {buildID, appIDs} = opts;
-    const generatedFinalConfigAttempt = await genLoadFinalConfigAttemptInternal({buildID, appIDsOverride: appIDs});
+export async function genLoadFinalConfigSafe(opts?: GLFCOpts): Promise<ReturnType<typeof returnedFinalConfigSchema.safeParse>> {
+    const {buildID, appIDs} = opts ?? {};
+    const generatedFinalConfigAttempt = await genLoadFinalConfigAttemptINTERNAL({buildID, appIDs});
     return returnedFinalConfigSchema.safeParse(generatedFinalConfigAttempt);
 }
 
 // NOTE: this function returns what it thinks is a ReturnedFinalConfig, but because the yaml parsing functions return "any", we don't try to say that we have an RFC until it is parsed via zod above.
-async function genLoadFinalConfigAttemptInternal(
-    opts: {
-        appIDsOverride?: AppIDList,
-        buildID?: BuildID,
-    }
-): Promise<any> {
-    let {appIDsOverride, buildID} = opts;
+async function genLoadFinalConfigAttemptINTERNAL(opts: GLFCOpts): Promise<any> {
+    const {buildID} = opts;
+    const appIDsOverride = opts.appIDs;
 
     const rawdef = await rawParseAppYaml("", "default");
 
@@ -238,17 +233,19 @@ async function genLoadFinalConfigAttemptInternal(
         ? undefined :
         await rawParseBuildYaml("builds/", buildID);
 
-    let appIDs: [AppID, ...AppID[]] | "all" = appIDsOverride ??
+    let appIDsOrAll: [AppID, ...AppID[]] | "all" = appIDsOverride ??
         buildConfig?.apps ??
         rawdef.build.config.apps;
 
+    let appIDs: [AppID, ...AppID[]];
     // TODO: walk the app dir and get all app names
-    if (appIDs === "all") {
+    // TODO: test that this happens
+    if (appIDsOrAll === "all") {
         throw new Error("allmode is not yet implemented!");
         // appIDs = walkAppDirAndGetAllAppIDs();
+    } else {
+        appIDs = Array.from(new Set(appIDsOrAll)) as [AppID, ...AppID[]];
     }
-
-    appIDs = Array.from(new Set(appIDs)) as [AppID, ...AppID[]];
 
     const apps: AppTopLevelConfiguration[] = await Promise.all(appIDs.map(async (appID: string) => {
         const rawapp = await rawParseAppYaml("apps/", appID);

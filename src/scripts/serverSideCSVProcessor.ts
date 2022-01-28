@@ -86,7 +86,7 @@ function writeFile(dbConfig: DBConfig, entries: RawDBRow[]) {
 
 // TODO: force this to load taigi.us from the yaml, not the json
 const configHandler = new ConfigHandler();
-const configPromises = [configHandler.genLoadFinalConfigLocalWILLTHROW()];
+const configPromises = [configHandler.genLoadFinalConfigLocalUNSAFE()];
 Promise.all(configPromises).then(([finalConfig]) => {
     const appConfig = AppConfig.from(finalConfig, "taigi.us", null);
     const dbConfigs = appConfig.dbConfigHandler.getAllDBConfigs();

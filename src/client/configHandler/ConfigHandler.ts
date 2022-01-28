@@ -12,6 +12,8 @@ import {ReturnedFinalConfig, returnedFinalConfigSchema} from "./zodConfigTypes";
 // TODO: add app name here, in remote/local location, or base location on appname
 const chDefaultOpts = {
     localMode: false,
+    shouldFailToLoad: false,
+    testRFCOverrideJSONText: null as string | null,
     finalConfigLocalDir: FINAL_CONFIG_LOCAL_DIR,
     finalConfigRemoteDir: FINAL_CONFIG_REMOTE_DIR,
     finalConfigJsonFilename: FINAL_CONFIG_JSON_FILENAME,
@@ -30,13 +32,20 @@ export default class ConfigHandler {
 
         this.localLoadWithNode = this.localLoadWithNode.bind(this);
         this.fetchJSON = this.fetchJSON.bind(this);
-        this.genLoadJSONText = this.genLoadJSONText.bind(this);
+        this.genLoadJSON = this.genLoadJSON.bind(this);
         this.genLoadFinalConfig = this.genLoadFinalConfig.bind(this);
-        this.genLoadFinalConfigLocalWILLTHROW = this.genLoadFinalConfigLocalWILLTHROW.bind(this);
+        this.genLoadFinalConfigLocalUNSAFE = this.genLoadFinalConfigLocalUNSAFE.bind(this);
     }
 
-    private async genLoadJSONText(): Promise<Object> {
-        if (this.opts.localMode) {
+    private async genLoadJSON(): Promise<Object> {
+        const {shouldFailToLoad, testRFCOverrideJSONText, localMode} = this.opts;
+        if (shouldFailToLoad) {
+            throw new MuhError(MuhErrorType.EXPLICIT_FAILURE_REQUESTED);
+        }
+        if (testRFCOverrideJSONText) {
+            return JSON.parse(testRFCOverrideJSONText);
+        }
+        if (localMode) {
             return this.localLoadWithNode();
         } else {
             return this.fetchJSON();
@@ -46,7 +55,7 @@ export default class ConfigHandler {
     // NOTE: this can load an app-specific config, if that's desired instead
     async genLoadFinalConfig(): Promise<ReturnedFinalConfig | MuhError> {
         try {
-            const blob = await this.genLoadJSONText();
+            const blob = await this.genLoadJSON();
             const parseRes = await returnedFinalConfigSchema.spa(blob);
             if (parseRes.success === true) {
                 return parseRes.data;
@@ -58,13 +67,15 @@ export default class ConfigHandler {
         }
     }
 
-    async genLoadFinalConfigLocalWILLTHROW(): Promise<ReturnedFinalConfig> {
-        return this.genLoadJSONText()
+    // Will throw on parse errors. Should only be used in tests.
+    async genLoadFinalConfigLocalUNSAFE(): Promise<ReturnedFinalConfig> {
+        return this.genLoadJSON()
             .then((blob) => returnedFinalConfigSchema.parseAsync(blob));
     }
 
     async fetchJSON(): Promise<Object> {
-        return fetch(this.opts.finalConfigRemoteDir + this.opts.finalConfigJsonFilename)
+        const {finalConfigRemoteDir, finalConfigJsonFilename} = this.opts;
+        return fetch(finalConfigRemoteDir + finalConfigJsonFilename)
             .catch((err) => {
                 throw new MuhError(MuhErrorType.FETCH_THREW, err);
             }).then(async (resp: Response) => {
