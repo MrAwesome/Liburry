@@ -117,7 +117,8 @@ export default class QueryStringParser {
         if (this.testString) {
             this.testString = newHashString;
         } else {
-            const args: [Object, string, string] = [parsed, '', "#" + newHashString];
+            const withHash = `${newHashString ? "#" : ""}${newHashString}`;
+            const args: [Object, string, string] = [parsed, '', withHash];
             const shouldSave = !(opts?.modifyHistInPlace);
             if (shouldSave) {
                 window.history.pushState(...args);

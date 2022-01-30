@@ -66,10 +66,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     newestQuery: string;
     appConfig: AppConfig;
     typingTimerIDs: ReturnType<typeof setTimeout>[] = []; // Object to satisfy Node typing
-
-    // This should always be set, but TypeScript isn't quite smart enough to know
-    // that genStartSearchController sets it for us
-    searchController: SearchController | undefined;
+    searchController: SearchController;
 
     constructor(props: ChhaTaigiProps) {
         super(props);
@@ -91,7 +88,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.searchBar = React.createRef();
 
         // Bind functions
-        this.genStartSearchController = this.genStartSearchController.bind(this);
+        this.startSearchController = this.startSearchController.bind(this);
         this.genRestartSearchController = this.genRestartSearchController.bind(this);
         this.genUpdateQs = this.genUpdateQs.bind(this);
 
@@ -102,7 +99,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.getEntryComponents = this.getEntryComponents.bind(this);
         this.getNewestQuery = this.getNewestQuery.bind(this);
         this.getPageView = this.getPageView.bind(this);
-        this.getStateTyped = this.getStateTyped.bind(this);
         this.hashChange = this.hashChange.bind(this);
         this.handleAppChange = this.handleAppChange.bind(this);
         this.handleSubAppChange = this.handleSubAppChange.bind(this);
@@ -111,23 +107,22 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.mainDisplayArea = this.mainDisplayArea.bind(this);
         this.overrideResultsForTests = this.overrideResultsForTests.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
-        this.setStateTyped = this.setStateTyped.bind(this);
         this.subscribeHash = this.subscribeHash.bind(this);
         this.unsubscribeHash = this.unsubscribeHash.bind(this);
         this.updateSearchBar = this.updateSearchBar.bind(this);
 
-        this.genStartSearchController();
+        this.searchController = this.startSearchController();
 
         // Allow for overriding results from Jest.
         this.overrideResultsForTests();
     }
 
-    async genStartSearchController() {
+    startSearchController() {
         const {genAddResultsCallback, genClearResultsCallback, getNewestQuery, appConfig} = this;
         const {genUpdateDisplayForDBLoadEvent, genUpdateDisplayForSearchEvent} = this.props;
         const {debug} = this.state.options;
 
-        this.searchController = new SearchController({
+        return new SearchController({
             debug,
             genAddResultsCallback,
             genClearResultsCallback,
@@ -136,25 +131,29 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             genUpdateDisplayForDBLoadEvent,
             genUpdateDisplayForSearchEvent,
         });
-
-        return this.searchController;
     }
 
+    // NOTE: this doesn't seem great. Should resultsholder really be living in state?
+    // Or should state just have a "resultsreceivedandreadyfordisplayupdate" or something equivalent?
     async genAddResultsCallback(results: AnnotatedPerDictResults) {
-        this.setStateTyped((state) => state.resultsHolder.addResults(results));
+        this.state.resultsHolder.addResults(results);
+        this.setState({});
     }
 
     async genClearResultsCallback() {
-        this.setStateTyped((state) => state.resultsHolder.clear());
+        this.state.resultsHolder.clear();
+        this.setState({});
     }
 
     async genRestartSearchController() {
         this.props.genUpdateDisplayForDBLoadEvent?.({didReload: true});
         this.props.genUpdateDisplayForSearchEvent?.(null);
 
-        return this.searchController?.cleanup()
-            .then(this.genStartSearchController)
-            .then((sc) => sc.startWorkersAndListener(this.state.options.searcherType));
+        // The order of these operations, and the await on cleanup, are all important to avoid
+        // memory leaks and/or strange behavior.
+        await this.searchController?.cleanup();
+        this.searchController = this.startSearchController();
+        this.searchController.startWorkersAndListener(this.state.options.searcherType)
     }
 
     getNewestQuery() {
@@ -172,17 +171,8 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         }
     }
 
-    setStateTyped(state: Partial<ChhaTaigiState> | ((prevState: ChhaTaigiState) => any)) {
-        // @ts-ignore - Partial seems to work fine, why does Typescript complain?
-        this.setState(state)
-    }
-
-    getStateTyped(): ChhaTaigiState {
-        return this.state;
-    }
-
     componentDidMount() {
-        const {options} = this.getStateTyped();
+        const {options} = this.state;
         this.console.time("mountToAllDB");
 
         // TODO: does this need to happen here? can we just start a search?
@@ -192,9 +182,10 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         // Waiting breaks MountUnmount tests, so don't setTimeout in tests
         const protecc = getProtecc();
+        const msToWaitInDevMode = 10;
 
-        // Wait a millisecond to check that this is actually the final mount attempt
-        // (prevents double-loading DBs on localhost)
+        // Wait for check that this is actually the final mount attempt
+        // (prevents double-loading DBs on localhost, since dev mode often double-mounts)
         protecc(async () => {
             if (this.currentMountAttempt === savedMountAttempt) {
                 this.searchController?.startWorkersAndListener(options.searcherType);
@@ -208,7 +199,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             } else {
                 console.warn("Detected double-mount, not starting workers...");
             }
-        }, 10);
+        }, msToWaitInDevMode);
     }
 
     componentWillUnmount() {
@@ -237,18 +228,26 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             this.searchQuery(newQuery);
         }
 
-        this.setStateTyped({options: newOptions});
+        this.setState({options: newOptions});
     }
 
     async genUpdateQs(
         updates: Partial<OptionsChangeableByUser>,
         queryStringOpts?: QSUpdateOpts,
-        frontendOpts?: {skipStateUpdate?: true}
+        frontendOpts?: {skipStateUpdate?: boolean}
     ) {
+        const {mainMode} = updates;
+        if (mainMode !== undefined) {
+            // Clear pageID in options and the querystring if it isn't specified
+            if (mainMode !== MainDisplayAreaMode.PAGE && this.state.options.pageID !== null) {
+                updates.pageID = null;
+            }
+        }
+
         this.qs.update(updates, queryStringOpts);
 
         if (!frontendOpts?.skipStateUpdate) {
-            this.setStateTyped((state) => ({options: {...state.options, ...updates}}));
+            this.setState((state) => ({options: {...state.options, ...updates}}));
         }
     }
 
@@ -265,36 +264,24 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.genUpdateQs({subAppID});
     }
 
-    setMode(mainMode: MainDisplayAreaMode, optsDeltaAdditional?: Partial<OptionsChangeableByUser>) {
-        let optsDelta: Partial<OptionsChangeableByUser> = {mainMode, ...optsDeltaAdditional ?? {}};
-
-        // Clear pageID in options and the querystring if it isn't specified
-        if (mainMode !== MainDisplayAreaMode.PAGE && this.state.options.pageID !== null) {
-            optsDelta.pageID = null;
-        }
-
-        this.genUpdateQs(optsDelta, {modifyHistInPlace: true});
-    }
-
     updateSearchBar(query: string) {
         if (this.searchBar.current) {
             this.searchBar.current.updateAndFocus(query);
         }
     }
 
+    // TODO: check back button behavior in a unit test? is that possible? or would it need to be in an integration test?
     async searchQuery(query: string, opts?: {isFromUserTyping: boolean}) {
         this.searchController?.search(query);
 
-        const desiredMode = query ?
-            MainDisplayAreaMode.SEARCH :
-            MainDisplayAreaMode.DEFAULT;
+        const mainMode = query
+            ? MainDisplayAreaMode.SEARCH
+            : MainDisplayAreaMode.DEFAULT;
 
-        if (this.state.options.mainMode !== desiredMode) {
-            this.setMode(desiredMode);
-        }
+        const oldMode = this.state.options.mainMode;
+        const modeChange = oldMode !== mainMode;
 
         this.newestQuery = query;
-
 
         if (opts?.isFromUserTyping) {
             // Clear old timers in an async-safe way
@@ -309,12 +296,17 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             const modifyHistInPlace = this.state.isTyping;
             this.setState({isTyping: true});
 
-            this.genUpdateQs({savedQuery: query}, {modifyHistInPlace}, {skipStateUpdate: true});
+            this.genUpdateQs({savedQuery: query, mainMode}, {modifyHistInPlace}, {skipStateUpdate: !modeChange});
+        } else {
+            console.log({oldMode, mainMode});
+            if (modeChange) {
+                this.setState((state) => ({options: {...state.options, mainMode}}));
+            }
         }
     }
 
     getEntryComponents(): JSX.Element {
-        const {resultsHolder, options} = this.getStateTyped();
+        const {resultsHolder, options} = this.state;
         const entries = resultsHolder.getAllResults();
 
         const entryContainers = entries.map((entry) =>
@@ -359,18 +351,19 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     loadPage(pageID: PageID) {
-        // NOTE: this will probably cause a double-render - setMode should probably be changed
-        this.setMode(MainDisplayAreaMode.PAGE, {pageID});
+        this.genUpdateQs({mainMode: MainDisplayAreaMode.PAGE, pageID}, {modifyHistInPlace: true});
     }
 
     goHome() {
-        this.setMode(this.getNewestQuery() ?
+        const mainMode = this.getNewestQuery() ?
             MainDisplayAreaMode.SEARCH :
-            MainDisplayAreaMode.DEFAULT)
+            MainDisplayAreaMode.DEFAULT;
+        this.genUpdateQs({mainMode}, {modifyHistInPlace: true})
     }
 
     render() {
-        const {options} = this.getStateTyped();
+        const {options} = this.state;
+        console.log(options.mainMode);
 
         return <div className="ChhaTaigi">
             <SearchBar
