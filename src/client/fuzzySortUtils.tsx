@@ -1,7 +1,7 @@
 import fuzzysort from "fuzzysort";
 import type {SearchResultEntryRaw, DisplayReadyFieldRaw, RawDBRow, DBSearchRanking} from "./types/dbTypes";
 
-import type {FuzzyKeyResult, FuzzyKeyResults, FuzzyPreparedDBEntry} from "./types/fuzzySortTypes";
+import type {FuzzyPreparedDBEntry} from "./types/fuzzySortTypes";
 
 import {SearcherType} from "./search/searchers/Searcher";
 
@@ -17,7 +17,7 @@ import {MATCH_END, MATCH_START} from "./search/searchers/constants";
 export function parseFuzzySortResultsForRender(
     dbIdentifier: DBIdentifier,
     primaryKey: string,
-    rawResults: FuzzyKeyResults[],
+    rawResults: Fuzzysort.KeysResults<FuzzyPreparedDBEntry>,
 ): SearchResultEntryRaw[] {
     const currentResultsElements = rawResults
         .slice(0, DISPLAY_RESULTS_LIMIT)
@@ -29,7 +29,7 @@ export function parseFuzzySortResultsForRender(
 function fuzzySortResultToSearchResultEntry(
     dbIdentifier: DBIdentifier,
     primaryKey: string,
-    fuzzysortResult: FuzzyKeyResults,
+    fuzzysortResult: Fuzzysort.KeysResult<FuzzyPreparedDBEntry>,
 ): SearchResultEntryRaw {
     const obj = fuzzysortResult.obj;
     const rowID = obj[primaryKey] as string;
@@ -77,7 +77,7 @@ function handleFuzzyPreppedKey(obj: FuzzyPreparedDBEntry, key: string): DisplayR
 
     // If the field was empty, fuzzysort doesn't generate the result object
     // (which is why we use obj[colName] directly instead of fuzzyRes.target)
-    const fuzzyRes = obj[key] as FuzzyKeyResult | undefined;
+    const fuzzyRes = obj[key] as Fuzzysort.KeyResult<FuzzyPreparedDBEntry> | undefined;
 
     // NOTE: each matched field has its own score,
     //       which could be used to more strongly highlight the matched field

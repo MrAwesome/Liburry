@@ -67,9 +67,10 @@ export type LiburryZodCustomTestingCode = (typeof liburryCustomErrorCodes)[numbe
 function issue(ctx: z.RefinementCtx, _liburryCode: LiburryZodCustomTestingCode, message: string) {
     ctx.addIssue({
         code: z.ZodIssueCode.custom,
+        message,
+        // Add our own custom code for tests:
         // @ts-ignore
         _liburryCode,
-        message
     });
 }
 

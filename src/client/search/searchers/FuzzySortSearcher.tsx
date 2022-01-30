@@ -1,6 +1,6 @@
 import fuzzysort from "fuzzysort";
 
-import {FuzzyKeysOptions, FuzzyPreparedDBEntry} from "../../types/fuzzySortTypes";
+import {FuzzyPreparedDBEntry} from "../../types/fuzzySortTypes";
 import {OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} from "../../search/searchers/Searcher";
 import {RawDBRow, SingleDBLoadStatus} from "../../types/dbTypes";
 import getDebugConsole, {StubConsole} from "../../getDebugConsole";
@@ -9,6 +9,7 @@ import {makeCancelable} from "../../utils";
 import {convertDBRowToFuzzySortPrepared, parseFuzzySortResultsForRender} from "../../fuzzySortUtils";
 import {SEARCH_RESULTS_LIMIT} from "../../search/searchers/constants";
 import {DBConfig} from "../../types/config";
+import {WriteableType} from "../../types/typeUtils";
 
 // TODO: give slight preference for poj-unicode/poj-normalized in fuzzy settings, so that e.g. "iong" will show up first in a search for itself
 // TODO: handle hyphens vs spaces
@@ -16,7 +17,7 @@ import {DBConfig} from "../../types/config";
 export const FUZZY_SCORE_LOWER_THRESHOLD = -1000;
 export const PREPPED_KEY_SUFFIX = "_zzprepped"
 
-function getFuzzyOpts(searchKeys: Array<string>): FuzzyKeysOptions {
+function getFuzzyOpts(searchKeys: Array<string>): Fuzzysort.KeysOptions<FuzzyPreparedDBEntry> {
     const keys = searchKeys.map((k) => k + PREPPED_KEY_SUFFIX);
 
     return {
@@ -131,7 +132,7 @@ class FuzzySearchableDict {
         );
 
         const cancelableParsePromise = makeCancelable(cancelableSearchPromise.then(
-            rawResults => {
+            (rawResults) => {
                 // Filter out duplicates, as fuzzysort occasionally gives them to us and React loathes duplicate keys
                 // TODO: Find out why this doesn't prevent the flash of warning text from react
                 const res = filterDupes(rawResults, this.primaryKey);
@@ -140,7 +141,6 @@ class FuzzySearchableDict {
                 const results = parseFuzzySortResultsForRender(
                     dbIdentifier,
                     this.primaryKey,
-                    // @ts-ignore Deal with lack of fuzzysort interfaces
                     res,
                 );
                 return {
@@ -162,13 +162,15 @@ class FuzzySearchableDict {
 
 }
 
-function filterDupes(rawResults: Fuzzysort.KeysResults<FuzzyPreparedDBEntry>, primaryKey: string) {
+function filterDupes(rawResults: Fuzzysort.KeysResults<FuzzyPreparedDBEntry>, primaryKey: string): Fuzzysort.KeysResults<FuzzyPreparedDBEntry> {
     const seen = new Set();
-    return rawResults.filter(({obj}) => {
+    const filtered: Partial<WriteableType<Fuzzysort.KeysResults<FuzzyPreparedDBEntry>>> = rawResults.filter(({obj}) => {
         if (seen.has(obj[primaryKey])) {
             return false;
         }
         seen.add(obj[primaryKey]);
         return true;
     });
+    filtered.total = rawResults.total;
+    return filtered as Fuzzysort.KeysResults<FuzzyPreparedDBEntry>;
 }
