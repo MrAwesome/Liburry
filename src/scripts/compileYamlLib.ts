@@ -335,7 +335,7 @@ export type IndexHtmlEnvVarPairs = {
     REACT_APP_LIBURRY_HTML_OG_TITLE: string,
     REACT_APP_LIBURRY_HTML_OG_IMAGE: string,
     REACT_APP_LIBURRY_HTML_OG_DESCRIPTION: string,
-    REACT_APP_LIBURRY_MANIFEST_JSON_PATH: string,
+    REACT_APP_LIBURRY_WEBMANIFEST_PATH: string,
     REACT_APP_LIBURRY_FAVICON_PATH: string,
 } & IndexHtmlEnvVarPairsOptionals;
 
@@ -378,7 +378,7 @@ export async function genIndexHTMLEnvVarPairs(
         REACT_APP_LIBURRY_HTML_OG_TITLE: title,
         REACT_APP_LIBURRY_HTML_OG_IMAGE: imageFullURL,
         REACT_APP_LIBURRY_HTML_OG_DESCRIPTION: description,
-        REACT_APP_LIBURRY_MANIFEST_JSON_PATH: manifest,
+        REACT_APP_LIBURRY_WEBMANIFEST_PATH: manifest,
         REACT_APP_LIBURRY_FAVICON_PATH: favicon,
         ...optionals,
     };

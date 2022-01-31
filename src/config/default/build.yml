@@ -5,16 +5,16 @@ apps:
   - FreeDictTestEngAfr
 
 indexHtml:
+  # TODO: add apple-touch-icon, msapplication-config, mask-icon, etc
   # TODO: add to zod, implement overrides
   # TODO: fix icon paths in current manifest.json
   # TODO: make a default liburry manifest.json
   # TODO: XXX: md5sum the manifest file and append it as a version string (and do this for all files?)
   # TODO(low)(convenience): ensure all files mentioned are present on the filesystem
-  manifest: "/manifest.json"
+  manifest: "/site.webmanifest"
   favicon: "/favicon.ico"
   themeColor: "#000000"
   og:
     title: "Liburry Search"
-    # TODO XXX: replace with better default
-    imageFullURL: "https://upload.wikimedia.org/wikipedia/commons/a/a1/Chheh-k%C3%A8.png"
+    imageFullURL: "https://taigi.us/icons/og_image.png"
     description: "An offline-first search engine for things that matter."
