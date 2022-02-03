@@ -25,7 +25,7 @@ clientsClaim();
 // even if you decide not to use precaching. See https://cra.link/PWA
 let precacheTargets = [...self.__WB_MANIFEST];
 
-// TODO: remove dbs from this, as the extra complexity adds more harm than good
+// TODO: remove dbs from this, as the extra complexity adds more harm than good (or just have fileplugin/etc move the csvs into place, if it's smart enough to watch mtimes)
 const customTargetsJsonString = process.env[CACHE_LINE_ENV_VARNAME];
 if (customTargetsJsonString !== undefined) {
     try {
