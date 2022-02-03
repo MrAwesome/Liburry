@@ -4,6 +4,9 @@ import type AppConfig from "../configHandler/AppConfig";
 import {PageID} from "../configHandler/zodConfigTypes";
 import "./burger.css";
 
+import {ReactComponent as SettingsIcon} from "../../icons/settings.svg";
+import {ReactComponent as SettingsCloseIcon} from "../../icons/settingsClose.svg";
+
 interface BMenuProps {
     appConfig: AppConfig,
     loadPage: (pageID: PageID) => void,
@@ -49,11 +52,11 @@ export class BurgerMenu extends React.Component<BMenuProps, BMenuState> {
         }} className="menu-item">Home</button>;
     }
 
-    handleStateChange (state: BurgerState) {
+    handleStateChange(state: BurgerState) {
         this.setState({isOpen: state.isOpen})
     }
 
-    closeMenu () {
+    closeMenu() {
         this.setState({isOpen: false})
     }
 
@@ -66,7 +69,7 @@ export class BurgerMenu extends React.Component<BMenuProps, BMenuState> {
                 this.closeMenu();
                 this.props.loadPage(pageID);
             }}
-            key={"menu-item-"+pageID} >
+            key={"menu-item-" + pageID} >
             {pageHandler.getLinkTitle(pageID)}
         </button>;
     }
@@ -84,12 +87,14 @@ export class BurgerMenu extends React.Component<BMenuProps, BMenuState> {
                 right
                 isOpen={this.state.isOpen}
                 onStateChange={(state) => this.handleStateChange(state)}
-                >
+                customBurgerIcon={<SettingsIcon className="liburry-settings-icon" />}
+                customCrossIcon={<SettingsCloseIcon className="liburry-settings-close-icon" />}
+            >
                 {this.makeHomeButton()}
                 {pageLinks}
                 {this.makeSettingsButton()}
             </Menu>
-                //<button onClick={this.showSettings} className="menu-item">Settings</button>
+            //<button onClick={this.showSettings} className="menu-item">Settings</button>
         );
     }
 }

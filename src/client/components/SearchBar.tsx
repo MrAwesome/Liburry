@@ -4,6 +4,8 @@ import {BurgerMenu} from "../menu/BurgerMenu";
 import type AppConfig from "../configHandler/AppConfig";
 import {PageID} from "../configHandler/zodConfigTypes";
 
+import {ReactComponent as SearchClickableMagGlass} from "../../icons/searchClickableMagGlass.svg";
+
 import "./SearchBar.css";
 
 interface SearchBarProps {
@@ -12,6 +14,7 @@ interface SearchBarProps {
     getNewestQuery(): string,
     loadPage: (pageID: PageID) => void,
     goHome: () => void,
+    toggleSearchOptions: () => void,
 }
 
 interface SearchBarState {
@@ -54,10 +57,15 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
         }
     }
 
+    //<svg aria-hidden="true" className="mag-glass" ><path d="M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z"></path></svg>
+
     render() {
         return <>
             <div className="search-bar-container">
                 <div className="search-bar">
+                    <SearchClickableMagGlass
+                        onClick={this.props.toggleSearchOptions}
+                        className="clickable-mag-glass" />
                     <form onSubmit={this.onSubmit} autoComplete="off" >
                         <input
                             autoFocus
@@ -68,7 +76,6 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
                             ref={this.textInput}
                         />
                     </form>
-                    <svg aria-hidden="true" className="mag-glass" ><path d="M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z"></path></svg>
                 </div>
                 <BurgerMenu
                     appConfig={this.props.appConfig}

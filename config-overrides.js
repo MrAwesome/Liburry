@@ -11,8 +11,12 @@ module.exports = {
 
     config.plugins.push(
       {
+        // TODO: do not run this if the only changed files in dev mode are css
         apply: (compiler) => {
           compiler.hooks.done.tap('CompileLiburryYaml', (compilation) => {
+            if (process.env.BYPASS_YAML === "1") {
+              return;
+            }
             // This is run here to allow yaml configs to be recompiled in dev mode. There's an initial run in
             // "prebuild" in package.json which is necessary for the assets to be included in builds.
             // The typescript compilation is unchecked, since the ts files in question are typechecked

@@ -1,10 +1,11 @@
 /* Position and sizing of burger button */
 .bm-burger-button {
     position: fixed;
-    width: 26px;
-    height: 20px;
-    right: 8px;
-    top: 9px;
+    width: 28px;
+    height: 28px;
+    right: 6px;
+    top: 6px;
+    opacity: 90%;
 }
 
 /* Color/shape of burger icon bars */
@@ -18,9 +19,14 @@
 }
 
 /* Position and sizing of clickable cross button */
+/* These are, for some reason, overriden by code*/
 .bm-cross-button {
-    height: 24px;
-    width: 24px;
+    height: 28px !important;
+    width: 28px !important;
+    right: 6px !important;
+    top: 6px !important;
+    opacity: 90% !important;
+    z-index: 0 !important;
 }
 
 .bm-cross-button:hover {
@@ -28,7 +34,6 @@
 
 /* Color/shape of close button cross */
 .bm-cross {
-    background: #bdc3c7;
 }
 
 /*
@@ -81,4 +86,10 @@ Note: Beware of modifying this element as it can break the animations - you shou
 /* Styling of overlay */
 .bm-overlay {
     background: rgba(0, 0, 0, 0.3);
+}
+
+.liburry-settings-icon {
+}
+
+.liburry-settings-close-icon {
 }

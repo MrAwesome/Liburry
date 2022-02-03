@@ -54,6 +54,7 @@ export interface ChhaTaigiState {
     options: OptionsChangeableByUser,
     resultsHolder: SearchResultsHolder,
     isTyping: boolean,
+    searchOptionsVisible: boolean,
 }
 
 export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
@@ -79,6 +80,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             options,
             resultsHolder: new SearchResultsHolder(),
             isTyping: false,
+            searchOptionsVisible: false,
         };
 
         this.newestQuery = this.state.options.savedQuery;
@@ -298,7 +300,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
             this.genUpdateQs({savedQuery: query, mainMode}, {modifyHistInPlace}, {skipStateUpdate: !modeChange});
         } else {
-            console.log({oldMode, mainMode});
             if (modeChange) {
                 this.setState((state) => ({options: {...state.options, mainMode}}));
             }
@@ -362,8 +363,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     render() {
-        const {options} = this.state;
-        console.log(options.mainMode);
+        const {options, searchOptionsVisible} = this.state;
 
         return <div className="ChhaTaigi">
             <SearchBar
@@ -373,8 +373,9 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 getNewestQuery={this.getNewestQuery}
                 loadPage={this.loadPage}
                 goHome={this.goHome}
+                toggleSearchOptions={() => this.setState({searchOptionsVisible: !searchOptionsVisible})}
             />
-            {this.getAppSelector()}
+            {searchOptionsVisible ? this.getAppSelector() : null}
             {this.mainDisplayArea(options.mainMode)}
         </div>
     }
