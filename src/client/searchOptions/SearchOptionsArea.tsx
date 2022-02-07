@@ -22,7 +22,7 @@ export default class SearchOptionsArea extends React.Component<SOAProps, {}> {
         return <ReactModal
             contentLabel="Search Options"
             isOpen={searchOptionsVisible}
-            onAfterOpen={() => this.appSelector.current?.shouldFocus.current?.focus()}
+            onAfterOpen={() => {this.appSelector.current?.shouldFocus.current?.focus(); console.log("Fired", this.appSelector.current);} }
             onRequestClose={() => this.setState({searchOptionsVisible: false})}
             onAfterClose={() => searchBarRef.current?.textInput?.current?.focus()}
 

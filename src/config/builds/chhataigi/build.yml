@@ -3,7 +3,7 @@ apps:
   - taigi.us
 
 indexHtml:
-  manifest: "/manifests/chhataigi/manifest.json"
+  manifest: "/manifests/chhataigi/site.webmanifest"
   favicon: "/icons/chhataigi/favicon.ico"
   themeColor: "#000000"
   og:
