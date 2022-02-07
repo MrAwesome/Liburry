@@ -80,7 +80,7 @@ registerRoute(
         cacheName: 'fonts',
         plugins: [
             // Ensure that once this runtime cache reaches a maximum size the
-            // least-recently used images are removed.
+            // least-recently used fonts are removed.
             new ExpirationPlugin({maxEntries: 150}),
         ],
     })
@@ -94,6 +94,7 @@ function fileMatcher(opts: {url: URL}): boolean {
     return locationCorrect && matchFileType;
 }
 
+// TODO: or rely on webpack (copy plugin? etc?), both for this and for fonts
 // TODO: version databases so newly-generated DBs will overwrite old ones
 registerRoute(
     fileMatcher,

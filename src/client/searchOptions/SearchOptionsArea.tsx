@@ -11,21 +11,23 @@ type SOAProps = {
     handleAppChange: (appID: AppID) => void,
     handleSubAppChange: (subAppID: SubAppID) => void,
     searchOptionsVisible: boolean,
-    searchBarRef: React.RefObject<SearchBar>
+    searchBarRef: React.RefObject<SearchBar>,
+    closeSearchOptionsArea: () => void,
 };
 
 export default class SearchOptionsArea extends React.Component<SOAProps, {}> {
     appSelector: React.RefObject<AppSelector> = React.createRef();
 
     render() {
-        const {rfc, appConfig, handleAppChange, handleSubAppChange, searchOptionsVisible, searchBarRef} = this.props;
+        const {rfc, appConfig, handleAppChange, handleSubAppChange, searchOptionsVisible, searchBarRef, closeSearchOptionsArea} = this.props;
         return <ReactModal
             contentLabel="Search Options"
             isOpen={searchOptionsVisible}
-            onAfterOpen={() => {this.appSelector.current?.shouldFocus.current?.focus(); console.log("Fired", this.appSelector.current);} }
-            onRequestClose={() => this.setState({searchOptionsVisible: false})}
-            onAfterClose={() => searchBarRef.current?.textInput?.current?.focus()}
-
+            onAfterOpen={() => {this.appSelector.current?.shouldFocus.current?.focus()}}
+            onRequestClose={closeSearchOptionsArea}
+            onAfterClose={() => {searchBarRef.current?.textInput?.current?.focus()}}
+            shouldCloseOnEsc={true}
+            shouldFocusAfterRender={true}
             >
                 <AppSelector
                     ref={this.appSelector}

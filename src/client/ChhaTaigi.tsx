@@ -371,6 +371,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 handleSubAppChange={this.handleSubAppChange}
                 searchOptionsVisible={searchOptionsVisible}
                 searchBarRef={searchBarRef}
+                closeSearchOptionsArea={() => this.setState({searchOptionsVisible: false})}
             />
             <SearchBar
                 appConfig={this.appConfig}
