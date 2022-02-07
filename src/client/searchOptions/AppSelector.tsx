@@ -1,19 +1,10 @@
 import * as React from "react";
 import Select from "react-select";
 import type {Props as SelectProps} from "react-select";
-import {AppID, AppTopLevelConfiguration, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
-import {getRecordEntries} from "./utils";
+import {AppID, AppTopLevelConfiguration, ReturnedFinalConfig, SubAppID} from "../configHandler/zodConfigTypes";
+import {getRecordEntries} from "../utils";
 
 import "./AppSelector.css";
-
-type ASProps = {
-    rfc: ReturnedFinalConfig,
-    currentAppID: AppID,
-    currentSubAppID: SubAppID | null,
-    handleAppChange: (appID: AppID) => void,
-    handleSubAppChange: (subAppID: SubAppID) => void,
-};
-type ASState = {};
 
 type SelectOption = {value: any, label: string};
 
@@ -75,8 +66,17 @@ function subAppToReactSelectOption(subApp: {subAppID: AppID, displayName: string
     return {value: subApp.subAppID, label: subApp.displayName};
 }
 
-function appSelectorHelper(options: SelectOption[], selected: SelectOption, onChange: SelectProps<SelectOption>['onChange']) {
+function appSelectorHelper(
+    options: SelectOption[],
+    selected: SelectOption,
+    onChange: SelectProps<SelectOption>['onChange'],
+    ref: React.Ref<any> | undefined,
+) {
     return <Select
+        styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+        menuPortalTarget={document.body}
+        menuPosition="fixed"
+        menuPlacement="bottom"
         value={selected}
         options={options}
         defaultValue={options[0]}
@@ -84,10 +84,22 @@ function appSelectorHelper(options: SelectOption[], selected: SelectOption, onCh
         isClearable={false}
         isDisabled={false}
         onChange={onChange}
+        ref={ref}
     />
 }
 
+type ASProps = {
+    rfc: ReturnedFinalConfig,
+    currentAppID: AppID,
+    currentSubAppID: SubAppID | null,
+    handleAppChange: (appID: AppID) => void,
+    handleSubAppChange: (subAppID: SubAppID) => void,
+};
+type ASState = {};
+
 export default class AppSelector extends React.PureComponent<ASProps, ASState> {
+    shouldFocus: React.RefObject<HTMLElement> = React.createRef();
+
     constructor(props: ASProps) {
         super(props);
         this.handleAppChangeINTERNAL = this.handleAppChangeINTERNAL.bind(this);
@@ -111,7 +123,7 @@ export default class AppSelector extends React.PureComponent<ASProps, ASState> {
         if (allApps.length > 1) {
             const allAppDisplayVals = allApps.map(appToReactSelectOption);
             const selectedApp = appToReactSelectOption(getKnownApp(rfc, currentAppID));
-            appSelector = appSelectorHelper(allAppDisplayVals, selectedApp, this.handleAppChangeINTERNAL);
+            appSelector = appSelectorHelper(allAppDisplayVals, selectedApp, this.handleAppChangeINTERNAL, this.shouldFocus);
         }
 
         let subAppSelector: JSX.Element | null = null;
@@ -121,10 +133,11 @@ export default class AppSelector extends React.PureComponent<ASProps, ASState> {
             const selectedSubAppRaw = getSubApp(rfc, currentAppID, currentSubAppID);
             const allSubAppDisplayVals = allSubApps.map(subAppToReactSelectOption);
             const selectedSubApp = (selectedSubAppRaw !== null) ? subAppToReactSelectOption(selectedSubAppRaw) : allSubAppDisplayVals[0];
-            subAppSelector = appSelectorHelper(allSubAppDisplayVals, selectedSubApp, this.handleSubAppChangeINTERNAL);
+            subAppSelector = appSelectorHelper(allSubAppDisplayVals, selectedSubApp, this.handleSubAppChangeINTERNAL, undefined);
         }
 
-        const obj = <div className="app-selector">
+        const obj = <div className="app-selector"
+        >
             {appSelector}
             {subAppSelector}
         </div>;

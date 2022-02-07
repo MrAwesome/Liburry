@@ -13,10 +13,12 @@ import {MainDisplayAreaMode} from "./types/displayTypes";
 import {SearchBar} from "./components/SearchBar";
 import {getProtecc, runningInJest} from "./utils";
 import AppConfig from "./configHandler/AppConfig";
+import SearchOptionsArea from "./searchOptions/SearchOptionsArea";
 
 import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
-import AppSelector from "./AppSelector";
+
+import "./ChhaTaigi.css";
 
 // TODOs are here: https://docs.google.com/spreadsheets/d/1lvbgLRRxGiNIf2by_mMW0aJrP1uhYTsz4_I4vmrB_Ss/edit?usp=sharing
 //
@@ -62,7 +64,8 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
     private currentMountAttempt = 0;
 
-    searchBar: React.RefObject<SearchBar>;
+    searchOptionsAreaRef: React.RefObject<HTMLDivElement>;
+    searchBarRef: React.RefObject<SearchBar>;
     console: StubConsole;
     newestQuery: string;
     appConfig: AppConfig;
@@ -87,7 +90,8 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         // Miscellaneous object initialization
         this.console = getDebugConsole(this.state.options.debug);
-        this.searchBar = React.createRef();
+        this.searchBarRef = React.createRef();
+        this.searchOptionsAreaRef = React.createRef();
 
         // Bind functions
         this.startSearchController = this.startSearchController.bind(this);
@@ -96,7 +100,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         this.genAddResultsCallback = this.genAddResultsCallback.bind(this);
         this.genClearResultsCallback = this.genClearResultsCallback.bind(this);
-        this.getAppSelector = this.getAppSelector.bind(this);
         this.getCurrentMountAttempt = this.getCurrentMountAttempt.bind(this);
         this.getEntryComponents = this.getEntryComponents.bind(this);
         this.getNewestQuery = this.getNewestQuery.bind(this);
@@ -106,7 +109,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.handleSubAppChange = this.handleSubAppChange.bind(this);
         this.loadPage = this.loadPage.bind(this);
         this.goHome = this.goHome.bind(this);
-        this.mainDisplayArea = this.mainDisplayArea.bind(this);
+        this.getMainDisplayAreaContents = this.getMainDisplayAreaContents.bind(this);
         this.overrideResultsForTests = this.overrideResultsForTests.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
         this.subscribeHash = this.subscribeHash.bind(this);
@@ -198,6 +201,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                     fontLoader.load();
                 }
                 this.qs.anchor();
+                window.addEventListener("keydown", (e) => {console.log(e)});
             } else {
                 console.warn("Detected double-mount, not starting workers...");
             }
@@ -267,9 +271,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     updateSearchBar(query: string) {
-        if (this.searchBar.current) {
-            this.searchBar.current.updateAndFocus(query);
-        }
+        this.searchBarRef.current?.updateAndFocus(query);
     }
 
     // TODO: check back button behavior in a unit test? is that possible? or would it need to be in an integration test?
@@ -326,21 +328,11 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         if (pageID !== null) {
             return <CombinedPageElement perAppPages={this.appConfig.pageHandler.getPagesForPageID(pageID)} />
         } else {
-            return this.mainDisplayArea(MainDisplayAreaMode.DEFAULT);
+            return this.getMainDisplayAreaContents(MainDisplayAreaMode.DEFAULT);
         }
     }
 
-    getAppSelector() {
-        return <AppSelector
-            rfc={this.props.rfc}
-            currentAppID={this.appConfig.appID}
-            currentSubAppID={this.appConfig.subAppID}
-            handleAppChange={this.handleAppChange}
-            handleSubAppChange={this.handleSubAppChange}
-        />;
-    }
-
-    mainDisplayArea(mode: MainDisplayAreaMode): JSX.Element {
+    getMainDisplayAreaContents(mode: MainDisplayAreaMode): JSX.Element {
         switch (mode) {
             case MainDisplayAreaMode.PAGE:
                 return this.getPageView();
@@ -364,19 +356,35 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
     render() {
         const {options, searchOptionsVisible} = this.state;
+        const {mainMode} = options;
+        const {searchBarRef} = this;
 
+        const mainAreaContents = this.getMainDisplayAreaContents(mainMode);
+
+        // TODO: fix styling on searchbar (border-radius, better border-ish color)
+        // TODO: get rid of react-burger-menu, use modal
+        // TODO: consider having searchOptionsOpen be a hash option
         return <div className="ChhaTaigi">
+            <SearchOptionsArea
+                rfc={this.props.rfc}
+                appConfig={this.appConfig}
+                handleAppChange={this.handleAppChange}
+                handleSubAppChange={this.handleSubAppChange}
+                searchOptionsVisible={searchOptionsVisible}
+                searchBarRef={searchBarRef}
+            />
             <SearchBar
                 appConfig={this.appConfig}
-                ref={this.searchBar}
+                ref={this.searchBarRef}
                 searchQuery={this.searchQuery}
                 getNewestQuery={this.getNewestQuery}
                 loadPage={this.loadPage}
                 goHome={this.goHome}
                 toggleSearchOptions={() => this.setState({searchOptionsVisible: !searchOptionsVisible})}
             />
-            {searchOptionsVisible ? this.getAppSelector() : null}
-            {this.mainDisplayArea(options.mainMode)}
+            <div className="liburry-main-area" >
+                {mainAreaContents}
+            </div>
         </div>
     }
 }

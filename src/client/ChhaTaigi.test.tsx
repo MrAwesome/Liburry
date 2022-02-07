@@ -19,7 +19,7 @@ noop(React.version);
 
 test('render searchbar by default', async () => {
     const appID = "test/simpletest";
-    const rfc = await genLoadFinalConfigWILLTHROW({appIDs: [appID]});
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
     let options = new OptionsChangeableByUser();
     options.appID = appID;
     const app = <ChhaTaigi rfc={rfc} mockOptions={options} />;
@@ -44,7 +44,7 @@ test('render single entry via override', async () => {
 
     const perDictRes = getExampleTaigiRes();
 
-    const rfc = await genLoadFinalConfigWILLTHROW({appIDs: [appID]});
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
 
     const appConfig = AppConfig.from(rfc, appID, null);
     const annotatedResRaw = annotateRawResults(perDictRes, appConfig);
@@ -84,7 +84,7 @@ test('do not render unknown fields', async () => {
 
     const perDictRes = getExampleTaigiRes();
 
-    const rfc = await genLoadFinalConfigWILLTHROW({appIDs: [appID]});
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
 
     const appConfig = AppConfig.from(rfc, appID, null);
     const annotatedResRaw = annotateRawResults(perDictRes, appConfig);

@@ -9,8 +9,8 @@ import {z} from 'zod';
 // TODO: test taigi.us and other major configs here too? ensure all prod configs pass as a test?
 test('validate test config', async () => {
     const appID = "test/simpletest";
-    const appIDs: [AppID, ...AppID[]] = [appID];
-    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+    const appIDsOverride: [AppID, ...AppID[]] = [appID];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride});
 
     expect(rfc.appConfigs[appID]!.configs.appConfig.config.displayName).toBe("Simple Test App");
     expect(rfc.appConfigs[appID]!.configs.appConfig.config.defaultSubApp).toBeUndefined();
@@ -26,8 +26,8 @@ test('validate test config', async () => {
 
 test('validate test config with subapps', async () => {
     const appID = "test/simpletest_with_subapps";
-    const appIDs: [AppID, ...AppID[]] = [appID];
-    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+    const appIDsOverride: [AppID, ...AppID[]] = [appID];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride});
     expect(rfc.appConfigs[appID]!.configs.appConfig.config.displayName).toBe("Simple Test App (With SubApps)");
     expect(rfc.appConfigs[appID]!.configs.appConfig.config.defaultSubApp).toBe("allDBs");
 
@@ -75,16 +75,16 @@ test('validate test config with subapps', async () => {
 // TODO: add more checks here, or just trust zod?
 test('validate test config with subapps and views', async () => {
     const appID = "test/simpletest_with_subapps_and_views";
-    const appIDs: [AppID, ...AppID[]] = [appID];
-    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+    const appIDsOverride: [AppID, ...AppID[]] = [appID];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride});
     expect(rfc.appConfigs[appID]!.configs.appConfig.config.displayName).toBe("Simple Test App (With SubApps And Views)");
     expect(rfc.appConfigs[appID]!.configs.appConfig.config.defaultSubApp).toBe("dbs_mixed");
 });
 
 test('ensure broken config fails zod', async () => {
     const appID = "test/simpletest_breakages亞歷山大";
-    const appIDs: [AppID, ...AppID[]] = [appID];
-    const sprt = await genLoadFinalConfigSafe({appIDs});
+    const appIDsOverride: [AppID, ...AppID[]] = [appID];
+    const sprt = await genLoadFinalConfigSafe({appIDsOverride});
 
     const tokenMatchRegex = /^\[([A-Z_]+)\]/;
 

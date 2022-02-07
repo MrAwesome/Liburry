@@ -23,7 +23,7 @@ const mkdir = promisify(fs.mkdir);
     // go back to writing out the entire config, and still just fetch the one big config - it's not bad to fetch all configs for all apps, you just maybe don't have to pre-load every app's dbs (should you preload subapp dbs? how to decide?)
     const buildID = LIBURRY_BUILD;
     const appIDsOverride = LIBURRY_APPS_OVERRIDE;
-    const checkedFinalConfig: ReturnedFinalConfig = await genLoadFinalConfigWILLTHROW({buildID, appIDs: appIDsOverride});
+    const checkedFinalConfig: ReturnedFinalConfig = await genLoadFinalConfigWILLTHROW({buildID, appIDsOverride});
 
     // This must be written before the env file, since we generate an md5sum of the json file for precaching
     const finalObjJsonString = JSON.stringify(checkedFinalConfig);

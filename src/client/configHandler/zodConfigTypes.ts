@@ -600,8 +600,8 @@ export const returnedFinalConfigSchema = strictObject({
     appConfigs: allAppsSchema,
     buildConfig: rawBuildConfigSchema.optional(),
 
-    // This is not used anywhere, but is included to aid in debugging:
-    debug: z.object({
+    overrides: z.object({
+        initialAppOverride: token("APP_ID").optional(),
         appIDsOverride: appIDListSchema.optional(),
     }).optional(),
 });

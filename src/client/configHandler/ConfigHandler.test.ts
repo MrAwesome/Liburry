@@ -15,7 +15,7 @@ test('ConfigHandler explicitly-requested error is thrown', async () => {
 
 test('ConfigHandler creation from yaml -> json parse/stringify', async () => {
     const appID = "test/simpletest";
-    const rfcFromYaml = await genLoadFinalConfigWILLTHROW({appIDs: [appID]});
+    const rfcFromYaml = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
 
     const ch = new ConfigHandler({testRFCOverrideJSONText: JSON.stringify(rfcFromYaml)});
     const rfc = await ch.genLoadFinalConfigLocalUNSAFE();

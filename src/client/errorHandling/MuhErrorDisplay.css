@@ -50,3 +50,39 @@
 .muh-howto {
     padding: 6px;
 }
+
+.ErrCollapsible {
+    border: 1px solid black;
+    transition: none;
+}
+
+.ErrCollapsible__trigger, .ErrCollapsible__triggerOpen {
+    /* Without this, the clickable part of the trigger is very small. */
+    display: block;
+    background: #aaaaaa;
+    font-weight: bold;
+
+    padding-left: 8px;
+    padding: 3px;
+    font-family: monospace;
+}
+
+.ErrCollapsible__triggerOpen {
+    border-bottom: 1px solid black;
+}
+
+.ErrCollapsible__trigger::before {
+    content: "▶ ";
+}
+
+.ErrCollapsible__triggerOpen::before {
+    content: "▼ ";
+}
+
+.ErrCollapsible__contentInner {
+    /* react-composible doesn't seem to set overflow correctly with overflowWhenOpen, so manually set it here. */
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding-bottom: 10px;
+    padding: 3px;
+}

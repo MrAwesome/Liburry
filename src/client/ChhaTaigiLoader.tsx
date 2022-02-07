@@ -3,11 +3,13 @@ import {ChhaTaigi} from "./ChhaTaigi";
 import ConfigLoader from "./configHandler/ConfigHandler";
 import {ProgressHandler} from "./progressBars/ProgressBars";
 
-import {ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
-import {MuhError} from "./errorHandling/MuhError";
+import type {ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
+import type {MuhError} from "./errorHandling/MuhError";
+import type {DebugData} from "./errorHandling/DebugData";
 
 interface ChhaTaigiLoaderProps {
     fatalError: (err: MuhError) => void,
+    updateDebugData: (debugDelta: Partial<DebugData>) => void,
 }
 
 interface ChhaTaigiLoaderState {
@@ -48,7 +50,8 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
                 this.props.fatalError(configHandlerError);
             } else {
                 const rfc = finalConfigOrErr as ReturnedFinalConfig;
-                this.setState({rfc})
+                this.setState({rfc});
+                this.props.updateDebugData({rfc});
             }
         });
     }

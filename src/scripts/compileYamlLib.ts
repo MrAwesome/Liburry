@@ -207,25 +207,25 @@ export async function rawParseBuildYaml(localPrefix: string, buildID: BuildID): 
 
 export interface GLFCOpts {
     buildID?: BuildID,
-    appIDs?: AppIDList,
+    appIDsOverride?: AppIDList,
+    initialAppOverride?: AppID,
 }
 
 export async function genLoadFinalConfigWILLTHROW(opts?: GLFCOpts): Promise<ReturnedFinalConfig> {
-    const {buildID, appIDs} = opts ?? {};
-    const generatedFinalConfigAttempt = await genLoadFinalConfigAttemptINTERNAL({buildID, appIDs});
+    const {buildID, appIDsOverride, initialAppOverride} = opts ?? {};
+    const generatedFinalConfigAttempt = await genLoadFinalConfigAttemptINTERNAL({buildID, appIDsOverride, initialAppOverride});
     return returnedFinalConfigSchema.parse(generatedFinalConfigAttempt);
 }
 
 export async function genLoadFinalConfigSafe(opts?: GLFCOpts): Promise<ReturnType<typeof returnedFinalConfigSchema.safeParse>> {
-    const {buildID, appIDs} = opts ?? {};
-    const generatedFinalConfigAttempt = await genLoadFinalConfigAttemptINTERNAL({buildID, appIDs});
+    const {buildID, appIDsOverride, initialAppOverride} = opts ?? {};
+    const generatedFinalConfigAttempt = await genLoadFinalConfigAttemptINTERNAL({buildID, appIDsOverride, initialAppOverride});
     return returnedFinalConfigSchema.safeParse(generatedFinalConfigAttempt);
 }
 
 // NOTE: this function returns what it thinks is a ReturnedFinalConfig, but because the yaml parsing functions return "any", we don't try to say that we have an RFC until it is parsed via zod above.
 async function genLoadFinalConfigAttemptINTERNAL(opts: GLFCOpts): Promise<any> {
-    const {buildID} = opts;
-    const appIDsOverride = opts.appIDs;
+    const {buildID, appIDsOverride, initialAppOverride} = opts;
 
     const rawdef = await rawParseAppYaml("", "default");
 
@@ -260,7 +260,8 @@ async function genLoadFinalConfigAttemptINTERNAL(opts: GLFCOpts): Promise<any> {
     };
 
     if (appIDsOverride !== undefined) {
-        generatedFinalConfigAttempt.debug = {
+        generatedFinalConfigAttempt.overrides = {
+            initialAppOverride,
             appIDsOverride,
         };
     }

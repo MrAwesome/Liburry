@@ -10,12 +10,12 @@ test('load only defaults and sanity check', async () => {
 
 test('load single app and sanity check', async () => {
     const appID = "test/simpletest";
-    const appIDs: [AppID, ...AppID[]] = [appID];
-    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+    const appIDsOverride: [AppID, ...AppID[]] = [appID];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride});
 
     expect(rfc.default.configs.langConfig.config.dialects.eng_us?.displayName).toBe("English (US)");
     expect(rfc.buildConfig).toBe(undefined);
-    expect(Object.keys(rfc.appConfigs)).toEqual(appIDs);
+    expect(Object.keys(rfc.appConfigs)).toEqual(appIDsOverride);
     expect(rfc.default.build.config.indexHtml.themeColor).toBeTruthy();
 
     expect(rfc.appConfigs[appID]?.appID).toBe(appID);
@@ -23,17 +23,18 @@ test('load single app and sanity check', async () => {
 });
 
 test('load multiple apps via override', async () => {
-    const appIDs: [AppID, ...AppID[]] = ["test/simpletest", "test/simpletest_with_subapps"];
-    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
-    expect(Object.keys(rfc.appConfigs)).toEqual(appIDs);
+    const appIDsOverride: [AppID, ...AppID[]] = ["test/simpletest", "test/simpletest_with_subapps"];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride});
+    expect(Object.keys(rfc.appConfigs)).toEqual(appIDsOverride);
 });
 
+// TODO: test inital app override in same way
 test('load multiple apps with same name via override', async () => {
     const appID = "test/simpletest";
-    const appIDs: [AppID, ...AppID[]] = [appID, appID];
-    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+    const appIDsOverride: [AppID, ...AppID[]] = [appID, appID];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride});
     expect(Object.keys(rfc.appConfigs)).toEqual([appID]);
-    expect(rfc.debug?.appIDsOverride).toEqual(appIDs);
+    expect(rfc.overrides?.appIDsOverride).toEqual(appIDsOverride);
 });
 
 // TODO: test loading by build

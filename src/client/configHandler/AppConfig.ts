@@ -1,6 +1,6 @@
 // TODO: move a lot of the glue code into separate modules, and have this be more the top-level type definitions (or move this to an AppConfig module)
 
-import {RawDBList, RawEnabledDBs, ReturnedFinalConfig, SubAppID, RawDBConfigMapping, AppID, ViewID, RawSubAppConfig} from "../configHandler/zodConfigTypes";
+import type {RawDBList, RawEnabledDBs, ReturnedFinalConfig, SubAppID, RawDBConfigMapping, AppID, ViewID, RawSubAppConfig, AppIDList} from "../configHandler/zodConfigTypes";
 import PageHandler from "../pages/PageHandler";
 import {DBConfig, DBIdentifier} from "../types/config";
 import {getRecordEntries, getRecordValues, nullGuard, runningInJest} from "../utils";
@@ -31,7 +31,7 @@ export default class AppConfig {
         subAppIDOverride: SubAppID | null,
     ) {
         if (appID === null) {
-            appID = getDefaultApp(rfc);
+            appID = getInitialApp(rfc);
         }
 
         const pageHandler = PageHandler.fromFinalConfig(rfc, appID);
@@ -179,16 +179,31 @@ function getViewID(subAppID: SubAppID | undefined, dbID: DBIdentifier, enabledDB
     return undefined;
 }
 
-function getDefaultApp(rfc: ReturnedFinalConfig): AppID {
-    if (rfc.buildConfig !== undefined) {
-        const {apps, initialApp} = rfc.buildConfig;
-        if (apps !== undefined && apps !== "all") {
-            if (initialApp !== undefined) {
-                return initialApp;
-            } else {
-                return apps[0];
-            }
-        }
+// TODO: make an rfc wrapper? make existing uses "rrfc" for raw?
+function getApps(rfc: ReturnedFinalConfig): AppIDList {
+    if (rfc.overrides?.appIDsOverride !== undefined) {
+        return rfc.overrides?.appIDsOverride;
+    }
+
+    if (rfc.buildConfig?.apps !== undefined) {
+        return rfc.buildConfig.apps
+    }
+
+    return rfc.default.build.config.apps;
+}
+
+// TODO: XXX: unit test
+function getInitialApp(rfc: ReturnedFinalConfig): AppID {
+    if (rfc.overrides?.initialAppOverride !== undefined) {
+        return rfc.overrides?.initialAppOverride;
+    }
+    if (rfc.buildConfig?.initialApp !== undefined) {
+        return rfc.buildConfig?.initialApp;
+    }
+
+    const apps = getApps(rfc);
+    if (apps !== "all") {
+        return apps[0];
     }
     return rfc.default.build.config.initialApp;
 }

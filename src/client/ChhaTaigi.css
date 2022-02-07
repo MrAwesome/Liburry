@@ -45,3 +45,21 @@ mark {
 /*        "options" */
 /*        "results";*/
 }
+
+.liburry-main-area {
+    transition: transform 1s ease;
+}
+
+.liburry-search-options-area {
+    transform-origin: top;
+}
+
+.liburry-search-options-overlay {
+    position: fixed;
+    z-index: 1000;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 1;
+    transition: opacity 0.3s ease 0s;
+}

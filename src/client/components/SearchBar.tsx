@@ -21,11 +21,11 @@ interface SearchBarState {
 }
 
 export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarState> {
-    textInput: React.RefObject<HTMLInputElement>;
+    textInput: React.RefObject<HTMLInputElement> = React.createRef();
+
     constructor(props: any) {
         super(props);
 
-        this.textInput = React.createRef();
         this.onChange = this.onChange.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
     }
@@ -63,9 +63,10 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
         return <>
             <div className="search-bar-container">
                 <div className="search-bar">
-                    <SearchClickableMagGlass
-                        onClick={this.props.toggleSearchOptions}
-                        className="clickable-mag-glass" />
+                    <button className="clickable-mag-glass-button"
+                            onClick={this.props.toggleSearchOptions} >
+                        <SearchClickableMagGlass className="clickable-mag-glass" />
+                    </button>
                     <form onSubmit={this.onSubmit} autoComplete="off" >
                         <input
                             autoFocus

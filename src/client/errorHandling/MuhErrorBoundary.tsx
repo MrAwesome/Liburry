@@ -1,17 +1,22 @@
 import * as React from "react";
-import {MuhError} from "./MuhError";
 import {ChhaTaigiLoader} from "../ChhaTaigiLoader";
 import MuhErrorDisplay from "./MuhErrorDisplay";
+
+import type {MuhError} from "./MuhError";
+import type {DebugData} from "./DebugData";
 
 interface EBProps {}
 interface EBState {
     muhError?: MuhError | Error,
+    debugData?: DebugData,
 }
+
 export default class MuhErrorBoundary extends React.Component<EBProps, EBState> {
     constructor(props: EBProps) {
         super(props);
         this.state = {}
         this.fatalError = this.fatalError.bind(this);
+        this.updateDebugData = this.updateDebugData.bind(this);
     }
 
     fatalError(muhError: MuhError) {
@@ -27,12 +32,19 @@ export default class MuhErrorBoundary extends React.Component<EBProps, EBState> 
         console.log({error, errorInfo});
     }
 
+    updateDebugData(debugDelta: Partial<DebugData>) {
+        this.setState({debugData: {...this.state.debugData, ...debugDelta}});
+    }
+
     render() {
-        const {muhError} = this.state;
+        const {muhError, debugData} = this.state;
         if (muhError !== undefined) {
-            return <MuhErrorDisplay muhError={muhError} />;
+            return <MuhErrorDisplay muhError={muhError} debugData={debugData} />;
         } else {
-            return <ChhaTaigiLoader fatalError={this.fatalError} />;
+            return <ChhaTaigiLoader
+                fatalError={this.fatalError}
+                updateDebugData={this.updateDebugData}
+            />;
         }
     }
 }

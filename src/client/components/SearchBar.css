@@ -31,17 +31,28 @@
     box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, .2);
 }
 
-.clickable-mag-glass {
+.clickable-mag-glass-button {
     position: absolute;
     top: 11px;
     left: 8px;
     width: 18px;
     height: 18px;
-    color: grey;
-    fill: grey;
     right: auto;
     transform: scale(1.4);
     cursor: pointer;
+    padding: 0px;
+    border: 0px;
+    background: transparent;
+/* color: grey; */
+/* fill: grey; */
+}
+
+.clickable-mag-glass {
+    position: absolute;
+    width: inherit;
+    height: inherit;
+    left: 0px;
+    top: 0px;
 }
 
 .search-area-buffer {

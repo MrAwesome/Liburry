@@ -4,8 +4,8 @@ import {AppID} from "./zodConfigTypes";
 
 test('load basic AppConfig', async () => {
     const appID = "test/simpletest";
-    const appIDs: [AppID, ...AppID[]] = [appID];
-    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+    const appIDsOverride: [AppID, ...AppID[]] = [appID];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride});
 
     const ac = AppConfig.from(rfc, appID, null);
     const dbcs = ac.dbConfigHandler.getAllEnabledDBConfigs();
@@ -16,8 +16,8 @@ test('load basic AppConfig', async () => {
 
 test('load basic AppConfig with subapps', async () => {
     const appID = "test/simpletest_with_subapps";
-    const appIDs: [AppID, ...AppID[]] = [appID];
-    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+    const appIDsOverride: [AppID, ...AppID[]] = [appID];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride});
     const defaultSubApp = rfc.appConfigs[appID]?.configs.appConfig.config.defaultSubApp;
     expect(defaultSubApp).toBeDefined();
 
@@ -43,8 +43,8 @@ test('load basic AppConfig with subapps', async () => {
 test('load multiple apps via AppConfig', async () => {
     const app1 = "test/simpletest";
     const app2 = "test/simpletest_with_subapps";
-    const appIDs: [AppID, ...AppID[]] = [app1, app2];
-    const rfc = await genLoadFinalConfigWILLTHROW({appIDs});
+    const appIDsOverride: [AppID, ...AppID[]] = [app1, app2];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride});
 
     const ac1 = AppConfig.from(rfc, app1, null);
     expect(ac1.appID).toBe(app1);

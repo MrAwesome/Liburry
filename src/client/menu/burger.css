@@ -1,6 +1,10 @@
 /* Position and sizing of burger button */
 .bm-burger-button {
+    /* NOTE: This must be fixed, since absolute positioning doesn't work as expected within a fixed div */
     position: fixed;
+    /* High enough to be above the search bar, low enough to be below the search options menu. */
+    z-index: 101 !important;
+
     width: 28px;
     height: 28px;
     right: 6px;
@@ -19,7 +23,7 @@
 }
 
 /* Position and sizing of clickable cross button */
-/* These are, for some reason, overriden by code*/
+/* NOTE: These are, for some reason, overriden by code, so must be !important to take effect */
 .bm-cross-button {
     height: 28px !important;
     width: 28px !important;
