@@ -48,7 +48,7 @@ export class ProgressHandler {
         //const height = maxHeight;
         //
 
-        const {config,dbLoad,search} = this.shouldShow;
+        const {config,dbLoad} = this.shouldShow;
         const progressBars = [
             config ? makeProgressBar("chhaConfigBar", this.progress.config) : null,
             dbLoad ? makeProgressBar("chhaDBDownloadBar", this.progress.dbDownload) : null,
