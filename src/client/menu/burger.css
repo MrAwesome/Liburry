@@ -9,7 +9,7 @@
     height: 28px;
     right: 6px;
     top: 6px;
-    opacity: 90%;
+    opacity: 75%;
 }
 
 /* Color/shape of burger icon bars */
@@ -29,8 +29,12 @@
     width: 28px !important;
     right: 6px !important;
     top: 6px !important;
-    opacity: 90% !important;
+    opacity: 75% !important;
     z-index: 0 !important;
+}
+
+.bm-cross-button:hover, .bm-burger-button:hover {
+    transform: scale(1.05);
 }
 
 .bm-cross-button:hover {

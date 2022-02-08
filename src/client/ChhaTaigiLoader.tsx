@@ -71,13 +71,13 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
                 genUpdateDisplayForDBLoadEvent={genUpdateDisplayForDBLoadEvent}
                 genUpdateDisplayForSearchEvent={genUpdateDisplayForSearchEvent}
                 key="ChhaTaigi"
+                getProgressBars={this.progress.getBars}
             />
             : null;
 
         // TODO: make config progress bar move during initial load, show *something*
         return <>
-            {this.progress.getBars()}
-            {mainApp}
+            {mainApp ?? this.progress.getBars(undefined)}
         </>
     }
 }

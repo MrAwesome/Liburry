@@ -50,6 +50,7 @@ export interface ChhaTaigiProps {
     mockResults?: AnnotatedPerDictResults,
     genUpdateDisplayForDBLoadEvent?: (dbStatus: AllDBLoadStats | {didReload: true}) => Promise<void>,
     genUpdateDisplayForSearchEvent?: (searchContext: SearchContext | null) => Promise<void>,
+    getProgressBars?: (parentElem: React.RefObject<HTMLElement>) => JSX.Element,
 };
 
 export interface ChhaTaigiState {
@@ -381,6 +382,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 loadPage={this.loadPage}
                 goHome={this.goHome}
                 toggleSearchOptions={() => this.setState({searchOptionsVisible: !searchOptionsVisible})}
+                getProgressBars={this.props.getProgressBars}
             />
             <div className="liburry-main-area" >
                 {mainAreaContents}

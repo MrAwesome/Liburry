@@ -7,9 +7,12 @@
 /* TODO: set border box sizing by default */
 
 :root {
-    --container-bg-color: #fff1e5;
-    --container-light-color: #66605c;
-    --container-dark-color: black;
+    --light-border-outer: hsl(210,8%,75%);
+    --medium-border-outer: hsl(210,8%,70%);
+    --dark-border-outer: hsl(210,8%,60%);
+    --light-border-inner: hsl(210,8%,85%);
+    --medium-border-inner: hsl(210,8%,70%);
+    --dark-border-inner: hsl(210,8%,60%);
 }
 
 input {
@@ -23,7 +26,8 @@ body {
     margin: 0;
     padding: 0;
     font-family: sans-serif;
-    color: #24292f;
+    /*color: #24292f;*/
+    color: #232629;
 }
 
 input, select, textarea, button {

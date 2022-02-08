@@ -5,8 +5,6 @@
 :root {
     --agnostic-title-border: #fff1e5;
     --agnostic-definition-border: #66605c;
-    --light-border-inner: #BBBBBB;
-    --dark-border-inner: #41454a;
     --font-size-definition: 14px;
 }
 
@@ -26,8 +24,8 @@
 }
 
 .agnostic-container-container {
-    border: 1px solid black;
-    border-radius: 15px;
+    border: 1px solid var(--light-border-outer);
+    border-radius: 10px;
     margin-bottom: 3px;
     background: white;
 
@@ -39,7 +37,7 @@
 
 .agnostic-container-container:hover {
 /*    background: #eeffee;*/
-    border-left: 2px solid black;
+    border-left: 2px solid var(--medium-border-outer);
     padding-right: 0px;
     box-shadow: 0px 0px 5px 2px rgba(0, 0, 0, .2);
 
@@ -180,11 +178,12 @@
 }
 
 .agnostic-container-examples {
-    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
 }
 
 .agnostic-container-examples > div {
-    display: block;
+    display: inline-block;
     margin-bottom: 1px;
     margin-left: 10px;
     padding-left: 4px;
@@ -198,15 +197,14 @@
 }
 
 .agnostic-container-matched_examples {
-    padding-top: 1px;
+    padding-top: 3px;
     display: flex;
     flex-direction: column;
     font-size: var(--font-size-definition);
 }
 
 .agnostic-matched-group-container {
-    padding-top: 1px;
-    border: 1px solid grey;
+    padding-top: 3px;
     display: flex;
     margin-bottom: 1px;
 }
@@ -214,19 +212,24 @@
 .agnostic-matched-group-prefix {
     display: inline-block;
     vertical-align: top;
-    font-style: italic;
     padding-right: 3px;
     padding-left: 2px;
 }
 
 .agnostic-matched-group {
     display: inline-block;
+    border: 1px solid var(--light-border-inner);
+    border-radius: 4px;
 }
 
 .agnostic-matched-group > div {
-    border: 1px solid grey;
+    padding: 1px;
+    padding-left: 4px;
+    padding-right: 4px;
+    border: 1px solid var(--light-border-inner);
     display: block;
-    margin-bottom: 1px;
+    border-radius: 3px;
+    margin-bottom: 0px;
 }
 
 .area-title-long_descriptions {

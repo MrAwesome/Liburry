@@ -68,6 +68,7 @@ const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDispla
     //]),
 ]);
 
+// TODO: fix display of "examples" (they either stack with title using inline, or have full width borders with block (will require inserting a container around them)
 // TODO: when pulling in from config file, only include matching display rules
 // TODO: instead, field to display *rule*?
 // TODO: decide how to display the name of a field, and any information about it
@@ -163,7 +164,7 @@ export default class AgnosticEntryContainer
         if (matchGroups.length > 0) {
             matchGroups.forEach((matchGroup, i) => {
                 const prefix = !(matchGroups.length > 1) ? null :
-                    <div className="agnostic-matched-group-prefix" key="matched-group-prefix">{i}.</div>;
+                    <div className="agnostic-matched-group-prefix" key="matched-group-prefix"></div>;
                 const matchGroupContainer =
                     <div className="agnostic-matched-group-container" key="matched-group-container">
                         {prefix}

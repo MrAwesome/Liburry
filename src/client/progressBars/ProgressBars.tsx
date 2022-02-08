@@ -3,7 +3,7 @@ import {SearchContext} from "../search/orchestration/SearchValidityManager";
 import {AllDBLoadStats} from "../types/dbTypes";
 import "./style.css";
 
-export const PROGRESS_BAR_HEIGHT_ANIMATION_LENGTH = 200;
+export const PROGRESS_BAR_HEIGHT_ANIMATION_LENGTH = 300;
 
 // TODO(wishlist): progressbar for each DB, in a flexbox constellation
 // TODO(wishlist): color-coded DBs, with loading bar color matching a color on the entrycontainer, and a bar for each db
@@ -40,18 +40,29 @@ export class ProgressHandler {
         return (this.shouldShow.config || this.shouldShow.dbLoad || this.shouldShow.search);
     }
 
-    getBars(): JSX.Element {
-        const scaleY = this.shouldShowProgressBars() ? 1 : 0;
+    getBars(parentElem: React.RefObject<HTMLElement> | undefined): JSX.Element {
+        const shouldShow = this.shouldShowProgressBars();
+        const scaleY = shouldShow ? 1 : 0;
 
+        //const maxHeight = `${shouldShow ? 4 : 0}px`;
+        //const height = maxHeight;
+        //
+
+        const {config,dbLoad,search} = this.shouldShow;
         const progressBars = [
-            makeProgressBar("chhaConfigBar", this.shouldShow.config, this.progress.config),
-            makeProgressBar("chhaDBDownloadBar", this.shouldShow.dbLoad, this.progress.dbDownload),
-            makeProgressBar("chhaDBParsedBar", this.shouldShow.dbLoad, this.progress.dbParsed),
-            makeProgressBar("chhaDBLoadBar", this.shouldShow.dbLoad, this.progress.dbLoad),
-            makeProgressBar("chhaSearchBar", this.shouldShow.search, this.progress.search),
+            config ? makeProgressBar("chhaConfigBar", this.progress.config) : null,
+            dbLoad ? makeProgressBar("chhaDBDownloadBar", this.progress.dbDownload) : null,
+            dbLoad ? makeProgressBar("chhaDBParsedBar", this.progress.dbParsed) : null,
+            dbLoad ? makeProgressBar("chhaDBLoadBar", this.progress.dbLoad) : null,
+            makeProgressBar("chhaSearchBar", this.progress.search),
         ];
 
-        return <div className="loadingBarContainer" style={{transform: `scaleY(${scaleY})`}}>
+        return <div className="loadingBarContainer" style={{
+            //transform: `scaleY(${scaleY})`,
+            opacity: `${scaleY * 100}%`,
+            //height,
+            width: parentElem?.current?.clientWidth
+            }}>
             <>{progressBars}</>
         </div>
     }
@@ -127,7 +138,6 @@ export class ProgressHandler {
 
 export class ProgressBar extends React.PureComponent<{
     elementID: string,
-    shouldShow: boolean,
     percentProgress: number,
 }, {}> {
     render() {
@@ -140,10 +150,12 @@ export class ProgressBar extends React.PureComponent<{
         const widthDuration = minDuration + (maxAdditionalDuration * (1 - (widthPercent100 / 100)));
 
         return <div
-            id={elementID}
             className="loadingBar"
+            id={elementID}
             style={{
-                transform: `scaleX(${widthPercent100}%)`,
+                //transform: `scaleX(${widthPercent100}%)`,
+                // NOTE: we animate width instead of height here, because width does not cause issues with border-radius.
+                width: `${widthPercent100}%`,
                 transitionDuration: `${widthDuration}s`,
             }}
             key={elementID}
@@ -151,11 +163,10 @@ export class ProgressBar extends React.PureComponent<{
     }
 }
 
-function makeProgressBar(elementID: string, shouldShow: boolean, percentProgress: number) {
+function makeProgressBar(elementID: string, percentProgress: number) {
     return <ProgressBar
         key={elementID}
         elementID={elementID}
-        shouldShow={shouldShow}
         percentProgress={percentProgress}
     />
 }
