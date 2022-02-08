@@ -9,7 +9,7 @@
     height: 28px;
     right: 6px;
     top: 6px;
-    opacity: 75%;
+    opacity: 85%;
 }
 
 /* Color/shape of burger icon bars */
@@ -29,7 +29,7 @@
     width: 28px !important;
     right: 6px !important;
     top: 6px !important;
-    opacity: 75% !important;
+    opacity: 85% !important;
     z-index: 0 !important;
 }
 
