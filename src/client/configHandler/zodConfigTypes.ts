@@ -233,6 +233,7 @@ export const fakeMTGDisplayTypeSchema = z.union([
 
 // TODO(high): split these into used and unused fields (for ease of knowing what's worth bothering to tag)
 // TODO: .map z.literal
+// TODO: better name for definition/explanation (simple_definition/long_definition?)
 export const rawDictionaryFieldDisplayTypeSchema = z.union([
     z.literal("base_phrase"),
     z.literal("channel_name"),

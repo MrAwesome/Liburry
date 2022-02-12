@@ -34,8 +34,18 @@
     box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, .2);
 }
 
+@keyframes littleBlip {
+    0% { transform: scale(1); }
+    75% { transform: scale(1.07); }
+    100% { transform: scale(1); }
+}
+
 .clickable-mag-glass-button {
+    animation: .8s cubic-bezier(.18,.89,.32,1.28) 1.3s 1 littleBlip;
+    /* animation: 0.8s ease 1.5s 1 littleBlip; */
+    /* animation: 0.8s cubic-bezier(.68,-0.55,.27,1.55) 1.5s 1 littleBlip; */
     position: absolute;
+
     top: 6px;
     left: 8px;
     width: 28px;
