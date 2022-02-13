@@ -19,7 +19,7 @@ dbConfigs:
     source: https://freedict.org/downloads/
 
     loadInfo:
-      localCSV: /db/FreeDictTestEngAfr/eng_afr.csv
+      localCSV: /db/languages/FreeDictTestEngAfr/eng_afr.csv
 
     primaryKey: Id
 
@@ -52,7 +52,7 @@ dbConfigs:
     source: https://freedict.org/downloads/
 
     loadInfo:
-      localCSV: /db/FreeDictTestEngAfr/afr_eng.csv
+      localCSV: /db/languages/FreeDictTestEngAfr/afr_eng.csv
 
     primaryKey: Id
 

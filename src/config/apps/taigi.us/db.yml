@@ -85,7 +85,7 @@ dbConfigs:
       eng_us: Embree
 
     loadInfo:
-      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_EmbreeTaiengSutian.csv
+      localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_EmbreeTaiengSutian.csv
 
     primaryKey: DictWordID
 
@@ -212,7 +212,7 @@ dbConfigs:
       eng_us: iTaigi
 
     loadInfo:
-      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_iTaigiHoataiTuichiautian.csv
+      localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_iTaigiHoataiTuichiautian.csv
 
     primaryKey: DictWordID
 
@@ -310,7 +310,7 @@ dbConfigs:
       eng_us: KamJitian
 
     loadInfo:
-      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_KamJitian.csv
+      localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_KamJitian.csv
 
     primaryKey: DictWordID
 
@@ -442,7 +442,7 @@ dbConfigs:
       eng_us: Kauiokpoo
 
     loadInfo:
-      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_KauiokpooTaigiSutian.csv
+      localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_KauiokpooTaigiSutian.csv
 
     primaryKey: DictWordID
 
@@ -622,7 +622,7 @@ dbConfigs:
       eng_us: Maryknoll
 
     loadInfo:
-      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_MaryknollTaiengSutian.csv
+      localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_MaryknollTaiengSutian.csv
 
     primaryKey: DictWordID
 
@@ -713,7 +713,7 @@ dbConfigs:
       eng_us: TaihoaSoannteng
 
     loadInfo:
-      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_TaihoaSoanntengTuichiautian.csv
+      localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_TaihoaSoanntengTuichiautian.csv
 
     primaryKey: DictWordID
 
@@ -829,7 +829,7 @@ dbConfigs:
       eng_us: TaijitToaSutian
 
     loadInfo:
-      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_TaijitToaSutian.csv
+      localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_TaijitToaSutian.csv
 
     primaryKey: DictWordID
 
@@ -995,7 +995,7 @@ dbConfigs:
       eng_us: Giku
 
     loadInfo:
-      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_TaioanPehoeKichhooGiku.csv
+      localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_TaioanPehoeKichhooGiku.csv
 
     primaryKey: DictWordID
 
@@ -1174,7 +1174,7 @@ dbConfigs:
       eng_us: Mialui
 
     loadInfo:
-      localCSV: /db/ChhoeTaigiDatabase/ChhoeTaigi_TaioanSitbutMialui.csv
+      localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_TaioanSitbutMialui.csv
 
     primaryKey: DictWordID
 
