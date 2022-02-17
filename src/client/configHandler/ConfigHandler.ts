@@ -56,7 +56,7 @@ export default class ConfigHandler {
     async genLoadFinalConfig(): Promise<ReturnedFinalConfig | MuhError> {
         try {
             const blob = await this.genLoadJSON();
-            const parseRes = await returnedFinalConfigSchema.spa(blob);
+            const parseRes = await returnedFinalConfigSchema.spa(blob, {errorIncludesInputData: true});
             if (parseRes.success === true) {
                 return parseRes.data;
             } else {
@@ -70,7 +70,7 @@ export default class ConfigHandler {
     // Will throw on parse errors. Should only be used in tests.
     async genLoadFinalConfigLocalUNSAFE(): Promise<ReturnedFinalConfig> {
         return this.genLoadJSON()
-            .then((blob) => returnedFinalConfigSchema.parseAsync(blob));
+            .then((blob) => returnedFinalConfigSchema.parseAsync(blob, {errorIncludesInputData: true}));
     }
 
     async fetchJSON(): Promise<Object> {

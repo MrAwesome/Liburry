@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@mrawesome/zod";
 import {noop} from "../utils";
 import {TypeEquals} from "../utils/typeEquality";
 

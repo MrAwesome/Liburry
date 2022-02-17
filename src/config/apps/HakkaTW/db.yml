@@ -1,0 +1,185 @@
+# TODO: migrate taigi.us and afr to use new tag system
+# TODO: classify all fields
+#
+
+dbList:
+  - TWMOEHakkaDict
+
+enabledDBs:
+  sixian:
+    - TWMOEHakkaDict: sixian
+  hailu:
+    - TWMOEHakkaDict: hailu
+  dapu:
+    - TWMOEHakkaDict: dapu
+  raoping:
+    - TWMOEHakkaDict: raoping
+  zhaoan:
+    - TWMOEHakkaDict: zhaoan
+  southern_sixian:
+    - TWMOEHakkaDict: southern_sixian
+
+
+# TODO: put in dialect config
+
+dbConfigs:
+  TWMOEHakkaDict:
+    displayName:
+      eng_us: "Taiwan Ministry of Education Hakka Dictionary"
+
+    views:
+      southern_sixian:
+        filter: 'dialect in ("tcn", "tw_hakka_southern_sixian", "tw_hakka_southern_sixian_pronunciation")'
+      sixian:
+        filter: 'dialect in ("tcn", "tw_hakka_sixian", "tw_hakka_sixian_pronunciation")'
+      hailu:
+        filter: 'dialect in ("tcn", "tw_hakka_hailu", "tw_hakka_hailu_pronunciation")'
+      dapu:
+        filter: 'dialect in ("tcn", "tw_hakka_dapu", "tw_hakka_dapu_pronunciation")'
+      raoping:
+        filter: 'dialect in ("tcn", "tw_hakka_raoping", "tw_hakka_raoping_pronunciation")'
+      zhaoan:
+        filter: 'dialect in ("tcn", "tw_hakka_zhaoan", "tw_hakka_zhaoan_pronunciation")'
+
+    # TODO!
+    source: https://todo
+
+    loadInfo:
+      localCSV: /db/languages/Hakka/HakkaMOE.csv
+
+#    viewInfo = {
+#      allowedTags: {
+#        [tagType]: verifiedTagID[]
+#      }
+#      searchableFields: fieldID[]
+#    }
+
+    searchableFields:
+      - Headword
+      - CorrespondingMandarin
+      - Headword
+      - SixianHakkaPronunciation
+      - HailuHakkaPronunciation
+      - DapuHakkaPronunciation
+      - RaopingHakkaPronunciation
+      - ZhaoanHakkaPronunciation
+      - SouthernSixianHakkaPronounciation
+      - Definition
+      - Synonyms
+      - CorrespondingMandarin
+      #DapuHakkaRelatedWords
+      #DapuHakkaRelatedWordsPronunciation
+      #RaopingHakkaRelatedWords
+      #RaopingHakkaRelatedWordsPronunciation
+      #ZhaoanHakkaRelatedWords
+      #ZhaoanHakkaRelatedWordsPronunciation
+      #SouthernSixianHakkaRelatedWords
+      #SouthernSixianHakkaRelatedWordsPronunciation
+
+    primaryKey: MOESystemEntryID
+
+    fields:
+      MOESystemEntryID:
+        type:
+          dictionary: id
+
+      Headword:
+        type:
+          dictionary: vocab
+        # TODO: is this correct?
+        dialect: tcn
+
+      PartOfSpeech:
+        type:
+          dictionary: pos_classification
+
+      LexicalIndexClassification:
+        type:
+          # TODO: is this correct?
+          dictionary: pos_classification
+
+      SixianHakkaPronunciation:
+        type:
+          dictionary: pronunciation
+        dialect: tw_hakka_sixian_pronunciation
+
+      HailuHakkaPronunciation:
+        type:
+          dictionary: pos_classification
+        dialect: tw_hakka_hailu_pronunciation
+
+      DapuHakkaPronunciation:
+        type:
+          dictionary: pos_classification
+        dialect: tw_hakka_dapu_pronunciation
+
+      RaopingHakkaPronunciation:
+        type:
+          dictionary: pos_classification
+        dialect: tw_hakka_raoping_pronunciation
+
+      ZhaoanHakkaPronunciation:
+        type:
+          dictionary: pos_classification
+        dialect: tw_hakka_zhaoan_pronunciation
+
+      SouthernSixianHakkaPronounciation:
+        type:
+          dictionary: pos_classification
+        dialect: tw_hakka_southern_sixian_pronunciation
+
+      Definition:
+        type:
+          dictionary: explanation
+
+      Synonyms:
+        type:
+          dictionary: synonym
+
+      Antonyms:
+        type:
+          dictionary: opposite
+
+      CorrespondingMandarin:
+        type:
+          dictionary: definition
+
+      DapuHakkaRelatedWords:
+        type:
+          dictionary: related_words
+        dialect: tw_hakka_dapu
+
+      DapuHakkaRelatedWordsPronunciation:
+        type:
+          dictionary: related_words_pronunciation
+        dialect: tw_hakka_dapu_pronunciation
+
+      RaopingHakkaRelatedWords:
+        type:
+          dictionary: related_words
+        dialect: tw_hakka_raoping
+
+      RaopingHakkaRelatedWordsPronunciation:
+        type:
+          dictionary: related_words_pronunciation
+        dialect: tw_hakka_raoping_pronunciation
+
+      ZhaoanHakkaRelatedWords:
+        type:
+          dictionary: related_words
+        dialect: tw_hakka_zhaoan
+
+      ZhaoanHakkaRelatedWordsPronunciation:
+        type:
+          dictionary: related_words_pronunciation
+        dialect: tw_hakka_zhaoan_pronunciation
+
+      SouthernSixianHakkaRelatedWords:
+        type:
+          dictionary: related_words
+        dialect: tw_hakka_southern_sixian
+
+      SouthernSixianHakkaRelatedWordsPronunciation:
+        type:
+          dictionary: related_words_pronunciation
+        dialect: tw_hakka_southern_sixian_pronunciation

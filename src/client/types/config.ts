@@ -1,4 +1,4 @@
-import {FieldID, RawAllowedFieldClassifierTags, RawDBConfig, ViewID} from "../configHandler/zodConfigTypes";
+import {FieldID, RawFieldMetadata, RawDBConfig, ViewID} from "../configHandler/zodConfigTypes";
 
 export interface DBLoadInfo {
     localCSV?: string;
@@ -41,7 +41,7 @@ export class DBConfig {
     }
 
     // TODO: return a less-raw view into column metadata
-    getColumnMetadata(colName: string): RawAllowedFieldClassifierTags {
+    getColumnMetadata(colName: string): RawFieldMetadata {
         // XXX: TODO: better error handling
         return this.r.fields[colName]!;
     }

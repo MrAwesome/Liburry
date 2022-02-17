@@ -5,29 +5,23 @@ defaultSubApp: "eng_poj"
 #domainToubefaultSubAppMapping:
 #  taigi.us: "eng_poj"
 #  kip.taigi.us: "eng_kip"
-#  mandopoj.taigi.us: "mando_poj"
-#  mandokip.taigi.us: "mando_kip"
+#  mandopoj.taigi.us: "tcn_poj"
+#  mandokip.taigi.us: "tcn_kip"
 
 # NOTE: displayNames per language can be implemented without too much trouble, if needed
 subApps:
   eng_poj:
     displayName: "English ↔ Pe̍h-ōe-jī"
-    blacklistDialectsRegex: kip
   eng_kip:
     displayName: "English ↔ Kàu-io̍k-pōo"
-    blacklistDialectsRegex: poj
-  mando_poj:
+  tcn_poj:
     displayName: "漢字 ↔ Pe̍h-ōe-jī"
-    blacklistDialectsRegex: kip
-  mando_kip:
+  tcn_kip:
     displayName: "漢字 ↔ Kàu-io̍k-pōo"
-    blacklistDialectsRegex: poj
   all_poj:
     displayName: "All DBs / 所有數據庫 (Pe̍h-ōe-jī)"
-    blacklistDialectsRegex: kip
   all_kip:
     displayName: "All DBs / 所有數據庫 (Kàu-io̍k-pōo)"
-    blacklistDialectsRegex: poj
 
 # NOTE: font sets per subapp can be implemented, but it's likely that per-app is more than sufficient for most use cases
 # NOTE: font families listed here are applied globally, in the order they are first seen.

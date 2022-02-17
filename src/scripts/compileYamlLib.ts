@@ -214,13 +214,13 @@ export interface GLFCOpts {
 export async function genLoadFinalConfigWILLTHROW(opts?: GLFCOpts): Promise<ReturnedFinalConfig> {
     const {buildID, appIDsOverride, initialAppOverride} = opts ?? {};
     const generatedFinalConfigAttempt = await genLoadFinalConfigAttemptINTERNAL({buildID, appIDsOverride, initialAppOverride});
-    return returnedFinalConfigSchema.parse(generatedFinalConfigAttempt);
+    return returnedFinalConfigSchema.parse(generatedFinalConfigAttempt, {errorIncludesInputData: true});
 }
 
 export async function genLoadFinalConfigSafe(opts?: GLFCOpts): Promise<ReturnType<typeof returnedFinalConfigSchema.safeParse>> {
     const {buildID, appIDsOverride, initialAppOverride} = opts ?? {};
     const generatedFinalConfigAttempt = await genLoadFinalConfigAttemptINTERNAL({buildID, appIDsOverride, initialAppOverride});
-    return returnedFinalConfigSchema.safeParse(generatedFinalConfigAttempt);
+    return returnedFinalConfigSchema.safeParse(generatedFinalConfigAttempt, {errorIncludesInputData: true});
 }
 
 // NOTE: this function returns what it thinks is a ReturnedFinalConfig, but because the yaml parsing functions return "any", we don't try to say that we have an RFC until it is parsed via zod above.

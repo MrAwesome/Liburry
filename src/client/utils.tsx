@@ -59,11 +59,17 @@ export function isMobileDevice() {
 }
 
 export function getRecordValues<T>(rec: Record<string, T | undefined>): Array<T> {
-    return Object.values(rec).filter(v => v !== undefined).map(v => v as T);;
+    return Object.values(rec).filter(v => v !== undefined).map(v => v as T);
 }
 
 export function getRecordEntries<T>(rec: Record<string, T | undefined>): Array<[string, T]> {
-    return Object.entries(rec).filter(([_, v]) => v !== undefined).map(([k, v]) => [k, v as T]);;
+    return Object.entries(rec).filter(([_, v]) => v !== undefined).map(([k, v]) => [k, v as T]);
+}
+
+export function reflectRecord<O extends Object | undefined, P extends string>(propName: P, obj: Record<string, O>): Record<string, O & {[p in P]: string}> {
+    const ret: any = obj;
+    Object.keys(obj).forEach((k) => {ret[k][propName] = k;});
+    return ret;
 }
 
 export async function nodeReadFile(filename: string): Promise<string> {

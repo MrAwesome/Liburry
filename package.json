@@ -28,6 +28,7 @@
     "core-js": "^3.20.3",
     "dompurify": "^2.2.9",
     "esnext": "^3.3.1",
+    "filtrex": "^2.2.3",
     "fuse.js": "3.2.1",
     "fuzzysort": "^1.1.4",
     "lunr": "^2.3.9",
@@ -57,7 +58,7 @@
     "worker-loader": "^3.0.8",
     "xss": "^1.0.9",
     "yaml-loader": "^0.6.0",
-    "zod": "^3.11.6"
+    "@mrawesome/zod": "^3.11.7"
   },
   "devDependencies": {
     "@swc/core": "^1.2.133",

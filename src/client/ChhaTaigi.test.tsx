@@ -56,8 +56,8 @@ test('render single entry via override', async () => {
         {legacyRoot: true}
     );
 
-    const hoabun = screen.getByText(/法律/i);
-    expect(hoabun).toBeInTheDocument();
+    const tcn = screen.getByText(/法律/i);
+    expect(tcn).toBeInTheDocument();
 
     const poj = screen.getByText(/lu̍t/i);
     expect(poj).toBeInTheDocument();
@@ -96,8 +96,8 @@ test('do not render unknown fields', async () => {
         {legacyRoot: true}
     );
 
-    const hoabun = screen.queryByText(/法律/i);
-    expect(hoabun).toBeNull();
+    const tcn = screen.queryByText(/法律/i);
+    expect(tcn).toBeNull();
 
     const poj = screen.queryByText(/lu̍t/i);
     expect(poj).toBeNull();

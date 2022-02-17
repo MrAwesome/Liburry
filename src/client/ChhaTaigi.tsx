@@ -316,7 +316,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             <AgnosticEntryContainer
                 debug={options.debug}
                 entry={entry}
-                blacklistDialectsRegex={this.appConfig.getDialectBlacklistRegex()}
+                //blacklistDialectsRegex={this.appConfig.getDialectBlacklistRegex()}
                 key={entry.getDisplayKey()} />
         );
 

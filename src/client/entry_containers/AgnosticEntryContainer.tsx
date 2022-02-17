@@ -16,7 +16,6 @@ import {area, AreaNode, LocationTreeHandler} from "./utils";
 type AECProps = {
     debug: boolean,
     entry: AnnotatedSearchResultEntry,
-    blacklistDialectsRegex?: string,
 }
 
 type AECDisplayArea =
@@ -87,7 +86,6 @@ export default class AgnosticEntryContainer
 
     // TODO: also include score in debug mode (or actually show a pixel-size colorbar in main mode)
     render() {
-        const {blacklistDialectsRegex} = this.props;
         const treeHandler = AgnosticEntryContainer.treeHandler;
         const tree = treeHandler.generateEmptyTree();
 
@@ -95,21 +93,17 @@ export default class AgnosticEntryContainer
 
         const matchGroups: JSX.Element[][] = [];
 
+        // Match tags instead
         entry.getFields().forEach((field) => {
             const maybeDialect = field.getDialect();
             if (maybeDialect !== null && blacklistDialectsRegex !== undefined) {
+                const dialect = maybeDialect;
                 // note KaisoehHanLoKip - it seems like you may need a "primary vocabulary" to be able to differentiate between various forms?
                 const reg = new RegExp(blacklistDialectsRegex, "g");
-                if ((maybeDialect as string).trimEnd !== undefined) {
-                    const singleDialect = maybeDialect as string;
-                    if (singleDialect.match(reg)) {
-                        return;
-                    }
-                } else if ((maybeDialect as string[]).flatMap !== undefined) {
-                    const dialects = maybeDialect as string[];
-                    if (dialects.some(d => d.match(reg))) {
-                        return;
-                    }
+                if (Array.isArray(dialect)) {
+                    if (dialect.some(d => d.match(reg))) {return;}
+                } else {
+                    if (dialect.match(reg)) {return;}
                 }
 
             }
@@ -123,9 +117,9 @@ export default class AgnosticEntryContainer
                 // NOTE: if alt-text would be displayed elsewhere, this will need to be
                 //       tweaked to allow it to appear there but not in title_alternate
                 if (areas?.includes("title_alternate")) {
-                   if (!field.wasMatched()) {
-                       return;
-                   }
+                    if (!field.wasMatched()) {
+                        return;
+                    }
                 }
 
                 const displayValue = field.getDisplayValue();
@@ -162,7 +156,7 @@ export default class AgnosticEntryContainer
         });
 
         if (matchGroups.length > 0) {
-            matchGroups.forEach((matchGroup, i) => {
+            matchGroups.forEach((matchGroup) => {
                 const prefix = !(matchGroups.length > 1) ? null :
                     <div className="agnostic-matched-group-prefix" key="matched-group-prefix"></div>;
                 const matchGroupContainer =
@@ -171,8 +165,7 @@ export default class AgnosticEntryContainer
                         <div className="agnostic-matched-group" key="matched-group">{matchGroup}</div>
                     </div>;
                 treeHandler.insertInto(tree, "matched_example", matchGroupContainer)
-            }
-            );
+            });
         }
 
         // NOTE: should be displayname instead
@@ -189,7 +182,7 @@ function makeElem(debug: boolean, field: AnnotatedDisplayReadyField, fieldType: 
     const className = fieldType + "-element";
     let key = `${field.getColumnName()}-${field.getDialect()}`;
     if (keyHelper) {
-       key = `${key}-${keyHelper}`;
+        key = `${key}-${keyHelper}`;
     }
 
     const out = field.wasMatched()
@@ -197,7 +190,7 @@ function makeElem(debug: boolean, field: AnnotatedDisplayReadyField, fieldType: 
         : <div className={className} key={key}>{text}</div>;
 
     const dbg = debug
-        ? <span className="dbg-field-info" key={"header-"+key}>[{key}]</span>
+        ? <span className="dbg-field-info" key={"header-" + key}>[{key}]</span>
         : null;
 
     return <React.Fragment key={key}>

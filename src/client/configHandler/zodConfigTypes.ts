@@ -4,10 +4,10 @@
 // [] create some test data that should pass various complex cases
 //
 // The types here are those which go through some sort of serialization - to/from YAML or JSON in particular.
-import {z} from "zod";
-import {DBIdentifier} from "../types/config";
-import {getRecordEntries, runningInJest} from "../utils";
+import {z} from "@mrawesome/zod";
+import {getRecordEntries, reflectRecord, runningInJest} from "../utils";
 import {fontConfigSchema} from "./zodFontConfigTypes";
+import {compileExpression as filtrexCompile} from "filtrex";
 
 // What counts as a valid "token" - app names, dialect names, etc all will be validated against this.
 // Deliberately restrictive and ASCII-centric, for simplicity of parsing/typing.
@@ -45,14 +45,15 @@ export const liburryCustomErrorCodes = [
     "dbname_needs_config",
     "enabled_dbname_not_valid_dict",
     "invalid_view_for_db",
+	"view_set_for_db_with_no_views",
     "view_not_set_for_db_in_subapp",
     "edbs_is_list_but_views_defined_dict",
     "edbs_is_list_but_views_defined_list",
     "enabled_dbname_not_valid_array",
-    "searchablefield_not_known_field_dict",
+    "enabled_dbname_not_valid_views",
+    "unknown_field_in_behavior_list",
     "viewid_not_known",
     "searchablefield_not_known_field_list",
-    "searchablefield_array_but_views_defined",
     "primarykey_known_field",
     "remote_files_https",
     "local_file_absolute_path",
@@ -166,7 +167,6 @@ export type RawBuildConfig = z.infer<typeof rawBuildConfigSchema>;
 ///////  Apps  //////////
 export const rawSubAppConfigSchema = strictObject({
     displayName: anyString(),
-    blacklistDialectsRegex: anyString().optional(),
 });
 export type RawSubAppConfig = z.infer<typeof rawSubAppConfigSchema>;
 
@@ -232,7 +232,7 @@ export const fakeMTGDisplayTypeSchema = z.union([
 ]);
 
 // TODO(high): split these into used and unused fields (for ease of knowing what's worth bothering to tag)
-// TODO: .map z.literal
+// TODO: .map z.literal, if that's possible while retaining types
 // TODO: better name for definition/explanation (simple_definition/long_definition?)
 export const rawDictionaryFieldDisplayTypeSchema = z.union([
     z.literal("base_phrase"),
@@ -256,6 +256,10 @@ export const rawDictionaryFieldDisplayTypeSchema = z.union([
     z.literal("opposite"),
     z.literal("page_number"),
     z.literal("pos_classification"),
+    z.literal("pronunciation"),
+    z.literal("related_words"),
+    // TODO: this seems too verbose
+    z.literal("related_words_pronunciation"),
     z.literal("see_also"),
     z.literal("synonym"),
     z.literal("type"),
@@ -284,7 +288,8 @@ export const rawKnownDisplayTypeEntrySchema = strictObject({
 });
 export type RawKnownDisplayTypeEntry = z.infer<typeof rawKnownDisplayTypeEntrySchema>;
 
-export const rawAllowedFieldClassifierTagsSchema = strictObject({
+export const rawFieldMetadata = strictObject({
+    // TODO: give a more semantically-correct name
     type: rawKnownDisplayTypeEntrySchema.optional()
         .describe("Mapping of displayModeIDs to the type of this field in that display mode. If this is not specified, the field will never be displayed (but can still be searched)."),
     delimiter: anyString().optional()
@@ -301,15 +306,54 @@ export const rawAllowedFieldClassifierTagsSchema = strictObject({
     notes: anyString().optional()
         .describe("[UNUSED] Simply a place to leave notes on the contents of a field. May be displayed to users someday."),
 });
-export type RawAllowedFieldClassifierTags = z.infer<typeof rawAllowedFieldClassifierTagsSchema>;
+export type RawFieldMetadata = z.infer<typeof rawFieldMetadata>;
 
 export const rawMenuConfigSchema = strictObject({
     links: rawMenuLinksSchema,
 });
 export type RawMenuConfig = z.infer<typeof rawMenuConfigSchema>;
 
-const fieldsSchema = realRecord(rawAllowedFieldClassifierTagsSchema);
-const rawDBConfigSchema = strictObject({
+
+const fieldsSchema = realRecord(rawFieldMetadata)
+    // Reflect the name of each field as a "fieldName" so that it's accessible to us in filters.
+//
+    .transform((obj) => reflectRecord("fieldName", obj));
+
+type FieldsMapping = z.infer<typeof fieldsSchema>;
+
+// TODO: description
+const fieldFilterSchema = z.object({filtrex: anyString()});
+type FieldFilter = z.infer<typeof fieldFilterSchema>;
+
+const fieldBehaviorListsPreFilterSchema = z.object({
+    searchableFields: tokenArray("FIELD_ID").or(fieldFilterSchema),
+    displayableFields: tokenArray("FIELD_ID").or(fieldFilterSchema).optional(),
+});
+
+const fieldBehaviorListsSchema = z.object({
+    searchableFields: tokenArray("FIELD_ID"),
+    displayableFields: tokenArray("FIELD_ID").nullable(),
+});
+type FieldBehaviorLists = z.infer<typeof fieldBehaviorListsSchema>;
+
+function filterFields(filterOrFieldNames: FieldFilter | [string, ...string[]], fields: FieldsMapping): [string, ...string[]] {
+    if ("filtrex" in filterOrFieldNames) {
+        const filtrexExpression = filterOrFieldNames.filtrex;
+        const f = filtrexCompile(filtrexExpression);
+
+        const filteredResults = Object.keys(fields).filter((fieldName) => f(fields[fieldName]));
+        // NOTE: this uses parse instead of safeparse. If everything in this file is added to a single class, 
+        //       there can be a flag to prevent this parse from throwing during a safeparse. For now, it should
+        //       be fine, since this parse should always happen at config compile time, never at runtime (since
+        //       we remove the 'filter' field after filtering).
+        return tokenArray("FIELD_ID").parse(filteredResults);
+    } else {
+        const fieldNames = filterOrFieldNames;
+        return fieldNames;
+    }
+}
+
+const rawDBConfigSchemaIncomplete = strictObject({
     displayName: realRecord(anyString())
         .describe("Mapping of DialectID to the DB's name in that language."),
     source: anyString().url().optional()
@@ -318,47 +362,77 @@ const rawDBConfigSchema = strictObject({
         .describe("Field which contains an ID unique to each entry."),
     loadInfo: rawDBLoadInfoSchema,
 
-    searchableFields: tokenArray("FIELD_ID").or(realRecord(tokenArray("FIELD_ID")))
-        .describe(`The fields which will be searched by the selected searching algorithm. Is either:
-                  1) A list of searchable fields.
-                  2) A mapping of ViewID to lists of searchable fields.`
-        ),
 
-    views: tokenArray("VIEW_ID").optional()
-        .describe("List of ViewIDs defined for this data source. Views are a way to specify which fields should be searched or displayed for a particular data source."),
+    //realRecord(tokenArray("FIELD_ID")))
+    //.describe(`The fields which will be searched by the selected searching algorithm. Is either:
+    //1) A list of searchable fields, or a filtrex filter to generate that list.
+    //2) A mapping of ViewID to lists of searchable fields or filtrex filters.`
+    //),
 
+    // TODO: searchableFields and displayableFields should be a list of field names. if "filter" is given, replace it with the corresponding list of field names
     fields: fieldsSchema,
-})
-    .superRefine((obj, ctx) => {
-        if (!(obj.primaryKey in obj.fields)) {
-            issue(ctx, "primarykey_known_field", `primaryKey "${obj.primaryKey}" is not a known field`);
-        }
-        if (Array.isArray(obj.searchableFields)) {
-            if (obj.views !== undefined) {
-                issue(ctx, "searchablefield_array_but_views_defined", `"searchableFields" must be a dictionary if "views" are defined. Current value: "${obj.searchableFields}"`);
+});
+const rawDBConfigSchema = z.union([
+    rawDBConfigSchemaIncomplete.extend({views: realRecord(fieldBehaviorListsPreFilterSchema)}),
+    rawDBConfigSchemaIncomplete.merge(fieldBehaviorListsPreFilterSchema)
+])
+    .transform((dbConfig) => {
+        // If a filter directive exists, replace it with the fields it resolves to.
+        if ("views" in dbConfig) {
+            const views: Record<string, FieldBehaviorLists> = {};
+            for (const [viewID, fieldBehaviorListsPreFilter] of getRecordEntries(dbConfig.views)) {
+                const searchableFields = filterFields(fieldBehaviorListsPreFilter.searchableFields, dbConfig.fields);
+				const displayableFields = fieldBehaviorListsPreFilter.displayableFields === undefined
+						? null
+						: filterFields(fieldBehaviorListsPreFilter.displayableFields, dbConfig.fields);
+                const filtered: FieldBehaviorLists = {searchableFields, displayableFields};
+                views[viewID] = filtered;
             }
-            obj.searchableFields.forEach((givenFieldName) => {
-                if (!(givenFieldName in obj.fields)) {
-                    issue(ctx, "searchablefield_not_known_field_list", `searchableField "${givenFieldName}" is not a known field`);
+            return {...dbConfig, views};
+        } else {
+
+            const searchableFields = filterFields(dbConfig.searchableFields, dbConfig.fields);
+            const displayableFields = dbConfig.displayableFields === undefined
+				? null
+				: filterFields(dbConfig.displayableFields, dbConfig.fields);
+            const filtered: FieldBehaviorLists = {searchableFields, displayableFields};
+            return {...dbConfig, ...filtered};
+        }
+    })
+    .superRefine((dbConfig, ctx) => {
+        // TODO 
+        if (!(dbConfig.primaryKey in dbConfig.fields)) {
+            issue(ctx, "primarykey_known_field", `primaryKey "${dbConfig.primaryKey}" is not a known field`);
+        }
+
+        if ('views' in dbConfig) {
+            getRecordEntries(dbConfig.views).forEach(([viewID, fieldBehaviorLists]) => {
+                let fieldBehaviorType: keyof typeof fieldBehaviorLists;
+                for (fieldBehaviorType in fieldBehaviorLists) {
+                    fieldBehaviorLists[fieldBehaviorType]?.forEach((givenFieldName) => {
+                        if (!(givenFieldName in dbConfig.fields)) {
+                            issue(ctx, "unknown_field_in_behavior_list", `field "${givenFieldName}" is not a known field in "${fieldBehaviorType}" (view: "${viewID}")`);
+                        }
+                    });
                 }
             });
         } else {
-            getRecordEntries(obj.searchableFields).forEach(([view, givenFieldNames]) => {
-                if (!obj.views?.includes(view)) {
-                    issue(ctx, "viewid_not_known", `given viewid "${view}" is not a known view (db: "${obj.displayName}")`);
-                }
-                givenFieldNames.forEach((givenFieldName) => {
-                    if (!(givenFieldName in obj.fields)) {
-                        issue(ctx, "searchablefield_not_known_field_dict", `searchableField "${givenFieldName}" is not a known field (view: "${view}")`);
+            const {searchableFields, displayableFields} = dbConfig;
+            const fieldBehaviorLists = {searchableFields, displayableFields};
+            let fieldBehaviorType: keyof typeof fieldBehaviorLists;
+            for (fieldBehaviorType in fieldBehaviorLists) {
+                dbConfig[fieldBehaviorType]?.forEach((givenFieldName) => {
+                    if (!(givenFieldName in dbConfig.fields)) {
+                        issue(ctx, "unknown_field_in_behavior_list", `field "${givenFieldName}" is not a known field in "${fieldBehaviorType}"`);
                     }
                 });
-            });
+            }
         }
     });
 export type RawDBConfig = z.infer<typeof rawDBConfigSchema>;
 
-const dbToViewMappingSchema = realRecord(token("VIEW_ID").nullable());
-const enabledDBsOrDBToViewMappingSchema = tokenArray("DB_ID").or(dbToViewMappingSchema);
+const dbToViewMappingSchema = realRecord(token("VIEW_ID").nullable()).refine((rec) => Object.keys(rec).length === 1);
+const enabledDBsByView = z.array(token("DB_ID").or(dbToViewMappingSchema)).nonempty();
 
 const dbListSchema = tokenArray("DB_ID")
     .describe("The authoritative list of DBIDs for this app.");
@@ -366,10 +440,10 @@ export type RawDBList = z.infer<typeof dbListSchema>;
 
 const enabledDBsListSchema = tokenArray("DB_ID")
     .describe("List of DBIDs which are currently enabled for this app and all of its subapps. If not present, it's assumed that all DBs will be enabled.");
-const enabledDBsBySubAppSchema = realRecord(enabledDBsOrDBToViewMappingSchema)
-    .describe(`A more advanced configuration which contains a mapping of SubAppID to either: \
-    1) A list of DBIDs enabled for that subapp. \
-    2) A mapping of DBIDs to which ViewID should be used for that DB in this subapp.`);
+
+const enabledDBsBySubAppSchema = realRecord(enabledDBsByView);
+// TODO: describe
+
 export type RawEnabledDBsBySubApp = z.infer<typeof enabledDBsBySubAppSchema>;
 
 const enabledDBsSchema = enabledDBsListSchema.or(enabledDBsBySubAppSchema)
@@ -378,6 +452,7 @@ export type RawEnabledDBs = z.infer<typeof enabledDBsSchema>;
 const dbConfigMappingSchema = realRecord(rawDBConfigSchema);
 export type RawDBConfigMapping = z.infer<typeof dbConfigMappingSchema>;
 
+// TODO: get rid of dbList and just use dbConfigs
 export const rawAllDBConfigSchema = strictObject({
     dbList: dbListSchema,
     dbConfigs: dbConfigMappingSchema,
@@ -388,60 +463,59 @@ export const rawAllDBConfigSchema = strictObject({
     .superRefine((allDBConfig, ctx) => {
         const {dbList, dbConfigs, enabledDBs} = allDBConfig;
 
+		// TODO: just allow views here so you can use the same code?
         if (Array.isArray(enabledDBs)) {
             enabledDBs.forEach((dbName) => {
                 if (!(dbList.includes(dbName))) {
                     issue(ctx, "enabled_dbname_not_valid_array", `"${dbName}" is not a valid DB name in enabledDBs (check "dbList")`);
                 }
-                if (dbConfigs[dbName]?.views !== undefined) {
+                if ("views" in (dbConfigs[dbName] ?? {})) {
                     issue(ctx, "edbs_is_list_but_views_defined_list", `"views" are defined for db "${dbName}", but "enabledDBs" is a list. Views are intended for use with subApps.`);
                 }
             });
-        } else {
-            getRecordEntries(enabledDBs ?? {}).forEach(([subAppID, enabledDBListOrDBToViewMapping]) => {
-                // For the valid db name in subapp check below, either infer the enabled db list, or use the explicitly defined one
-                let enabledDBList: DBIdentifier[];
-                if (Array.isArray(enabledDBListOrDBToViewMapping)) {
-                    enabledDBList = enabledDBListOrDBToViewMapping;
+		} else if (enabledDBs === undefined) {
+		} else {
+			getRecordEntries(enabledDBs).forEach(([subAppID, dbsForSubapp]) => {
+				// For the valid db name in subapp check below, either infer the enabled db list, or use the explicitly defined one
 
-                    enabledDBList.forEach((dbName) => {
-                        if (dbConfigs[dbName]?.views !== undefined) {
-                            issue(ctx, "edbs_is_list_but_views_defined_dict", `"views" are defined for db "${dbName}", but "enabledDBs" for subApp "${subAppID}" is a list.`);
-                        }
-                    });
-                } else {
-                    enabledDBList = Object.keys(enabledDBListOrDBToViewMapping);
-
-                    const dbToViewPairs = getRecordEntries(enabledDBListOrDBToViewMapping);
-
-                    dbToViewPairs.forEach(([dbID, viewID]) => {
-                        // We check for dbID validity below so we don't need to bother checking again here
-                        const viewsForDB = dbConfigs[dbID]?.views;
-                        if (viewsForDB !== undefined) {
-                            if (viewID === null) {
-                                issue(ctx, "view_not_set_for_db_in_subapp", `view is not set for db "${dbID}" for subApp "${subAppID}", but that db has views defined: "${viewsForDB}".`);
-                            } else {
-                                if (!viewsForDB.includes(viewID)) {
-                                    issue(ctx, "invalid_view_for_db", `"${viewID}" is not a valid view for db "${dbID}" for subApp "${subAppID}".`);
-                                }
-                            }
-                        }
-                    });
-                }
-                enabledDBList.forEach((dbName) => {
-                    if (!(dbList.includes(dbName))) {
-                        issue(ctx, "enabled_dbname_not_valid_dict", `"${dbName}" is not a valid DB name in enabledDBsBySubApp for "${subAppID}" (check "dbList")`);
-                    }
-                });
-            });
-        }
+				dbsForSubapp.forEach((dbNameOrDBToView) => {
+					if (typeof dbNameOrDBToView === "string") {
+						const dbName = dbNameOrDBToView;
+						if (!(dbList.includes(dbName))) {
+							issue(ctx, "enabled_dbname_not_valid_views", `"${dbName}" is not a valid DB name in enabledDBs for subapp "${subAppID}" (check "dbList")`);
+						}
+					} else {
+						const dbToView = dbNameOrDBToView;
+						const [dbName, viewID] = Object.entries(dbToView)[0];
+						// We check for dbID validity below so we don't need to bother checking again here
+						if (!(dbList.includes(dbName))) {
+							issue(ctx, "enabled_dbname_not_valid_views", `"${dbName}" is not a valid DB name in enabledDBs for subapp "${subAppID}" (check "dbList")`);
+						}
+						const dbConfig = dbConfigs[dbName];
+						if (dbConfig !== undefined && "views" in dbConfig) {
+							const viewsForDB = dbConfig.views;
+							if (viewID === null || viewID === undefined) {
+								issue(ctx, "view_not_set_for_db_in_subapp", `view is not set for db "${dbName}" for subApp "${subAppID}", but that db has views defined: "${viewsForDB}".`);
+							} else {
+								if (!(viewID in viewsForDB)) {
+									issue(ctx, "invalid_view_for_db", `"${viewID}" is not a valid view for db "${dbName}" for subApp "${subAppID}".`);
+								}
+							}
+						} else {
+							if (typeof viewID === "string") {
+								issue(ctx, "view_set_for_db_with_no_views", `view is set for db "${dbName}" for subApp "${subAppID}", but that db does not have views defined.`);
+							} 
+						}
+					}
+				});
+			});
+		}
 
         dbList.forEach((dbName) => {
             if (!(dbName in dbConfigs)) {
                 issue(ctx, "dbname_needs_config", `"${dbName}" must have a config defined in "dbConfigs"`);
             }
         });
-
 
         getRecordEntries(allDBConfig.dbConfigs).forEach(([dbName, _dbConfig]) => {
             if (!(dbList.includes(dbName))) {

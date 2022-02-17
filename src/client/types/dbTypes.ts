@@ -1,5 +1,5 @@
 import type AppConfig from "../configHandler/AppConfig";
-import type {RawAllowedFieldClassifierTags} from "../configHandler/zodConfigTypes";
+import type {RawFieldMetadata} from "../configHandler/zodConfigTypes";
 import type {DialectID} from "../languages/dialect";
 import type {SearcherType} from "../search/searchers/Searcher";
 import type {DBIdentifier} from "./config";
@@ -102,7 +102,7 @@ export interface DisplayReadyFieldRaw {
 
 // NOTE: this class is passed from workers back to the main thread, hence interface instead of class.
 export interface AnnotatedDisplayReadyFieldRaw extends DisplayReadyFieldRaw {
-    metadata?: RawAllowedFieldClassifierTags,
+    metadata?: RawFieldMetadata,
 }
 
 export class AnnotatedDisplayReadyField {

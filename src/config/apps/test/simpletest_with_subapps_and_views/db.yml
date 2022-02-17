@@ -4,14 +4,14 @@ dbList:
 
 enabledDBs:
   dbs_mixed:
-    angry: yell_only
-    happy:
+    - angry: yell_only
+    - happy:
   happydb_list:
     - happy
   happydb_dict:
-    happy:
+    - happy:
   angrydb:
-    angry: person_target
+    - angry: person_target
 
 dbConfigs:
   angry:

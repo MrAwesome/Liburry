@@ -1612,6 +1612,11 @@
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
 
+"@mrawesome/zod@^3.11.7":
+  version "3.11.7"
+  resolved "https://registry.yarnpkg.com/@mrawesome/zod/-/zod-3.11.7.tgz#b670d06e8ffe4360e9624ed3a90096240a142189"
+  integrity sha512-Pylw8qjiZCzbFjWDuEYZe7f6KNIH5sF6K8zIpCbHZyy8Poz/kCnoOTo3POCVYEl5taMTTIxPXmzyA3symSqt3g==
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.npmjs.org/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz"
@@ -5039,6 +5044,11 @@ fill-range@^7.0.1:
   integrity sha512-qOo9F+dMUmC2Lcb4BbVvnKJxTPjCm+RRpe4gDuGrzkL7mEVl/djYSu2OdQ2Pa302N4oqkSg9ir6jaLWJ2USVpQ==
   dependencies:
     to-regex-range "^5.0.1"
+
+filtrex@^2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/filtrex/-/filtrex-2.2.3.tgz#299dff339ac957558e3f56fa46e9a850b362d64b"
+  integrity sha512-TL12R6SckvJdZLibXqyp4D//wXZNyCalVYGqaWwQk9zucq9dRxmrJV4oyuRq4PHFHCeV5ZdzncIc/Ybqv1Lr6Q==
 
 finalhandler@~1.1.2:
   version "1.1.2"

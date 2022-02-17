@@ -1,0 +1,47 @@
+# TODO: localize
+displayName: "Hakka Dictionary"
+# TODO: determine best default language
+defaultSubApp: raoping
+subApps:
+  sixian:
+    displayName: "四縣 (Sixian)"
+  hailu:
+    displayName: "海陸 (Hailu)"
+  dapu:
+    displayName: "大埔 (Dapu)"
+  raoping:
+    displayName: "饒平 (Raoping)"
+  zhaoan:
+    displayName: "詔安 (Zhaoan)"
+  southern_sixian:
+    displayName: "南四 (SouthernSixian)"
+
+#四縣 Sixian
+#海陸 Hailu
+#大埔 Dapu
+#饒平 Raoping
+#詔安 Zhaoan
+#南四 SouthernSixian
+#
+#MOESystemEntryID
+#Headword
+#PartOfSpeech
+#LexicalIndexClassification
+#SixianHakkaPronunciation
+#HailuHakkaPronunciation
+#DapuHakkaPronunciation
+#RaopingHakkaPronunciation
+#ZhaoanHakkaPronunciation
+#SouthernSixianHakkaPronounciation
+#Definition
+#Synonyms
+#Antonyms
+#CorrespondingMandarin
+#DapuHakkaRelatedWords
+#DapuHakkaRelatedWordsPronunciation
+#RaopingHakkaRelatedWords
+#RaopingHakkaRelatedWordsPronunciation
+#ZhaoanHakkaRelatedWords
+#ZhaoanHakkaRelatedWordsPronunciation
+#SouthernSixianHakkaRelatedWords
+#SouthernSixianHakkaRelatedWordsPronunciation
