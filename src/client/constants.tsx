@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from '@mrawesome/zod';
 import {BuildID, token} from './configHandler/zodConfigTypes';
 
 // TODO: default to an app with help messages / docs?

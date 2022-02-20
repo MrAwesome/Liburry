@@ -4,7 +4,7 @@ import {AnnotatedDisplayReadyField, AnnotatedSearchResultEntry} from "../types/d
 
 // NOTE: this import feels wrong, likely too abstract / the display types maybe don't belong in this file
 //       (separation of concerns)
-import {RawDictionaryFieldDisplayType} from "../configHandler/zodConfigTypes";
+import {FieldID, RawDictionaryFieldDisplayType} from "../configHandler/zodConfigTypes";
 
 import "./AgnosticEntryContainer.css";
 import {area, AreaNode, LocationTreeHandler} from "./utils";
@@ -16,6 +16,7 @@ import {area, AreaNode, LocationTreeHandler} from "./utils";
 type AECProps = {
     debug: boolean,
     entry: AnnotatedSearchResultEntry,
+    displayableFields: Set<FieldID>,
 }
 
 type AECDisplayArea =
@@ -32,7 +33,7 @@ type AECDisplayArea =
     "definition" |
     "examples" |
     "matched_examples" |
-    "long_descriptions" |
+    "long_definitions" |
     "main_other" |
     "dbname" |
     "vocab_metadata" |
@@ -42,6 +43,7 @@ type AECDisplayArea =
 // TODO: add these title strings to LANG_CONFIG
 // TODO: more generic way of representing titles, and more language-agnostic way of displaying titles.
 //       both can and probably should should live in yaml configs
+//    The third field should be a token which will be resolved from yaml
 const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDisplayType> = area("container", [
     // TODO: only display in debug mode
     //area("debugbox", [
@@ -52,12 +54,12 @@ const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDispla
         //area("title_prefix", ["measure_word"]),
         area("titlebox", [
             area("title", ["vocab"]),
-            area("title_other", ["vocab_other"]),
+            area("title_other", ["vocab_other", "pronunciation"]), // TODO: handle pronunciation differently
             area("title_alternate", ["input", "normalized", "input_other", "normalized_other"]),
         ]),
         area("definition", ["definition"]),
         area("main_other", [
-            area("long_descriptions", ["explanation"], "Explanations / Kái-Soeh / 解說"),
+            area("long_definitions", ["long_definition"], "Explanations / Kái-Soeh / 解說"),
             area("examples", ["example", "example_phrase"], "Examples / Lē-Kù / 例句"),
             area("matched_examples", ["matched_example"], "Matched Examples / Sì-Thīn Lē-Kù / 四伨例句"),
         ]),
@@ -72,41 +74,28 @@ const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDispla
 // TODO: instead, field to display *rule*?
 // TODO: decide how to display the name of a field, and any information about it
 
-export default class AgnosticEntryContainer
-    extends React.PureComponent<AECProps, {}>
-{
+export default class AgnosticEntryContainer extends React.PureComponent<AECProps, {}> {
     static CSS_AREA_PREFIX = "agnostic-container";
     //
     // NOTE: for now, this is specific to the dictionary type
     static treeHandler = new LocationTreeHandler(AgnosticEntryContainer.CSS_AREA_PREFIX, agnosticDictionaryAreas);
-
-    getEntry(): AnnotatedSearchResultEntry {
-        return this.props.entry;
-    }
 
     // TODO: also include score in debug mode (or actually show a pixel-size colorbar in main mode)
     render() {
         const treeHandler = AgnosticEntryContainer.treeHandler;
         const tree = treeHandler.generateEmptyTree();
 
-        const entry = this.getEntry();
-
+        const {entry, displayableFields, debug} = this.props;
         const matchGroups: JSX.Element[][] = [];
 
         // Match tags instead
         entry.getFields().forEach((field) => {
-            const maybeDialect = field.getDialect();
-            if (maybeDialect !== null && blacklistDialectsRegex !== undefined) {
-                const dialect = maybeDialect;
-                // note KaisoehHanLoKip - it seems like you may need a "primary vocabulary" to be able to differentiate between various forms?
-                const reg = new RegExp(blacklistDialectsRegex, "g");
-                if (Array.isArray(dialect)) {
-                    if (dialect.some(d => d.match(reg))) {return;}
-                } else {
-                    if (dialect.match(reg)) {return;}
-                }
 
+            // Short-circuit fields we know we don't want to display.
+            if (!displayableFields.has(field.getColumnName())) {
+                return;
             }
+
             const maybeFieldType = field.getDataTypeForDisplayType("dictionary");
             if (field.hasValue() && maybeFieldType !== null) {
                 const fieldType = maybeFieldType as RawDictionaryFieldDisplayType;
@@ -129,11 +118,11 @@ export default class AgnosticEntryContainer
 
                 let element: JSX.Element;
                 if (!delim) {
-                    element = makeElem(this.props.debug, field, fieldType, displayValue);
+                    element = makeElem(debug, field, fieldType, displayValue);
                 } else {
                     const subvals = displayValue.split(delim).filter(x => x).map(x => x.trim());
                     const elems = subvals.map((subval, i) => {
-                        const val = makeElem(this.props.debug, field, fieldType, subval, i.toString());
+                        const val = makeElem(debug, field, fieldType, subval, i.toString());
                         if (fieldType === "matched_example") {
                             if (matchGroups[i] === undefined) {
                                 matchGroups[i] = [];
@@ -173,7 +162,7 @@ export default class AgnosticEntryContainer
         const dbName = TEMPdbid.replace(/^ChhoeTaigi_/, "");
         treeHandler.insertInto(tree, "dbname", <div className="dbname-element">{dbName}</div>);
 
-        return treeHandler.getAsNestedDivs(tree, this.props.debug);
+        return treeHandler.getAsNestedDivs(tree, debug);
     }
 }
 

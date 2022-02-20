@@ -4,13 +4,16 @@ dbList:
 
 enabledDBs:
   dbs_mixed:
-    angry: lol
-    happy: BROEN_FAKE
+    - angry: lol
+    - happy: BROEN_FAKE
   angydb:
     - angry
   lolman:
-    angry: UGH
-    happy:
+    - lol:
+    - lawl: wut
+  happydb_dict:
+    - angry: UGH
+    - happy:
 
 dbConfigs:
   angry:
@@ -23,17 +26,16 @@ dbConfigs:
     primaryKey: FAKE
 
     views:
-      - yell_only
-      - person_target
-
-    searchableFields:
       yell_only:
-        - yell
+        searchableFields:
+          - yell
       person_target:
-        - person
-        - taget
+        searchableFields:
+          - person
+          - taget
       yelly:
-        - lol
+        searchableFields:
+          - lol
 
     fields:
       id:
@@ -63,12 +65,12 @@ dbConfigs:
     primaryKey: id
 
     views:
-      - lol
+      lol:
+        searchableFields:
+          - company
+          - slogan
+          - brogan
 
-    searchableFields:
-      - company
-      - slogan
-      - brogan
 
     fields:
       id:

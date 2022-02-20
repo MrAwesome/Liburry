@@ -25,8 +25,13 @@ module.exports = {
               if (stdout) process.stdout.write(stdout);
               if (stderr) process.stderr.write(stderr);
               if (err) {
-                console.log("====== YAML COMPILATION FAILED ======");
-                throw err;
+                console.error("====== YAML COMPILATION FAILED ======");
+                if (process.env.NODE_ENV === "development") {
+                  console.error(err);
+                } else {
+                  throw err;
+                }
+
               }
             });
           });

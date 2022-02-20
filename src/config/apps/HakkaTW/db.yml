@@ -1,7 +1,3 @@
-# TODO: migrate taigi.us and afr to use new tag system
-# TODO: classify all fields
-#
-
 dbList:
   - TWMOEHakkaDict
 
@@ -29,17 +25,35 @@ dbConfigs:
 
     views:
       southern_sixian:
-        filter: 'dialect in ("tcn", "tw_hakka_southern_sixian", "tw_hakka_southern_sixian_pronunciation")'
+        displayableFields:
+          filtrex: 'dialect in ("tcn", "tw_hakka_southern_sixian", "tw_hakka_southern_sixian_pronunciation")'
+        searchableFields:
+          filtrex: 'dialect in ("tcn", "tw_hakka_southern_sixian", "tw_hakka_southern_sixian_pronunciation")'
       sixian:
-        filter: 'dialect in ("tcn", "tw_hakka_sixian", "tw_hakka_sixian_pronunciation")'
+        displayableFields:
+          filtrex: 'dialect in ("tcn", "tw_hakka_sixian", "tw_hakka_sixian_pronunciation")'
+        searchableFields:
+          filtrex: 'dialect in ("tcn", "tw_hakka_sixian", "tw_hakka_sixian_pronunciation")'
       hailu:
-        filter: 'dialect in ("tcn", "tw_hakka_hailu", "tw_hakka_hailu_pronunciation")'
+        displayableFields:
+          filtrex: 'dialect in ("tcn", "tw_hakka_hailu", "tw_hakka_hailu_pronunciation")'
+        searchableFields:
+          filtrex: 'dialect in ("tcn", "tw_hakka_hailu", "tw_hakka_hailu_pronunciation")'
       dapu:
-        filter: 'dialect in ("tcn", "tw_hakka_dapu", "tw_hakka_dapu_pronunciation")'
+        displayableFields:
+          filtrex: 'dialect in ("tcn", "tw_hakka_dapu", "tw_hakka_dapu_pronunciation")'
+        searchableFields:
+          filtrex: 'dialect in ("tcn", "tw_hakka_dapu", "tw_hakka_dapu_pronunciation")'
       raoping:
-        filter: 'dialect in ("tcn", "tw_hakka_raoping", "tw_hakka_raoping_pronunciation")'
+        displayableFields:
+          filtrex: 'dialect in ("tcn", "tw_hakka_raoping", "tw_hakka_raoping_pronunciation")'
+        searchableFields:
+          filtrex: 'dialect in ("tcn", "tw_hakka_raoping", "tw_hakka_raoping_pronunciation")'
       zhaoan:
-        filter: 'dialect in ("tcn", "tw_hakka_zhaoan", "tw_hakka_zhaoan_pronunciation")'
+        displayableFields:
+          filtrex: 'dialect in ("tcn", "tw_hakka_zhaoan", "tw_hakka_zhaoan_pronunciation")'
+        searchableFields:
+          filtrex: 'dialect in ("tcn", "tw_hakka_zhaoan", "tw_hakka_zhaoan_pronunciation")'
 
     # TODO!
     source: https://todo
@@ -54,19 +68,19 @@ dbConfigs:
 #      searchableFields: fieldID[]
 #    }
 
-    searchableFields:
-      - Headword
-      - CorrespondingMandarin
-      - Headword
-      - SixianHakkaPronunciation
-      - HailuHakkaPronunciation
-      - DapuHakkaPronunciation
-      - RaopingHakkaPronunciation
-      - ZhaoanHakkaPronunciation
-      - SouthernSixianHakkaPronounciation
-      - Definition
-      - Synonyms
-      - CorrespondingMandarin
+      #searchableFields:
+      #  - Headword
+      #  - CorrespondingMandarin
+      #  - Headword
+      #  - SixianHakkaPronunciation
+      #  - HailuHakkaPronunciation
+      #  - DapuHakkaPronunciation
+      #  - RaopingHakkaPronunciation
+      #  - ZhaoanHakkaPronunciation
+      #  - SouthernSixianHakkaPronounciation
+      #  - Definition
+      #  - Synonyms
+      #  - CorrespondingMandarin
       #DapuHakkaRelatedWords
       #DapuHakkaRelatedWordsPronunciation
       #RaopingHakkaRelatedWords
@@ -105,33 +119,36 @@ dbConfigs:
 
       HailuHakkaPronunciation:
         type:
-          dictionary: pos_classification
+          dictionary: pronunciation
         dialect: tw_hakka_hailu_pronunciation
 
       DapuHakkaPronunciation:
         type:
-          dictionary: pos_classification
+          dictionary: pronunciation
         dialect: tw_hakka_dapu_pronunciation
 
       RaopingHakkaPronunciation:
         type:
-          dictionary: pos_classification
+          dictionary: pronunciation
         dialect: tw_hakka_raoping_pronunciation
 
       ZhaoanHakkaPronunciation:
         type:
-          dictionary: pos_classification
+          dictionary: pronunciation
         dialect: tw_hakka_zhaoan_pronunciation
 
       SouthernSixianHakkaPronounciation:
         type:
-          dictionary: pos_classification
+          dictionary: pronunciation
         dialect: tw_hakka_southern_sixian_pronunciation
 
       Definition:
         type:
-          dictionary: explanation
+          dictionary: definition
+        dialect: tcn
+        delimiterRegex: (?<=。)\s*(?=[0-9])
 
+      # Dialect?
       Synonyms:
         type:
           dictionary: synonym

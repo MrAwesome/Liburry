@@ -283,6 +283,10 @@ export interface AllDBLoadStats {
     numDBs: number,
 }
 
+export interface DidReload {
+    didReload: true
+}
+
 // NOTE: instead of booleans, these can be percentages (for preparers that load multiple files, etc)
 // NOTE: the same setup can be used for search status per-db, whenever there's a searcher
 //       that can report completion percentage

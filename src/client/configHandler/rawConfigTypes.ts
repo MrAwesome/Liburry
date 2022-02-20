@@ -116,7 +116,7 @@ export default {}
 //    "definition" |
 //    "example" |
 //    "example_phrase" |
-//    "explanation" |
+//    "long_definition" |
 //    "id" |
 //    "input" |
 //    "input_other" |

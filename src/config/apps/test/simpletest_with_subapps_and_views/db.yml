@@ -24,15 +24,13 @@ dbConfigs:
     primaryKey: id
 
     views:
-      - yell_only
-      - person_target
-
-    searchableFields:
       yell_only:
+        searchableFields:
         - yell
       person_target:
-        - person
-        - target
+        searchableFields:
+          - person
+          - target
 
     fields:
       id:

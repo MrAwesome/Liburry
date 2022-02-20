@@ -1,6 +1,7 @@
 import * as React from "react";
 import {SearchContext} from "../search/orchestration/SearchValidityManager";
-import {AllDBLoadStats} from "../types/dbTypes";
+import {AllDBLoadStats, DidReload} from "../types/dbTypes";
+import {noop} from "../utils";
 import "./style.css";
 
 export const PROGRESS_BAR_HEIGHT_ANIMATION_LENGTH = 300;
@@ -82,9 +83,10 @@ export class ProgressHandler {
 
     // NOTE: this should be generalized (each DB having its own display area?) such that
     //       new display events don't need code changes here
-    async genUpdateDisplayForDBLoadEvent(dbStats: AllDBLoadStats | {didReload: true}) {
+    async genUpdateDisplayForDBLoadEvent(dbStats: AllDBLoadStats | DidReload) {
         // NOTE: this should maybe be another function, or something more generic
         if ("didReload" in dbStats) {
+            noop(dbStats.didReload);
             this.progress.dbDownload = 0;
             this.progress.dbParsed = 0;
             this.progress.dbLoad = 0;

@@ -60,6 +60,8 @@ export default class ConfigHandler {
             if (parseRes.success === true) {
                 return parseRes.data;
             } else {
+                console.info("Parsing error: ", parseRes.error.issues);
+                console.info("On data: ", blob);
                 throw new MuhError(MuhErrorType.RFC_PARSE, parseRes.error);
             }
         } catch (e) {

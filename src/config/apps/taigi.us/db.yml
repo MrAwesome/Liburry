@@ -21,6 +21,8 @@ dbList:
   - ChhoeTaigi_iTaigiHoataiTuichiautian
   - ChhoeTaigi_EmbreeTaiengSutian
 
+# TODO: have filtrex filter on dialect configs that are lists
+
 # TODO: make allfields_slow view for each db/view, which has description etc enabled
 # TODO: have views/searchablefields be defined by *type* instead of just field name?
 
@@ -87,7 +89,7 @@ dbConfigs:
     primaryKey: DictWordID
 
     views:
-      poj: 
+      poj:
         displayableFields:
           filtrex: 'dialect in ("tw_hokkien_poj", "english", "tcn")'
         searchableFields:
@@ -217,7 +219,7 @@ dbConfigs:
     primaryKey: DictWordID
 
     views:
-      poj: 
+      poj:
         displayableFields:
           filtrex: 'dialect in ("tcn", "tw_hokkien_poj", "tw_hokkien_taibun_poj")'
         searchableFields:
@@ -318,7 +320,7 @@ dbConfigs:
     primaryKey: DictWordID
 
     views:
-      poj: 
+      poj:
         displayableFields:
           filtrex: 'dialect in ("tw_hokkien_poj", "tw_hokkien_taibun_poj", "tw_hokkien_taibun_hanji")'
         searchableFields:
@@ -455,7 +457,7 @@ dbConfigs:
     # TODO: use others?
     # TODO: use hanji?
     views:
-      poj: 
+      poj:
         displayableFields:
           filtrex: 'dialect in ("tcn", "tw_hokkien_poj", "tw_hokkien_taibun_poj", "tw_hokkien_taibun_hanji")'
         searchableFields:
@@ -635,7 +637,7 @@ dbConfigs:
     primaryKey: DictWordID
 
     views:
-      poj: 
+      poj:
         displayableFields:
           filtrex: 'dialect in ("tw_hokkien_poj", "english", "tcn")'
         searchableFields:
@@ -730,7 +732,7 @@ dbConfigs:
 
     # TODO: search more fields
     views:
-      poj: 
+      poj:
         displayableFields:
           filtrex: 'dialect in ("tcn", "tw_hokkien_poj", "tw_hokkien_taibun_poj")'
         searchableFields:
@@ -848,7 +850,7 @@ dbConfigs:
     primaryKey: DictWordID
 
     views:
-      poj: 
+      poj:
         displayableFields:
           filtrex: 'dialect in ("tw_hokkien_poj", "tw_hokkien_taibun_poj")'
         searchableFields:
@@ -1017,7 +1019,7 @@ dbConfigs:
     primaryKey: DictWordID
 
     views:
-      poj: 
+      poj:
         displayableFields:
           filtrex: 'dialect in ("tw_hokkien_poj", "english", "tcn")'
         searchableFields:
@@ -1120,7 +1122,7 @@ dbConfigs:
 
       KaisoehEngbun:
         type:
-          dictionary: explanation
+          dictionary: long_definition
         dialect: english
         lengthHint: very_long
         status: sparse
@@ -1199,7 +1201,7 @@ dbConfigs:
     primaryKey: DictWordID
 
     views:
-      poj: 
+      poj:
         displayableFields:
           filtrex: 'dialect in ("tw_hokkien_poj", "tw_hokkien_taibun_hanji")'
         searchableFields:

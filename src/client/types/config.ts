@@ -8,11 +8,32 @@ export interface DBLoadInfo {
 export type DBIdentifier = string;
 
 export class DBConfig {
+    // Since this is often used for initialization, not checking for presence, it returns an array instead of a set.
+    private searchableFields: [FieldID, ...FieldID[]];
+    private displayableFields: Set<FieldID>;
+
     constructor(
         private dbIdentifier: DBIdentifier,
         private r: RawDBConfig,
-        private view?: ViewID | null,
-    ) { }
+        view?: ViewID | null,
+    ) {
+        if ("views" in r) {
+            const fallbackView = Object.keys(r.views)[0];
+            if (view === null || view === undefined) {
+                console.error(`Views are defined for db "${dbIdentifier}", but view is "${view}"! Falling back to the first view: ${fallbackView}.`);
+                view = fallbackView;
+            }
+            if (!(view in r.views)) {
+                console.error(`View "${view}" is not one of "${r.views}"! Falling back to the first view: ${fallbackView}.`);
+                view = fallbackView;
+            }
+            this.displayableFields = new Set(r.views[view].displayableFields);
+            this.searchableFields = r.views[view].searchableFields;
+        } else {
+            this.displayableFields = new Set(r.displayableFields);
+            this.searchableFields = r.searchableFields;
+        }
+    }
 
     asRaw(): RawDBConfig {
         return this.r;
@@ -26,14 +47,13 @@ export class DBConfig {
         return this.r.primaryKey;
     }
 
-    getSearchableFields(): FieldID[] {
-        if (Array.isArray(this.r.searchableFields)) {
-            return this.r.searchableFields;
-        } else {
-            // TODO: decide what to do if this.view somehow is null. Just throw? zod should guarantee that view is always defined
-            //       when searchablefields is a dict
-            return this.r.searchableFields[this.view!]!;
-        }
+    getDisplayableFields(): Set<FieldID> {
+        return this.displayableFields;
+    }
+
+    // Since this is often used for initialization, not checking for presence, it returns an array instead of a set.
+    getSearchableFields(): [FieldID, ...FieldID[]] {
+        return this.searchableFields;
     }
 
     getDBIdentifier() {

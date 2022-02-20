@@ -1,10 +1,10 @@
 import * as React from 'react';
 noop(React.version);
 
-import {AppID, liburryCustomErrorCodes, LiburryTokenTypes, LiburryZodCustomTestingCode, RawEnabledDBs, RawEnabledDBsBySubApp, SubAppsMapping, tokenMatchers} from '../configHandler/zodConfigTypes';
+import {AppID, liburryCustomErrorCodes, LiburryTokenTypes, LiburryZodCustomIssue, LiburryZodCustomTestingCode, RawEnabledDBs, RawEnabledDBsBySubApp, SubAppsMapping, tokenMatchers} from '../configHandler/zodConfigTypes';
 import {genLoadFinalConfigSafe, genLoadFinalConfigWILLTHROW} from '../../scripts/compileYamlLib';
 import {getRecordEntries, noop} from '../utils';
-import {z} from 'zod';
+import {z} from '@mrawesome/zod';
 
 // TODO: test taigi.us and other major configs here too? ensure all prod configs pass as a test?
 test('validate test config', async () => {
@@ -81,6 +81,7 @@ test('validate test config with subapps and views', async () => {
     expect(rfc.appConfigs[appID]!.configs.appConfig.config.defaultSubApp).toBe("dbs_mixed");
 });
 
+// TODO: split up, allowing for more checks to be done (some checks block others)
 test('ensure broken config fails zod', async () => {
     const appID = "test/simpletest_breakages亞歷山大";
     const appIDsOverride: [AppID, ...AppID[]] = [appID];
@@ -100,14 +101,18 @@ test('ensure broken config fails zod', async () => {
         "build_defaultapp_defined", // not testing builds here
     ];
 
+    // NOTE: this currently isn't used, but you can add {"path": ..., "message": ...} objects etc here
+    const expectedDefaultIssues: Partial<z.ZodIssue>[] = [
+    ]
+
     exemptedErrorCodes.forEach((code) => expect(expectedErrorCodes.delete(code)).toBe(true));
 
     // Expect to encounter one of each type of token error in our example file.
     // NOTE: you can also test zod basic errors, to ensure e.g. string length, important fields are defined
     const expectedInvalidTokens: Set<LiburryTokenTypes> = new Set(
         (Object.keys(tokenMatchers) as (keyof typeof tokenMatchers)[]).filter((key) => (tokenMatchers[key] !== null
-        && key !== "BUILD_ID"
-        && key !== "LOCAL_FILENAME"))
+            && key !== "BUILD_ID"
+            && key !== "LOCAL_FILENAME"))
         // TODO: kludge to get this test working again, will need to rethink this test's app-specific architecture in a world with builds
     );
 
@@ -122,9 +127,11 @@ test('ensure broken config fails zod', async () => {
 
         sprt.error.issues.forEach((issue) => {
             if ("_liburryCode" in issue) {
-                encounteredErrorCodes.add(issue["_liburryCode"]);
-                // NOTE: this will break on future regex checks, but unfortunately there's no way to pass data back to our code from regex, so we need to check the error codes here
+                encounteredErrorCodes.add((issue as LiburryZodCustomIssue)._liburryCode);
             } else if (
+                // NOTE: this will break on future regex checks, but unfortunately there's
+                //       no way to pass data back to our code from regex,
+                //       so we need to check the error codes here
                 issue.code === "invalid_string" &&
                 issue.validation === "regex" &&
                 tokenMatchRegex.test(issue.message)
@@ -133,9 +140,23 @@ test('ensure broken config fails zod', async () => {
                 if (tokenErrType in tokenMatchers) {
                     encounteredTokenErrors.add(tokenErrType as LiburryTokenTypes);
                 }
-
             } else {
-                otherEncounteredIssues.add(issue);
+                let foundMatch = false;
+                for (const expectedIssue of expectedDefaultIssues) {
+                    if (Object.entries(expectedIssue).every(([property, value]) => {
+                        const l = issue[property as keyof z.ZodIssue];
+                        const r = value;
+                        return JSON.stringify(l) === JSON.stringify(r);
+                    })) {
+                        foundMatch = true;
+                        break;
+
+                    }
+                }
+
+                if (!foundMatch) {
+                    otherEncounteredIssues.add(issue);
+                }
             }
 
 

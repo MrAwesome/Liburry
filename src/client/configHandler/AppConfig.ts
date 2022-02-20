@@ -21,7 +21,6 @@ export default class AppConfig {
     ) {
         this.getRawAppConfig = this.getRawAppConfig.bind(this);
         this.getRawSubAppConfig = this.getRawSubAppConfig.bind(this);
-        this.getDialectBlacklistRegex = this.getDialectBlacklistRegex.bind(this);
     }
 
     // TODO: unit test this transition
@@ -50,6 +49,7 @@ export default class AppConfig {
                     console.error(`A subapp override was given ("${subAppIDOverride}"), but it was not found in the subapps for this app: (app: "${appID}", subapps: (${subAppList}))`);
                     console.error(`Using default subapp: "${defaultSubApp}"`);
                 }
+                subAppID = defaultSubApp;
             }
         }
 
@@ -78,9 +78,6 @@ export default class AppConfig {
 
     // TODO: decide if RFC should return created objects (and compileyaml should write the raw version out after just verifying)
     //       if so, make regex fields there be refined into actual regex on parse (and/or just parse directly into an AppConfig, etc)
-    getDialectBlacklistRegex(): string | undefined {
-        return this.getRawSubAppConfig()?.blacklistDialectsRegex;
-    }
 }
 
 class DBConfigHandler {
@@ -97,7 +94,7 @@ class DBConfigHandler {
             enabledDBs: RawEnabledDBs,
             dbConfigs: RawDBConfigMapping,
         },
-        private subAppID?: SubAppID,
+        private subAppID: SubAppID | undefined,
     ) {
         this.getViewID = this.getViewID.bind(this);
 
@@ -145,11 +142,13 @@ class DBConfigHandler {
             if (this.subAppID !== undefined) {
                 const edbs = enabledDBs?.[this.subAppID];
                 if (edbs !== undefined) {
-                    if (!Array.isArray(edbs)) {
-                        return Object.keys(edbs);
-                    } else {
-                        return edbs;
-                    }
+                    return edbs.map((dbNameOrDBToView) => {
+                        if (typeof dbNameOrDBToView === "string") {
+                            return dbNameOrDBToView;
+                        } else {
+                            return Object.keys(dbNameOrDBToView)[0];
+                        }
+                    });
                 }
             }
         } else {
@@ -168,12 +167,30 @@ class DBConfigHandler {
 }
 
 // TODO: handle alldb overrides here, or always just use subapp instead
-function getViewID(subAppID: SubAppID | undefined, dbID: DBIdentifier, enabledDBs: RawEnabledDBs): ViewID | null | undefined {
+function getViewID(
+    subAppID: SubAppID | undefined,
+    dbID: DBIdentifier,
+    enabledDBs: RawEnabledDBs,
+): ViewID | null | undefined {
     if (!Array.isArray(enabledDBs) && subAppID !== undefined) {
         const edbsForSubApp = enabledDBs[subAppID];
-        if (!Array.isArray(edbsForSubApp)) {
-            // if it's null, that means the db doesn't have a view so use searchablefields directly
-            return edbsForSubApp?.[dbID];
+        if (edbsForSubApp === undefined) {
+            throw new Error(`View for subApp "${subAppID}" not found in "${Object.keys(enabledDBs)}".`);
+        } else {
+            // Since enabledDBs is a list of either db ids or a mapping of db id to view, we need this odd formulation.
+            // Error checking is blessedly sparse here, since we can trust zod to ensure that view ids and etc are valid.
+            for (const dbAsStringOrNameToView of edbsForSubApp) {
+                let curDB: string;
+                if (typeof dbAsStringOrNameToView === "string") {
+                    curDB = dbAsStringOrNameToView;
+                } else {
+                    curDB = Object.keys(dbAsStringOrNameToView)[0];
+                    if (curDB === dbID) {
+                        const viewID = dbAsStringOrNameToView[curDB];
+                        return viewID;
+                    }
+                }
+            }
         }
     }
     return undefined;

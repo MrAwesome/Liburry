@@ -45,7 +45,7 @@ test('load multiple apps with same name via override', async () => {
 test('load via build', async () => {
     const buildID = 'test/basic';
     const rfc = await genLoadFinalConfigWILLTHROW({buildID});
-    expect(Object.keys(rfc.appConfigs)).toEqual(["test/simpletest", "test/simpletest_with_subapps"]);
+    expect(Object.keys(rfc.appConfigs)).toEqual(["test/simpletest", "test/simpletest_with_subapps", "test/simpletest_with_subapps_and_views"]);
     expect(rfc.buildConfig?.displayName).toBe("A test build config");
 });
 

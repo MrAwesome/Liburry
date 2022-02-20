@@ -312,13 +312,17 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         const {resultsHolder, options} = this.state;
         const entries = resultsHolder.getAllResults();
 
-        const entryContainers = entries.map((entry) =>
-            <AgnosticEntryContainer
+        const entryContainers = entries.map((entry) => {
+            const dbConfig = this.appConfig.dbConfigHandler.getConfig(entry.getDBIdentifier());
+            // TODO: log an error if dbConfig is null here?
+            const displayableFields = dbConfig?.getDisplayableFields() ?? new Set();
+            return <AgnosticEntryContainer
                 debug={options.debug}
                 entry={entry}
+                displayableFields={displayableFields}
                 //blacklistDialectsRegex={this.appConfig.getDialectBlacklistRegex()}
                 key={entry.getDisplayKey()} />
-        );
+        });
 
         return <>{entryContainers}</>;
     }
