@@ -110,8 +110,8 @@ function matchToken(tt: LiburryTokenTypes): z.ZodString {
 //////////////////////////////////////////////
 
 
-const nonDefaultAppID = token("APP_ID").refine((s) => s !== "default");
-const nonDefaultBuildID = token("BUILD_ID").refine((s) => s !== "default");
+const nonDefaultAppID = token("APP_ID").refine((s) => s !== "default" && s !== "all");
+const nonDefaultBuildID = token("BUILD_ID").refine((s) => s !== "default" && s !== "all");
 const defaultAppID = z.literal("default");
 
 // TODO: use a zod schema for this.
@@ -133,12 +133,14 @@ const defaultIndexHtmlConfigSchema = strictObject({
     }),
 });
 
-const appIDListSchema = tokenArray("APP_ID").or(z.literal("all"));
+const appIDListSchema = tokenArray("APP_ID");
 export type AppIDList = z.infer<typeof appIDListSchema>;
+const appIDListOrAllSchema = appIDListSchema.or(z.literal("all"));
+export type AppIDListOrAll = z.infer<typeof appIDListOrAllSchema>;
 
 export const rawDefaultBuildConfigSchemaForMerge = strictObject({
     displayName: anyString(),
-    apps: appIDListSchema,
+    apps: appIDListOrAllSchema,
     // initialApp is optional in normal build configs,
     // which default to the first app listed.
     initialApp: token("APP_ID"),
@@ -358,11 +360,16 @@ function filterFields(filterOrFieldNames: FieldFilter | [string, ...string[]], f
     }
 }
 
+// TODO: "DynamicallyGeneratedPage" -> from code or here, to a page stored on pagehandler or something. needs to respect the user's given lang
+// for *any* page, using ${TOK_NAME} will load TOK_NAME through the language-aware token-loading system (user-selected lang -> eng_us -> first_defined)
+// at zod-time, do a check that all referenced tokens are actually present in the system
 const rawDBConfigSchemaIncomplete = strictObject({
     displayName: realRecord(anyString())
         .describe("Mapping of DialectID to the DB's name in that language."),
-    source: anyString().url().optional()
+    source: anyString().url()
         .describe("Human-useful URL pointing to where the data source and its licensing information can be viewed."),
+    license: anyString()
+        .describe("Information about which license (Creative Commons, Public Domain, Open Source) the DB is provided under."),
     primaryKey: token("FIELD_ID")
         .describe("Field which contains an ID unique to each entry."),
     loadInfo: rawDBLoadInfoSchema,
@@ -596,6 +603,7 @@ const mdPageSchema = strictObject({
     mdText: anyString(),
     dialect: token("DIALECT_ID"),
 });
+export type MarkdownPage = z.infer<typeof mdPageSchema>;
 
 const htmlPageSchema = strictObject({
     pageType: z.literal("HTML_UNUSED"),
@@ -686,7 +694,7 @@ export const returnedFinalConfigSchema = strictObject({
 
     overrides: z.object({
         initialAppOverride: token("APP_ID").optional(),
-        appIDsOverride: appIDListSchema.optional(),
+        appIDsOverride: appIDListOrAllSchema.optional(),
     }).optional(),
 });
 

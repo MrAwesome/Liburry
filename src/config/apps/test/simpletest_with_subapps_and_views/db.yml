@@ -22,11 +22,13 @@ dbConfigs:
       localCSV: /db/test/angry.csv
 
     primaryKey: id
+    license: "CC-BY 420.0"
+    source: "https://xmission.net"
 
     views:
       yell_only:
         searchableFields:
-        - yell
+          - yell
       person_target:
         searchableFields:
           - person
@@ -55,6 +57,9 @@ dbConfigs:
 
     loadInfo:
       localCSV: /db/test/happy.csv
+
+    license: "CC-BY 420.0"
+    source: "https://xmission.net"
 
     primaryKey: id
 

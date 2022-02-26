@@ -34,6 +34,7 @@ type AECDisplayArea =
     "examples" |
     "matched_examples" |
     "long_definitions" |
+    "related_words" |
     "main_other" |
     "dbname" |
     "vocab_metadata" |
@@ -59,9 +60,10 @@ const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDispla
         ]),
         area("definition", ["definition"]),
         area("main_other", [
-            area("long_definitions", ["long_definition"], "Explanations / Kái-Soeh / 解說"),
-            area("examples", ["example", "example_phrase"], "Examples / Lē-Kù / 例句"),
-            area("matched_examples", ["matched_example"], "Matched Examples / Sì-Thīn Lē-Kù / 四伨例句"),
+            area("long_definitions", ["long_definition"], "Explanations / 解說"),
+            area("examples", ["example", "example_phrase"], "Examples / 例句"),
+            area("matched_examples", ["matched_example"], "Matched Examples / 四伨例句"),
+            area("related_words", ["related_words", "related_words_pronunciation"], "Related Words / 相關詞彙"),
         ]),
         //area("vocab_metadata", ["pos_classification"]),
     ]),

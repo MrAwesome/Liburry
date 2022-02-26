@@ -2,18 +2,18 @@ dbList:
   - TWMOEHakkaDict
 
 enabledDBs:
-  sixian:
-    - TWMOEHakkaDict: sixian
-  hailu:
-    - TWMOEHakkaDict: hailu
-  dapu:
-    - TWMOEHakkaDict: dapu
-  raoping:
-    - TWMOEHakkaDict: raoping
-  zhaoan:
-    - TWMOEHakkaDict: zhaoan
-  southern_sixian:
-    - TWMOEHakkaDict: southern_sixian
+  sixian_subapp:
+    - TWMOEHakkaDict: sixian_view
+  hailu_subapp:
+    - TWMOEHakkaDict: hailu_view
+  dapu_subapp:
+    - TWMOEHakkaDict: dapu_view
+  raoping_subapp:
+    - TWMOEHakkaDict: raoping_view
+  zhaoan_subapp:
+    - TWMOEHakkaDict: zhaoan_view
+  southern_sixian_subapp:
+    - TWMOEHakkaDict: southern_sixian_view
 
 
 # TODO: put in dialect config
@@ -24,39 +24,39 @@ dbConfigs:
       eng_us: "Taiwan Ministry of Education Hakka Dictionary"
 
     views:
-      southern_sixian:
+      southern_sixian_view:
         displayableFields:
           filtrex: 'dialect in ("tcn", "tw_hakka_southern_sixian", "tw_hakka_southern_sixian_pronunciation")'
         searchableFields:
           filtrex: 'dialect in ("tcn", "tw_hakka_southern_sixian", "tw_hakka_southern_sixian_pronunciation")'
-      sixian:
+      sixian_view:
         displayableFields:
           filtrex: 'dialect in ("tcn", "tw_hakka_sixian", "tw_hakka_sixian_pronunciation")'
         searchableFields:
           filtrex: 'dialect in ("tcn", "tw_hakka_sixian", "tw_hakka_sixian_pronunciation")'
-      hailu:
+      hailu_view:
         displayableFields:
           filtrex: 'dialect in ("tcn", "tw_hakka_hailu", "tw_hakka_hailu_pronunciation")'
         searchableFields:
           filtrex: 'dialect in ("tcn", "tw_hakka_hailu", "tw_hakka_hailu_pronunciation")'
-      dapu:
+      dapu_view:
         displayableFields:
           filtrex: 'dialect in ("tcn", "tw_hakka_dapu", "tw_hakka_dapu_pronunciation")'
         searchableFields:
           filtrex: 'dialect in ("tcn", "tw_hakka_dapu", "tw_hakka_dapu_pronunciation")'
-      raoping:
+      raoping_view:
         displayableFields:
           filtrex: 'dialect in ("tcn", "tw_hakka_raoping", "tw_hakka_raoping_pronunciation")'
         searchableFields:
           filtrex: 'dialect in ("tcn", "tw_hakka_raoping", "tw_hakka_raoping_pronunciation")'
-      zhaoan:
+      zhaoan_view:
         displayableFields:
           filtrex: 'dialect in ("tcn", "tw_hakka_zhaoan", "tw_hakka_zhaoan_pronunciation")'
         searchableFields:
           filtrex: 'dialect in ("tcn", "tw_hakka_zhaoan", "tw_hakka_zhaoan_pronunciation")'
 
-    # TODO!
-    source: https://todo
+    source: "https://hakkadict.moe.edu.tw/"
+    license: "CC BY-ND 3.0 TW"
 
     loadInfo:
       localCSV: /db/languages/Hakka/HakkaMOE.csv
@@ -68,27 +68,6 @@ dbConfigs:
 #      searchableFields: fieldID[]
 #    }
 
-      #searchableFields:
-      #  - Headword
-      #  - CorrespondingMandarin
-      #  - Headword
-      #  - SixianHakkaPronunciation
-      #  - HailuHakkaPronunciation
-      #  - DapuHakkaPronunciation
-      #  - RaopingHakkaPronunciation
-      #  - ZhaoanHakkaPronunciation
-      #  - SouthernSixianHakkaPronounciation
-      #  - Definition
-      #  - Synonyms
-      #  - CorrespondingMandarin
-      #DapuHakkaRelatedWords
-      #DapuHakkaRelatedWordsPronunciation
-      #RaopingHakkaRelatedWords
-      #RaopingHakkaRelatedWordsPronunciation
-      #ZhaoanHakkaRelatedWords
-      #ZhaoanHakkaRelatedWordsPronunciation
-      #SouthernSixianHakkaRelatedWords
-      #SouthernSixianHakkaRelatedWordsPronunciation
 
     primaryKey: MOESystemEntryID
 

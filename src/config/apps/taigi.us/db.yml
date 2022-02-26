@@ -86,7 +86,8 @@ dbConfigs:
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_EmbreeTaiengSutian.csv
 
-    primaryKey: DictWordID
+    source: "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase#4-1973-embree台英辭典"
+    license: "CC BY-NC-SA 3.0 TW"
 
     views:
       poj:
@@ -109,6 +110,7 @@ dbConfigs:
           - KipNormalized
           - KipUnicode
 
+    primaryKey: DictWordID
     fields:
       DictWordID:
         type:
@@ -216,7 +218,8 @@ dbConfigs:
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_iTaigiHoataiTuichiautian.csv
 
-    primaryKey: DictWordID
+    source: "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase#7-2016-itaigi華台對照典"
+    license: "CC0"
 
     views:
       poj:
@@ -239,6 +242,7 @@ dbConfigs:
           - KipNormalized
           - KipUnicode
 
+    primaryKey: DictWordID
     fields:
       DictWordID:
         type:
@@ -317,7 +321,8 @@ dbConfigs:
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_KamJitian.csv
 
-    primaryKey: DictWordID
+    source: "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase#6-1913-甘字典"
+    license: "CC BY-NC-SA 3.0 TW"
 
     views:
       poj:
@@ -346,6 +351,7 @@ dbConfigs:
           - KipNormalized
           - KipUnicode
 
+    primaryKey: DictWordID
     fields:
       DictWordID:
         type:
@@ -452,7 +458,8 @@ dbConfigs:
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_KauiokpooTaigiSutian.csv
 
-    primaryKey: DictWordID
+    source: "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase#5-2011-教育部台語辭典"
+    license: "CC BY-ND 3.0 TW"
 
     # TODO: use others?
     # TODO: use hanji?
@@ -475,6 +482,7 @@ dbConfigs:
           - KipNormalized
           - KipUnicode
 
+    primaryKey: DictWordID
     fields:
       DictWordID:
         type:
@@ -634,7 +642,8 @@ dbConfigs:
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_MaryknollTaiengSutian.csv
 
-    primaryKey: DictWordID
+    source: "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase#3-1976-maryknoll台英辭典"
+    license: "CC BY-NC-SA 3.0 TW"
 
     views:
       poj:
@@ -657,6 +666,7 @@ dbConfigs:
           - KipNormalized
           - KipUnicode
 
+    primaryKey: DictWordID
     fields:
       DictWordID:
         type:
@@ -728,7 +738,8 @@ dbConfigs:
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_TaihoaSoanntengTuichiautian.csv
 
-    primaryKey: DictWordID
+    source: "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase#1-2002-台華線頂對照典"
+    license: "CC BY-SA 4.0"
 
     # TODO: search more fields
     views:
@@ -750,6 +761,7 @@ dbConfigs:
           - KipNormalized
           - KipUnicode
 
+    primaryKey: DictWordID
     fields:
       DictWordID:
         type:
@@ -847,7 +859,8 @@ dbConfigs:
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_TaijitToaSutian.csv
 
-    primaryKey: DictWordID
+    source: "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase#2-1932-台日大辭典台譯版"
+    license: "CC BY-NC-SA 3.0 TW"
 
     views:
       poj:
@@ -868,6 +881,7 @@ dbConfigs:
           - KipNormalized
           - KipUnicode
 
+    primaryKey: DictWordID
     fields:
       DictWordID:
         type:
@@ -1016,7 +1030,8 @@ dbConfigs:
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_TaioanPehoeKichhooGiku.csv
 
-    primaryKey: DictWordID
+    source: "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase#8-1956-台灣白話基礎語句"
+    license: "CC BY-SA 4.0"
 
     views:
       poj:
@@ -1039,6 +1054,7 @@ dbConfigs:
           - KipNormalized
           - KipUnicode
 
+    primaryKey: DictWordID
     fields:
       DictWordID:
         type:
@@ -1198,7 +1214,8 @@ dbConfigs:
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_TaioanSitbutMialui.csv
 
-    primaryKey: DictWordID
+    source: "https://github.com/ChhoeTaigi/ChhoeTaigiDatabase#9-1928-台灣植物名彙"
+    license: "CC BY-SA 4.0"
 
     views:
       poj:
@@ -1220,6 +1237,7 @@ dbConfigs:
           - PojNormalized
           - PojUnicode
 
+    primaryKey: DictWordID
     fields:
       DictWordID:
         type:

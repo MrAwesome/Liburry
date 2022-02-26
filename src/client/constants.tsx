@@ -28,18 +28,20 @@ export const LIBURRY_BUILD: BuildID | undefined = token('BUILD_ID').optional().p
 //////////////////////////////////////////////////////////////////////////////////////////////
 // env(REACT_APP_LIBURRY_APPS_OVERRIDE)
 //   Should be a comma-separated list of "AppID"s. This will override the apps defined
-//   in the configuration for LIBURRY_BUILD, if it is given.
+//   in the configuration for LIBURRY_BUILD, if it is given. If "all" is given, all apps will
+//   be built.
 //
 // ex.:
 //   export REACT_APP_LIBURRY_APPS_OVERRIDE="taigi.us,test/simpletest"
 //////////////////////////////////////////////////////////////////////////////////////////////
 const buildApps: string | undefined = process.env.REACT_APP_LIBURRY_APPS_OVERRIDE;
 
-export const LIBURRY_APPS_OVERRIDE: [string, ...string[]] | undefined =
+export const LIBURRY_APPS_OVERRIDE: [string, ...string[]] | "all" | undefined =
     buildApps !== undefined
-        ? appIDTokArray.parse(buildApps)
+        ? (buildApps === "all" ?
+            buildApps :
+            appIDTokArray.parse(buildApps))
         : undefined;
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // env(REACT_APP_LIBURRY_INITIAL_APP_OVERRIDE)

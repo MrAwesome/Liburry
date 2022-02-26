@@ -1,6 +1,6 @@
 // TODO: move a lot of the glue code into separate modules, and have this be more the top-level type definitions (or move this to an AppConfig module)
 
-import type {RawDBList, RawEnabledDBs, ReturnedFinalConfig, SubAppID, RawDBConfigMapping, AppID, ViewID, RawSubAppConfig, AppIDList} from "../configHandler/zodConfigTypes";
+import type {RawDBList, RawEnabledDBs, ReturnedFinalConfig, SubAppID, RawDBConfigMapping, AppID, ViewID, RawSubAppConfig, AppIDListOrAll} from "../configHandler/zodConfigTypes";
 import PageHandler from "../pages/PageHandler";
 import {DBConfig, DBIdentifier} from "../types/config";
 import {getRecordEntries, getRecordValues, nullGuard, runningInJest} from "../utils";
@@ -81,8 +81,6 @@ export default class AppConfig {
 }
 
 class DBConfigHandler {
-    //    private bySubApp?: Map<string, Set<string>>;
-    //    private byGlobalList?: Set<string>;
     private dbIDsToDBConfigs: Map<DBIdentifier, DBConfig>;
 
     private dbList: RawDBList;
@@ -102,18 +100,6 @@ class DBConfigHandler {
         this.dbList = dbList;
         this.enabledDBs = enabledDBs;
 
-
-        //        if (enabledDBsBySubApp !== undefined) {
-        //            this.bySubApp = new Map(getRecordEntries(enabledDBsBySubApp).map(([aid, dbs]) => ([aid, new Set(dbs)])));
-        //        }
-        //
-        //        if (enabledDBs !== undefined) {
-        //            this.byGlobalList = new Set(enabledDBs);
-        //        }
-
-        // EnabledDBs doesn't have views associated with it
-
-        //  TODO: look for viewids here, and pass them in based on the current subapp
         this.dbIDsToDBConfigs = new Map(
             getRecordEntries(dbConfigs)
                 .map(([dbID, rawConfig]) => {
@@ -197,9 +183,11 @@ function getViewID(
 }
 
 // TODO: make an rfc wrapper? make existing uses "rrfc" for raw?
-function getApps(rfc: ReturnedFinalConfig): AppIDList {
-    if (rfc.overrides?.appIDsOverride !== undefined) {
-        return rfc.overrides?.appIDsOverride;
+// TODO: unit test, cleanup "all" handling
+function getAppsOrAll(rfc: ReturnedFinalConfig): AppIDListOrAll {
+    const {appIDsOverride} = rfc.overrides ?? {};
+    if (appIDsOverride !== undefined && appIDsOverride !== "all") {
+        return appIDsOverride;
     }
 
     if (rfc.buildConfig?.apps !== undefined) {
@@ -209,18 +197,31 @@ function getApps(rfc: ReturnedFinalConfig): AppIDList {
     return rfc.default.build.config.apps;
 }
 
+// TODO: XXX: remove ["all"] from everywhere that the env var sends it, just have a separate env var for "build everything"
 // TODO: XXX: unit test
 function getInitialApp(rfc: ReturnedFinalConfig): AppID {
-    if (rfc.overrides?.initialAppOverride !== undefined) {
-        return rfc.overrides?.initialAppOverride;
+    const apps = getAppsOrAll(rfc);
+
+    const {initialAppOverride} = rfc.overrides ?? {};
+    const {initialApp} = rfc.buildConfig ?? {};
+    if (initialAppOverride !== undefined) {
+        if (apps.includes(initialAppOverride)) {
+            return initialAppOverride;
+        } else {
+            console.warn(`Initial app override "${initialAppOverride}" not found, falling back...`);
+        }
     }
-    if (rfc.buildConfig?.initialApp !== undefined) {
-        return rfc.buildConfig?.initialApp;
+    if (initialApp !== undefined) {
+        if (apps.includes(initialApp)) {
+            return initialApp;
+        } else {
+            console.warn(`Initial app "${initialApp}" not found, falling back...`);
+        }
     }
 
-    const apps = getApps(rfc);
-    if (apps !== "all") {
+    if (apps === "all") {
+        return rfc.default.build.config.initialApp;
+    } else {
         return apps[0];
     }
-    return rfc.default.build.config.initialApp;
 }

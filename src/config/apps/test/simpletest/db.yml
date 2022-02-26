@@ -11,6 +11,8 @@ dbConfigs:
       localCSV: /db/test/angry.csv
 
     primaryKey: id
+    license: "CC-BY 420.0"
+    source: "https://xmission.net"
 
     searchableFields:
       - person
@@ -42,6 +44,8 @@ dbConfigs:
       localCSV: /db/test/happy.csv
 
     primaryKey: id
+    license: "CC-BY 420.0"
+    source: "https://xmission.net"
 
     searchableFields:
       - company

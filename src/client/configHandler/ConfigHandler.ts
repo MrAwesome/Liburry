@@ -56,7 +56,7 @@ export default class ConfigHandler {
     async genLoadFinalConfig(): Promise<ReturnedFinalConfig | MuhError> {
         try {
             const blob = await this.genLoadJSON();
-            const parseRes = await returnedFinalConfigSchema.spa(blob, {errorIncludesInputData: true});
+            const parseRes = await returnedFinalConfigSchema.spa(blob);
             if (parseRes.success === true) {
                 return parseRes.data;
             } else {

@@ -3,7 +3,7 @@ import path from 'path';
 import md5File from 'md5-file';
 import {parseYaml} from "../client/utils/yaml";
 import {promisify} from 'util';
-import {AppID, AppIDList, AppTopLevelConfiguration, BuildID, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, RawBuildConfig, RawDefaultBuildConfig, rawDefaultBuildConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../client/configHandler/zodConfigTypes";
+import {AppID, AppIDListOrAll, AppTopLevelConfiguration, BuildID, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, RawBuildConfig, RawDefaultBuildConfig, rawDefaultBuildConfigSchema, rawLangConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../client/configHandler/zodConfigTypes";
 import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from "../client/constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
 import {getRecordEntries, runningInJest} from '../client/utils';
@@ -12,6 +12,7 @@ import {DBConfig} from '../client/types/config';
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const opendir = promisify(fs.opendir);
+const stat = promisify(fs.stat);
 
 // TODO(high): check that all referenced files in public actually exist
 // TODO(high): ensure that directory names are alphanumeric and underscore only
@@ -68,6 +69,26 @@ export async function* walkFileTree(dir: string, subdirs: Array<string>): AsyncI
         }
         else if (d.isFile()) {
             yield handleFile(entry, d.name, subdirs);
+        }
+    }
+}
+
+export async function* genAppDirs(dir: string, subdirs: Array<string>, opts?: {testMode?: boolean}): AsyncIterable<AppID | null> {
+    for await (const d of await opendir(dir)) {
+        if (opts?.testMode !== true && subdirs[0] === "test") {
+            continue;
+        }
+        const entry = path.join(dir, d.name);
+        if (d.isDirectory()) {
+            const appYml = path.join(entry, "app.yml");
+            try {
+                const hasAppYml = (await stat(appYml)).isFile();
+                if (hasAppYml) {
+                    yield path.join(...subdirs, d.name);
+                }
+            } catch (_e) {
+            }
+            yield* genAppDirs(entry, [...subdirs, d.name]);
         }
     }
 }
@@ -207,7 +228,7 @@ export async function rawParseBuildYaml(localPrefix: string, buildID: BuildID): 
 
 export interface GLFCOpts {
     buildID?: BuildID,
-    appIDsOverride?: AppIDList,
+    appIDsOverride?: AppIDListOrAll,
     initialAppOverride?: AppID,
 }
 
@@ -233,7 +254,7 @@ async function genLoadFinalConfigAttemptINTERNAL(opts: GLFCOpts): Promise<any> {
         ? undefined :
         await rawParseBuildYaml("builds/", buildID);
 
-    let appIDsOrAll: [AppID, ...AppID[]] | "all" = appIDsOverride ??
+    let appIDsOrAll: AppIDListOrAll = appIDsOverride ??
         buildConfig?.apps ??
         rawdef.build.config.apps;
 
@@ -241,8 +262,21 @@ async function genLoadFinalConfigAttemptINTERNAL(opts: GLFCOpts): Promise<any> {
     // TODO: walk the app dir and get all app names
     // TODO: test that this happens
     if (appIDsOrAll === "all") {
-        throw new Error("allmode is not yet implemented!");
-        // appIDs = walkAppDirAndGetAllAppIDs();
+        console.info("Allmode requested! Building all apps...");
+        const ids = [];
+        const appDir = path.join(CONFIG_DIR, "apps/");
+        for await (const appID of genAppDirs(appDir, [])) {
+            if (appID === null) {
+                continue;
+            } else {
+                ids.push(appID);
+            }
+        }
+        if (ids.length < 1) {
+            throw new Error("Allmode requested, but no apps found in apps/!");
+        } else {
+            appIDs = ids as [AppID, ...AppID[]];
+        }
     } else {
         appIDs = Array.from(new Set(appIDsOrAll)) as [AppID, ...AppID[]];
     }

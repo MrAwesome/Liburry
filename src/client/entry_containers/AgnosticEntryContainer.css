@@ -232,6 +232,8 @@
     margin-bottom: 0px;
 }
 
+/* TODO: add related_words and related_words_pronunciation */
+
 .area-title-long_definitions {
 }
 
@@ -241,7 +243,10 @@
 .area-title-matched_examples {
 }
 
-.area-title-long_definitions, .area-title-examples, .area-title-matched_examples {
+.area-title-related_words {
+}
+
+.area-title-long_definitions, .area-title-examples, .area-title-matched_examples, .area-title-related_words {
     font-size: 10px;
     color: #222222;
 }

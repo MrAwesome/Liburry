@@ -16,12 +16,13 @@ dbConfigs:
     displayName:
       eng_us: English → Afrikaans
 
-    source: https://freedict.org/downloads/
-
     loadInfo:
       localCSV: /db/languages/FreeDictTestEngAfr/eng_afr.csv
 
     primaryKey: Id
+
+    license: "GPL 2.0"
+    source: "https://github.com/freedict/fd-dictionaries/tree/master/eng-afr"
 
     searchableFields:
       - English
@@ -49,12 +50,13 @@ dbConfigs:
     displayName:
       eng_us: Afrikaans → English
 
-    source: https://freedict.org/downloads/
-
     loadInfo:
       localCSV: /db/languages/FreeDictTestEngAfr/afr_eng.csv
 
     primaryKey: Id
+
+    license: "GPL 2.0"
+    source: "https://github.com/freedict/fd-dictionaries/tree/master/afr-eng"
 
     searchableFields:
       - Afrikaans
