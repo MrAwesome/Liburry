@@ -53,7 +53,7 @@ export default class SearchWorkerManager {
 
                     searchWorker.onmessage = searchWorkerReplyHandler;
 
-                    const viewID = this.appConfig.dbConfigHandler.getViewID(dbIdentifier);
+                    const viewID = this.appConfig.dbConfigHandler.getViewForDB(dbIdentifier);
 
                     this.sendCommand(
                         dbIdentifier,

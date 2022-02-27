@@ -52,5 +52,36 @@ test('load multiple apps via AppConfig', async () => {
     expect(ac2.appID).toBe(app2);
 });
 
+test('load basic AppConfig with subapps and views', async () => {
+    const appID = "test/simpletest_with_subapps_and_views";
+    const appIDsOverride: [AppID, ...AppID[]] = [appID];
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride});
+    const defaultSubApp = rfc.appConfigs[appID]?.configs.appConfig.config.defaultSubApp;
+    expect(defaultSubApp).toBeDefined();
+
+    {
+        const ac = AppConfig.from(rfc, appID, "dbs_mixed_with_null");
+        const viewAngry = ac.dbConfigHandler.getViewForDB("angry");
+        expect(viewAngry).toBe("yell_only");
+        const viewHappy = ac.dbConfigHandler.getViewForDB("happy");
+        expect(viewHappy).toBeNull();
+    }
+
+    {
+        const ac = AppConfig.from(rfc, appID, "dbs_mixed_with_string");
+        const viewAngry = ac.dbConfigHandler.getViewForDB("angry");
+        expect(viewAngry).toBe("yell_only");
+        const viewHappy = ac.dbConfigHandler.getViewForDB("happy");
+        expect(viewHappy).toBeUndefined();
+    }
+
+    {
+        const ac = AppConfig.from(rfc, appID, "angrydb");
+        const viewAngry = ac.dbConfigHandler.getViewForDB("angry");
+        expect(viewAngry).toBe("person_target");
+        const viewHappy = ac.dbConfigHandler.getViewForDB("happy");
+        expect(viewHappy).toBeUndefined();
+    }
+});
 
 // TODO: should AppConfig expose a way to change subapps? or should it always just be App + SubApp, and changes should be handled upstream? should there be a callback function on appconfig that notifies the main element when app or subapp has changed?

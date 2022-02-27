@@ -94,7 +94,7 @@ class DBConfigHandler {
         },
         private subAppID: SubAppID | undefined,
     ) {
-        this.getViewID = this.getViewID.bind(this);
+        this.getViewForDB = this.getViewForDB.bind(this);
 
         const {dbList, dbConfigs, enabledDBs} = args;
         this.dbList = dbList;
@@ -110,7 +110,7 @@ class DBConfigHandler {
 
     }
 
-    getViewID(dbID: DBIdentifier): ViewID | null | undefined {
+    getViewForDB(dbID: DBIdentifier): ViewID | null | undefined {
         return getViewID(this.subAppID, dbID, this.enabledDBs);
     }
 
