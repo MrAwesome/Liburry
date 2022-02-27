@@ -2,7 +2,7 @@ import type AppConfig from "../configHandler/AppConfig";
 import type {RawFieldMetadata} from "../configHandler/zodConfigTypes";
 import type {DialectID} from "../languages/dialect";
 import type {SearcherType} from "../search/searchers/Searcher";
-import type {DBIdentifier} from "./config";
+import type {DBIdentifier} from "../configHandler/zodConfigTypes";
 import type {DataType, DisplayType} from "./displayTypes";
 
 // TODO: move the code here that isn't type-only somewhere else

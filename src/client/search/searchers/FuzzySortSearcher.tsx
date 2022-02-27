@@ -8,8 +8,8 @@ import {getEntriesFromPreparedCSV} from "../../common/csvUtils";
 import {makeCancelable} from "../../utils";
 import {convertDBRowToFuzzySortPrepared, parseFuzzySortResultsForRender} from "../../fuzzySortUtils";
 import {SEARCH_RESULTS_LIMIT} from "../../search/searchers/constants";
-import {DBConfig} from "../../types/config";
 import {WriteableType} from "../../types/typeUtils";
+import DBConfig from "../../configHandler/DBConfig";
 
 // TODO: give slight preference for poj-unicode/poj-normalized in fuzzy settings, so that e.g. "iong" will show up first in a search for itself
 // TODO: handle hyphens vs spaces

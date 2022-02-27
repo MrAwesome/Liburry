@@ -5,8 +5,9 @@ import SearchWorkerManager from "./SearchWorkerManager";
 import SearchValidityManager, {SearchContext} from "./SearchValidityManager";
 import {AllDBLoadStats, AnnotatedPerDictResults, annotateRawResults, LoadedDBsMap, PerDictResultsRaw, SingleDBLoadStatus} from "../../types/dbTypes";
 import {SearcherType} from "../../search/searchers/Searcher";
-import {DBConfig, DBIdentifier} from "../../types/config";
+import DBConfig from "../../configHandler/DBConfig";
 import type AppConfig from "../../configHandler/AppConfig";
+import {DBIdentifier} from "../../configHandler/zodConfigTypes";
 
 // TODO: write tests for this, which ensure the correct messages are sent and callbacks are called
 

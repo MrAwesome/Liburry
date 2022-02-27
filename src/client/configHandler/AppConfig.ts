@@ -1,8 +1,8 @@
 // TODO: move a lot of the glue code into separate modules, and have this be more the top-level type definitions (or move this to an AppConfig module)
 
-import type {RawDBList, RawEnabledDBs, ReturnedFinalConfig, SubAppID, RawDBConfigMapping, AppID, ViewID, RawSubAppConfig, AppIDListOrAll} from "../configHandler/zodConfigTypes";
+import type {RawDBList, RawEnabledDBs, ReturnedFinalConfig, SubAppID, RawDBConfigMapping, AppID, ViewID, RawSubAppConfig, AppIDListOrAll, DBIdentifier} from "../configHandler/zodConfigTypes";
 import PageHandler from "../pages/PageHandler";
-import {DBConfig, DBIdentifier} from "../types/config";
+import DBConfig from "../configHandler/DBConfig";
 import {getRecordEntries, getRecordValues, nullGuard, runningInJest} from "../utils";
 import {FontConfig} from "./zodFontConfigTypes";
 

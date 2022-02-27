@@ -120,6 +120,7 @@ export type SubAppID = string;
 export type ViewID = string;
 export type FieldID = string;
 export type BuildID = z.infer<typeof nonDefaultBuildID>;
+export type DBIdentifier = string;
 
 ///////  Builds  //////////
 const defaultIndexHtmlConfigSchema = strictObject({

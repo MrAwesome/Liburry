@@ -1,5 +1,5 @@
 import {typeGuard} from "../../typeguard";
-import {DBIdentifier} from "../../types/config";
+import {DBIdentifier} from "../../configHandler/zodConfigTypes";
 import {AnnotatedPerDictResults, AnnotatedSearchResultEntry} from "../../types/dbTypes";
 
 // NOTE: storing results per-dict is almost certainly not necessary anymore

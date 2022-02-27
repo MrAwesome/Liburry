@@ -5,7 +5,7 @@ import {SearchWorkerCommandMessage, SearchWorkerCommandType, SearchWorkerRespons
 import getDebugConsole, {StubConsole} from "../../getDebugConsole";
 import {SearcherType} from "../../search/searchers/Searcher";
 import {runningInJest} from "../../utils";
-import {DBIdentifier} from "../../types/config";
+import {DBIdentifier} from "../../configHandler/zodConfigTypes";
 import type AppConfig from "../../configHandler/AppConfig";
 
 export default class SearchWorkerManager {

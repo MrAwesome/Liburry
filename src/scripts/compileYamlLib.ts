@@ -7,7 +7,7 @@ import {AppID, AppIDListOrAll, AppTopLevelConfiguration, BuildID, LoadedConfig, 
 import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from "../client/constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
 import {getRecordEntries, runningInJest} from '../client/utils';
-import {DBConfig} from '../client/types/config';
+import DBConfig from "../client/configHandler/DBConfig";
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
@@ -259,10 +259,8 @@ async function genLoadFinalConfigAttemptINTERNAL(opts: GLFCOpts): Promise<any> {
         rawdef.build.config.apps;
 
     let appIDs: [AppID, ...AppID[]];
-    // TODO: walk the app dir and get all app names
-    // TODO: test that this happens
     if (appIDsOrAll === "all") {
-        console.info("Allmode requested! Building all apps...");
+        !runningInJest() && console.info("[INFO] Allmode requested! Building all apps...");
         const ids = [];
         const appDir = path.join(CONFIG_DIR, "apps/");
         for await (const appID of genAppDirs(appDir, [])) {

@@ -2,8 +2,6 @@ import {genLoadFinalConfigWILLTHROW} from "../../scripts/compileYamlLib";
 import {MuhError, MuhErrorType} from "../errorHandling/MuhError";
 import ConfigHandler from "./ConfigHandler";
 
-// TODO(high): test loading of RFC
-
 test('ConfigHandler explicitly-requested error is thrown', async () => {
     const ch = new ConfigHandler({shouldFailToLoad: true});
     expect.assertions(2);

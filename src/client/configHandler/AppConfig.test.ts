@@ -83,5 +83,6 @@ test('load basic AppConfig with subapps and views', async () => {
         expect(viewHappy).toBeUndefined();
     }
 });
+// TODO: find out what's causing "Views are defined for db ..."
 
 // TODO: should AppConfig expose a way to change subapps? or should it always just be App + SubApp, and changes should be handled upstream? should there be a callback function on appconfig that notifies the main element when app or subapp has changed?

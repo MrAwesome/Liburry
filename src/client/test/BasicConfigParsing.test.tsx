@@ -1,12 +1,8 @@
-import * as React from 'react';
-noop(React.version);
-
 import {AppID, liburryCustomErrorCodes, LiburryTokenTypes, LiburryZodCustomIssue, LiburryZodCustomTestingCode, RawEnabledDBs, RawEnabledDBsBySubApp, SubAppsMapping, tokenMatchers} from '../configHandler/zodConfigTypes';
 import {genLoadFinalConfigSafe, genLoadFinalConfigWILLTHROW} from '../../scripts/compileYamlLib';
-import {getRecordEntries, noop} from '../utils';
+import {getRecordEntries} from '../utils';
 import {z} from '@mrawesome/zod';
 
-// TODO: test taigi.us and other major configs here too? ensure all prod configs pass as a test?
 test('validate test config', async () => {
     const appID = "test/simpletest";
     const appIDsOverride: [AppID, ...AppID[]] = [appID];

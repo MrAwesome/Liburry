@@ -1,6 +1,6 @@
 import getDebugConsole, {StubConsole} from "../../getDebugConsole";
 import {RETRY_ATTEMPTS} from "../../search/searchers/constants";
-import {DBIdentifier} from "../../types/config";
+import {DBIdentifier} from "../../configHandler/zodConfigTypes";
 import {mod} from "../../utils";
 
 export class SearchContext {

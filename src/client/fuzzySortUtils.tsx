@@ -7,7 +7,7 @@ import {SearcherType} from "./search/searchers/Searcher";
 
 import {DISPLAY_RESULTS_LIMIT} from "./search/searchers/constants";
 import {PREPPED_KEY_SUFFIX} from "./search/searchers/FuzzySortSearcher";
-import {DBIdentifier} from "./types/config";
+import {DBIdentifier} from "./configHandler/zodConfigTypes";
 
 import xss from "xss";
 import {MATCH_END, MATCH_START} from "./search/searchers/constants";

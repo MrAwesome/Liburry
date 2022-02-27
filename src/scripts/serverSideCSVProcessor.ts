@@ -4,7 +4,7 @@ import fs from 'fs';
 import papaparse from "papaparse";
 import fetch from "node-fetch";
 import ConfigHandler from '../client/configHandler/ConfigHandler';
-import {DBConfig} from '../client/types/config';
+import DBConfig from '../client/configHandler/DBConfig';
 import {OldLangDB, RawDBRow} from '../client/types/dbTypes';
 import {fromKipUnicodeToKipNormalized, fromPojUnicodeToPojNormalized} from './languageUtils';
 

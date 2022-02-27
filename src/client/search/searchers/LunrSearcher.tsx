@@ -6,9 +6,10 @@ import {OngoingSearch, Searcher, SearcherPreparer, SearcherType, SearchFailure} 
 import {makeCancelable} from "../../utils";
 import {getEntriesFromPreparedCSV} from "../../common/csvUtils";
 import {vanillaDBEntryToResult} from "./utils";
+import DBConfig from "../../configHandler/DBConfig";
+import {DBIdentifier} from "../../configHandler/zodConfigTypes";
 
 import lunr from "lunr";
-import {DBConfig, DBIdentifier} from "../../types/config";
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
 

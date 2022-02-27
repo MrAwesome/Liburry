@@ -1,13 +1,11 @@
-import {FieldID, RawFieldMetadata, RawDBConfig, ViewID} from "../configHandler/zodConfigTypes";
+import {FieldID, RawFieldMetadata, RawDBConfig, ViewID, DBIdentifier} from "../configHandler/zodConfigTypes";
 
 export interface DBLoadInfo {
     localCSV?: string;
     localLunr?: string;
 }
 
-export type DBIdentifier = string;
-
-export class DBConfig {
+export default class DBConfig {
     // Since this is often used for initialization, not checking for presence, it returns an array instead of a set.
     private searchableFields: [FieldID, ...FieldID[]];
     private displayableFields: Set<FieldID>;

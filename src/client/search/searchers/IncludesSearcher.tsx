@@ -3,7 +3,7 @@ import type {RawDBRow, SearchResultEntryRaw, SingleDBLoadStatus} from "../../typ
 import getDebugConsole, {StubConsole} from "../../getDebugConsole";
 import {getEntriesFromPreparedCSV} from "../../common/csvUtils";
 import {makeCancelable, sleep} from "../../utils";
-import {DBConfig} from "../../types/config";
+import DBConfig from "../../configHandler/DBConfig";
 import {SEARCH_RESULTS_LIMIT} from "../../search/searchers/constants";
 import {vanillaDBEntryToResult} from "./utils";
 import {CancelablePromise} from "../../types/general";

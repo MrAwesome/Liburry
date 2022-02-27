@@ -1,4 +1,4 @@
-import {DBIdentifier} from "../../types/config";
+import {DBIdentifier} from "../../configHandler/zodConfigTypes";
 import {DBSearchRanking, RawDBRow, getDBRowKeys, SearchResultEntryRaw} from "../../types/dbTypes";
 
 export function vanillaDBEntryToResult(
