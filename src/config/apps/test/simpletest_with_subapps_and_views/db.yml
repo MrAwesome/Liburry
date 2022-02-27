@@ -3,9 +3,12 @@ dbList:
     - happy
 
 enabledDBs:
-  dbs_mixed:
+  dbs_mixed_with_null:
     - angry: yell_only
     - happy:
+  dbs_mixed_with_string:
+    - angry: yell_only
+    - happy
   happydb_list:
     - happy
   happydb_dict:
@@ -22,8 +25,8 @@ dbConfigs:
       localCSV: /db/test/angry.csv
 
     primaryKey: id
-    license: "CC-BY 420.0"
     source: "https://xmission.net"
+    license: "CC-BY 420.0"
 
     views:
       yell_only:

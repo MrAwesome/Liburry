@@ -24,6 +24,8 @@ dbConfigs:
       localCSV: /db/test/an\\gry.csv
 
     primaryKey: FAKE
+    source: https://lol
+    license: lolwat
 
     views:
       yell_only:
@@ -63,6 +65,8 @@ dbConfigs:
       localCSV: db/test/happy.csv
 
     primaryKey: id
+    source: https://lol
+    license: lolwat
 
     views:
       lol:

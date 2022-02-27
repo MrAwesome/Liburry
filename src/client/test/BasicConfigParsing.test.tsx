@@ -78,7 +78,22 @@ test('validate test config with subapps and views', async () => {
     const appIDsOverride: [AppID, ...AppID[]] = [appID];
     const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride});
     expect(rfc.appConfigs[appID]!.configs.appConfig.config.displayName).toBe("Simple Test App (With SubApps And Views)");
-    expect(rfc.appConfigs[appID]!.configs.appConfig.config.defaultSubApp).toBe("dbs_mixed");
+    expect(rfc.appConfigs[appID]!.configs.appConfig.config.defaultSubApp).toBe("dbs_mixed_with_null");
+    const {enabledDBs} = rfc.appConfigs[appID]!.configs.dbConfig.config;
+    if (!Array.isArray(enabledDBs)) {
+        {
+            const [angry, happy] = enabledDBs["dbs_mixed_with_null"]!;
+            expect((angry as Record<string, string>)["angry"]).toBe("yell_only");
+            expect((happy as Record<string, null>)["happy"]).toBe(null);
+        }
+        {
+            const [angry, happy] = enabledDBs["dbs_mixed_with_string"]!;
+            expect((angry as Record<string, string>)["angry"]).toBe("yell_only");
+            expect(happy as string).toBe("happy");
+        }
+    } else {
+        throw new Error("Received array of enabledDBs when expecting a subapp mapping.")
+    }
 });
 
 // TODO: split up, allowing for more checks to be done (some checks block others)
