@@ -59,7 +59,7 @@ export default class PageHandler {
                 const dbLicenseInfoMarkdown = getRecordEntries(dbConfigs).map(([dbID, dbConfig]) => {
                     // TODO: get displayname per lang here? or when actually displayed? confusing...
                     const {source,license} = dbConfig;
-                    return `## ${dbID}\n\n<${source}>\n\nLicense: ${license}`
+                    return `## ${dbID}\n\nSource: <${source}>\n\nLicense: *${license}*`
                 }).join("\n");
 
                 const licensePage: MarkdownPage = {
