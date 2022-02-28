@@ -3,7 +3,7 @@
 import type {RawDBList, RawEnabledDBs, ReturnedFinalConfig, SubAppID, RawDBConfigMapping, AppID, ViewID, RawSubAppConfig, AppIDListOrAll, DBIdentifier} from "../configHandler/zodConfigTypes";
 import PageHandler from "../pages/PageHandler";
 import DBConfig from "../configHandler/DBConfig";
-import {getRecordEntries, getRecordValues, nullGuard, runningInJest} from "../utils";
+import {getRecordValues, nullGuard, runningInJest} from "../utils";
 import {FontConfig} from "./zodFontConfigTypes";
 
 export default class AppConfig {
@@ -101,8 +101,8 @@ class DBConfigHandler {
         this.enabledDBs = enabledDBs;
 
         this.dbIDsToDBConfigs = new Map(
-            getRecordEntries(dbConfigs)
-                .map(([dbID, rawConfig]) => {
+            this.getAllEnabledDBs().map((dbID) => {
+                    const rawConfig = dbConfigs[dbID]!;
                     const viewID = getViewID(subAppID, dbID, enabledDBs);
                     return ([dbID, new DBConfig(dbID, rawConfig, viewID)]);
 
@@ -122,7 +122,7 @@ class DBConfigHandler {
         return Array.from(this.dbIDsToDBConfigs.values());
     }
 
-    private getAllEnabledDBs(): DBIdentifier[] {
+    private getAllEnabledDBs(): [DBIdentifier, ...DBIdentifier[]] {
         const {enabledDBs} = this;
         if (!Array.isArray(enabledDBs)) {
             if (this.subAppID !== undefined) {
@@ -134,7 +134,7 @@ class DBConfigHandler {
                         } else {
                             return Object.keys(dbNameOrDBToView)[0];
                         }
-                    });
+                    }) as [DBIdentifier, ...DBIdentifier[]];
                 }
             }
         } else {
