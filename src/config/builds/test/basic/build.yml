@@ -3,3 +3,4 @@ apps:
   - test/simpletest
   - test/simpletest_with_subapps
   - test/simpletest_with_subapps_and_views
+  - test/simpletest_with_page

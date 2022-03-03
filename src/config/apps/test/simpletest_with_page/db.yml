@@ -1,0 +1,36 @@
+dbList:
+  - angry
+
+dbConfigs:
+  angry:
+    displayName:
+      eng_us: Angry!
+
+    loadInfo:
+      localCSV: /db/test/angry.csv
+
+    primaryKey: id
+    license: "CC-BY 420.0"
+    source: "https://xmission.net"
+
+    searchableFields:
+      - person
+      - target
+      - yell
+
+    fields:
+      id:
+        type:
+          dictionary: id
+
+      person:
+        type:
+          dictionary: vocab
+
+      target:
+        type:
+          dictionary: vocab_other
+
+      yell:
+        type:
+          dictionary: definition

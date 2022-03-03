@@ -45,6 +45,10 @@ const TYPING_TIMEOUT_MS = 1000;
 
 export interface ChhaTaigiProps {
     rfc: ReturnedFinalConfig,
+
+    // This can be passed in so that it can be accessed in tests.
+    qs?: QueryStringHandler,
+
     // TODO: always annotate results with the current displaytype's info (one re-search when you change displaytype is well worth being able to calculate before render time (preferably in another thread))
     mockOptions?: OptionsChangeableByUser,
     mockResults?: AnnotatedPerDictResults,
@@ -61,12 +65,12 @@ export interface ChhaTaigiState {
 }
 
 export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
-    private qs = new QueryStringHandler();
-
     private currentMountAttempt = 0;
 
+    private qs: QueryStringHandler;
     searchOptionsAreaRef: React.RefObject<HTMLDivElement>;
     searchBarRef: React.RefObject<SearchBar>;
+    queryStringHandlerRef: React.RefObject<QueryStringHandler>;
     console: StubConsole;
     newestQuery: string;
     appConfig: AppConfig;
@@ -76,6 +80,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     constructor(props: ChhaTaigiProps) {
         super(props);
 
+        this.qs = this.props.qs ?? new QueryStringHandler();
         const options = this.props.mockOptions ?? this.qs.parse();
 
         this.appConfig = AppConfig.from(this.props.rfc, options.appID, options.subAppID);
@@ -93,6 +98,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.console = getDebugConsole(this.state.options.debug);
         this.searchBarRef = React.createRef();
         this.searchOptionsAreaRef = React.createRef();
+        this.queryStringHandlerRef = React.createRef();
 
         // Bind functions
         this.startSearchController = this.startSearchController.bind(this);

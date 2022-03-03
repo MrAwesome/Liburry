@@ -1,4 +1,5 @@
-import {render, screen} from '@testing-library/react';
+import {render, screen, waitFor} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {ChhaTaigi} from './ChhaTaigi';
 import OptionsChangeableByUser from './ChhaTaigiOptions';
@@ -9,6 +10,8 @@ import {SearcherType} from './search/searchers/Searcher';
 import {AnnotatedPerDictResults, annotateRawResults, DBSearchRanking, PerDictResultsRaw} from './types/dbTypes';
 import AppConfig from './configHandler/AppConfig';
 import {genLoadFinalConfigWILLTHROW} from '../scripts/compileYamlLib';
+
+import QueryStringHandler from "./QueryStringHandler";;
 
 // NOTE: just used to silence errors in node TSC.
 noop(React.version);
@@ -108,6 +111,101 @@ test('do not render unknown fields', async () => {
     const searchBar = screen.getByPlaceholderText(/Search.../);
     expect(searchBar).toBeInTheDocument();
 });
+
+
+test('render license page', async () => {
+    const qs = new QueryStringHandler();
+    const qsUpdateMock = jest.spyOn(qs, 'update');
+    const user = userEvent.setup();
+    const appID = "test/simpletest_with_subapps";
+    let options = new OptionsChangeableByUser();
+    options.appID = appID;
+
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
+
+    const app = <ChhaTaigi mockOptions={options} rfc={rfc} qs={qs} />;
+    render(app,
+        // @ts-ignore
+        {legacyRoot: true}
+    );
+
+    const licensesLinkText = /licenses/i;
+    const licenseText = /TEST LICENSE OKAY/;
+    const sourceText = /https:\/\/testurlokay.com/;
+
+    const licenses = screen.getByText(licensesLinkText);
+    expect(licenses.tabIndex).toBe(-1);
+
+    const noAngryLicense = screen.queryByText(licenseText);
+    expect(noAngryLicense).toBe(null);
+
+    const noAngrySource = screen.queryByText(sourceText);
+    expect(noAngrySource).toBe(null);
+
+    const menuBtn = screen.getByText("Open Menu");
+    await user.click(menuBtn);
+
+    await waitFor(async () => {
+        const licensesAfter = screen.getByText(licensesLinkText);
+        expect(licensesAfter.tabIndex).toBe(0);
+
+        await user.click(licensesAfter);
+    });
+
+    await waitFor(async () => {
+        const angryLicense = screen.getByText(licenseText);
+        expect(angryLicense).toBeInTheDocument();
+
+        const angrySource = screen.queryByText(sourceText);
+        expect(angrySource).toBeInTheDocument();
+        expect(qsUpdateMock).toHaveBeenCalledWith({"mainMode": "PAGE", "pageID": "licenses"}, {"modifyHistInPlace": true});
+    });
+});
+
+test('render sample page', async () => {
+    const qs = new QueryStringHandler();
+    const qsUpdateMock = jest.spyOn(qs, 'update');
+    const user = userEvent.setup();
+    const appID = "test/simpletest_with_page";
+    let options = new OptionsChangeableByUser();
+    options.appID = appID;
+
+    const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
+
+    const app = <ChhaTaigi mockOptions={options} rfc={rfc} qs={qs} />;
+    render(app,
+        // @ts-ignore
+        {legacyRoot: true}
+    );
+
+    const samplePageLinkText = /sample/i;
+    const samplePageText = /test page text!/;
+
+    const samplePageLink = screen.getByText(samplePageLinkText);
+    expect(samplePageLink.tabIndex).toBe(-1);
+
+    const noSamplePageTextContents = screen.queryByText(samplePageText);
+    expect(noSamplePageTextContents).toBe(null);
+
+    const menuBtn = screen.getByText("Open Menu");
+    await user.click(menuBtn);
+
+    await waitFor(async () => {
+        const samplePageLinkAfter = screen.getByText(samplePageLinkText);
+        expect(samplePageLinkAfter.tabIndex).toBe(0);
+
+        await user.click(samplePageLinkAfter);
+    });
+
+    await waitFor(async () => {
+        const samplePageTextContents = screen.getByText(samplePageText);
+        expect(samplePageTextContents).toBeInTheDocument();
+        expect(qsUpdateMock).toHaveBeenCalledWith({"mainMode": "PAGE", "pageID": "sample"}, {"modifyHistInPlace": true});
+    });
+});
+
+// TODO: test for about/eng_us.md etc
+// TODO: test for display of links in particular languages
 
 function getExampleTaigiRes(): PerDictResultsRaw {
     const dbIdentifier = "ChhoeTaigi_TaioanPehoeKichhooGiku";

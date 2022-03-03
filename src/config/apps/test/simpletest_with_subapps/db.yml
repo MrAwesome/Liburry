@@ -20,8 +20,8 @@ dbConfigs:
       localCSV: /db/test/angry.csv
 
     primaryKey: id
-    license: "CC-BY 420.0"
-    source: "https://xmission.net"
+    license: "TEST LICENSE OKAY"
+    source: "https://testurlokay.com"
 
     searchableFields:
       - person
