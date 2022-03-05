@@ -1,11 +1,9 @@
-// eslint-disable-next-line import/no-webpack-loader-syntax
-//import type Worker from "worker-loader!./search.worker";
-
-import {SearchWorkerCommandMessage, SearchWorkerCommandType, SearchWorkerResponseMessage} from "./search.worker";
+import {SearchWorkerCommandMessage, SearchWorkerCommandType, SearchWorkerResponseMessage} from "./SearchWorkerStateMachine";
 import getDebugConsole, {StubConsole} from "../../getDebugConsole";
-import {SearcherType} from "../../search/searchers/Searcher";
 import {runningInJest} from "../../utils";
-import {DBIdentifier} from "../../configHandler/zodConfigTypes";
+
+import type {SearcherType} from "../../search/searchers/Searcher";
+import type {DBIdentifier} from "../../configHandler/zodConfigTypes";
 import type AppConfig from "../../configHandler/AppConfig";
 
 export default class SearchWorkerManager {
@@ -40,30 +38,29 @@ export default class SearchWorkerManager {
         // Import is here so that the import of worker code doesn't break Jest testing elsewhere.
         if (!runningInJest()) {
             /* eslint-disable import/no-webpack-loader-syntax */
-            import("worker-loader!./search.worker").then((worker) => {
+            const worker = await import("worker-loader!./search.worker");
 
-                this.appConfig.dbConfigHandler.getAllEnabledDBConfigs().forEach((dbConfig) => {
-                    const dbIdentifier = dbConfig.getDBIdentifier();
-                    const searchWorker = new worker.default();
-                    const rawDBConfig = dbConfig.asRaw();
-                    this.searchWorkers.set(
-                        dbIdentifier,
-                        searchWorker,
-                    );
+            this.appConfig.dbConfigHandler.getAllEnabledDBConfigs().forEach((dbConfig) => {
+                const dbIdentifier = dbConfig.getDBIdentifier();
+                const searchWorker = new worker.default();
+                const rawDBConfig = dbConfig.asRaw();
+                this.searchWorkers.set(
+                    dbIdentifier,
+                    searchWorker,
+                );
 
-                    searchWorker.onmessage = searchWorkerReplyHandler;
+                searchWorker.onmessage = searchWorkerReplyHandler;
 
-                    const viewID = this.appConfig.dbConfigHandler.getViewForDB(dbIdentifier);
+                const viewID = this.appConfig.dbConfigHandler.getViewForDB(dbIdentifier);
 
-                    this.sendCommand(
-                        dbIdentifier,
-                        searchWorker,
-                        {
-                            command: SearchWorkerCommandType.INIT,
-                            payload: {dbIdentifier, rawDBConfig, viewID, debug: this.debug, searcherType}
-                        }
-                    );
-                });
+                this.sendCommand(
+                    dbIdentifier,
+                    searchWorker,
+                    {
+                        command: SearchWorkerCommandType.INIT,
+                        payload: {dbIdentifier, rawDBConfig, viewID, debug: this.debug, searcherType}
+                    }
+                );
             });
         }
     }

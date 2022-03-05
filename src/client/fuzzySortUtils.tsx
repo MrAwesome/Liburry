@@ -12,8 +12,6 @@ import {DBIdentifier} from "./configHandler/zodConfigTypes";
 import xss from "xss";
 import {MATCH_END, MATCH_START} from "./search/searchers/constants";
 
-// TODO: find out why "      " matches "chúi-pho 波紋 水波" on the "l" in "ripples"
-
 export function parseFuzzySortResultsForRender(
     dbIdentifier: DBIdentifier,
     primaryKey: string,

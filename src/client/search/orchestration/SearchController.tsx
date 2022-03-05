@@ -1,4 +1,4 @@
-import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./search.worker";
+import {SearchWorkerResponseMessage, SearchWorkerResponseType} from "./SearchWorkerStateMachine";
 
 import getDebugConsole, {StubConsole} from "../../getDebugConsole";
 import SearchWorkerManager from "./SearchWorkerManager";
