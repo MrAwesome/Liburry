@@ -65,10 +65,14 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
             <div className="search-bar-container">
                 <div className="search-bar">
                     {this.props.getProgressBars?.(this.textInput)}
-                    <button className="clickable-mag-glass-button"
+
+                    <div className="clickable-mag-glass-div"
                             onClick={this.props.toggleSearchOptions} >
+                        <button className="clickable-mag-glass-button">
+                            Search Options
+                        </button>
                         <SearchClickableMagGlass className="clickable-mag-glass" />
-                    </button>
+                    </div>
                     <form onSubmit={this.onSubmit} autoComplete="off" >
                         <input
                             autoFocus

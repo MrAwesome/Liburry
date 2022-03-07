@@ -40,7 +40,7 @@
     100% { transform: scale(1); }
 }
 
-.clickable-mag-glass-button {
+.clickable-mag-glass-div {
     animation: .8s cubic-bezier(.18,.89,.32,1.28) 1.3s 1 littleBlip;
     /* animation: 0.8s ease 1.5s 1 littleBlip; */
     /* animation: 0.8s cubic-bezier(.68,-0.55,.27,1.55) 1.5s 1 littleBlip; */
@@ -51,17 +51,24 @@
     width: 28px;
     height: 28px;
     right: auto;
-    cursor: pointer;
     padding: 0px;
     border: 0px;
-    background: transparent;
     opacity: 90%;
+    cursor: pointer;
 /* color: grey; */
 /* fill: grey; */
 }
 
-.clickable-mag-glass-button:hover {
+.clickable-mag-glass-div:hover {
     transform: scale(1.05);
+}
+
+.clickable-mag-glass-button {
+    font-size: 0px;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: 0px;
 }
 
 .clickable-mag-glass {
