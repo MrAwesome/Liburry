@@ -28,15 +28,15 @@ export default class SearchOptionsArea extends React.Component<SOAProps, {}> {
             onAfterClose={() => {searchBarRef.current?.textInput?.current?.focus()}}
             shouldCloseOnEsc={true}
             shouldFocusAfterRender={true}
-            >
-                <AppSelector
-                    ref={this.appSelector}
-                    rfc={rfc}
-                    currentAppID={appConfig.appID}
-                    currentSubAppID={appConfig.subAppID}
-                    handleAppChange={handleAppChange}
-                    handleSubAppChange={handleSubAppChange}
-                />
+        >
+            <AppSelector
+                ref={this.appSelector}
+                rfc={rfc}
+                currentAppID={appConfig.appID}
+                currentSubAppID={appConfig.subAppID}
+                handleAppChange={handleAppChange}
+                handleSubAppChange={handleSubAppChange}
+            />
         </ReactModal>
 
     }

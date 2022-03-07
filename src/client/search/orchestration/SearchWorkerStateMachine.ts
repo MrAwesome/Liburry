@@ -165,7 +165,9 @@ export default class SearchWorkerStateMachine {
     }
 
     terminate() {
-        this.ctx.terminate();
+        if (this.ctx !== "TEST_MODE_NO_WORKER") {
+            this.ctx.terminate();
+        }
     }
 }
 

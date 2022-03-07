@@ -1,10 +1,10 @@
-import {runningInJest} from '../client/utils';
+import {runningInJest, runningInNode} from '../client/utils';
 
 export async function loadPublicFileAsPlainText(
     filename: string,
     onFileLoadLambda?: () => Promise<void>,
 ): Promise<string> {
-    const isRunningInNodeOrJest = (window === undefined) || runningInJest();
+    const isRunningInNodeOrJest = runningInJest() || runningInNode();
 
     if (isRunningInNodeOrJest) {
         const fs = await import('fs');

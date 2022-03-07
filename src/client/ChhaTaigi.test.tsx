@@ -11,13 +11,16 @@ import {AnnotatedPerDictResults, annotateRawResults, DBSearchRanking, PerDictRes
 import AppConfig from './configHandler/AppConfig';
 import {genLoadFinalConfigWILLTHROW} from '../scripts/compileYamlLib';
 
-import QueryStringHandler from "./QueryStringHandler";;
+import QueryStringHandler from "./QueryStringHandler"; import ReactModal from 'react-modal';
+import {AppID} from './configHandler/zodConfigTypes';
+;
 
 // NOTE: just used to silence errors in node TSC.
 noop(React.version);
 
 // TODO(high): test basic worker search behavior (probably not possible from jest?)
 // TODO(low): figure out how to run componentDidMount
+// TODO(low): test search options
 // TODO(later): migrate to createRoot - right now, using it crashes the test runner.
 
 test('render searchbar by default', async () => {
@@ -201,6 +204,56 @@ test('render sample page', async () => {
         const samplePageTextContents = screen.getByText(samplePageText);
         expect(samplePageTextContents).toBeInTheDocument();
         expect(qsUpdateMock).toHaveBeenCalledWith({"mainMode": "PAGE", "pageID": "sample"}, {"modifyHistInPlace": true});
+    });
+});
+
+// Display the correct app/subapp selector elements given which apps are loaded
+// TODO: check display in new languages
+const appSelectorDataProvider: Array<{appIDs: [AppID, ...AppID[]], desiredTextElements: string[], undesiredTextElements: string[]}> = [
+    {appIDs: ["test/simpletest"], desiredTextElements: [], undesiredTextElements: ["Select App:", "Select SubApp:"]},
+    {appIDs: ["test/simpletest_with_subapps"], desiredTextElements: ["Select SubApp:"], undesiredTextElements: ["Select App:"]},
+    {appIDs: ["test/simpletest_with_subapps", "test/simpletest"], desiredTextElements: ["Select App:", "Select SubApp:"], undesiredTextElements: []},
+    {appIDs: ["test/simpletest", "test/simpletest_with_subapps"], desiredTextElements: ["Select App:"], undesiredTextElements: ["Select SubApp:"]},
+];
+describe.each(appSelectorDataProvider)('check for app selectors for apps', (data) => {
+    test(data.appIDs.join(", "), async () => {
+        const user = userEvent.setup();
+
+        const {appIDs, desiredTextElements, undesiredTextElements} = data;
+        let options = new OptionsChangeableByUser();
+        options.appID = appIDs[0];
+
+        const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: appIDs});
+
+        const app = <ChhaTaigi mockOptions={options} rfc={rfc} />;
+        const {container} = render(app,
+            // @ts-ignore
+            {legacyRoot: true}
+        );
+        ReactModal.setAppElement(container);
+
+        // Check that we are *not* showing the modal by default
+        const searchOptionsModal = screen.queryByLabelText("Search Options");
+        expect(searchOptionsModal).toBeNull();
+
+        // Click the button which should launch the modal
+        const searchOptionsButton = screen.getByText("Search Options");
+        await user.click(searchOptionsButton);
+
+        await waitFor(async () => {
+            // Check that we actually displayed the modal
+            screen.getByLabelText("Search Options");
+
+            // Check for the elements we do want displayed
+            desiredTextElements.forEach((desiredText) => {
+                screen.getByText(desiredText);
+            });
+
+            // Check that we aren't displaying the elements we don't want
+            undesiredTextElements.forEach((undesiredText) => {
+                expect(screen.queryByText(undesiredText)).toBeNull();
+            });
+        });
     });
 });
 

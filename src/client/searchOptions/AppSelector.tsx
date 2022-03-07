@@ -138,7 +138,9 @@ export default class AppSelector extends React.PureComponent<ASProps, ASState> {
 
         const obj = <div className="app-selector"
         >
+            {appSelector !== null ? <span>Select App:</span> : null}
             {appSelector}
+            {subAppSelector !== null ? <span>Select SubApp:</span> : null}
             {subAppSelector}
         </div>;
         return obj;

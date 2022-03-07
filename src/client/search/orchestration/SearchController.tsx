@@ -37,6 +37,7 @@ export default class SearchController {
                     isDownloaded: false,
                     isParsed: false,
                     isLoaded: false,
+                    isPrepared: false,
                 }
             ]);
 

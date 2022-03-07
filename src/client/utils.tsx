@@ -7,8 +7,14 @@ export function mod(n: number, m: number) {
     return ((n % m) + m) % m;
 }
 
+const RUNNING_IN_JEST = process.env.JEST_WORKER_ID !== undefined;
 export function runningInJest() {
-    return process.env.JEST_WORKER_ID !== undefined;
+    return RUNNING_IN_JEST;
+}
+
+const RUNNING_IN_NODE = typeof process == 'object' && typeof process.versions == 'object' && typeof process.versions.node == 'string';
+export function runningInNode() {
+    return RUNNING_IN_NODE;
 }
 
 export function runningInProduction() {
