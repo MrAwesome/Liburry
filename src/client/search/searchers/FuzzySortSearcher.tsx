@@ -10,6 +10,7 @@ import {convertDBRowToFuzzySortPrepared, parseFuzzySortResultsForRender} from ".
 import {SEARCH_RESULTS_LIMIT} from "../../search/searchers/constants";
 import {WriteableType} from "../../types/typeUtils";
 import DBConfig from "../../configHandler/DBConfig";
+import {loadPublicFileAsPlainText} from "../../../common/utils";
 
 // TODO: give slight preference for poj-unicode/poj-normalized in fuzzy settings, so that e.g. "iong" will show up first in a search for itself
 // TODO: handle hyphens vs spaces
@@ -73,15 +74,15 @@ export class FuzzySortPreparer implements SearcherPreparer {
         this.console.time("total-" + dbIdentifier);
         this.console.time("fetch-" + dbIdentifier);
 
-        return fetch(localCSV)
-            .then((response: Response) => {
-                this.sendLoadStateUpdate({isDownloaded: true});
-                return response.text();
-            })
-            .then((text: string) => {
-                this.sendLoadStateUpdate({isParsed: true});
-                return this.convertCSVToFuzzySearchableDict(text);
-            });
+        const text = await loadPublicFileAsPlainText(
+            localCSV,
+            async () => this.sendLoadStateUpdate({isDownloaded: true})
+        );
+
+        this.sendLoadStateUpdate({isParsed: true});
+        const fuzzySearchableDict = this.convertCSVToFuzzySearchableDict(text);
+        this.sendLoadStateUpdate({isPrepared: true});
+        return fuzzySearchableDict;
     }
 
     convertCSVToFuzzySearchableDict(text: string): FuzzySearchableDict {

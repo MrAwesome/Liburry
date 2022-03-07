@@ -31,7 +31,7 @@ type WorkerInitializedState =
     {init: WorkerInitState.LOADED, dbIdentifier: DBIdentifier, dbConfig: DBConfig, searcher: Searcher} |
     {init: WorkerInitState.SEARCHING, dbIdentifier: DBIdentifier, dbConfig: DBConfig, searcher: Searcher, ogs: OngoingSearch, searchID: number};
 
-enum WorkerInitState {
+export enum WorkerInitState {
     UNINITIALIZED = "UNINITIALIZED",
     LOADING = "LOADING",
     LOADED = "LOADED",
@@ -61,11 +61,14 @@ function isResults(results: any): results is PerDictResultsRaw {
 }
 
 export default class SearchWorkerStateMachine {
-    state: WorkerInitializedState = {init: WorkerInitState.UNINITIALIZED};
+    public state: WorkerInitializedState = {init: WorkerInitState.UNINITIALIZED};
     debug: boolean = false;
     console: StubConsole = getDebugConsole(false);
 
-    constructor(private ctx: Worker) {}
+    // For use in unit tests
+    public mostRecentResultOrFailure?: SearchFailure | PerDictResultsRaw;
+
+    constructor(private ctx: Worker | "TEST_MODE_NO_WORKER") {}
 
     // TODO: have this use a different method in jest, and unit test that
     private sendResponse(message: SearchWorkerResponseMessage) {
@@ -76,7 +79,12 @@ export default class SearchWorkerStateMachine {
             this.console.log("Sending response from uninitialized worker:", message);
         }
 
-        this.ctx.postMessage(message);
+        const {ctx} = this;
+        if (ctx !== "TEST_MODE_NO_WORKER") {
+            ctx.postMessage(message);
+        } else {
+            //console.log("Not sending message: ", message);
+        }
     }
 
     start(dbIdentifier: DBIdentifier, dbConfig: DBConfig, debug: boolean, searcherType: SearcherType) {
@@ -113,6 +121,7 @@ export default class SearchWorkerStateMachine {
                     const originalState = this.state;
                     this.state = {...originalState, init: WorkerInitState.SEARCHING, ogs: ongoingSearch, searchID};
                     ongoingSearch.parsePromise?.then((resultsOrFailure) => {
+                        this.mostRecentResultOrFailure = resultsOrFailure;
                         if (isResults(resultsOrFailure)) {
                             this.sendResponse({resultType: SearchWorkerResponseType.SEARCH_SUCCESS, payload: {query, results: resultsOrFailure, dbIdentifier, searchID}});
                         } else {

@@ -294,6 +294,7 @@ export interface SingleDBLoadStatus {
     isDownloaded: boolean,
     isParsed: boolean,
     isLoaded: boolean,
+    isPrepared: boolean,
 }
 
 // TODO: make a helper function to compare two search results, and use in SearchResultsHolder

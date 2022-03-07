@@ -20,7 +20,7 @@ export abstract class Searcher {
 
 export enum SearcherType {
     FUZZYSORT = "FUZZYSORT",
-    LUNR = "LUNR",
+    DISABLED_LUNR = "DISABLED_LUNR",
     INCLUDES = "INCLUDES",
     REGEX = "REGEX",
 }
@@ -31,7 +31,7 @@ export function getMaxScore(searcherType: SearcherType): number {
     switch (searcherType) {
         case SearcherType.FUZZYSORT:
             return FUZZY_SCORE_LOWER_THRESHOLD;
-        case SearcherType.LUNR:
+        case SearcherType.DISABLED_LUNR:
             throw new Error("Lunr is not currently implemented.");
             // TODO: some normalized value for this
             //return 25;
@@ -51,7 +51,7 @@ export function getSearcherPreparer(
     switch (searcherType) {
         case SearcherType.FUZZYSORT:
             return new FuzzySortPreparer(dbConfig, sendLoadStateUpdate, debug);
-        case SearcherType.LUNR:
+        case SearcherType.DISABLED_LUNR:
             throw new Error("Lunr is not currently implemented.");
             // TODO: implement for lunr
             //return new LunrPreparer(dbConfig, sendLoadStateUpdate, debug);

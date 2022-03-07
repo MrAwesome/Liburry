@@ -7,6 +7,7 @@ import DBConfig from "../../configHandler/DBConfig";
 import {SEARCH_RESULTS_LIMIT} from "../../search/searchers/constants";
 import {vanillaDBEntryToResult} from "./utils";
 import {CancelablePromise} from "../../types/general";
+import {loadPublicFileAsPlainText} from "../../../common/utils";
 
 // TODO: add selector for options
 // TODO: catch regex parse errors, show red around searchbar
@@ -56,6 +57,7 @@ export class RegexPreparer implements SearcherPreparer {
             });
     }
 
+    // TODO: abstract away fetchAndPrepare entirely?
     async fetchAndPrepare(): Promise<RegexSearchableDict> {
         const dbIdentifier = this.dbConfig.getDBIdentifier();
         const {localCSV} = this.dbConfig.getDBLoadInfo();
@@ -66,15 +68,14 @@ export class RegexPreparer implements SearcherPreparer {
         this.console.time("total-" + dbIdentifier);
         this.console.time("fetch-" + dbIdentifier);
 
-        return fetch(localCSV)
-            .then((response: Response) => {
-                this.sendLoadStateUpdate({isDownloaded: true});
-                return response.text();
-            })
-            .then((text: string) => {
-                this.sendLoadStateUpdate({isParsed: true});
-                return this.convertCSVToRegexSearchableDict(text);
-            });
+        const text = await loadPublicFileAsPlainText(
+            localCSV,
+            async () => this.sendLoadStateUpdate({isDownloaded: true})
+        );
+        this.sendLoadStateUpdate({isParsed: true});
+        const includesSearchableDict = this.convertCSVToRegexSearchableDict(text);
+        this.sendLoadStateUpdate({isPrepared: true});
+        return includesSearchableDict;
     }
 
     convertCSVToRegexSearchableDict(text: string): RegexSearchableDict {

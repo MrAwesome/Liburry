@@ -102,7 +102,7 @@ export class LunrPreparer implements SearcherPreparer {
 }
 
 export class LunrSearcher implements Searcher {
-    searcherType: SearcherType = SearcherType.LUNR;
+    searcherType: SearcherType = SearcherType.DISABLED_LUNR;
 
     private console: StubConsole;
 
@@ -158,7 +158,7 @@ export class LunrSearcher implements Searcher {
             const id = parseInt(lunrRes.ref);
             const entry = entries[id - 1];
             const dbSearchRanking = {
-                searcherType: SearcherType.LUNR,
+                searcherType: SearcherType.DISABLED_LUNR,
                 score: lunrRes.score
             };
             return vanillaDBEntryToResult(dbIdentifier, entry, dbSearchRanking, this.primaryKey);

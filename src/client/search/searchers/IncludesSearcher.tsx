@@ -7,6 +7,7 @@ import DBConfig from "../../configHandler/DBConfig";
 import {SEARCH_RESULTS_LIMIT} from "../../search/searchers/constants";
 import {vanillaDBEntryToResult} from "./utils";
 import {CancelablePromise} from "../../types/general";
+import {loadPublicFileAsPlainText} from "../../../common/utils";
 
 export const LOWERCASE_KEY_SUFFIX = "_zzlc"
 const NUM_TO_PROCESS_BEFORE_CANCEL_CHECK = 5000;
@@ -62,15 +63,14 @@ export class IncludesPreparer implements SearcherPreparer {
         this.console.time("total-" + dbIdentifier);
         this.console.time("fetch-" + dbIdentifier);
 
-        return fetch(localCSV)
-            .then((response: Response) => {
-                this.sendLoadStateUpdate({isDownloaded: true});
-                return response.text();
-            })
-            .then((text: string) => {
-                this.sendLoadStateUpdate({isParsed: true});
-                return this.convertCSVToIncludesSearchableDict(text);
-            });
+        const text = await loadPublicFileAsPlainText(
+            localCSV,
+            async () => this.sendLoadStateUpdate({isDownloaded: true})
+        );
+        this.sendLoadStateUpdate({isParsed: true});
+        const includesSearchableDict = this.convertCSVToIncludesSearchableDict(text);
+        this.sendLoadStateUpdate({isPrepared: true});
+        return includesSearchableDict;
     }
 
     convertCSVToIncludesSearchableDict(text: string): IncludesSearchableDict {
