@@ -110,17 +110,7 @@ export default class SearchValidityManager {
 
     checkAllSearchesCompleted(searchID: number): boolean {
         const completions = this.getSearch(searchID).completionStatus;
-
-        // This odd-looking construction exists because:
-        // 1) We want to bail early, so we can't use Map.forEach
-        // 2) eslint won't play ball on using an underscore to ignore a var here
-        for (const kv of completions) {
-            const isCompleted = kv[1];
-            if (!isCompleted) {
-                return false;
-            }
-        }
-        return true;
+        return Array.from(completions.values()).every(x => x);
     }
 
     // NOTE: could check here if search was already started, but as long
