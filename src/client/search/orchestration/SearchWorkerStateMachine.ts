@@ -99,7 +99,7 @@ export default class SearchWorkerStateMachine {
         this.state = {dbIdentifier, dbConfig, preparer, init: WorkerInitState.LOADING};
 
         preparer.prepare().then((searcher) => {
-            sendLoadStateUpdate({isLoaded: true});
+            sendLoadStateUpdate({isFullyLoaded: true});
             this.state = {searcher, dbIdentifier, dbConfig, init: WorkerInitState.LOADED};
         }).catch((err) => {
             console.warn("DB preparation failure!", this, err);

@@ -69,7 +69,6 @@ export class IncludesPreparer implements SearcherPreparer {
         );
         this.sendLoadStateUpdate({isParsed: true});
         const includesSearchableDict = this.convertCSVToIncludesSearchableDict(text);
-        this.sendLoadStateUpdate({isPrepared: true});
         return includesSearchableDict;
     }
 

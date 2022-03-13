@@ -81,7 +81,6 @@ export class FuzzySortPreparer implements SearcherPreparer {
 
         this.sendLoadStateUpdate({isParsed: true});
         const fuzzySearchableDict = this.convertCSVToFuzzySearchableDict(text);
-        this.sendLoadStateUpdate({isPrepared: true});
         return fuzzySearchableDict;
     }
 

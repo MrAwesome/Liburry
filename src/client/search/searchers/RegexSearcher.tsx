@@ -74,7 +74,6 @@ export class RegexPreparer implements SearcherPreparer {
         );
         this.sendLoadStateUpdate({isParsed: true});
         const includesSearchableDict = this.convertCSVToRegexSearchableDict(text);
-        this.sendLoadStateUpdate({isPrepared: true});
         return includesSearchableDict;
     }
 

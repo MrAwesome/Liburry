@@ -243,7 +243,7 @@ export class LoadedDBsMap extends Map<DBIdentifier, SingleDBLoadStatus> {
         if (dbStatus !== undefined) {
             this.set(dbIdentifier, {...dbStatus, ...stateDelta});
         } else {
-            console.warn(`Attempted to set load state on unknown DB: ${dbIdentifier} + ${stateDelta}`);
+            console.warn("Attempted to set load state on unknown DB:", dbIdentifier, stateDelta);
         }
     }
 
@@ -254,7 +254,7 @@ export class LoadedDBsMap extends Map<DBIdentifier, SingleDBLoadStatus> {
         let numLoaded = 0;
         let numDBs = 0;
 
-        this.forEach(({isDownloaded, isParsed, isLoaded}, _name) => {
+        this.forEach(({isDownloaded, isParsed, isFullyLoaded}, _name) => {
             numDBs += 1;
             if (isDownloaded) {
                 numDownloaded += 1;
@@ -262,7 +262,7 @@ export class LoadedDBsMap extends Map<DBIdentifier, SingleDBLoadStatus> {
             if (isParsed) {
                 numParsed += 1;
             }
-            if (isLoaded) {
+            if (isFullyLoaded) {
                 numLoaded += 1;
             }
         });
@@ -293,8 +293,7 @@ export interface DidReload {
 export interface SingleDBLoadStatus {
     isDownloaded: boolean,
     isParsed: boolean,
-    isLoaded: boolean,
-    isPrepared: boolean,
+    isFullyLoaded: boolean,
 }
 
 // TODO: make a helper function to compare two search results, and use in SearchResultsHolder

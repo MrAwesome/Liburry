@@ -10,7 +10,7 @@ export class SearchContext {
     completionStatus: Map<DBIdentifier, boolean> = new Map();
 
     constructor(
-        id: number,
+        _id: number,
         private expectedNumberOfDBs: number,
     ) {
     }

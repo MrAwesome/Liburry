@@ -6,13 +6,13 @@ import OptionsChangeableByUser from './ChhaTaigiOptions';
 import * as React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import {noop} from './utils';
-import {SearcherType} from './search/searchers/Searcher';
-import {AnnotatedPerDictResults, annotateRawResults, DBSearchRanking, PerDictResultsRaw} from './types/dbTypes';
+import {AnnotatedPerDictResults, annotateRawResults} from './types/dbTypes';
 import AppConfig from './configHandler/AppConfig';
 import {genLoadFinalConfigWILLTHROW} from '../scripts/compileYamlLib';
 
 import QueryStringHandler from "./QueryStringHandler"; import ReactModal from 'react-modal';
 import {AppID} from './configHandler/zodConfigTypes';
+import {getExampleTaigiRes} from '../common/testUtils';
 ;
 
 // NOTE: just used to silence errors in node TSC.
@@ -88,11 +88,11 @@ test('do not render unknown fields', async () => {
     options.appID = appID;
     options.mainMode = MainDisplayAreaMode.SEARCH;
 
-    const perDictRes = getExampleTaigiRes();
-
     const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
 
     const appConfig = AppConfig.from(rfc, appID, null);
+
+    const perDictRes = getExampleTaigiRes();
     const annotatedResRaw = annotateRawResults(perDictRes, appConfig);
     const annotatedRes = new AnnotatedPerDictResults(annotatedResRaw);
 
@@ -256,54 +256,3 @@ describe.each(appSelectorDataProvider)('check for app selectors for apps', (data
         });
     });
 });
-
-// TODO: test for about/eng_us.md etc
-// TODO: test for display of links in particular languages
-
-function getExampleTaigiRes(): PerDictResultsRaw {
-    const dbIdentifier = "ChhoeTaigi_TaioanPehoeKichhooGiku";
-    const rowID = 1;
-
-    const marked = `hoat-<mark>lu̍t</mark>`;
-
-    const dbSearchRanking: DBSearchRanking = {searcherType: SearcherType.REGEX, score: -3};
-    let res1 = {
-        key: `${dbIdentifier}-${rowID}`,
-        rowID,
-        dbIdentifier,
-        dbSearchRanking,
-        fields: [
-            {
-                colName: "PojUnicode",
-                value: "hoat-lu̍t",
-                matched: true,
-                displayValOverride: marked,
-            },
-            {
-                colName: "PojInput",
-                value: "hoat-lut8",
-                matched: false,
-            },
-            {
-                colName: "HoaBun",
-                value: "法律",
-                matched: false,
-            },
-            {
-                colName: "PojNormalized",
-                value: "hoat-lut",
-                matched: false,
-            },
-            {
-                colName: "EngBun",
-                value: "the law",
-                matched: false,
-            },
-        ],
-    };
-
-    return {
-        dbIdentifier,
-        results: [res1],
-    };
-}

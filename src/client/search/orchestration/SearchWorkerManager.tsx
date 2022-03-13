@@ -84,7 +84,7 @@ export default class SearchWorkerManager {
         if (worker !== undefined) {
             this.sendCommand(dbIdentifier, worker, {command: SearchWorkerCommandType.SEARCH, payload: {query, searchID}});
         } else {
-            console.warn("Tried to search nonexistant DB: ", dbIdentifier);
+            console.warn("Tried to search nonexistent DB: ", dbIdentifier);
         }
     }
 

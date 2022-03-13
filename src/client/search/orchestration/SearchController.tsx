@@ -22,10 +22,11 @@ interface SearchControllerArgs {
 }
 
 export default class SearchController {
-    private searchWorkerManager: SearchWorkerManager;
-    private validity: SearchValidityManager;
-    private console: StubConsole;
+    public searchWorkerManager: SearchWorkerManager;
+    public validity: SearchValidityManager;
+
     private loadedDBs: LoadedDBsMap;
+    private console: StubConsole;
 
     constructor(
         private r: SearchControllerArgs,
@@ -36,8 +37,7 @@ export default class SearchController {
                 {
                     isDownloaded: false,
                     isParsed: false,
-                    isLoaded: false,
-                    isPrepared: false,
+                    isFullyLoaded: false,
                 }
             ]);
 
@@ -97,9 +97,13 @@ export default class SearchController {
         this.searchWorkerManager.stopAll();
     }
 
-    async search(query: string) {
-        // Invalidate the previous search, so any lingering results don't pollute the current view
+    invalidate() {
         this.validity.invalidate();
+    }
+
+    async search(query: string): Promise<void> {
+        // Invalidate the previous search, so any lingering results don't pollute the current view
+        this.invalidate();
 
         const searchContext = this.validity.getCurrentSearch();
         const searchID = this.validity.currentSearchID;
@@ -150,11 +154,12 @@ export default class SearchController {
                     const msg = `Encountered a failure "${failure}" while searching "${dbIdentifier}" for "${query}". `;
                     if (this.validity.acquireRetry(dbIdentifier, searchID)) {
                         this.searchWorkerManager.searchSpecificDB(dbIdentifier, query, searchID);
-                        console.warn(msg + "Trying again...");
+                        this.console.warn(msg + "Trying again...");
                     } else {
-                        console.error(msg + "Ran out of retries!");
+                        this.console.error(msg + "Ran out of retries!");
                     }
 
+                    // TODO: display update should maybe use a red portion of the bar for failed searches?
                     this.r.genUpdateDisplayForSearchEvent?.(this.validity.getSearch(searchID));
                 } else {
                     this.console.log("Requested to retry an invalidated search: ", message.payload);
@@ -168,10 +173,12 @@ export default class SearchController {
                 this.console.timeEnd("dbLoadRender-" + dbIdentifier);
 
                 // The DB is fully loaded/prepared and ready to handle searches.
-                if (stateDelta.isLoaded) {
+                if (stateDelta.isFullyLoaded) {
                     const query = this.getCurrentQueryCallback();
 
-                    // There is a small mild race condition here where typing before DB load
+                    // Kick off a query on the DB, now that it is loaded.
+                    //
+                    // NOTE: There is a small mild race condition here where typing before DB load
                     // can mean a search for the same string can be interrupted. It would
                     // already be invalidated, so there's not really any harm besides wasted cycles.
                     //

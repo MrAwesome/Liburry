@@ -38,7 +38,7 @@ export class PromiseHolder<T extends NotAPromise> {
         this.state = {state: "loaded", value};
     }
 
-    isLoaded(): boolean {
+    isFullyLoaded(): boolean {
         return this.state.state === "loaded";
     }
 
