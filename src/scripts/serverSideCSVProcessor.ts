@@ -3,7 +3,7 @@
 import fs from 'fs';
 import papaparse from "papaparse";
 import fetch from "node-fetch";
-import ConfigHandler from '../client/configHandler/ConfigHandler';
+import CompiledJSONFinalConfigHandler from '../client/configHandler/CompiledJSONFinalConfigHandler';
 import DBConfig from '../client/configHandler/DBConfig';
 import {OldLangDB, RawDBRow} from '../client/types/dbTypes';
 import {fromKipUnicodeToKipNormalized, fromPojUnicodeToPojNormalized} from './languageUtils';
@@ -85,7 +85,7 @@ function writeFile(dbConfig: DBConfig, entries: RawDBRow[]) {
 }
 
 // TODO: force this to load taigi.us from the yaml, not the json
-const configHandler = new ConfigHandler();
+const configHandler = new CompiledJSONFinalConfigHandler();
 const configPromises = [configHandler.genLoadFinalConfigLocalUNSAFE()];
 Promise.all(configPromises).then(([finalConfig]) => {
     const appConfig = AppConfig.from(finalConfig, "taigi.us", null);

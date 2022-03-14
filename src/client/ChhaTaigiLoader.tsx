@@ -1,6 +1,6 @@
 import * as React from "react";
 import {ChhaTaigi} from "./ChhaTaigi";
-import ConfigLoader from "./configHandler/ConfigHandler";
+import CompiledJSONFinalConfigHandler from "./configHandler/CompiledJSONFinalConfigHandler";
 import {ProgressHandler} from "./progressBars/ProgressBars";
 
 import type {ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
@@ -8,8 +8,9 @@ import type {MuhError} from "./errorHandling/MuhError";
 import type {DebugData} from "./errorHandling/DebugData";
 
 interface ChhaTaigiLoaderProps {
-    fatalError: (err: MuhError) => void,
-    updateDebugData: (debugDelta: Partial<DebugData>) => void,
+    configHandler?: CompiledJSONFinalConfigHandler,
+    raiseFatalError?: (err: MuhError) => void,
+    updateDebugData?: (debugDelta: Partial<DebugData>) => void,
 }
 
 interface ChhaTaigiLoaderState {
@@ -28,8 +29,15 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
     }
 
     componentDidMount() {
-        const configLoader = new ConfigLoader();
-        const configPromises = [configLoader.genLoadFinalConfig()];
+        const {raiseFatalError, updateDebugData} = this.props;
+        if (raiseFatalError === undefined || updateDebugData === undefined) {
+            console.warn("Running Loader class without error boundary!");
+        }
+
+        // TODO: load from yaml when in development mode, and the compiled json when in production mode
+        const configHandler = this.props.configHandler ?? new CompiledJSONFinalConfigHandler();
+
+        const configPromises = [configHandler.genLoadFinalConfig()];
         this.progress.numConfigsToLoad = configPromises.length;
 
         // Update the config progressbar whenever a config successfully loads
@@ -47,11 +55,11 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
             if ((finalConfigOrErr as MuhError).muhErrType !== undefined) {
                 const configHandlerError = finalConfigOrErr as MuhError;
                 console.error("ConfigHandler Error: ", configHandlerError);
-                this.props.fatalError(configHandlerError);
+                this.props.raiseFatalError?.(configHandlerError);
             } else {
                 const rfc = finalConfigOrErr as ReturnedFinalConfig;
                 this.setState({rfc});
-                this.props.updateDebugData({rfc});
+                this.props.updateDebugData?.({rfc});
             }
         });
     }

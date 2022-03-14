@@ -1,11 +1,11 @@
 import * as React from "react";
-import {ChhaTaigiLoader} from "../ChhaTaigiLoader";
 import MuhErrorDisplay from "./MuhErrorDisplay";
 
 import type {MuhError} from "./MuhError";
 import type {DebugData} from "./DebugData";
 
-interface EBProps {}
+interface EBProps {
+}
 interface EBState {
     muhError?: MuhError | Error,
     debugData?: DebugData,
@@ -15,11 +15,11 @@ export default class MuhErrorBoundary extends React.Component<EBProps, EBState> 
     constructor(props: EBProps) {
         super(props);
         this.state = {}
-        this.fatalError = this.fatalError.bind(this);
+        this.raiseFatalError = this.raiseFatalError.bind(this);
         this.updateDebugData = this.updateDebugData.bind(this);
     }
 
-    fatalError(muhError: MuhError) {
+    raiseFatalError(muhError: MuhError) {
         this.setState({muhError});
     }
 
@@ -41,10 +41,15 @@ export default class MuhErrorBoundary extends React.Component<EBProps, EBState> 
         if (muhError !== undefined) {
             return <MuhErrorDisplay muhError={muhError} debugData={debugData} />;
         } else {
-            return <ChhaTaigiLoader
-                fatalError={this.fatalError}
-                updateDebugData={this.updateDebugData}
-            />;
+
+            const {raiseFatalError, updateDebugData} = this;
+            return React.Children.map(
+                this.props.children,
+                (child) => {
+                    if (!React.isValidElement(child)) {return child;}
+                    return React.cloneElement(child, {raiseFatalError, updateDebugData});
+                }
+            );
         }
     }
 }

@@ -20,7 +20,7 @@ const chDefaultOpts = {
 };
 type CHOpts = typeof chDefaultOpts;
 
-export default class ConfigHandler {
+export default class CompiledJSONFinalConfigHandler {
     private opts: CHOpts;
     constructor(
         opts?: Partial<CHOpts>,
