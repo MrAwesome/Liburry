@@ -1,6 +1,7 @@
 import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR, FINAL_CONFIG_REMOTE_DIR} from "../constants";
 import {MuhError, MuhErrorType} from "../errorHandling/MuhError";
 import {nodeReadFileFromDir} from "../utils";
+import type ConfigHandler from "./ConfigHandler";
 import {ReturnedFinalConfig, returnedFinalConfigSchema} from "./zodConfigTypes";
 
 // [] ensure app names are unique
@@ -20,7 +21,7 @@ const chDefaultOpts = {
 };
 type CHOpts = typeof chDefaultOpts;
 
-export default class CompiledJSONFinalConfigHandler {
+export default class CompiledJSONFinalConfigHandler implements ConfigHandler {
     private opts: CHOpts;
     constructor(
         opts?: Partial<CHOpts>,
@@ -53,7 +54,7 @@ export default class CompiledJSONFinalConfigHandler {
     }
 
     // NOTE: this can load an app-specific config, if that's desired instead
-    async genLoadFinalConfig(): Promise<ReturnedFinalConfig | MuhError> {
+    async genLoadFinalConfig(): Promise<ReturnedFinalConfig | Error> {
         try {
             const blob = await this.genLoadJSON();
             const parseRes = await returnedFinalConfigSchema.spa(blob);

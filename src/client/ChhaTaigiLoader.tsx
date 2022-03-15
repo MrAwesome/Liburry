@@ -4,13 +4,15 @@ import CompiledJSONFinalConfigHandler from "./configHandler/CompiledJSONFinalCon
 import {ProgressHandler} from "./progressBars/ProgressBars";
 
 import type {ReturnedFinalConfig} from "./configHandler/zodConfigTypes";
-import type {MuhError} from "./errorHandling/MuhError";
+import {MuhError, MuhErrorType} from "./errorHandling/MuhError";
 import type {DebugData} from "./errorHandling/DebugData";
+import ConfigHandler from "./configHandler/ConfigHandler";
 
 interface ChhaTaigiLoaderProps {
-    configHandler?: CompiledJSONFinalConfigHandler,
+    configHandler?: ConfigHandler,
     raiseFatalError?: (err: MuhError) => void,
     updateDebugData?: (debugDelta: Partial<DebugData>) => void,
+    shouldBailForTest?: boolean,
 }
 
 interface ChhaTaigiLoaderState {
@@ -72,6 +74,10 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
     render() {
         const {rfc} = this.state;
         const {genUpdateDisplayForDBLoadEvent, genUpdateDisplayForSearchEvent} = this.progress;
+
+        if (this.props.shouldBailForTest) {
+            throw new MuhError(MuhErrorType.EXPLICIT_FAILURE_REQUESTED);
+        }
 
         const mainApp = rfc !== undefined
             ? <ChhaTaigi
