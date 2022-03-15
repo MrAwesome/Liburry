@@ -73,7 +73,7 @@ export class ChhaTaigiLoader extends React.Component<ChhaTaigiLoaderProps, ChhaT
         const {rfc} = this.state;
         const {genUpdateDisplayForDBLoadEvent, genUpdateDisplayForSearchEvent} = this.progress;
 
-        let mainApp = rfc !== undefined
+        const mainApp = rfc !== undefined
             ? <ChhaTaigi
                 rfc={rfc}
                 genUpdateDisplayForDBLoadEvent={genUpdateDisplayForDBLoadEvent}

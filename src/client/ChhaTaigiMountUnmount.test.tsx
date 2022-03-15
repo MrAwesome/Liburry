@@ -10,31 +10,31 @@ import {genLoadFinalConfigWILLTHROW} from '../scripts/compileYamlLib';
 noop(React.version);
 
 test('SearchController start/cleanup', async () => {
-    let startW = jest.spyOn(SearchController.prototype, 'startWorkersAndListener');
-    let endW = jest.spyOn(SearchController.prototype, 'cleanup');
+    const startW = jest.spyOn(SearchController.prototype, 'startWorkersAndListener');
+    const endW = jest.spyOn(SearchController.prototype, 'cleanup');
 
     const rfc = await genLoadFinalConfigWILLTHROW();
-    let options = new OptionsChangeableByUser();
-    let x = render(<ChhaTaigi rfc={rfc} mockOptions={options} />);
+    const options = new OptionsChangeableByUser();
+    const view = render(<ChhaTaigi rfc={rfc} mockOptions={options} />);
 
     expect(startW).toHaveBeenCalledTimes(1);
     expect(endW).toHaveBeenCalledTimes(0);
-    x.unmount();
+    view.unmount();
     expect(startW).toHaveBeenCalledTimes(1);
     expect(endW).toHaveBeenCalledTimes(1);
 });
 
 test('hashchange listen/end', async () => {
-    let startH = jest.spyOn(ChhaTaigi.prototype, 'subscribeHash');
-    let endH = jest.spyOn(ChhaTaigi.prototype, 'unsubscribeHash');
+    const startH = jest.spyOn(ChhaTaigi.prototype, 'subscribeHash');
+    const endH = jest.spyOn(ChhaTaigi.prototype, 'unsubscribeHash');
 
     const rfc = await genLoadFinalConfigWILLTHROW();
-    let options = new OptionsChangeableByUser();
-    let x = render(<ChhaTaigi rfc={rfc} mockOptions={options} />);
+    const options = new OptionsChangeableByUser();
+    const view = render(<ChhaTaigi rfc={rfc} mockOptions={options} />);
 
     expect(startH).toHaveBeenCalledTimes(1);
     expect(endH).toHaveBeenCalledTimes(0);
-    x.unmount();
+    view.unmount();
     expect(startH).toHaveBeenCalledTimes(1);
     expect(endH).toHaveBeenCalledTimes(1);
 });

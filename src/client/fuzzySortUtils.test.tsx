@@ -11,7 +11,7 @@ test('preparation', () => {
 
     const searchableKeys = ["poj", "english"];
 
-    let x = convertDBRowToFuzzySortPrepared(row, searchableKeys);
+    const x = convertDBRowToFuzzySortPrepared(row, searchableKeys);
 
     expect(x).toHaveProperty("id");
 

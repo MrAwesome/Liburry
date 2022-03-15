@@ -55,7 +55,7 @@ export interface ChhaTaigiProps {
     genUpdateDisplayForDBLoadEvent?: (dbStatus: AllDBLoadStats | {didReload: true}) => Promise<void>,
     genUpdateDisplayForSearchEvent?: (searchContext: SearchContext | null) => Promise<void>,
     getProgressBars?: (parentElem: React.RefObject<HTMLElement>) => JSX.Element,
-};
+}
 
 export interface ChhaTaigiState {
     options: OptionsChangeableByUser,

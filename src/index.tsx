@@ -13,13 +13,15 @@ import {ChhaTaigiLoader} from "./client/ChhaTaigiLoader";
 
 const rootElement = document.getElementById("root");
 ReactModal.setAppElement('#root');
-const root = (ReactDOM as any).createRoot(rootElement);
 
+// Not available yet in typings
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const root = (ReactDOM as any).createRoot(rootElement);
 
 root.render(
     <React.StrictMode>
         <MuhErrorBoundary>
-            <ChhaTaigiLoader />;
+            <ChhaTaigiLoader />
         </MuhErrorBoundary>
     </React.StrictMode>);
 

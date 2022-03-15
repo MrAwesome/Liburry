@@ -13,9 +13,9 @@ import {compileExpression as filtrexCompile} from "filtrex";
 // Deliberately restrictive and ASCII-centric, for simplicity of parsing/typing.
 // Tokens should never be displayed to users (everything which has a token should also have a "displayName"
 // if it needs one), so this only affects i18n for programmers.
-const BASIC_TOKEN_REGEX: RegExp = /^[a-zA-Z0-9_/]+$/;
-const FILENAME_AND_DIRECTORY_SAFE_REGEX: RegExp = /^[a-zA-Z0-9_/.]+$/;
-const LOCAL_FILENAME_AND_DIRECTORY_SAFE_REGEX: RegExp = /^\/[a-zA-Z0-9_/.]+$/;
+const BASIC_TOKEN_REGEX = /^[a-zA-Z0-9_/]+$/;
+const FILENAME_AND_DIRECTORY_SAFE_REGEX = /^[a-zA-Z0-9_/.]+$/;
+const LOCAL_FILENAME_AND_DIRECTORY_SAFE_REGEX = /^\/[a-zA-Z0-9_/.]+$/;
 
 // Token Types
 // NOTE: all of this type-glop is just to allow us to define the keys once while still being able to enforce the types of the values
@@ -541,7 +541,7 @@ export const rawAllDBConfigSchema = strictObject({
         });
     }).transform((adbc) => {
         // If enabledDBs is not given, use dbList
-        let edbs = adbc.enabledDBs ?? adbc.dbList;
+        const edbs = adbc.enabledDBs ?? adbc.dbList;
         const withFilledInEnabledDBs = {
             ...adbc,
             enabledDBs: edbs,

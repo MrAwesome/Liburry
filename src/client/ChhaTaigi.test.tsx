@@ -13,7 +13,6 @@ import {genLoadFinalConfigWILLTHROW} from '../scripts/compileYamlLib';
 import QueryStringHandler from "./QueryStringHandler"; import ReactModal from 'react-modal';
 import {AppID} from './configHandler/zodConfigTypes';
 import {getExampleTaigiRes} from '../common/testUtils';
-;
 
 // NOTE: just used to silence errors in node TSC.
 noop(React.version);
@@ -26,7 +25,7 @@ noop(React.version);
 test('render searchbar by default', async () => {
     const appID = "test/simpletest";
     const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
-    let options = new OptionsChangeableByUser();
+    const options = new OptionsChangeableByUser();
     options.appID = appID;
     const app = <ChhaTaigi rfc={rfc} mockOptions={options} />;
     render(app,
@@ -44,7 +43,7 @@ test('render searchbar by default', async () => {
 test('render single entry via override', async () => {
     // The app needs to be taigi.us here, because app-specific display settings are used
     const appID = "taigi.us";
-    let options = new OptionsChangeableByUser();
+    const options = new OptionsChangeableByUser();
     options.appID = appID;
     options.mainMode = MainDisplayAreaMode.SEARCH;
 
@@ -84,7 +83,7 @@ test('render single entry via override', async () => {
 test('do not render unknown fields', async () => {
     // Because there's no overlap in the field names of these apps, we should not see anything.
     const appID = "test/simpletest";
-    let options = new OptionsChangeableByUser();
+    const options = new OptionsChangeableByUser();
     options.appID = appID;
     options.mainMode = MainDisplayAreaMode.SEARCH;
 
@@ -121,7 +120,7 @@ test('render license page', async () => {
     const qsUpdateMock = jest.spyOn(qs, 'update');
     const user = userEvent.setup();
     const appID = "test/simpletest_with_subapps";
-    let options = new OptionsChangeableByUser();
+    const options = new OptionsChangeableByUser();
     options.appID = appID;
 
     const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
@@ -158,11 +157,14 @@ test('render license page', async () => {
     await waitFor(async () => {
         const angryLicense = screen.getByText(licenseText);
         expect(angryLicense).toBeInTheDocument();
+    });
 
+    await waitFor(async () => {
         const angrySource = screen.queryByText(sourceText);
         expect(angrySource).toBeInTheDocument();
-        expect(qsUpdateMock).toHaveBeenCalledWith({"mainMode": "PAGE", "pageID": "licenses"}, {"modifyHistInPlace": true});
     });
+
+    expect(qsUpdateMock).toHaveBeenCalledWith({"mainMode": "PAGE", "pageID": "licenses"}, {"modifyHistInPlace": true});
 });
 
 test('render sample page', async () => {
@@ -170,7 +172,7 @@ test('render sample page', async () => {
     const qsUpdateMock = jest.spyOn(qs, 'update');
     const user = userEvent.setup();
     const appID = "test/simpletest_with_page";
-    let options = new OptionsChangeableByUser();
+    const options = new OptionsChangeableByUser();
     options.appID = appID;
 
     const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
@@ -203,8 +205,8 @@ test('render sample page', async () => {
     await waitFor(async () => {
         const samplePageTextContents = screen.getByText(samplePageText);
         expect(samplePageTextContents).toBeInTheDocument();
-        expect(qsUpdateMock).toHaveBeenCalledWith({"mainMode": "PAGE", "pageID": "sample"}, {"modifyHistInPlace": true});
     });
+    expect(qsUpdateMock).toHaveBeenCalledWith({"mainMode": "PAGE", "pageID": "sample"}, {"modifyHistInPlace": true});
 });
 
 // Display the correct app/subapp selector elements given which apps are loaded
@@ -220,7 +222,7 @@ describe.each(appSelectorDataProvider)('check for app selectors for apps', (data
         const user = userEvent.setup();
 
         const {appIDs, desiredTextElements, undesiredTextElements} = data;
-        let options = new OptionsChangeableByUser();
+        const options = new OptionsChangeableByUser();
         options.appID = appIDs[0];
 
         const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: appIDs});

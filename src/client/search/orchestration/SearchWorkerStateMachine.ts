@@ -62,7 +62,7 @@ function isResults(results: any): results is PerDictResultsRaw {
 
 export default class SearchWorkerStateMachine {
     public state: WorkerInitializedState = {init: WorkerInitState.UNINITIALIZED};
-    debug: boolean = false;
+    debug = false;
     console: StubConsole = getDebugConsole(false);
 
     // For use in unit tests

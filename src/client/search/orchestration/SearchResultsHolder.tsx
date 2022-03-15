@@ -6,7 +6,7 @@ import {AnnotatedPerDictResults, AnnotatedSearchResultEntry} from "../../types/d
 //       instead, this should use a worker-unique ID (which, for now, is the DB name)
 export default class SearchResultsHolder {
     currentResults: Map<DBIdentifier, AnnotatedPerDictResults> = new Map();
-    numResults: number = 0;
+    numResults = 0;
 
     // NOTE: this just plops a "per-dict results" object in at the noted db. In the future, results should just be added directly to a large list, or to the list per-dict if that's still important
     addResults(res: AnnotatedPerDictResults): this {
@@ -26,10 +26,10 @@ export default class SearchResultsHolder {
     }
 
     getAllResults(): AnnotatedSearchResultEntry[] {
-        let allPerDictRes = Array.from(this.currentResults.values()).filter(typeGuard) as AnnotatedPerDictResults[];
+        const allPerDictRes = Array.from(this.currentResults.values()).filter(typeGuard) as AnnotatedPerDictResults[];
 
         // NOTE: this could be cached, and only updated/sorted on add.
-        let entries: AnnotatedSearchResultEntry[] = [];
+        const entries: AnnotatedSearchResultEntry[] = [];
 
         // Flatten out all results
         allPerDictRes.forEach((perDict: AnnotatedPerDictResults) => {

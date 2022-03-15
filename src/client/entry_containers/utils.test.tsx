@@ -17,7 +17,7 @@ const fakeAreaMap: AreaNode<FakeDisplayArea, FakeDisplayType> = area("top", [
     area("2", ["title"]),
 ]);
 
-test('test insertion', () => {
+test('insertion', () => {
     const treeHandler = new LocationTreeHandler(FAKE_PREFIX, fakeAreaMap);
     const tree = treeHandler.generateEmptyTree();
     treeHandler.insertInto(tree, "title", "FAKE_TITLE");
@@ -28,7 +28,7 @@ test('test insertion', () => {
     //treeHandler.getAsNestedDivs(tree);
 });
 
-test('test raw array mode', () => {
+test('raw array mode', () => {
     const treeHandler = new LocationTreeHandler<FakeDisplayArea, FakeDisplayType, string>(FAKE_PREFIX, fakeAreaMap);
     const tree = treeHandler.generateEmptyTree();
     treeHandler.insertInto(tree, "title", "FAKE_TITLE");
@@ -68,7 +68,7 @@ test('test raw array mode', () => {
     );
 });
 
-test('test divs mode', () => {
+test('divs mode', () => {
     const treeHandler = new LocationTreeHandler<FakeDisplayArea, FakeDisplayType, string>(FAKE_PREFIX, fakeAreaMap);
     const tree = treeHandler.generateEmptyTree();
     treeHandler.insertInto(tree, "title", "FAKE_TITLE");

@@ -84,8 +84,13 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "ignorePatterns": ["build/"]
   },
+  "toAdd": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended"
+  ],
   "browserslist": {
     "production": [
       "defaults"

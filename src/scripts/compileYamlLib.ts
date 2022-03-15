@@ -254,7 +254,7 @@ async function genLoadFinalConfigAttemptINTERNAL(opts: GLFCOpts): Promise<any> {
         ? undefined :
         await rawParseBuildYaml("builds/", buildID);
 
-    let appIDsOrAll: AppIDListOrAll = appIDsOverride ??
+    const appIDsOrAll: AppIDListOrAll = appIDsOverride ??
         buildConfig?.apps ??
         rawdef.build.config.apps;
 

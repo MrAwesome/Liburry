@@ -27,9 +27,6 @@ export class ChhaTaigiPlayground extends React.Component<ChhaTaigiPlaygroundProp
         }
     }
 
-    componentDidMount() {
-    }
-
     render() {
         const output = this.state.output;
         return <div>{output}</div>;

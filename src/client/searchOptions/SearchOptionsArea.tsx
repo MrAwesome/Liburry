@@ -15,7 +15,7 @@ type SOAProps = {
     closeSearchOptionsArea: () => void,
 };
 
-export default class SearchOptionsArea extends React.Component<SOAProps, {}> {
+export default class SearchOptionsArea extends React.Component<SOAProps, Record<string, never>> {
     appSelector: React.RefObject<AppSelector> = React.createRef();
 
     render() {

@@ -129,7 +129,7 @@ export default class QueryStringParser {
     }
 
     parse(): OptionsChangeableByUser {
-        let options = new OptionsChangeableByUser();
+        const options = new OptionsChangeableByUser();
         const parsed = this.parseInternal();
         const query = parsed[QUERY];
         const searcher = parsed[SEARCHER];

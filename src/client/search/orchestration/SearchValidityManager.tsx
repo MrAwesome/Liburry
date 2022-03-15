@@ -4,8 +4,8 @@ import {DBIdentifier} from "../../configHandler/zodConfigTypes";
 import {mod} from "../../utils";
 
 export class SearchContext {
-    query: string = "";
-    invalidated: boolean = false;
+    query = "";
+    invalidated = false;
     retries: Map<DBIdentifier, number> = new Map();
     completionStatus: Map<DBIdentifier, boolean> = new Map();
 
@@ -31,7 +31,7 @@ export class SearchContext {
     }
 
     getCompletedAndTotal(): [completed: number, total: number] {
-        let totalDBs = this.expectedNumberOfDBs;
+        const totalDBs = this.expectedNumberOfDBs;
         let completedDBs = 0;
         this.completionStatus.forEach((done, _name) => {
             if (done) {
@@ -44,19 +44,19 @@ export class SearchContext {
 }
 
 export default class SearchValidityManager {
-    private bufLen: number = 10;
+    private bufLen = 10;
     private searches: Array<SearchContext>;
     private console: StubConsole;
 
     constructor(
         debug: boolean,
-        expectedNumberOfDBs: number = 0,
+        expectedNumberOfDBs = 0,
     ) {
         this.console = getDebugConsole(debug);
         this.searches = Array.from({length: this.bufLen}).map((_, i) => new SearchContext(i, expectedNumberOfDBs));
     }
 
-    initialSearchID: number = 0;
+    initialSearchID = 0;
     currentSearchID: number = this.initialSearchID;
 
     getSearch(searchID: number): SearchContext {

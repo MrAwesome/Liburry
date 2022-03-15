@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/ban-types
 type TypeEqualsWrapped<T> = T extends infer R & {}
     ? {
           [P in keyof R]: R[P]

@@ -23,7 +23,7 @@ export function runningInProduction() {
 
 export function getProtecc() {
     return (runningInJest() || runningInProduction())
-            ? (f: Function) => f()
+            ? (f: () => void) => f()
             : setTimeout;
 }
 

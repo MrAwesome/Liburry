@@ -76,12 +76,12 @@ export class OngoingSearch {
     searchPromise?: CancelablePromise<any>;
     parsePromise?: CancelablePromise<PerDictResultsRaw | SearchFailure>;
     completed: boolean;
-    wasCanceled: boolean = false;
+    wasCanceled = false;
     console: StubConsole;
 
     constructor(
         dbIdentifier: DBIdentifier,
-        query: string = "",
+        query = "",
         debug: boolean,
         searchPromise?: CancelablePromise<any>,
         parsePromise?: CancelablePromise<PerDictResultsRaw | SearchFailure>,
