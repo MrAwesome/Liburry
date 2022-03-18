@@ -1,5 +1,5 @@
 # About Liburry
 
-This website is powered by open source technology. React, Jest, and Typescript in particular have been crucial to its development.
+Liburry is a framework for generating client-side search apps which are available in the browser.
 
-The code can be viewed here: <${REPO_LINK}>
+It is entirely free, entirely open source, and is built on open source technology. The code can be viewed here: <${REPO_LINK}>
