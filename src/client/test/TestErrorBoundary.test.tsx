@@ -34,9 +34,7 @@ test('ensure error boundary fires', async () => {
 test('check that app loads', async () => {
     const configHandler = {genLoadFinalConfig: () => genLoadFinalConfigWILLTHROW({buildID: "test/basic"})}
     const app = <MuhErrorBoundary>
-        <ChhaTaigiLoader 
-            configHandler={configHandler} 
-        />
+        <ChhaTaigiLoader configHandler={configHandler} />
     </MuhErrorBoundary>
 
     render(app,

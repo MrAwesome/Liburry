@@ -1,5 +1,6 @@
 import {z} from '@mrawesome/zod';
-import {BuildID, token} from './configHandler/zodConfigTypes';
+import type {BuildID} from './configHandler/zodConfigTypes';
+import {token} from './configHandler/zodUtils';
 
 // TODO: default to an app with help messages / docs?
 const DEFAULT_FALLBACK_APP = "taigi.us";

@@ -3,23 +3,23 @@ links:
     mode: "home"
     displayNames:
       eng_us: "Home"
-      tw_poj: "Chú-Phiⁿ" #?
-      tcn_tw: "主頁"
+      hok_tw_poj: "Chú-Phiⁿ" #?
+      mand_tw: "主頁"
   about:
     mode: "markdown"
     displayNames:
       eng_us: "About"
-      tw_poj: "Sìn-Sek" #?
-      tcn_tw: "信息" #?
+      hok_tw_poj: "Sìn-Sek" #?
+      mand_tw: "信息" #?
   contact:
     mode: "markdown"
     displayNames:
       eng_us: "Contact"
-      tcn_tw: "連接" #?
-      tw_poj: "Liân-Chiap" #?
+      mand_tw: "連接" #?
+      hok_tw_poj: "Liân-Chiap" #?
   settings:
     mode: "settings"
     displayNames:
       eng_us: "Settings"
-      tcn_tw: "???????" #?
-      tw_poj: "???????" #?
+      mand_tw: "???????" #?
+      hok_tw_poj: "???????" #?

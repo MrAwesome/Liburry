@@ -8,107 +8,9 @@ import {z} from "@mrawesome/zod";
 import {getRecordEntries, noop, reflectRecord, runningInJest} from "../utils";
 import {fontConfigSchema} from "./zodFontConfigTypes";
 import {compileExpression as filtrexCompile} from "filtrex";
-
-// What counts as a valid "token" - app names, dialect names, etc all will be validated against this.
-// Deliberately restrictive and ASCII-centric, for simplicity of parsing/typing.
-// Tokens should never be displayed to users (everything which has a token should also have a "displayName"
-// if it needs one), so this only affects i18n for programmers.
-const BASIC_TOKEN_REGEX = /^[a-zA-Z0-9_/]+$/;
-const FILENAME_AND_DIRECTORY_SAFE_REGEX = /^[a-zA-Z0-9_/.]+$/;
-const LOCAL_FILENAME_AND_DIRECTORY_SAFE_REGEX = /^\/[a-zA-Z0-9_/.]+$/;
-
-// Token Types
-// NOTE: all of this type-glop is just to allow us to define the keys once while still being able to enforce the types of the values
-type TokenMatcher = Readonly<[RegExp, string] | null>;
-type TokenList<T extends object> = {[key in keyof T]: TokenMatcher}
-const tlist = <O extends object>(o: TokenList<O>): TokenList<O> => o;
-export const tokenMatchers = tlist({
-    // NOTE: APP_ID could be more permissive, but absolutely must not contain commas.
-    APP_ID: [FILENAME_AND_DIRECTORY_SAFE_REGEX, "App IDs must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
-    BUILD_ID: [BASIC_TOKEN_REGEX, "Build IDs must contain only ASCII letters, numbers, and underscores."],
-    DIALECT_ID: [BASIC_TOKEN_REGEX, "Dialect IDs must contain only ASCII letters, numbers, and underscores."],
-    PAGE_ID: [BASIC_TOKEN_REGEX, "Page IDs must contain only ASCII letters, numbers, and underscores."],
-    FILENAME: [FILENAME_AND_DIRECTORY_SAFE_REGEX, "Filenames must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
-    LOCAL_FILENAME: [LOCAL_FILENAME_AND_DIRECTORY_SAFE_REGEX, "Local filenames must begin with a '/' and must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
-    DB_ID: null,
-    SUBAPP_ID: null,
-    FIELD_ID: null,
-    VIEW_ID: null,
-    // TODO: does the directory-walking function need to use this, or can we just rely on inferred appname?
-} as const);
-export type LiburryTokenTypes = keyof typeof tokenMatchers;
-
-export const liburryCustomErrorCodes = [
-    "invalid_subapp_name_in_edbs",
-    "enableddbs_dict_has_no_subapps",
-    "dbconfig_name_not_valid",
-    "dbname_needs_config",
-    "invalid_view_for_db",
-    "view_set_for_db_with_no_views",
-    "view_not_set_for_db_in_subapp",
-    "edbs_is_list_but_views_defined_list",
-    "enabled_dbname_not_valid_array",
-    "enabled_dbname_not_valid_views",
-    "unknown_field_in_behavior_list",
-    "primarykey_known_field",
-    "remote_files_https",
-    "local_file_absolute_path",
-    "defaultsubapp_subapps_both_or_neither",
-    "defaultsubapp_defined",
-    "build_defaultapp_defined",
-] as const;
-
-export type LiburryZodCustomTestingCode = (typeof liburryCustomErrorCodes)[number];
-
-export type LiburryZodCustomIssue = z.ZodIssue & {
-    _liburryCode: LiburryZodCustomTestingCode,
-}
-
-////// Utilities /////////////////////////////
-function issue(ctx: z.RefinementCtx, _liburryCode: LiburryZodCustomTestingCode, message: string) {
-    ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message,
-        // Add our own custom code for tests:
-        // @ts-ignore
-        _liburryCode,
-    });
-}
-
-// NOTE: this can be made to validate keys by using .refine and Object.keys. However, everywhere where a token
-// is used as a key, we're defining
-function realRecord<V extends z.ZodTypeAny>(val: V) {
-    return z.record(val.optional());
-}
-
-function strictObject<T extends z.ZodRawShape>(obj: T): z.ZodObject<T, "strict"> {
-    return z.object(obj).strict();
-}
-
-function tokenArray(tt: LiburryTokenTypes): z.ZodArray<z.ZodString, "atleastone"> {
-    return z.array(token(tt)).nonempty();
-}
-
-function anyString(): z.ZodString {
-    return z.string().min(1);
-}
-
-export function token(tt: LiburryTokenTypes): z.ZodString {
-    return matchToken(tt);
-}
-
-function matchToken(tt: LiburryTokenTypes): z.ZodString {
-    const retStr = anyString();
-    const matcher = tokenMatchers[tt];
-    if (matcher === null) {
-        return retStr;
-    } else {
-        const [regex, explanation] = matcher;
-        return retStr.regex(regex, `[${tt}]: ${explanation}`);
-    }
-}
-//////////////////////////////////////////////
-
+import {anyString, realRecord, token, strictObject, tokenArray} from "./zodUtils";
+import {rawLangConfigSchema} from "./zodLangConfigTypes";
+import {issue} from "./zodIssue";
 
 const nonDefaultAppID = token("APP_ID").refine((s) => s !== "default" && s !== "all");
 const nonDefaultBuildID = token("BUILD_ID").refine((s) => s !== "default" && s !== "all");
@@ -173,7 +75,7 @@ export const rawSubAppConfigSchema = strictObject({
 });
 export type RawSubAppConfig = z.infer<typeof rawSubAppConfigSchema>;
 
-const subAppsSchema = realRecord(rawSubAppConfigSchema).optional();
+const subAppsSchema = realRecord(token("SUBAPP_ID"), rawSubAppConfigSchema).optional();
 export type SubAppsMapping = z.infer<typeof subAppsSchema>;
 
 export const rawAppConfigSchema = strictObject({
@@ -196,12 +98,6 @@ export const rawAppConfigSchema = strictObject({
         }
     });
 export type RawAppConfig = z.infer<typeof rawAppConfigSchema>;
-
-export const rawDialectSchema = strictObject({
-    displayName: anyString(),
-    displayNamesInOtherDialects: realRecord(anyString()).optional(),
-});
-export type RawDialect = z.infer<typeof rawDialectSchema>;
 
 export const rawDBLoadInfoSchema = strictObject({
     localCSV: token("FILENAME").optional(),
@@ -272,15 +168,11 @@ export const rawDictionaryFieldDisplayTypeSchema = z.union([
 ]);
 export type RawDictionaryFieldDisplayType = z.infer<typeof rawDictionaryFieldDisplayTypeSchema>;
 
-export const rawLangConfigSchema = strictObject({
-    dialects: realRecord(rawDialectSchema),
-});
-export type RawLangConfig = z.infer<typeof rawLangConfigSchema>;
-
 export const rawMenuLinksSchema = realRecord(
+    token("PAGE_ID"),
     strictObject({
         mode: rawMenuLinkModeSchema,
-        displayNames: realRecord(anyString()),
+        displayNames: realRecord(null, anyString()),
     })
 );
 export type RawMenuLinks = z.infer<typeof rawMenuLinksSchema>;
@@ -318,7 +210,7 @@ export const rawMenuConfigSchema = strictObject({
 });
 export type RawMenuConfig = z.infer<typeof rawMenuConfigSchema>;
 
-const fieldsSchema = realRecord(rawFieldMetadata)
+const fieldsSchema = realRecord(token("FIELD_ID"), rawFieldMetadata)
     // Reflect the name of each field as a "fieldName" so that it's accessible to us in filters.
     //
     .transform((fields) => reflectRecord("fieldName", fields))
@@ -365,7 +257,7 @@ function filterFields(filterOrFieldNames: FieldFilter | [string, ...string[]], f
 // for *any* page, using ${TOK_NAME} will load TOK_NAME through the language-aware token-loading system (user-selected lang -> eng_us -> first_defined)
 // at zod-time, do a check that all referenced tokens are actually present in the system
 const rawDBConfigSchemaIncomplete = strictObject({
-    displayName: realRecord(anyString())
+    displayNames: realRecord(token("DIALECT_ID"), anyString())
         .describe("Mapping of DialectID to the DB's name in that language."),
     source: anyString().url()
         .describe("Human-useful URL pointing to where the data source and its licensing information can be viewed."),
@@ -386,7 +278,7 @@ const rawDBConfigSchemaIncomplete = strictObject({
     fields: fieldsSchema,
 });
 const rawDBConfigSchema = z.union([
-    rawDBConfigSchemaIncomplete.merge(strictObject({views: realRecord(fieldBehaviorListsPreFilterSchema)})),
+    rawDBConfigSchemaIncomplete.merge(strictObject({views: realRecord(token("VIEW_ID"), fieldBehaviorListsPreFilterSchema)})),
     rawDBConfigSchemaIncomplete.merge(fieldBehaviorListsPreFilterSchema)
 ])
     .transform((dbConfig) => {
@@ -444,7 +336,7 @@ const rawDBConfigSchema = z.union([
     });
 export type RawDBConfig = z.infer<typeof rawDBConfigSchema>;
 
-const dbToViewMappingSchema = realRecord(token("VIEW_ID").nullable()).refine((rec) => Object.keys(rec).length === 1);
+const dbToViewMappingSchema = realRecord(token("DB_ID"), token("VIEW_ID").nullable()).refine((rec) => Object.keys(rec).length === 1);
 const enabledDBsByView = z.array(token("DB_ID").or(dbToViewMappingSchema)).nonempty();
 
 const dbListSchema = tokenArray("DB_ID")
@@ -454,7 +346,7 @@ export type RawDBList = z.infer<typeof dbListSchema>;
 const enabledDBsListSchema = tokenArray("DB_ID")
     .describe("List of DBIDs which are currently enabled for this app and all of its subapps. If not present, it's assumed that all DBs will be enabled.");
 
-const enabledDBsBySubAppSchema = realRecord(enabledDBsByView);
+const enabledDBsBySubAppSchema = realRecord(token("SUBAPP_ID"), enabledDBsByView);
 // TODO: describe
 
 export type RawEnabledDBsBySubApp = z.infer<typeof enabledDBsBySubAppSchema>;
@@ -462,7 +354,7 @@ export type RawEnabledDBsBySubApp = z.infer<typeof enabledDBsBySubAppSchema>;
 const enabledDBsSchema = enabledDBsListSchema.or(enabledDBsBySubAppSchema)
 export type RawEnabledDBs = z.infer<typeof enabledDBsSchema>;
 
-const dbConfigMappingSchema = realRecord(rawDBConfigSchema);
+const dbConfigMappingSchema = realRecord(token("DB_ID"), rawDBConfigSchema);
 export type RawDBConfigMapping = z.infer<typeof dbConfigMappingSchema>;
 
 // TODO: get rid of dbList and just use dbConfigs
@@ -630,7 +522,7 @@ const loadedKnownFileSchema = z.union([
 ]);
 export type LoadedKnownFile = z.infer<typeof loadedKnownFileSchema>;
 
-const allPagesSchema = realRecord(loadedPageSchema);
+const allPagesSchema = realRecord(token("PAGE_ID"), loadedPageSchema);
 
 const defaultAllConfigSchema = rawDefaultLoadedAllConfigSchema;
 const appAllConfigSchema = rawAppLoadedAllConfigSchema.superRefine((appAllConfigs, ctx) => {

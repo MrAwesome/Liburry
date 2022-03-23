@@ -1,11 +1,11 @@
-import {RawDialect} from "../configHandler/zodConfigTypes";
+import {RawDialect} from "../configHandler/zodLangConfigTypes";
 
 export type DialectID = string;
 
 //export type Language =
-//    "english" |
+//    "eng_us" |
 //    "mandarin" |
-//    "tw_poj" |
+//    "hok_tw_poj" |
 //    "tw_kip" |
 //    "tw_taibun_only" |
 //    "tw_taibun_poj" |

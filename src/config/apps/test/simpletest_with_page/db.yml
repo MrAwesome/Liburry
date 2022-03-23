@@ -3,7 +3,7 @@ dbList:
 
 dbConfigs:
   angry:
-    displayName:
+    displayNames:
       eng_us: Angry!
 
     loadInfo:

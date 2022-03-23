@@ -20,40 +20,40 @@ enabledDBs:
 
 dbConfigs:
   TWMOEHakkaDict:
-    displayName:
+    displayNames:
       eng_us: "Taiwan Ministry of Education Hakka Dictionary"
 
     views:
       southern_sixian_view:
         displayableFields:
-          filtrex: 'dialect in ("tcn", "tw_hakka_southern_sixian", "tw_hakka_southern_sixian_pronunciation")'
+          filtrex: 'dialect in ("mand_tw", "tw_hakka_southern_sixian", "tw_hakka_southern_sixian_pronunciation")'
         searchableFields:
-          filtrex: 'dialect in ("tcn", "tw_hakka_southern_sixian", "tw_hakka_southern_sixian_pronunciation")'
+          filtrex: 'dialect in ("mand_tw", "tw_hakka_southern_sixian", "tw_hakka_southern_sixian_pronunciation")'
       sixian_view:
         displayableFields:
-          filtrex: 'dialect in ("tcn", "tw_hakka_sixian", "tw_hakka_sixian_pronunciation")'
+          filtrex: 'dialect in ("mand_tw", "tw_hakka_sixian", "tw_hakka_sixian_pronunciation")'
         searchableFields:
-          filtrex: 'dialect in ("tcn", "tw_hakka_sixian", "tw_hakka_sixian_pronunciation")'
+          filtrex: 'dialect in ("mand_tw", "tw_hakka_sixian", "tw_hakka_sixian_pronunciation")'
       hailu_view:
         displayableFields:
-          filtrex: 'dialect in ("tcn", "tw_hakka_hailu", "tw_hakka_hailu_pronunciation")'
+          filtrex: 'dialect in ("mand_tw", "tw_hakka_hailu", "tw_hakka_hailu_pronunciation")'
         searchableFields:
-          filtrex: 'dialect in ("tcn", "tw_hakka_hailu", "tw_hakka_hailu_pronunciation")'
+          filtrex: 'dialect in ("mand_tw", "tw_hakka_hailu", "tw_hakka_hailu_pronunciation")'
       dapu_view:
         displayableFields:
-          filtrex: 'dialect in ("tcn", "tw_hakka_dapu", "tw_hakka_dapu_pronunciation")'
+          filtrex: 'dialect in ("mand_tw", "tw_hakka_dapu", "tw_hakka_dapu_pronunciation")'
         searchableFields:
-          filtrex: 'dialect in ("tcn", "tw_hakka_dapu", "tw_hakka_dapu_pronunciation")'
+          filtrex: 'dialect in ("mand_tw", "tw_hakka_dapu", "tw_hakka_dapu_pronunciation")'
       raoping_view:
         displayableFields:
-          filtrex: 'dialect in ("tcn", "tw_hakka_raoping", "tw_hakka_raoping_pronunciation")'
+          filtrex: 'dialect in ("mand_tw", "tw_hakka_raoping", "tw_hakka_raoping_pronunciation")'
         searchableFields:
-          filtrex: 'dialect in ("tcn", "tw_hakka_raoping", "tw_hakka_raoping_pronunciation")'
+          filtrex: 'dialect in ("mand_tw", "tw_hakka_raoping", "tw_hakka_raoping_pronunciation")'
       zhaoan_view:
         displayableFields:
-          filtrex: 'dialect in ("tcn", "tw_hakka_zhaoan", "tw_hakka_zhaoan_pronunciation")'
+          filtrex: 'dialect in ("mand_tw", "tw_hakka_zhaoan", "tw_hakka_zhaoan_pronunciation")'
         searchableFields:
-          filtrex: 'dialect in ("tcn", "tw_hakka_zhaoan", "tw_hakka_zhaoan_pronunciation")'
+          filtrex: 'dialect in ("mand_tw", "tw_hakka_zhaoan", "tw_hakka_zhaoan_pronunciation")'
 
     source: "https://hakkadict.moe.edu.tw/"
     license: "CC BY-ND 3.0 TW"
@@ -80,7 +80,7 @@ dbConfigs:
         type:
           dictionary: vocab
         # TODO: is this correct?
-        dialect: tcn
+        dialect: mand_tw
 
       PartOfSpeech:
         type:
@@ -124,7 +124,7 @@ dbConfigs:
       Definition:
         type:
           dictionary: definition
-        dialect: tcn
+        dialect: mand_tw
         delimiterRegex: (?<=。)\s*(?=[0-9])
 
       # Dialect?

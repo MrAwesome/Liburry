@@ -80,7 +80,7 @@ enabledDBs:
 
 dbConfigs:
   ChhoeTaigi_EmbreeTaiengSutian:
-    displayName:
+    displayNames:
       eng_us: Embree
 
     loadInfo:
@@ -92,7 +92,7 @@ dbConfigs:
     views:
       poj:
         displayableFields:
-          filtrex: 'dialect in ("tw_hokkien_poj", "english", "tcn")'
+          filtrex: 'dialect in ("hok_tw_poj", "eng_us", "mand_tw")'
         searchableFields:
           - EngBun
           - HoaBun
@@ -102,7 +102,7 @@ dbConfigs:
 
       kip:
         displayableFields:
-          filtrex: 'dialect in ("tw_hokkien_kip", "english", "tcn")'
+          filtrex: 'dialect in ("hok_tw_kip", "eng_us", "mand_tw")'
         searchableFields:
           - EngBun
           - HoaBun
@@ -119,42 +119,42 @@ dbConfigs:
       PojUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: long
 
       PojNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: long
 
       PojInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: long
 
       KipUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: long
 
       KipNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: long
 
       KipInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: long
 
@@ -166,7 +166,7 @@ dbConfigs:
       NounClassifier:
         type:
           dictionary: measure_word
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: single
         status: sparse
@@ -174,7 +174,7 @@ dbConfigs:
       Reduplication:
         type:
           dictionary: vocab_other
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: med
         status: sparse
@@ -182,19 +182,19 @@ dbConfigs:
       HoaBun:
         type:
           dictionary: definition
-        dialect: tcn
+        dialect: mand_tw
         lengthHint: med
 
       EngBun:
         type:
           dictionary: definition
-        dialect: english
+        dialect: eng_us
         lengthHint: long
 
       Synonym:
         type:
           dictionary: synonym
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: short
         status: sparse
@@ -202,7 +202,7 @@ dbConfigs:
       Confer:
         type:
           dictionary: opposite
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: short
         status: sparse
@@ -212,7 +212,7 @@ dbConfigs:
           dictionary: page_number
 
   ChhoeTaigi_iTaigiHoataiTuichiautian:
-    displayName:
+    displayNames:
       eng_us: iTaigi
 
     loadInfo:
@@ -224,7 +224,7 @@ dbConfigs:
     views:
       poj:
         displayableFields:
-          filtrex: 'dialect in ("tcn", "tw_hokkien_poj", "tw_hokkien_taibun_poj")'
+          filtrex: 'dialect in ("mand_tw", "hok_tw_poj", "tw_hokkien_taibun_poj")'
         searchableFields:
           - HoaBun
           - HanLoTaibunPoj
@@ -234,7 +234,7 @@ dbConfigs:
 
       kip:
         displayableFields:
-          filtrex: 'dialect in ("tcn", "tw_hokkien_kip", "tw_hokkien_taibun_kip")'
+          filtrex: 'dialect in ("mand_tw", "hok_tw_kip", "tw_hokkien_taibun_kip")'
         searchableFields:
           - HoaBun
           - HanLoTaibunKip
@@ -251,42 +251,42 @@ dbConfigs:
       PojUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: long
 
       PojNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: long
 
       PojInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: long
 
       KipUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: long
 
       KipNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: long
 
       KipInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: long
 
@@ -305,9 +305,9 @@ dbConfigs:
       HoaBun:
         type:
           dictionary: definition
-        dialect: tcn
+        dialect: mand_tw
         lengthHint: med
-        notes: Some english in the tcn field.
+        notes: Some eng_us in the mand_tw field.
 
       DataProvidedBy:
         type:
@@ -315,7 +315,7 @@ dbConfigs:
         lengthHint: short
 
   ChhoeTaigi_KamJitian:
-    displayName:
+    displayNames:
       eng_us: KamJitian
 
     loadInfo:
@@ -327,7 +327,7 @@ dbConfigs:
     views:
       poj:
         displayableFields:
-          filtrex: 'dialect in ("tw_hokkien_poj", "tw_hokkien_taibun_poj", "tw_hokkien_taibun_hanji")'
+          filtrex: 'dialect in ("hok_tw_poj", "tw_hokkien_taibun_poj", "tw_hokkien_taibun_hanji")'
         searchableFields:
           - HanLoTaibunPoj
           - HanbunImPojInput
@@ -340,7 +340,7 @@ dbConfigs:
 
       kip:
         displayableFields:
-          filtrex: 'dialect in ("tw_hokkien_kip", "tw_hokkien_taibun_kip", "tw_hokkien_taibun_hanji")'
+          filtrex: 'dialect in ("hok_tw_kip", "tw_hokkien_taibun_kip", "tw_hokkien_taibun_hanji")'
         searchableFields:
           # NOTE: this dict does not have Kip for this field
           - HanLoTaibunPoj
@@ -360,20 +360,20 @@ dbConfigs:
       PojUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         lengthHint: single
         notes: This DB consists entirely of single-character entries.
 
       PojNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         lengthHint: single
 
       PojInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         lengthHint: single
 
       HanLoTaibunPoj:
@@ -386,21 +386,21 @@ dbConfigs:
       HanbunImPojUnicode:
         type:
           dictionary: vocab_other
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: sparse
         lengthHint: single
 
       HanbunImPojInput:
         type:
           dictionary: input_other
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: sparse
         lengthHint: single
 
       KaisoehPoj:
         type:
           dictionary: definition
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         lengthHint: long
 
       KaisoehHanLoPoj:
@@ -412,39 +412,39 @@ dbConfigs:
       KipUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         lengthHint: single
 
       KipNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         lengthHint: single
 
       KipInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         lengthHint: single
 
       HanbunImKipUnicode:
         type:
           dictionary: vocab_other
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         status: sparse
         lengthHint: single
 
       HanbunImKipInput:
         type:
           dictionary: input_other
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         status: sparse
         lengthHint: single
 
       KaisoehKip:
         type:
           dictionary: definition
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         lengthHint: long
 
       PageNumber:
@@ -452,7 +452,7 @@ dbConfigs:
           dictionary: page_number
 
   ChhoeTaigi_KauiokpooTaigiSutian:
-    displayName:
+    displayNames:
       eng_us: Kauiokpoo
 
     loadInfo:
@@ -466,7 +466,7 @@ dbConfigs:
     views:
       poj:
         displayableFields:
-          filtrex: 'dialect in ("tcn", "tw_hokkien_poj", "tw_hokkien_taibun_poj", "tw_hokkien_taibun_hanji")'
+          filtrex: 'dialect in ("mand_tw", "hok_tw_poj", "tw_hokkien_taibun_poj", "tw_hokkien_taibun_hanji")'
         searchableFields:
           - HoaBun
           - PojInput
@@ -475,7 +475,7 @@ dbConfigs:
 
       kip:
         displayableFields:
-          filtrex: 'dialect in ("tcn", "tw_hokkien_kip", "tw_hokkien_taibun_kip", "tw_hokkien_taibun_hanji")'
+          filtrex: 'dialect in ("mand_tw", "hok_tw_kip", "tw_hokkien_taibun_kip", "tw_hokkien_taibun_hanji")'
         searchableFields:
           - HoaBun
           - KipInput
@@ -491,21 +491,21 @@ dbConfigs:
       PojUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: med
 
       PojNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: med
 
       PojUnicodeOthers:
         type:
           dictionary: vocab_other
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: med
         status: sparse
@@ -513,49 +513,49 @@ dbConfigs:
       PojInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: med
 
       PojInputOthers:
         type:
           dictionary: input_other
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: med
 
       KipUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: med
 
       KipNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: med
 
       KipUnicodeOthers:
         type:
           dictionary: vocab_other
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: med
 
       KipInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: med
 
       KipInputOthers:
         type:
           dictionary: input_other
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: med
         status: sparse
@@ -578,23 +578,23 @@ dbConfigs:
       KipDictWordProperty:
         type:
           dictionary: class
-        dialect: tcn
+        dialect: mand_tw
         lengthHint: short
         status: sparse
 
       HoaBun:
         type:
           dictionary: definition
-        dialect: tcn
+        dialect: mand_tw
         lengthHint: med
 
       KaisoehHanLoPoj:
         type:
           dictionary: definition
         dialect:
-          - tw_hokkien_poj
+          - hok_tw_poj
           - tw_hokkien_taibun_poj
-          - tcn
+          - mand_tw
         delimiterRegex: (?=[0-9]\.[【 ])
         lengthHint: very_long
 
@@ -602,9 +602,9 @@ dbConfigs:
         type:
           dictionary: definition
         dialect:
-          - tw_hokkien_kip
+          - hok_tw_kip
           - tw_hokkien_taibun_kip
-          - tcn
+          - mand_tw
         delimiterRegex: (?=[0-9]\.[【 ])
         lengthHint: very_long
 
@@ -612,9 +612,9 @@ dbConfigs:
         type:
           dictionary: vocab_other
         dialect:
-          - tw_hokkien_kip
+          - hok_tw_kip
           - tw_hokkien_taibun_kip
-          - tcn
+          - mand_tw
         delimiter: "。"
         lengthHint: very_long
         status: sparse
@@ -622,7 +622,7 @@ dbConfigs:
       Synonym:
         type:
           dictionary: synonym
-        dialect: tcn
+        dialect: mand_tw
         lengthHint: med
         status: sparse
         notes: Delimiter could be 、
@@ -630,13 +630,13 @@ dbConfigs:
       Opposite:
         type:
           dictionary: opposite
-        dialect: tcn
+        dialect: mand_tw
         lengthHint: med
         status: sparse
         notes: Delimiter could be 、
 
   ChhoeTaigi_MaryknollTaiengSutian:
-    displayName:
+    displayNames:
       eng_us: Maryknoll
 
     loadInfo:
@@ -648,7 +648,7 @@ dbConfigs:
     views:
       poj:
         displayableFields:
-          filtrex: 'dialect in ("tw_hokkien_poj", "english", "tcn")'
+          filtrex: 'dialect in ("hok_tw_poj", "eng_us", "mand_tw")'
         searchableFields:
           - EngBun
           - HoaBun
@@ -658,7 +658,7 @@ dbConfigs:
 
       kip:
         displayableFields:
-          filtrex: 'dialect in ("tw_hokkien_kip", "english", "tcn")'
+          filtrex: 'dialect in ("hok_tw_kip", "eng_us", "mand_tw")'
         searchableFields:
           - EngBun
           - HoaBun
@@ -675,55 +675,55 @@ dbConfigs:
       PojUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: INCONSISTENT
         lengthHint: long
 
       PojNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: INCONSISTENT
         lengthHint: long
 
       PojInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: INCONSISTENT
         lengthHint: long
 
       KipUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: INCONSISTENT
         lengthHint: long
 
       KipNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: INCONSISTENT
         lengthHint: long
 
       KipInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: INCONSISTENT
         lengthHint: long
 
       HoaBun:
         type:
           dictionary: definition
-        dialect: tcn
+        dialect: mand_tw
         lengthHint: long
 
       EngBun:
         type:
           dictionary: definition
-        dialect: english
+        dialect: eng_us
         lengthHint: long
 
       PageNumber:
@@ -732,7 +732,7 @@ dbConfigs:
         status: blank
 
   ChhoeTaigi_TaihoaSoanntengTuichiautian:
-    displayName:
+    displayNames:
       eng_us: TaihoaSoannteng
 
     loadInfo:
@@ -745,7 +745,7 @@ dbConfigs:
     views:
       poj:
         displayableFields:
-          filtrex: 'dialect in ("tcn", "tw_hokkien_poj", "tw_hokkien_taibun_poj")'
+          filtrex: 'dialect in ("mand_tw", "hok_tw_poj", "tw_hokkien_taibun_poj")'
         searchableFields:
           - HoaBun
           - PojInput
@@ -754,7 +754,7 @@ dbConfigs:
 
       kip:
         displayableFields:
-          filtrex: 'dialect in ("tcn", "tw_hokkien_kip", "tw_hokkien_taibun_kip")'
+          filtrex: 'dialect in ("mand_tw", "hok_tw_kip", "tw_hokkien_taibun_kip")'
         searchableFields:
           - HoaBun
           - KipInput
@@ -770,21 +770,21 @@ dbConfigs:
       PojUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: short
 
       PojNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: short
 
       PojUnicodeOthers:
         type:
           dictionary: vocab_other
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         status: sparse
         notes: No examples of split, but assuming /.
@@ -792,13 +792,13 @@ dbConfigs:
       PojInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
 
       PojInputOthers:
         type:
           dictionary: input_other
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         status: sparse
         notes: No examples of split, but assuming /.
@@ -811,19 +811,19 @@ dbConfigs:
       KipUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
 
       KipNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
 
       KipUnicodeOthers:
         type:
           dictionary: vocab_other
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         status: sparse
         notes: No examples of split, but assuming /.
@@ -831,13 +831,13 @@ dbConfigs:
       KipInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
 
       KipInputOthers:
         type:
           dictionary: input_other
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         status: sparse
         notes: No examples of split, but assuming /.
@@ -850,10 +850,10 @@ dbConfigs:
       HoaBun:
         type:
           dictionary: definition
-        dialect: tcn
+        dialect: mand_tw
 
   ChhoeTaigi_TaijitToaSutian:
-    displayName:
+    displayNames:
       eng_us: TaijitToaSutian
 
     loadInfo:
@@ -865,7 +865,7 @@ dbConfigs:
     views:
       poj:
         displayableFields:
-          filtrex: 'dialect in ("tw_hokkien_poj", "tw_hokkien_taibun_poj")'
+          filtrex: 'dialect in ("hok_tw_poj", "tw_hokkien_taibun_poj")'
         searchableFields:
           - HanLoTaibunPoj
           - PojInput
@@ -874,7 +874,7 @@ dbConfigs:
 
       kip:
         displayableFields:
-          filtrex: 'dialect in ("tw_hokkien_kip", "tw_hokkien_taibun_kip")'
+          filtrex: 'dialect in ("hok_tw_kip", "tw_hokkien_taibun_kip")'
         searchableFields:
           - HanLoTaibunKip
           - KipInput
@@ -890,21 +890,21 @@ dbConfigs:
       PojUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: med
 
       PojNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: med
 
       PojUnicodeOthers:
         type:
           dictionary: vocab_other
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: med
         status: sparse
@@ -913,14 +913,14 @@ dbConfigs:
       PojInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: med
 
       PojInputOthers:
         type:
           dictionary: input_other
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: med
         status: sparse
@@ -955,21 +955,21 @@ dbConfigs:
       KipUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: med
 
       KipNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: med
 
       KipUnicodeOthers:
         type:
           dictionary: vocab_other
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: med
         status: sparse
@@ -977,14 +977,14 @@ dbConfigs:
       KipInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: med
 
       KipInputOthers:
         type:
           dictionary: input_other
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         delimiter: /
         lengthHint: med
         status: sparse
@@ -1024,7 +1024,7 @@ dbConfigs:
         status: empty
 
   ChhoeTaigi_TaioanPehoeKichhooGiku:
-    displayName:
+    displayNames:
       eng_us: Giku
 
     loadInfo:
@@ -1036,7 +1036,7 @@ dbConfigs:
     views:
       poj:
         displayableFields:
-          filtrex: 'dialect in ("tw_hokkien_poj", "english", "tcn")'
+          filtrex: 'dialect in ("hok_tw_poj", "eng_us", "mand_tw")'
         searchableFields:
           - EngBun
           - HoaBun
@@ -1046,7 +1046,7 @@ dbConfigs:
 
       kip:
         displayableFields:
-          filtrex: 'dialect in ("tw_hokkien_kip", "english", "tcn")'
+          filtrex: 'dialect in ("hok_tw_kip", "eng_us", "mand_tw")'
         searchableFields:
           - EngBun
           - HoaBun
@@ -1063,90 +1063,90 @@ dbConfigs:
       PojUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         lengthHint: med
 
       PojNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         lengthHint: med
 
       PojUnicodeOthers:
         type:
           dictionary: vocab_other
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         lengthHint: med
 
       PojInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         lengthHint: med
 
       PojInputOthers:
         type:
           dictionary: input_other
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         lengthHint: med
 
       KipUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         lengthHint: med
 
       KipNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         lengthHint: med
 
       KipUnicodeOthers:
         type:
           dictionary: vocab_other
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         lengthHint: med
 
       KipInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         lengthHint: med
 
       KipInputOthers:
         type:
           dictionary: input_other
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         lengthHint: med
 
       HoaBun:
         type:
           dictionary: definition
-        dialect: tcn
+        dialect: mand_tw
         lengthHint: med
         status: sparse
-        notes: Some entries have english_soatbeng but not tcn or english.
+        notes: Some entries have english_soatbeng but not mand_tw or english.
 
       EngBun:
         type:
           dictionary: definition
-        dialect: english
+        dialect: eng_us
         lengthHint: long
         status: sparse
-        notes: Some entries have KaisoehEngbun but not tcn or english.
+        notes: Some entries have KaisoehEngbun but not mand_tw or english.
 
       KaisoehEngbun:
         type:
           dictionary: long_definition
-        dialect: english
+        dialect: eng_us
         lengthHint: very_long
         status: sparse
 
       NounClassifier:
         type:
           dictionary: measure_word
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: short
         status: sparse
@@ -1154,7 +1154,7 @@ dbConfigs:
       LesuPoj:
         type:
           dictionary: example_phrase
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: long
         status: sparse
@@ -1163,7 +1163,7 @@ dbConfigs:
       Opposite:
         type:
           dictionary: opposite
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: short
         status: sparse
@@ -1171,7 +1171,7 @@ dbConfigs:
       LekuPoj:
         type:
           dictionary: matched_example
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         delimiter: /
         lengthHint: long
         status: sparse
@@ -1180,7 +1180,7 @@ dbConfigs:
       LekuEngbun:
         type:
           dictionary: matched_example
-        dialect: english
+        dialect: eng_us
         delimiter: \
         lengthHint: long
         status: sparse
@@ -1189,16 +1189,16 @@ dbConfigs:
       LekuHoabun:
         type:
           dictionary: matched_example
-        dialect: tcn
+        dialect: mand_tw
         delimiter: /
         lengthHint: long
         status: sparse
-        notes: "NOTE: Some tcn/poj/english definitions have the incorrect language."
+        notes: "NOTE: Some mand_tw/poj/english definitions have the incorrect language."
 
       Confer:
         type:
           dictionary: base_phrase
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         lengthHint: short
         status: sparse
         notes: "NOTE: some parens."
@@ -1208,7 +1208,7 @@ dbConfigs:
           dictionary: page_number
 
   ChhoeTaigi_TaioanSitbutMialui:
-    displayName:
+    displayNames:
       eng_us: Mialui
 
     loadInfo:
@@ -1220,7 +1220,7 @@ dbConfigs:
     views:
       poj:
         displayableFields:
-          filtrex: 'dialect in ("tw_hokkien_poj", "tw_hokkien_taibun_hanji")'
+          filtrex: 'dialect in ("hok_tw_poj", "tw_hokkien_taibun_hanji")'
         searchableFields:
           - HanLoTaibunPoj
           - PojInput
@@ -1229,7 +1229,7 @@ dbConfigs:
 
       kip:
         displayableFields:
-          filtrex: 'dialect in ("tw_hokkien_kip", "tw_hokkien_taibun_hanji")'
+          filtrex: 'dialect in ("hok_tw_kip", "tw_hokkien_taibun_hanji")'
         searchableFields:
           # NOTE: this dict does not have Kip for this field
           - HanLoTaibunPoj
@@ -1246,37 +1246,37 @@ dbConfigs:
       PojUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         lengthHint: short
 
       PojNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         lengthHint: short
 
       PojInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_poj
+        dialect: hok_tw_poj
         lengthHint: short
 
       KipUnicode:
         type:
           dictionary: vocab
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         lengthHint: short
 
       KipNormalized:
         type:
           dictionary: normalized
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         lengthHint: short
 
       KipInput:
         type:
           dictionary: input
-        dialect: tw_hokkien_kip
+        dialect: hok_tw_kip
         lengthHint: short
 
       HanLoTaibunPoj:

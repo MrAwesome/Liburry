@@ -52,7 +52,7 @@ dialects:
 # const TW_POJ: RawLanguage = {
 #     langID: "tw_poj",
 #     displayNames: {
-#         english: "Taiwanese (POJ)",
+#         eng_us: "Taiwanese (POJ)",
 #         tw_poj: "Pe̍h-ōe-jī",
 #         tw_kip: "Pe̍h-uē-jī",
 #         mandarin: "白話字",
@@ -63,9 +63,9 @@ dialects:
 # };
 #
 # const ENGLISH: RawLanguage = {
-#     langID: "english",
+#     langID: "eng_us",
 #     displayNames: {
-#         english: "English",
+#         eng_us: "English",
 #         tw_poj: "Eng-gí",
 #         tw_kip: "Ing-gí",
 #         mandarin: "英語",

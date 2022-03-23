@@ -1,6 +1,6 @@
 import Dialect from "./dialect";
-import type {RawLangConfig} from "../configHandler/zodConfigTypes";
 import {getRecordEntries} from "../utils";
+import {RawLangConfig} from "../configHandler/zodLangConfigTypes";
 
 export default class LanguageHandler {
     private dialects: Dialect[];

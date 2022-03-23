@@ -1,7 +1,9 @@
-import {AppID, liburryCustomErrorCodes, LiburryTokenTypes, LiburryZodCustomIssue, LiburryZodCustomTestingCode, RawEnabledDBs, RawEnabledDBsBySubApp, SubAppsMapping, tokenMatchers} from '../configHandler/zodConfigTypes';
+import {AppID, RawEnabledDBs, RawEnabledDBsBySubApp, SubAppsMapping} from '../configHandler/zodConfigTypes';
 import {genLoadFinalConfigSafe, genLoadFinalConfigWILLTHROW} from '../../scripts/compileYamlLib';
 import {getRecordEntries} from '../utils';
 import {z} from '@mrawesome/zod';
+import {LiburryTokenTypes, tokenMatchers} from '../configHandler/zodTokenTypes';
+import {liburryCustomErrorCodes, LiburryZodCustomIssue, LiburryZodCustomTestingCode} from '../configHandler/zodIssue';
 
 test('validate test config', async () => {
     const appID = "test/simpletest";
@@ -14,7 +16,7 @@ test('validate test config', async () => {
     expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbList).toContain("happy");
     expect(Array.isArray(rfc.appConfigs[appID]?.configs.dbConfig.config.enabledDBs)).toBe(true);
     expect(rfc.appConfigs[appID]?.configs.dbConfig.config.enabledDBs).toEqual(rfc.appConfigs[appID]?.configs.dbConfig.config.dbList);
-    expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbConfigs.angry?.displayName.eng_us).toBe("Angry!");
+    expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbConfigs.angry?.displayNames.eng_us).toBe("Angry!");
     expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbConfigs.angry?.primaryKey).toBe("id");
     expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbConfigs.happy?.loadInfo.localCSV).toBe("/db/test/happy.csv");
     expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbConfigs.happy?.fields.slogan?.type?.dictionary).toBe("definition");
@@ -62,7 +64,7 @@ test('validate test config with subapps', async () => {
     expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbList).toContain("angry");
     expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbList).toContain("happy");
     expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbList.length).toBe(2);
-    expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbConfigs.angry?.displayName.eng_us).toBe("Angry!");
+    expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbConfigs.angry?.displayNames.eng_us).toBe("Angry!");
     expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbConfigs.angry?.primaryKey).toBe("id");
     expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbConfigs.happy?.loadInfo.localCSV).toBe("/db/test/happy.csv");
     expect(rfc.appConfigs[appID]?.configs.dbConfig.config.dbConfigs.happy?.fields.slogan?.type?.dictionary).toBe("definition");

@@ -13,7 +13,7 @@ enabledDBs:
 
 dbConfigs:
   angry:
-    displayName:
+    displayNames:
       eng_us: Angry!
 
     loadInfo:
@@ -46,7 +46,7 @@ dbConfigs:
           dictionary: definition
 
   happy:
-    displayName:
+    displayNames:
       eng_us: Happy!
 
     loadInfo:

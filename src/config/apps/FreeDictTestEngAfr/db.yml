@@ -13,7 +13,7 @@ enabledDBs:
 
 dbConfigs:
   eng_afr:
-    displayName:
+    displayNames:
       eng_us: English → Afrikaans
 
     loadInfo:
@@ -47,7 +47,7 @@ dbConfigs:
         delimiter: ❄
 
   afr_eng:
-    displayName:
+    displayNames:
       eng_us: Afrikaans → English
 
     loadInfo:

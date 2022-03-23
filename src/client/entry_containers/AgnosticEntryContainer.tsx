@@ -71,6 +71,7 @@ const agnosticDictionaryAreas: AreaNode<AECDisplayArea, RawDictionaryFieldDispla
     //]),
 ]);
 
+// TODO: rename to DictionaryDisplayDriver?
 // TODO: fix display of "examples" (they either stack with title using inline, or have full width borders with block (will require inserting a container around them)
 // TODO: when pulling in from config file, only include matching display rules
 // TODO: instead, field to display *rule*?

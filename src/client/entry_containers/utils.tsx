@@ -19,6 +19,7 @@ export function area<N, C>(name: N, contents: (C | AreaNode<N, C>)[], displayNam
 type TreeLocationIndex = number[];
 type RecursiveTreeArrayOnly<T> = (T | RecursiveTreeArrayOnly<T>)[]
 
+// TODO: document purpose
 // XXX TODO: creating/populating one of these for every entrycontainer is far too much overhead.
 //           how can you pass one around with a set locationmap / tree, but the tree is empty every time it's used? copy/clear?
 export class LocationTreeHandler<DA extends string, FT extends string, TreeElem> {

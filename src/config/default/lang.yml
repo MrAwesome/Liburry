@@ -1,9 +1,9 @@
 dialects:
-  tw_poj:
+  hok_tw_poj:
     displayName: "Pe̍h-Oē-Jī"
-#    displayNames:
-#      eng_us: "Taiwanese (POJ)"
-#      tw_poj: "Pe̍h-uē-jī"
+    otherDisplayNames:
+      eng_us: "Taiwanese (POJ)"
+      hok_tw_poj: "Pe̍h-uē-jī"
 #    parentGroups:
 #      - taiwanese
 #    tags:
@@ -11,9 +11,9 @@ dialects:
 
   tw_kip:
     displayName: "Tâi-Lô"
-#    displayNames:
-#      eng_us: "Taiwanese (KIP)"
-#      tw_poj: "Pe̍h-uē-jī"
+    otherDisplayNames:
+      eng_us: "Taiwanese (KIP)"
+      hok_tw_poj: "Pe̍h-uē-jī"
 #   parentGroups:
 #     - taiwanese
 #    tags:
@@ -21,11 +21,30 @@ dialects:
 
   eng_us:
     displayName: "English (US)"
-#    displayNames:
-#      tw_poj: "Eng-gí (Bí-kok)"
-#      tw_kip: "Ing-gí (Bí-kok)"
+#    trans:
+#      search: "Search..."
+#    pages:
+#      contact: "Contact AAAAAAAAAAAH"
+#      help: "Help  AAAAAAAAAAAH"
+#      about: "About  AAAAAAAAAAAH"
+#      licences: "Licenses  AAAAAAAAAAAH"
+    otherDisplayNames:
+      hok_tw_poj: "Eng-gí (Bí-kok)"
+      tw_kip: "Ing-gí (Bí-kok)"
 #    parentGroups:
 #      - english
 
-  tcn_tw:
+  mand_tw:
     displayName: "繁體中文（台灣）"
+    otherDisplayNames:
+      eng_us: "Chinese - Mandarin (Traditional)"
+    fallbacks:
+      - mand_cn
+
+  mand_cn:
+    disabled: true
+    displayName: "??????"
+    otherDisplayNames:
+      eng_us: "Chinese - Mandarin (Simplified)"
+    fallbacks:
+      - mand_tw
