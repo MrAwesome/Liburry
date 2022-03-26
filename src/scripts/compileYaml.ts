@@ -7,13 +7,17 @@ import {promisify} from 'util';
 import {ReturnedFinalConfig} from '../client/configHandler/zodConfigTypes';
 import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR, LIBURRY_BUILD, LIBURRY_APPS_OVERRIDE} from '../client/constants';
 import {CACHE_LINE_ENV_VARNAME} from './common';
-import {genPrecacheEntries, genWriteEnvFile, genWriteFinalConfig, getFilesToCache, genIndexHTMLEnvVarPairs, makeEnvFileEntry, genLoadFinalConfigWILLTHROW} from './compileYamlLib';
+import {genPrecacheEntries, genWriteEnvFile, genWriteFinalConfig, getFilesToCache, genIndexHTMLEnvVarPairs, makeEnvFileEntry, genLoadFinalConfigWILLTHROW, genWriteGivenFiles, getTypeScriptHelperDefinitionsFromConfig} from './compileYamlLib';
 const mkdir = promisify(fs.mkdir);
 
 (async function () {
     // TODO: abstract away, use webpack, etc
     if (!fs.existsSync("public/generated")) {
         await mkdir("public/generated");
+    }
+
+    if (!fs.existsSync("src/generated")) {
+        await mkdir("src/generated");
     }
 
     // TODO: write out a "build" config that lists all the apps built
@@ -27,7 +31,9 @@ const mkdir = promisify(fs.mkdir);
 
     // This must be written before the env file, since we generate an md5sum of the json file for precaching
     const finalObjJsonString = JSON.stringify(checkedFinalConfig);
-    await genWriteFinalConfig(finalObjJsonString);
+    const promFinalConfig = genWriteFinalConfig(finalObjJsonString).then(() => console.info("[INFO] FinalConfig written..."));
+
+    console.info("[INFO] Type helpers emitted...");
 
     const filesToCache = [
         ...getFilesToCache(checkedFinalConfig),
@@ -55,6 +61,16 @@ const mkdir = promisify(fs.mkdir);
         }
     }
 
-    await genWriteEnvFile(envFileOutputText);
+    const promEnvFile = genWriteEnvFile(envFileOutputText).then(() => console.info("[INFO] Env file written..."));
+
+    const promTypeFiles = genWriteGivenFiles(getTypeScriptHelperDefinitionsFromConfig(checkedFinalConfig));
+
+    // TODO: test that the written files actually need a change
+    await Promise.all([
+        promFinalConfig,
+        promEnvFile,
+        promTypeFiles,
+    ]);
+
     console.log("DONE.");
 }());

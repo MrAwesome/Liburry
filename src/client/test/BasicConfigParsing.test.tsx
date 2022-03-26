@@ -124,6 +124,7 @@ test('ensure broken config fails zod', async () => {
     const expectedInvalidTokens: Set<LiburryTokenTypes> = new Set(
         (Object.keys(tokenMatchers) as (keyof typeof tokenMatchers)[]).filter((key) => (tokenMatchers[key] !== null
             && key !== "BUILD_ID"
+            && key !== "I18N_TOKEN_ID"
             && key !== "LOCAL_FILENAME"))
         // TODO: kludge to get this test working again, will need to rethink this test's app-specific architecture in a world with builds
     );

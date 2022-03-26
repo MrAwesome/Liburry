@@ -3,9 +3,9 @@ import {isMobileDevice} from "../utils";
 import {BurgerMenu} from "../menu/BurgerMenu";
 import type AppConfig from "../configHandler/AppConfig";
 import {PageID} from "../configHandler/zodConfigTypes";
+import I18NHandler from "../../common/i18n/I18NHandler";
 
 import {ReactComponent as SearchClickableMagGlass} from "../../icons/searchClickableMagGlass.svg";
-
 import "./SearchBar.css";
 
 interface SearchBarProps {
@@ -16,6 +16,7 @@ interface SearchBarProps {
     goHome: () => void,
     toggleSearchOptions: () => void,
     getProgressBars?: (parentElem: React.RefObject<HTMLElement>) => JSX.Element,
+    i18nHandler?: I18NHandler<any, any>,
 }
 
 interface SearchBarState {
@@ -76,6 +77,7 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
                     <form onSubmit={this.onSubmit} autoComplete="off" >
                         <input
                             autoFocus
+                            //placeholder={this.props.i18nHandler.getTokenForAllEnabledLangs("search", {delimiter: " / "})}
                             placeholder="Search..."
                             type="text"
                             autoComplete="off"

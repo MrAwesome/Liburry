@@ -3,13 +3,15 @@ import {anyString, realRecord, token} from "./zodUtils";
 
 // TODO: can you globally check for the existence of dialects etc?
 
+const rawTokenSchema = realRecord(token("I18N_TOKEN_ID"), anyString());
 export const rawDialectSchema = strictObject({
     displayName: anyString(),
-    // TODO: superRefine that these dialects are real etc
+    // TODO: superRefine that these dialects are known
     otherDisplayNames: realRecord(token("DIALECT_ID"), anyString()).optional(),
     disabled: z.boolean().optional(),
     // TODO: check for validity
     fallbacks: z.array(token("DIALECT_ID")).optional(),
+    tokens: rawTokenSchema.optional(),
 });
 export type RawDialect = z.infer<typeof rawDialectSchema>;
 export const rawLangConfigSchema = strictObject({

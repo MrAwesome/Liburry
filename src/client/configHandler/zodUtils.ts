@@ -35,8 +35,6 @@ export function realRecord<V extends z.ZodTypeAny, VK extends z.ZodString, S ext
             (obj) => Object.keys(obj).every(keyRefinerFunc)
         );
     }
-
-
 }
 
 export function strictObject<T extends z.ZodRawShape>(obj: T): z.ZodObject<T, "strict"> {

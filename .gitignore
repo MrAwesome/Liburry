@@ -105,7 +105,8 @@ dist
 .tern-port
 
 #############################
-# ChhaTaigi specifics
+# Liburry specifics
 #############################
 public/generated/
+src/generated/
 .env.local

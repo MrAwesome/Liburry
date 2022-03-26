@@ -19,15 +19,19 @@ dialects:
 #    tags:
 #      representation: kip
 
+# TODO: define a default.yml for lang
+# TODO: see if typescript allows for extensions
   eng_us:
     displayName: "English (US)"
-#    trans:
-#      search: "Search..."
-#    pages:
-#      contact: "Contact AAAAAAAAAAAH"
-#      help: "Help  AAAAAAAAAAAH"
-#      about: "About  AAAAAAAAAAAH"
-#      licences: "Licenses  AAAAAAAAAAAH"
+    tokens:
+      search: "Search..."
+      app: "App"
+      subapp: "App Variant"
+      #    pages:
+      #      contact: "Contact AAAAAAAAAAAH"
+      #      help: "Help  AAAAAAAAAAAH"
+      #      about: "About  AAAAAAAAAAAH"
+      #      licences: "Licenses  AAAAAAAAAAAH"
     otherDisplayNames:
       hok_tw_poj: "Eng-gí (Bí-kok)"
       tw_kip: "Ing-gí (Bí-kok)"

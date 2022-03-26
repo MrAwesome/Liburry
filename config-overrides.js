@@ -1,7 +1,6 @@
 const exec = require('child_process').exec;
 const CopyPlugin = require("copy-webpack-plugin");
 const {IgnorePlugin} = require("webpack");
-const yaml = require('yaml');
 
 module.exports = {
   webpack: function (config, env) {
@@ -13,7 +12,21 @@ module.exports = {
       {
         // TODO: do not run this if the only changed files in dev mode are css
         apply: (compiler) => {
-          compiler.hooks.done.tap('CompileLiburryYaml', (compilation) => {
+          compiler.hooks.watchRun.tap('CompileLiburryYaml', (comp) => {
+
+            if (comp.modifiedFiles) {
+              const changedFiles = Array.from(comp.modifiedFiles);
+              const requireChangeFiles = changedFiles.filter((filename) =>
+                !(
+                  filename.includes('src/generated/') ||
+                  filename.endsWith('.css')
+                )
+              );
+              if (requireChangeFiles.length < 1) {
+                return;
+              }
+            }
+
             if (process.env.BYPASS_YAML === "1") {
               return;
             }
@@ -46,24 +59,24 @@ module.exports = {
           from: "src/config/**/*.yml",
           to: "yaml_was_watched",
 
-//          transformAll: (assets) => {
-//            const out = {};
-//            assets.forEach((ass) => {
-//              const idChain = ass.sourceFilename.split('src/config/')[1].split('/');
-//              const idc = [...idChain];
-//              let targ = out;
-//              while (idc.length > 1) {
-//                const id = idc.shift();
-//                if (!(id in targ)) {
-//                  targ[id] = {};
-//                }
-//                targ = targ[id];
-//              }
-//              const filename = idc.shift();
-//              targ[filename] = yaml.parse(ass.data.toString());
-//            });
+          //          transformAll: (assets) => {
+          //            const out = {};
+          //            assets.forEach((ass) => {
+          //              const idChain = ass.sourceFilename.split('src/config/')[1].split('/');
+          //              const idc = [...idChain];
+          //              let targ = out;
+          //              while (idc.length > 1) {
+          //                const id = idc.shift();
+          //                if (!(id in targ)) {
+          //                  targ[id] = {};
+          //                }
+          //                targ = targ[id];
+          //              }
+          //              const filename = idc.shift();
+          //              targ[filename] = yaml.parse(ass.data.toString());
+          //            });
 
-            //return JSON.stringify(out);
+          //return JSON.stringify(out);
           //}
         }]
       }
