@@ -16,7 +16,7 @@ interface SearchBarProps {
     goHome: () => void,
     toggleSearchOptions: () => void,
     getProgressBars?: (parentElem: React.RefObject<HTMLElement>) => JSX.Element,
-    i18nHandler?: I18NHandler<any, any>,
+    i18nHandler?: I18NHandler,
 }
 
 interface SearchBarState {

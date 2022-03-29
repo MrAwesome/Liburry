@@ -2,6 +2,7 @@
 // [] use async node file checks when in node mode to ensure that db files exist
 // [] create some test data that should fail various cases, to make sure validation is happening
 // [] create some test data that should pass various complex cases
+// [] at the risk of introducing cyclical dependencies, you can ensure dialect etc are valid at type time by generating them in compileYamlLib - just need to be careful about zod relying on the contents of those files in its initial run
 //
 // The types here are those which go through some sort of serialization - to/from YAML or JSON in particular.
 import {z} from "@mrawesome/zod";
