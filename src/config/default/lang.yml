@@ -1,3 +1,5 @@
+defaultDialectID: "eng_us"
+
 dialects:
   hok_tw_poj:
     displayName: "Pe̍h-Oē-Jī"
@@ -44,6 +46,12 @@ dialects:
       eng_us: "Chinese - Mandarin (Traditional)"
     fallbacks:
       - mand_cn
+
+    # XXX TODO: check these
+    tokens:
+      search: "搜索"
+      app: "應用程序 (APP)"
+      subapp: "子應用程序 (子APP)"
 
   mand_cn:
     disabled: true
