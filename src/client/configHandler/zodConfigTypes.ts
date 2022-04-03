@@ -485,7 +485,6 @@ const rawDefaultLoadedAllConfigSchema = strictObject({
 });
 
 const loadedAllConfigSchema = rawDefaultLoadedAllConfigSchema.merge(rawAppLoadedAllConfigSchema).required();
-
 type LoadedAllConfig = z.infer<typeof loadedAllConfigSchema>;
 
 export type LoadedConfig = LoadedAllConfig[keyof LoadedAllConfig];
