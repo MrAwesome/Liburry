@@ -475,7 +475,7 @@ export function getTypeScriptHelperDefinitionsFromConfig(rfc: ReturnedFinalConfi
 
 const i18nTokenNames = [${knownTokensAsConstArrayInner}] as const;
 const knownDialectNames = [${knownDialectNamesAsConstArrayInner}] as const;
-    
+
 export type I18NToken = typeof i18nTokenNames[number];
 export type KnownDialectID = typeof knownDialectNames[number];
 `;

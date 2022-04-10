@@ -36,6 +36,9 @@
 .bm-cross-button:hover, .bm-burger-button:hover {
     transform: scale(1.05);
 }
+.bm-cross-button:active, .bm-burger-button:active {
+    transform: scale(1.00);
+}
 
 .bm-cross-button:hover {
 }

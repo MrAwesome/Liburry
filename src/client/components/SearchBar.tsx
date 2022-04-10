@@ -5,6 +5,7 @@ import type AppConfig from "../configHandler/AppConfig";
 import {PageID} from "../configHandler/zodConfigTypes";
 import I18NHandler from "../../common/i18n/I18NHandler";
 
+//import {ReactComponent as DialectSwitchButtonTwoBubbles} from "../../icons/langswitchTwoBubbles.svg";
 import {ReactComponent as SearchClickableMagGlass} from "../../icons/searchClickableMagGlass.svg";
 import "./SearchBar.css";
 
@@ -61,6 +62,9 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
 
     //<svg aria-hidden="true" className="mag-glass" ><path d="M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z"></path></svg>
 
+    // XXX TODO: use this instead
+    //placeholder={this.props.i18nHandler.getTokenForAllEnabledLangs("search", {delimiter: " / "})}
+    // XXX TODO: i18n button text for accessibility?
     render() {
         return <>
             <div className="search-bar-container">
@@ -77,8 +81,7 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
                     <form onSubmit={this.onSubmit} autoComplete="off" >
                         <input
                             autoFocus
-                            //placeholder={this.props.i18nHandler.getTokenForAllEnabledLangs("search", {delimiter: " / "})}
-                            placeholder="Search..."
+                            placeholder={this.props.i18nHandler?.tok("search") ?? "Search..."}
                             type="text"
                             autoComplete="off"
                             onChange={this.onChange}
@@ -86,6 +89,15 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
                         />
                     </form>
                 </div>
+                {
+                // <div className="dialect-switcher-div"
+                //         onClick={() => {}} >
+                //     <button className="dialect-switcher-button">
+                //         Change Language
+                //     </button>
+                //     <DialectSwitchButtonTwoBubbles className="dialect-switcher" />
+                // </div>
+                }
                 <BurgerMenu
                     appConfig={this.props.appConfig}
                     loadPage={this.props.loadPage}

@@ -11,31 +11,62 @@ interface DialectChain {
     defaultDialect: RawDialect
 }
 
+
+// Given a token ID load the translation corresponding to that token for
+// the selected dialect. See src/common/i18n/I18NHandler.test.ts for examples.
+//
+// NOTE: lookups here could be sped up by caching (dialect+token = string) if necessary.
 export default class I18NHandler {
-    private dialectChain: DialectChain;
+    private dialectCaches: Map<KnownDialectID, Map<I18NToken, string>> = new Map();
 
     constructor(
         private rfc: ReturnedFinalConfig,
-        dialectID: KnownDialectID
+        private dialectID: KnownDialectID
     ) {
-        this.dialectChain = getDialectConfigAndFallbacks(this.rfc, dialectID)
+        this.tok = this.tok.bind(this);
+        this.changeDialect = this.changeDialect.bind(this);
+        this.tokForDialect = this.tokForDialect.bind(this);
+        this.getTokenFromCache_or_FromChainAndPopulateCache =
+            this.getTokenFromCache_or_FromChainAndPopulateCache.bind(this);
     }
 
     changeDialect(dialectID: KnownDialectID): void {
-        this.dialectChain = getDialectConfigAndFallbacks(this.rfc, dialectID)
+        this.dialectID = dialectID;
+        //this.dialectChain = getDialectConfigAndFallbacks(this.rfc, dialectID)
     }
 
     // Get the specified token for the current dialect
     tok(tokenIdentifier: I18NToken): string {
-        return getTokenForDialectChain(tokenIdentifier, this.dialectChain);
+        const {dialectID} = this;
+        return this.getTokenFromCache_or_FromChainAndPopulateCache(tokenIdentifier, dialectID);
     }
 
     // Get the specified token for a specific dialect
-    //
-    // NOTE: This can trivially be memoized.
     tokForDialect(tokenIdentifier: I18NToken, dialectID: KnownDialectID): string {
-        const chainForSpecifiedDialect = getDialectConfigAndFallbacks(this.rfc, dialectID)
-        return getTokenForDialectChain(tokenIdentifier, chainForSpecifiedDialect);
+        return this.getTokenFromCache_or_FromChainAndPopulateCache(tokenIdentifier, dialectID);
+    }
+
+    private getTokenFromCache_or_FromChainAndPopulateCache(
+        tokenIdentifier: I18NToken,
+        dialectID: KnownDialectID
+    ): string {
+        const {dialectCaches} = this;
+        let dialectCache = dialectCaches.get(dialectID);
+        if (dialectCache === undefined) {
+            dialectCache = new Map();
+            dialectCaches.set(dialectID, dialectCache);
+        }
+
+        const cacheTok = dialectCache.get(tokenIdentifier);
+        if (cacheTok !== undefined) {
+            return cacheTok;
+        }
+
+        const dialectChain = getDialectConfigAndFallbacks(this.rfc, dialectID)
+        const returnedTok = getTokenForDialectChain(tokenIdentifier, dialectChain);
+        dialectCache.set(tokenIdentifier, returnedTok);
+
+        return returnedTok;
     }
 }
 
@@ -65,7 +96,7 @@ function getTokenForDialectChain(
         }
     }
 
-    // This should in practice never happen, as we should fail to pass the typechecker 
+    // This should in practice never happen, as we should fail to pass the typechecker
     // since we statically generate all token names that are known to exist on the default lang.
     const msg = `Unknown token "${tokenIdentifier}"! This is a bug, please report it.`;
     if (runningInJest()) {

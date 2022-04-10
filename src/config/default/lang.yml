@@ -25,38 +25,73 @@ dialects:
 # TODO: see if typescript allows for extensions
   eng_us:
     displayName: "English (US)"
+    otherDisplayNames:
+      hok_tw_poj: "Eng-gí (Bí-kok)"
+      tw_kip: "Ing-gí (Bí-kok)"
     tokens:
       search: "Search..."
+      select: "Select "
       app: "App"
-      subapp: "App Variant"
+      subapp: "SubApp"
       #    pages:
       #      contact: "Contact AAAAAAAAAAAH"
       #      help: "Help  AAAAAAAAAAAH"
       #      about: "About  AAAAAAAAAAAH"
       #      licences: "Licenses  AAAAAAAAAAAH"
-    otherDisplayNames:
-      hok_tw_poj: "Eng-gí (Bí-kok)"
-      tw_kip: "Ing-gí (Bí-kok)"
 #    parentGroups:
 #      - english
 
+  # XXX TODO: check these
   mand_tw:
-    displayName: "繁體中文（台灣）"
+    displayName: "繁體中文"
     otherDisplayNames:
       eng_us: "Chinese - Mandarin (Traditional)"
     fallbacks:
       - mand_cn
 
-    # XXX TODO: check these
     tokens:
       search: "搜索"
+      select: "選"
       app: "應用程序 (APP)"
       subapp: "子應用程序 (子APP)"
 
   mand_cn:
-    disabled: true
-    displayName: "??????"
+    displayName: "简体中文"
     otherDisplayNames:
       eng_us: "Chinese - Mandarin (Simplified)"
     fallbacks:
       - mand_tw
+
+    tokens:
+      search: "搜寻"
+      select: "选"
+      app: "应用程序 (APP)"
+      subapp: "子应用程序 (子APP)"
+
+  # TODO: move to another place, or replicate with real langs
+  #testlang1:
+  #  disabled: true
+  #  displayName: "Test Language, ignore"
+  #  tokens:
+  #    app: "App in Lang 1"
+  #  fallbacks:
+  #    - testlang2
+  #    - testlang3
+
+  #testlang2:
+  #  disabled: true
+  #  displayName: "Test Language, ignore"
+  #  tokens:
+  #    app: "App in Lang 2"
+  #    search: "Search in Lang 2"
+  #  fallbacks:
+  #    - testlang3
+
+  #testlang3:
+  #  disabled: true
+  #  displayName: "Test Language, ignore"
+  #  tokens:
+  #    app: "App in Lang 3"
+  #    subapp: "Subapp in Lang 3"
+  #  fallbacks:
+  #    - testlang1

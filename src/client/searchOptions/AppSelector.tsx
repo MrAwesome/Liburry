@@ -3,10 +3,72 @@ import Select from "react-select";
 import type {Props as SelectProps} from "react-select";
 import {AppID, AppTopLevelConfiguration, ReturnedFinalConfig, SubAppID} from "../configHandler/zodConfigTypes";
 import {getRecordEntries} from "../utils";
+import I18NHandler from "../../common/i18n/I18NHandler";
 
 import "./AppSelector.css";
 
 type SelectOption = {value: any, label: string};
+
+type ASProps = {
+    rfc: ReturnedFinalConfig,
+    currentAppID: AppID,
+    currentSubAppID: SubAppID | null,
+    handleAppChange: (appID: AppID) => void,
+    handleSubAppChange: (subAppID: SubAppID) => void,
+    i18nHandler: I18NHandler;
+};
+type ASState = {};
+
+export default class AppSelector extends React.PureComponent<ASProps, ASState> {
+    shouldFocus: React.RefObject<HTMLElement> = React.createRef();
+
+    constructor(props: ASProps) {
+        super(props);
+        this.handleAppChangeINTERNAL = this.handleAppChangeINTERNAL.bind(this);
+        this.handleSubAppChangeINTERNAL = this.handleSubAppChangeINTERNAL.bind(this);
+    }
+
+    //handleAppChangeINTERNAL(option: SelectOption | readonly SelectOption[] | null, _: any) {
+    handleAppChangeINTERNAL(option: any, _: any) {
+        this.props.handleAppChange(option.value as AppID);
+    }
+
+    handleSubAppChangeINTERNAL(option: any, _: any) {
+        this.props.handleSubAppChange(option.value as SubAppID);
+    }
+
+    render() {
+        const {currentAppID, currentSubAppID, rfc, i18nHandler} = this.props;
+        const {tok} = i18nHandler;
+
+        let appSelector: JSX.Element | null = null;
+        const allApps = getAllApps(rfc);
+        if (allApps.length > 1) {
+            const allAppDisplayVals = allApps.map(appToReactSelectOption);
+            const selectedApp = appToReactSelectOption(getKnownApp(rfc, currentAppID));
+            appSelector = appSelectorHelper(allAppDisplayVals, selectedApp, this.handleAppChangeINTERNAL, this.shouldFocus);
+        }
+
+        let subAppSelector: JSX.Element | null = null;
+
+        const allSubApps = getAllSubAppsForApp(rfc, currentAppID);
+        if (allSubApps !== undefined && allSubApps.length > 1) {
+            const selectedSubAppRaw = getSubApp(rfc, currentAppID, currentSubAppID);
+            const allSubAppDisplayVals = allSubApps.map(subAppToReactSelectOption);
+            const selectedSubApp = (selectedSubAppRaw !== null) ? subAppToReactSelectOption(selectedSubAppRaw) : allSubAppDisplayVals[0];
+            subAppSelector = appSelectorHelper(allSubAppDisplayVals, selectedSubApp, this.handleSubAppChangeINTERNAL, undefined);
+        }
+
+        const obj = <div className="app-selector"
+        >
+            {appSelector !== null ? <span>{tok("select")}{tok("app")}:</span> : null}
+            {appSelector}
+            {subAppSelector !== null ? <span>{tok("select")}{tok("subapp")}:</span> : null}
+            {subAppSelector}
+        </div>;
+        return obj;
+    }
+}
 
 // TODO: move to dynamic class version of rfc
 function getAllApps(rfc: ReturnedFinalConfig): {appID: AppID, displayName: string}[] {
@@ -86,63 +148,4 @@ function appSelectorHelper(
         onChange={onChange}
         ref={ref}
     />
-}
-
-type ASProps = {
-    rfc: ReturnedFinalConfig,
-    currentAppID: AppID,
-    currentSubAppID: SubAppID | null,
-    handleAppChange: (appID: AppID) => void,
-    handleSubAppChange: (subAppID: SubAppID) => void,
-};
-type ASState = {};
-
-export default class AppSelector extends React.PureComponent<ASProps, ASState> {
-    shouldFocus: React.RefObject<HTMLElement> = React.createRef();
-
-    constructor(props: ASProps) {
-        super(props);
-        this.handleAppChangeINTERNAL = this.handleAppChangeINTERNAL.bind(this);
-        this.handleSubAppChangeINTERNAL = this.handleSubAppChangeINTERNAL.bind(this);
-    }
-
-    //handleAppChangeINTERNAL(option: SelectOption | readonly SelectOption[] | null, _: any) {
-    handleAppChangeINTERNAL(option: any, _: any) {
-        this.props.handleAppChange(option.value as AppID);
-    }
-
-    handleSubAppChangeINTERNAL(option: any, _: any) {
-        this.props.handleSubAppChange(option.value as SubAppID);
-    }
-
-    render() {
-        const {currentAppID, currentSubAppID, rfc} = this.props;
-
-        let appSelector: JSX.Element | null = null;
-        const allApps = getAllApps(rfc);
-        if (allApps.length > 1) {
-            const allAppDisplayVals = allApps.map(appToReactSelectOption);
-            const selectedApp = appToReactSelectOption(getKnownApp(rfc, currentAppID));
-            appSelector = appSelectorHelper(allAppDisplayVals, selectedApp, this.handleAppChangeINTERNAL, this.shouldFocus);
-        }
-
-        let subAppSelector: JSX.Element | null = null;
-
-        const allSubApps = getAllSubAppsForApp(rfc, currentAppID);
-        if (allSubApps !== undefined && allSubApps.length > 1) {
-            const selectedSubAppRaw = getSubApp(rfc, currentAppID, currentSubAppID);
-            const allSubAppDisplayVals = allSubApps.map(subAppToReactSelectOption);
-            const selectedSubApp = (selectedSubAppRaw !== null) ? subAppToReactSelectOption(selectedSubAppRaw) : allSubAppDisplayVals[0];
-            subAppSelector = appSelectorHelper(allSubAppDisplayVals, selectedSubApp, this.handleSubAppChangeINTERNAL, undefined);
-        }
-
-        const obj = <div className="app-selector"
-        >
-            {appSelector !== null ? <span>Select App:</span> : null}
-            {appSelector}
-            {subAppSelector !== null ? <span>Select SubApp:</span> : null}
-            {subAppSelector}
-        </div>;
-        return obj;
-    }
 }

@@ -14,6 +14,7 @@ import {SearchBar} from "./components/SearchBar";
 import {getProtecc, runningInJest} from "./utils";
 import AppConfig from "./configHandler/AppConfig";
 import SearchOptionsArea from "./searchOptions/SearchOptionsArea";
+import I18NHandler from "../common/i18n/I18NHandler";
 
 import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
@@ -68,6 +69,9 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     typingTimerIDs: ReturnType<typeof setTimeout>[] = []; // Object to satisfy Node typing
     searchController: SearchController;
 
+    // TODO: propagate changes to the handler to State?
+    i18nHandler: I18NHandler;
+
     constructor(props: ChhaTaigiProps) {
         super(props);
 
@@ -90,6 +94,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.searchBarRef = React.createRef();
         this.searchOptionsAreaRef = React.createRef();
         this.queryStringHandlerRef = React.createRef();
+        this.i18nHandler = new I18NHandler(this.props.rfc, this.state.options.dialect);
 
         // Bind functions
         this.startSearchController = this.startSearchController.bind(this);
@@ -374,6 +379,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 searchOptionsVisible={searchOptionsVisible}
                 searchBarRef={searchBarRef}
                 closeSearchOptionsArea={() => this.setState({searchOptionsVisible: false})}
+                i18nHandler={this.i18nHandler}
             />
             <SearchBar
                 appConfig={this.appConfig}
@@ -384,6 +390,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 goHome={this.goHome}
                 toggleSearchOptions={() => this.setState({searchOptionsVisible: !searchOptionsVisible})}
                 getProgressBars={this.props.getProgressBars}
+                i18nHandler={this.i18nHandler}
             />
             <div className="liburry-main-area" >
                 {mainAreaContents}

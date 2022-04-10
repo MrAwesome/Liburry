@@ -41,29 +41,39 @@
 }
 
 .clickable-mag-glass-div {
-    animation: .8s cubic-bezier(.18,.89,.32,1.28) 1.3s 1 littleBlip;
-    /* animation: 0.8s ease 1.5s 1 littleBlip; */
-    /* animation: 0.8s cubic-bezier(.68,-0.55,.27,1.55) 1.5s 1 littleBlip; */
-    position: absolute;
-
     top: 6px;
     left: 8px;
+    right: auto;
+}
+
+.dialect-switcher-div {
+    top: 6px;
+    left: auto;
+    right: 41px;
+}
+
+.clickable-mag-glass-div, .dialect-switcher-div {
+    animation: .8s cubic-bezier(.18,.89,.32,1.28) 1.3s 1 littleBlip;
+    position: absolute;
+
+    z-index: 101;
     width: 28px;
     height: 28px;
-    right: auto;
     padding: 0px;
     border: 0px;
     opacity: 90%;
     cursor: pointer;
-/* color: grey; */
-/* fill: grey; */
 }
 
-.clickable-mag-glass-div:hover {
+.clickable-mag-glass-div:hover, .dialect-switcher-div:hover {
     transform: scale(1.05);
 }
 
-.clickable-mag-glass-button {
+.clickable-mag-glass-div:active, .dialect-switcher-div:active {
+    transform: scale(1.00);
+}
+
+.clickable-mag-glass-button, .dialect-switcher-button {
     font-size: 0px;
     width: 100%;
     height: 100%;
@@ -71,7 +81,7 @@
     border: 0px;
 }
 
-.clickable-mag-glass {
+.clickable-mag-glass, .dialect-switcher {
     position: absolute;
     width: inherit;
     height: inherit;

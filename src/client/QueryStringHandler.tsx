@@ -1,4 +1,5 @@
 import qs from "qs";
+import {KnownDialectID} from "../generated/i18n";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import {PageID} from "./configHandler/zodConfigTypes";
 import {SearcherType} from "./search/searchers/Searcher";
@@ -19,6 +20,7 @@ import {TypeEquals} from "./utils/typeEquality";
 const QUERY = "q";
 const MODE = "m";
 const PAGE = "p";
+const DIALECT = "d";
 const DEBUG = "debug";
 const SEARCHER = "searcher";
 const PLAYGROUND = "playground";
@@ -34,6 +36,7 @@ const FIELDTYPE_TO_FIELDKEY_MAPPING = {
     playground: PLAYGROUND,
     appID: APP,
     subAppID: SUBAPP,
+    dialect: DIALECT,
 } as const;
 
 export type QueryStringFieldType = keyof typeof FIELDTYPE_TO_FIELDKEY_MAPPING;
@@ -128,6 +131,7 @@ export default class QueryStringParser {
         }
     }
 
+    // TODO: Handle typing for e.g. dialect
     parse(): OptionsChangeableByUser {
         const options = new OptionsChangeableByUser();
         const parsed = this.parseInternal();
@@ -135,6 +139,7 @@ export default class QueryStringParser {
         const searcher = parsed[SEARCHER];
         const appID = parsed[APP];
         const subAppID = parsed[SUBAPP];
+        const dialect = parsed[DIALECT];
 
         if (typeof query === "string") {
             options.savedQuery = query;
@@ -164,6 +169,10 @@ export default class QueryStringParser {
 
         if (typeof appID === "string") {
             options.appID = appID;
+        }
+
+        if (typeof dialect === "string") {
+            options.dialect = dialect as KnownDialectID;
         }
 
         if (typeof subAppID === "string") {
