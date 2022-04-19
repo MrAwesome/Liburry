@@ -20,6 +20,8 @@ import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
 
 import "./ChhaTaigi.css";
+import DialectSwitcher from "./dialects/DialectSwitcher";
+import {KnownDialectID} from "../common/generatedTypes";
 
 // TODOs are here: https://docs.google.com/spreadsheets/d/1lvbgLRRxGiNIf2by_mMW0aJrP1uhYTsz4_I4vmrB_Ss/edit?usp=sharing
 //
@@ -53,7 +55,12 @@ export interface ChhaTaigiState {
     options: OptionsChangeableByUser,
     resultsHolder: SearchResultsHolder,
     isTyping: boolean,
-    searchOptionsVisible: boolean,
+    visibleMenu: VisibleMenu | null,
+}
+
+export enum VisibleMenu {
+    SearchOptions,
+    DialectSwitcher,
 }
 
 export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
@@ -78,13 +85,13 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.qs = this.props.qs ?? new QueryStringHandler();
         const options = this.props.mockOptions ?? this.qs.parse();
 
-        this.appConfig = AppConfig.from(this.props.rfc, options.appID, options.subAppID);
+        this.appConfig = AppConfig.from(this.props.rfc, options);
 
         this.state = {
             options,
             resultsHolder: new SearchResultsHolder(),
             isTyping: false,
-            searchOptionsVisible: false,
+            visibleMenu: null,
         };
 
         this.newestQuery = this.state.options.savedQuery;
@@ -94,28 +101,30 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.searchBarRef = React.createRef();
         this.searchOptionsAreaRef = React.createRef();
         this.queryStringHandlerRef = React.createRef();
-        this.i18nHandler = new I18NHandler(this.props.rfc, this.state.options.dialect);
+        this.i18nHandler = new I18NHandler(this.props.rfc, this.state.options.dialectID);
 
         // Bind functions
-        this.startSearchController = this.startSearchController.bind(this);
-        this.genRestartSearchController = this.genRestartSearchController.bind(this);
-        this.genUpdateQs = this.genUpdateQs.bind(this);
-
+        this.closeVisibleMenu = this.closeVisibleMenu.bind(this);
         this.genAddResultsCallback = this.genAddResultsCallback.bind(this);
         this.genClearResultsCallback = this.genClearResultsCallback.bind(this);
+        this.genRestartSearchController = this.genRestartSearchController.bind(this);
+        this.genUpdateQs = this.genUpdateQs.bind(this);
         this.getCurrentMountAttempt = this.getCurrentMountAttempt.bind(this);
         this.getEntryComponents = this.getEntryComponents.bind(this);
+        this.getMainDisplayAreaContents = this.getMainDisplayAreaContents.bind(this);
         this.getNewestQuery = this.getNewestQuery.bind(this);
         this.getPageView = this.getPageView.bind(this);
-        this.hashChange = this.hashChange.bind(this);
-        this.handleAppChange = this.handleAppChange.bind(this);
-        this.handleSubAppChange = this.handleSubAppChange.bind(this);
-        this.loadPage = this.loadPage.bind(this);
         this.goHome = this.goHome.bind(this);
-        this.getMainDisplayAreaContents = this.getMainDisplayAreaContents.bind(this);
+        this.handleAppChange = this.handleAppChange.bind(this);
+        this.handleDialectChange = this.handleDialectChange.bind(this);
+        this.handleSubAppChange = this.handleSubAppChange.bind(this);
+        this.hashChange = this.hashChange.bind(this);
+        this.loadPage = this.loadPage.bind(this);
         this.overrideResultsForTests = this.overrideResultsForTests.bind(this);
         this.searchQuery = this.searchQuery.bind(this);
+        this.startSearchController = this.startSearchController.bind(this);
         this.subscribeHash = this.subscribeHash.bind(this);
+        this.toggleVisibleMenu = this.toggleVisibleMenu.bind(this);
         this.unsubscribeHash = this.unsubscribeHash.bind(this);
         this.updateSearchBar = this.updateSearchBar.bind(this);
 
@@ -247,8 +256,8 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         const {mainMode} = updates;
         if (mainMode !== undefined) {
             // Clear pageID in options and the querystring if it isn't specified
-            if (mainMode !== MainDisplayAreaMode.PAGE && this.state.options.pageID !== null) {
-                updates.pageID = null;
+            if (mainMode !== MainDisplayAreaMode.PAGE && this.state.options.pageID !== undefined) {
+                updates.pageID = undefined;
             }
         }
 
@@ -260,16 +269,29 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     handleAppChange(appID: AppID) {
-        this.appConfig = AppConfig.from(this.props.rfc, appID, null);
+        const {dialectID} = this.appConfig;
+        // NOTE: We reset subapp id on app change.
+        this.appConfig = AppConfig.from(this.props.rfc, {appID, dialectID});
         const {subAppID} = this.appConfig;
         this.genRestartSearchController();
         this.genUpdateQs({appID, subAppID});
     }
 
     handleSubAppChange(subAppID: SubAppID) {
-        this.appConfig = AppConfig.from(this.props.rfc, this.appConfig.appID, subAppID);
+        const {appID, dialectID} = this.appConfig;
+        this.appConfig = AppConfig.from(this.props.rfc, {appID, subAppID, dialectID});
         this.genRestartSearchController();
         this.genUpdateQs({subAppID});
+    }
+
+    handleDialectChange(dialectID: KnownDialectID) {
+        const {appID, subAppID} = this.appConfig;
+        this.appConfig = AppConfig.from(this.props.rfc, {appID, subAppID, dialectID});
+        // NOTE: dialect changes currently do not have any effect on searches.
+        //this.genRestartSearchController();
+
+        this.i18nHandler.changeDialect(dialectID);
+        this.genUpdateQs({dialectID});
     }
 
     updateSearchBar(query: string) {
@@ -331,7 +353,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
     getPageView(): JSX.Element {
         const {pageID} = this.state.options;
-        if (pageID !== null) {
+        if (pageID !== undefined) {
             return <CombinedPageElement perAppPages={this.appConfig.pageHandler.getPagesForPageID(pageID)} />
         } else {
             return this.getMainDisplayAreaContents(MainDisplayAreaMode.DEFAULT);
@@ -360,8 +382,17 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.genUpdateQs({mainMode}, {modifyHistInPlace: true})
     }
 
+    toggleVisibleMenu(targetMenu: VisibleMenu) {
+        const currentlyVisibleMenu = this.state.visibleMenu;
+        this.setState({visibleMenu: currentlyVisibleMenu === targetMenu ? null : targetMenu})
+    }
+
+    closeVisibleMenu() {
+        this.setState({visibleMenu: null})
+    }
+
     render() {
-        const {options, searchOptionsVisible} = this.state;
+        const {options, visibleMenu} = this.state;
         const {mainMode} = options;
         const {searchBarRef} = this;
 
@@ -376,11 +407,23 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 appConfig={this.appConfig}
                 handleAppChange={this.handleAppChange}
                 handleSubAppChange={this.handleSubAppChange}
-                searchOptionsVisible={searchOptionsVisible}
+                searchOptionsVisible={visibleMenu === VisibleMenu.SearchOptions}
                 searchBarRef={searchBarRef}
-                closeSearchOptionsArea={() => this.setState({searchOptionsVisible: false})}
+                closeSearchOptionsArea={this.closeVisibleMenu}
                 i18nHandler={this.i18nHandler}
             />
+
+            <DialectSwitcher
+                rfc={this.props.rfc}
+                appConfig={this.appConfig}
+                dialectSwitcherVisible={visibleMenu === VisibleMenu.DialectSwitcher}
+                searchBarRef={searchBarRef}
+                closeSearchOptionsArea={this.closeVisibleMenu}
+                i18nHandler={this.i18nHandler}
+                currentDialectID={options.dialectID}
+                onDialectSwitch={this.handleDialectChange}
+            />
+
             <SearchBar
                 appConfig={this.appConfig}
                 ref={this.searchBarRef}
@@ -388,7 +431,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 getNewestQuery={this.getNewestQuery}
                 loadPage={this.loadPage}
                 goHome={this.goHome}
-                toggleSearchOptions={() => this.setState({searchOptionsVisible: !searchOptionsVisible})}
+                toggleVisibleMenu={this.toggleVisibleMenu}
                 getProgressBars={this.props.getProgressBars}
                 i18nHandler={this.i18nHandler}
             />

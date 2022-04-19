@@ -5,6 +5,8 @@ import PageHandler from "../pages/PageHandler";
 import DBConfig from "../configHandler/DBConfig";
 import {getRecordValues, nullGuard, runningInJest} from "../utils";
 import {FontConfig} from "./zodFontConfigTypes";
+import DialectHandler from "./DialectHandler";
+import {KnownDialectID} from "../../common/generatedTypes";
 
 export default class AppConfig {
     private constructor(
@@ -15,9 +17,11 @@ export default class AppConfig {
         private rfc: ReturnedFinalConfig,
         public pageHandler: PageHandler,
         public dbConfigHandler: DBConfigHandler,
+        public dialectHandler: DialectHandler,
+        public dialectID: KnownDialectID,
         //private langConfigs: RawLangConfig[],
         public appID: AppID,
-        public subAppID: SubAppID | null,
+        public subAppID?: SubAppID,
     ) {
         this.getRawAppConfig = this.getRawAppConfig.bind(this);
         this.getRawSubAppConfig = this.getRawSubAppConfig.bind(this);
@@ -26,35 +30,44 @@ export default class AppConfig {
     // TODO: unit test this transition
     static from(
         rfc: ReturnedFinalConfig,
-        appID: AppID | null,
-        subAppIDOverride: SubAppID | null,
-    ) {
-        if (appID === null) {
-            appID = getInitialApp(rfc);
+        overrides: {
+            appID?: AppID,
+            subAppID?: SubAppID,
+            dialectID?: KnownDialectID,
         }
+    ) {
+        let {dialectID,subAppID,appID} = overrides;
+        appID = appID ?? getInitialApp(rfc);
 
         const pageHandler = PageHandler.fromFinalConfig(rfc, appID);
         const rawAppConfig = rfc.appConfigs[appID]!;
         const allConfigs = rawAppConfig.configs;
+        const defaultConfigs = rfc.default.configs;
 
         // TODO: unit test this logic
-        const {defaultSubApp, subApps} = rawAppConfig.configs.appConfig.config;
-        let subAppID = defaultSubApp;
-        if (subAppIDOverride !== null && subApps !== undefined) {
-            if (subAppIDOverride in subApps) {
-                subAppID = subAppIDOverride;
-            } else {
-                if (!runningInJest()) {
-                    const subAppList = Object.keys(subApps).join(", ");
-                    console.error(`A subapp override was given ("${subAppIDOverride}"), but it was not found in the subapps for this app: (app: "${appID}", subapps: (${subAppList}))`);
-                    console.error(`Using default subapp: "${defaultSubApp}"`);
+        const {defaultSubApp, subApps} = allConfigs.appConfig.config;
+        if (subAppID === undefined) {
+            subAppID = defaultSubApp;
+        } else {
+            if (subApps !== undefined) {
+                if (!(subAppID in subApps)) {
+                    if (!runningInJest()) {
+                        const subAppList = Object.keys(subApps).join(", ");
+                        console.error(`A subapp override was given ("${subAppID}"), but it was not found in the subapps for this app: (app: "${appID}", subapps: (${subAppList}))`);
+                        console.error(`Using default subapp: "${defaultSubApp}"`);
+                    }
+                    subAppID = defaultSubApp;
                 }
-                subAppID = defaultSubApp;
             }
         }
 
         const dbConfigHandler = new DBConfigHandler(allConfigs.dbConfig.config, subAppID);
-        return new AppConfig(rfc, pageHandler, dbConfigHandler, appID, subAppID ?? null);
+
+        const dialectHandler = new DialectHandler(defaultConfigs.langConfig.config);
+        dialectID = dialectID ?? dialectHandler.getDefaultDialectID();
+
+        // XXX TODO: add dialect loading from bar
+        return new AppConfig(rfc, pageHandler, dbConfigHandler, dialectHandler, dialectID, appID, subAppID);
     }
 
     private getRawAppConfig() {
@@ -62,7 +75,7 @@ export default class AppConfig {
     }
 
     private getRawSubAppConfig(): RawSubAppConfig | undefined {
-        if (this.subAppID !== null) {
+        if (this.subAppID !== undefined) {
             return this.getRawAppConfig().configs.appConfig.config.subApps?.[this.subAppID];
         }
         return undefined;

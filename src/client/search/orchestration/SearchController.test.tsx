@@ -24,7 +24,7 @@ describe('searchcontroller', () => {
 
     beforeEach(async () => {
         const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
-        const appConfig = AppConfig.from(rfc, appID, null);
+        const appConfig = AppConfig.from(rfc, {appID});
         results = annotateRawResults(perDictRes, appConfig);
         // = new AnnotatedPerDictResults(annotatedResRaw);
 

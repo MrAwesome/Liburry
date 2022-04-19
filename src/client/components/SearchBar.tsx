@@ -1,11 +1,13 @@
 import * as React from "react";
-import {isMobileDevice} from "../utils";
-import {BurgerMenu} from "../menu/BurgerMenu";
-import type AppConfig from "../configHandler/AppConfig";
-import {PageID} from "../configHandler/zodConfigTypes";
 import I18NHandler from "../../common/i18n/I18NHandler";
+import {BurgerMenu} from "../menu/BurgerMenu";
+import {PageID} from "../configHandler/zodConfigTypes";
+import {VisibleMenu} from "../ChhaTaigi";
+import {isMobileDevice} from "../utils";
 
-//import {ReactComponent as DialectSwitchButtonTwoBubbles} from "../../icons/langswitchTwoBubbles.svg";
+import type AppConfig from "../configHandler/AppConfig";
+
+import {ReactComponent as DialectSwitchButtonTwoBubbles} from "../../icons/langswitchTwoBubbles.svg";
 import {ReactComponent as SearchClickableMagGlass} from "../../icons/searchClickableMagGlass.svg";
 import "./SearchBar.css";
 
@@ -15,7 +17,7 @@ interface SearchBarProps {
     getNewestQuery(): string,
     loadPage: (pageID: PageID) => void,
     goHome: () => void,
-    toggleSearchOptions: () => void,
+    toggleVisibleMenu: (targetMenu: VisibleMenu) => void,
     getProgressBars?: (parentElem: React.RefObject<HTMLElement>) => JSX.Element,
     i18nHandler?: I18NHandler,
 }
@@ -72,7 +74,7 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
                     {this.props.getProgressBars?.(this.textInput)}
 
                     <div className="clickable-mag-glass-div"
-                            onClick={this.props.toggleSearchOptions} >
+                            onClick={() => this.props.toggleVisibleMenu(VisibleMenu.SearchOptions)} >
                         <button className="clickable-mag-glass-button">
                             Search Options
                         </button>
@@ -90,13 +92,13 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
                     </form>
                 </div>
                 {
-                // <div className="dialect-switcher-div"
-                //         onClick={() => {}} >
-                //     <button className="dialect-switcher-button">
-                //         Change Language
-                //     </button>
-                //     <DialectSwitchButtonTwoBubbles className="dialect-switcher" />
-                // </div>
+                <div className="dialect-switcher-div"
+                        onClick={() => this.props.toggleVisibleMenu(VisibleMenu.DialectSwitcher)} >
+                    <button className="dialect-switcher-button">
+                        Change Language
+                    </button>
+                    <DialectSwitchButtonTwoBubbles className="dialect-switcher" />
+                </div>
                 }
                 <BurgerMenu
                     appConfig={this.props.appConfig}

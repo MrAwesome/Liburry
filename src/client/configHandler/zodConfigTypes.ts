@@ -194,7 +194,7 @@ export const rawFieldMetadata = strictObject({
         .describe("Regular expression to find delimiters in the field's value. Takes precedence over \"delimiter\". Should not be wrapped in /. You can wrap the regex in a negative lookup to keep it from disappearing, if desired: (?=REGEX_GOES_HERE)"),
     // TODO: when this is used, ensure that the values given are actually valid dialects from lang configs
     dialect: z.union([token("DIALECT_ID"), tokenArray("DIALECT_ID")]).optional()
-        .describe("[UNUSED] The human dialect (or list of dialects) of this field's data. Must be a valid DialectID (defined in lang.yml). This may be used in the future for the display of multi-language datasets."),
+        .describe("The human dialect (or list of dialects) of this field's data. Must be a valid DialectID (defined in lang.yml). This may be used in the future for the display of multi-language datasets."),
     lengthHint: anyString().optional()
         .describe("[UNUSED] This may be used in the future to help hint to the UI how much visual space to allocate to a field."),
     status: anyString().optional()
@@ -473,7 +473,6 @@ const defaultBuildConfigSchema = strictObject({
 const rawAppLoadedAllConfigSchema = strictObject({
     appConfig: appConfigSchema,
     dbConfig: dbConfigSchema,
-    langConfig: langConfigSchema.optional(),
     menuConfig: menuConfigSchema.optional(),
 });
 

@@ -21,7 +21,10 @@ export const rawLangConfigSchema = strictObject({
     // TODO: check that this is a valid dialect
     defaultDialectID: token("DIALECT_ID"),
     dialects: realRecord(token("DIALECT_ID"), rawDialectSchema),
-});
+}).refine(
+    (rlcs) => Object.keys(rlcs.dialects).includes(rlcs.defaultDialectID),
+    `defaultDialectID must be a valid dialect defined in "dialects"!`
+);
 
 // TODO: check that dialect keys match token
 export type RawLangConfig = z.infer<typeof rawLangConfigSchema>;

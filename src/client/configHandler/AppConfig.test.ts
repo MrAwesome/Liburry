@@ -7,7 +7,7 @@ test('load basic AppConfig', async () => {
     const appIDsOverride: [AppID, ...AppID[]] = [appID];
     const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride});
 
-    const ac = AppConfig.from(rfc, appID, null);
+    const ac = AppConfig.from(rfc, {appID});
     const dbcs = ac.dbConfigHandler.getAllEnabledDBConfigs();
 
     // simpletest-specific values:
@@ -21,19 +21,19 @@ test('load basic AppConfig with subapps', async () => {
     const defaultSubApp = rfc.appConfigs[appID]?.configs.appConfig.config.defaultSubApp;
     expect(defaultSubApp).toBeDefined();
 
-    const ac_no_override = AppConfig.from(rfc, appID, null);
+    const ac_no_override = AppConfig.from(rfc, {appID});
     const dbcs = ac_no_override.dbConfigHandler.getAllEnabledDBConfigs();
     expect(dbcs.find((dbc) => dbc.getDBIdentifier() === "happy")).toBeDefined();
     expect(ac_no_override.subAppID).toBeDefined();
     expect(ac_no_override.subAppID).toEqual(defaultSubApp);
 
-    const ac_with_real_override = AppConfig.from(rfc, appID, "happydb");
+    const ac_with_real_override = AppConfig.from(rfc, {appID, subAppID: "happydb"});
     const dbcs_with_override = ac_with_real_override.dbConfigHandler.getAllEnabledDBConfigs();
     expect(dbcs_with_override.find((dbc) => dbc.getDBIdentifier() === "happy")).toBeDefined();
     expect(ac_with_real_override.subAppID).toBeDefined();
     expect(ac_with_real_override.subAppID).toEqual("happydb");
 
-    const ac_with_bad_override = AppConfig.from(rfc, appID, "FAKE_UGH_xXx@@@BLAH");
+    const ac_with_bad_override = AppConfig.from(rfc, {appID, subAppID: "FAKE_UGH_xXx@@@BLAH"});
     const dbcs_with_bad_override = ac_with_bad_override.dbConfigHandler.getAllEnabledDBConfigs();
     expect(dbcs_with_bad_override.find((dbc) => dbc.getDBIdentifier() === "happy")).toBeDefined();
     expect(ac_with_bad_override.subAppID).toBeDefined();
@@ -46,9 +46,9 @@ test('load multiple apps via AppConfig', async () => {
     const appIDsOverride: [AppID, ...AppID[]] = [app1, app2];
     const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride});
 
-    const ac1 = AppConfig.from(rfc, app1, null);
+    const ac1 = AppConfig.from(rfc, {appID: app1});
     expect(ac1.appID).toBe(app1);
-    const ac2 = AppConfig.from(rfc, app2, null);
+    const ac2 = AppConfig.from(rfc, {appID: app2});
     expect(ac2.appID).toBe(app2);
 });
 
@@ -60,7 +60,7 @@ test('load basic AppConfig with subapps and views', async () => {
     expect(defaultSubApp).toBeDefined();
 
     {
-        const ac = AppConfig.from(rfc, appID, "dbs_mixed_with_null");
+        const ac = AppConfig.from(rfc, {appID, subAppID: "dbs_mixed_with_null"});
         const viewAngry = ac.dbConfigHandler.getViewForDB("angry");
         expect(viewAngry).toBe("yell_only");
         const viewHappy = ac.dbConfigHandler.getViewForDB("happy");
@@ -68,7 +68,7 @@ test('load basic AppConfig with subapps and views', async () => {
     }
 
     {
-        const ac = AppConfig.from(rfc, appID, "dbs_mixed_with_string");
+        const ac = AppConfig.from(rfc, {appID, subAppID: "dbs_mixed_with_string"});
         const viewAngry = ac.dbConfigHandler.getViewForDB("angry");
         expect(viewAngry).toBe("yell_only");
         const viewHappy = ac.dbConfigHandler.getViewForDB("happy");
@@ -76,7 +76,7 @@ test('load basic AppConfig with subapps and views', async () => {
     }
 
     {
-        const ac = AppConfig.from(rfc, appID, "angrydb");
+        const ac = AppConfig.from(rfc, {appID, subAppID: "angrydb"});
         const viewAngry = ac.dbConfigHandler.getViewForDB("angry");
         expect(viewAngry).toBe("person_target");
         const viewHappy = ac.dbConfigHandler.getViewForDB("happy");

@@ -1,6 +1,5 @@
 import type AppConfig from "../configHandler/AppConfig";
 import type {RawFieldMetadata} from "../configHandler/zodConfigTypes";
-import type {DialectID} from "../languages/dialect";
 import type {SearcherType} from "../search/searchers/Searcher";
 import type {DBIdentifier} from "../configHandler/zodConfigTypes";
 import type {DataType, DisplayType} from "./displayTypes";
@@ -151,7 +150,8 @@ export class AnnotatedDisplayReadyField {
         }
     }
 
-    getDialect(): DialectID | DialectID[] | null {
+    // NOTE: using "string" here, as these dialects are not assured to be known.
+    getDialect(): string | string[] | null {
         return this.d.metadata?.dialect ?? null;
     }
 

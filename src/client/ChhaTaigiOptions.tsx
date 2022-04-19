@@ -9,8 +9,8 @@ export default class OptionsChangeableByUser {
     debug = false;
     savedQuery = "";
     playground = false;
-    pageID: PageID | null = null;
-    appID: AppID | null = null;
-    subAppID: SubAppID | null = null;
-    dialect: KnownDialectID = "eng_us";
+    dialectID: KnownDialectID = "eng_us";
+    pageID?: PageID;
+    appID?: AppID;
+    subAppID?: SubAppID;
 }

@@ -6,13 +6,12 @@ import {getRecordEntries} from "../utils";
 import I18NHandler from "../../common/i18n/I18NHandler";
 
 import "./AppSelector.css";
-
-type SelectOption = {value: any, label: string};
+import {ReactSelectOption} from "../types/ReactSelectHelpers";
 
 type ASProps = {
     rfc: ReturnedFinalConfig,
     currentAppID: AppID,
-    currentSubAppID: SubAppID | null,
+    currentSubAppID: SubAppID | undefined,
     handleAppChange: (appID: AppID) => void,
     handleSubAppChange: (subAppID: SubAppID) => void,
     i18nHandler: I18NHandler;
@@ -24,17 +23,17 @@ export default class AppSelector extends React.PureComponent<ASProps, ASState> {
 
     constructor(props: ASProps) {
         super(props);
-        this.handleAppChangeINTERNAL = this.handleAppChangeINTERNAL.bind(this);
-        this.handleSubAppChangeINTERNAL = this.handleSubAppChangeINTERNAL.bind(this);
+        this.handleAppChangeINTERNAL = this.handleAppChangeINTERNAL?.bind(this);
+        this.handleSubAppChangeINTERNAL = this.handleSubAppChangeINTERNAL?.bind(this);
     }
 
-    //handleAppChangeINTERNAL(option: SelectOption | readonly SelectOption[] | null, _: any) {
-    handleAppChangeINTERNAL(option: any, _: any) {
-        this.props.handleAppChange(option.value as AppID);
+    //handleAppChangeINTERNAL(option: ReactSelectOption | readonly ReactSelectOption[] | null, _: any) {
+    handleAppChangeINTERNAL: SelectProps<ReactSelectOption>['onChange'] = (option, _) => {
+        this.props.handleAppChange((option as ReactSelectOption).value as AppID);
     }
 
-    handleSubAppChangeINTERNAL(option: any, _: any) {
-        this.props.handleSubAppChange(option.value as SubAppID);
+    handleSubAppChangeINTERNAL: SelectProps<ReactSelectOption>['onChange'] = (option, _) => {
+        this.props.handleSubAppChange((option as ReactSelectOption).value as SubAppID);
     }
 
     render() {
@@ -55,7 +54,7 @@ export default class AppSelector extends React.PureComponent<ASProps, ASState> {
         if (allSubApps !== undefined && allSubApps.length > 1) {
             const selectedSubAppRaw = getSubApp(rfc, currentAppID, currentSubAppID);
             const allSubAppDisplayVals = allSubApps.map(subAppToReactSelectOption);
-            const selectedSubApp = (selectedSubAppRaw !== null) ? subAppToReactSelectOption(selectedSubAppRaw) : allSubAppDisplayVals[0];
+            const selectedSubApp = (selectedSubAppRaw !== undefined) ? subAppToReactSelectOption(selectedSubAppRaw) : allSubAppDisplayVals[0];
             subAppSelector = appSelectorHelper(allSubAppDisplayVals, selectedSubApp, this.handleSubAppChangeINTERNAL, undefined);
         }
 
@@ -93,15 +92,15 @@ function getKnownApp(rfc: ReturnedFinalConfig, appID: AppID): {appID: AppID, dis
     return {appID, displayName};
 }
 
-function getSubApp(rfc: ReturnedFinalConfig, appID: AppID, subAppID: SubAppID | null): {subAppID: AppID, displayName: string} | null {
-    if (subAppID === null) {
-        return null;
+function getSubApp(rfc: ReturnedFinalConfig, appID: AppID, subAppID: SubAppID | undefined): {subAppID: AppID, displayName: string} | undefined {
+    if (subAppID === undefined) {
+        return undefined;
     }
     const appConf = getKnownAppConfig(rfc, appID);
     const subApp = appConf.configs.appConfig.config.subApps?.[subAppID];
 
     if (subApp === undefined) {
-        return null;
+        return undefined;
     }
     const {displayName} = subApp;
 
@@ -120,18 +119,18 @@ function getAllSubAppsForApp(rfc: ReturnedFinalConfig, appID: AppID): {subAppID:
     });
 }
 
-function appToReactSelectOption(app: {appID: AppID, displayName: string}): SelectOption {
+function appToReactSelectOption(app: {appID: AppID, displayName: string}): ReactSelectOption {
     return {value: app.appID, label: app.displayName};
 }
 
-function subAppToReactSelectOption(subApp: {subAppID: AppID, displayName: string}): SelectOption {
+function subAppToReactSelectOption(subApp: {subAppID: AppID, displayName: string}): ReactSelectOption {
     return {value: subApp.subAppID, label: subApp.displayName};
 }
 
 function appSelectorHelper(
-    options: SelectOption[],
-    selected: SelectOption,
-    onChange: SelectProps<SelectOption>['onChange'],
+    options: ReactSelectOption[],
+    selected: ReactSelectOption,
+    onChange: SelectProps<ReactSelectOption>['onChange'],
     ref: React.Ref<any> | undefined,
 ) {
     return <Select

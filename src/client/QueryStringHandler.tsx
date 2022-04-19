@@ -36,7 +36,7 @@ const FIELDTYPE_TO_FIELDKEY_MAPPING = {
     playground: PLAYGROUND,
     appID: APP,
     subAppID: SUBAPP,
-    dialect: DIALECT,
+    dialectID: DIALECT,
 } as const;
 
 export type QueryStringFieldType = keyof typeof FIELDTYPE_TO_FIELDKEY_MAPPING;
@@ -172,7 +172,7 @@ export default class QueryStringParser {
         }
 
         if (typeof dialect === "string") {
-            options.dialect = dialect as KnownDialectID;
+            options.dialectID = dialect as KnownDialectID;
         }
 
         if (typeof subAppID === "string") {

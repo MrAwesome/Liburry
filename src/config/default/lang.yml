@@ -11,7 +11,7 @@ dialects:
 #    tags:
 #      representation: poj
 
-  tw_kip:
+  hok_tw_kip:
     displayName: "Tâi-Lô"
     otherDisplayNames:
       eng_us: "Taiwanese (KIP)"
@@ -27,7 +27,7 @@ dialects:
     displayName: "English (US)"
     otherDisplayNames:
       hok_tw_poj: "Eng-gí (Bí-kok)"
-      tw_kip: "Ing-gí (Bí-kok)"
+      hok_tw_kip: "Ing-gí (Bí-kok)"
     tokens:
       search: "Search..."
       select: "Select "
