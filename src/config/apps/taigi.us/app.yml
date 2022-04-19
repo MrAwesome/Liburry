@@ -11,17 +11,17 @@ defaultSubApp: "eng_poj"
 # NOTE: displayNames per language can be implemented without too much trouble, if needed
 subApps:
   eng_poj:
-    displayName: "English ↔ Pe̍h-ōe-jī"
+    displayName: "English ↔ Pe̍h-Ōe-Jī"
   eng_kip:
-    displayName: "English ↔ Kàu-io̍k-pōo"
+    displayName: "English ↔ Kàu-Io̍k-Pōo"
   tcn_poj:
-    displayName: "漢字 ↔ Pe̍h-ōe-jī"
+    displayName: "漢字 ↔ Pe̍h-Ōe-Jī"
   tcn_kip:
-    displayName: "漢字 ↔ Kàu-io̍k-pōo"
+    displayName: "漢字 ↔ Kàu-Io̍k-Pōo"
   all_poj:
-    displayName: "All DBs / 所有數據庫 (Pe̍h-ōe-jī)"
+    displayName: "All DBs / 所有數據庫 (Pe̍h-Ōe-Jī)"
   all_kip:
-    displayName: "All DBs / 所有數據庫 (Kàu-io̍k-pōo)"
+    displayName: "All DBs / 所有數據庫 (Kàu-Io̍k-Pōo)"
 
 # NOTE: font sets per subapp can be implemented, but it's likely that per-app is more than sufficient for most use cases
 # NOTE: font families listed here are applied globally, in the order they are first seen.

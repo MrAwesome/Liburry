@@ -2,20 +2,24 @@ defaultDialectID: "eng_us"
 
 dialects:
   hok_tw_poj:
-    displayName: "Pe̍h-Oē-Jī"
+    displayName: "Tâi-oân-ōe (Pe̍h-Oē-Jī)"
     otherDisplayNames:
       eng_us: "Taiwanese (POJ)"
-      hok_tw_poj: "Pe̍h-uē-jī"
+      hok_tw_kip: "Tâi-uân-uē (Pe̍h-Uē-Jī)"
+    tokens:
+      search: "Chhâ..."
 #    parentGroups:
 #      - taiwanese
 #    tags:
 #      representation: poj
 
   hok_tw_kip:
-    displayName: "Tâi-Lô"
+    displayName: "Tâi-uân-uē (Kàu-Io̍k-Pōo)"
     otherDisplayNames:
       eng_us: "Taiwanese (KIP)"
-      hok_tw_poj: "Pe̍h-uē-jī"
+      hok_tw_poj: "Tâi-uân-uē (Kàu-Io̍k-Pō͘)"
+    tokens:
+      search: "Tshâ..."
 #   parentGroups:
 #     - taiwanese
 #    tags:
@@ -50,7 +54,7 @@ dialects:
       - mand_cn
 
     tokens:
-      search: "搜索"
+      search: "搜索..."
       select: "選"
       app: "應用程序 (APP)"
       subapp: "子應用程序 (子APP)"
@@ -63,7 +67,7 @@ dialects:
       - mand_tw
 
     tokens:
-      search: "搜寻"
+      search: "搜寻..."
       select: "选"
       app: "应用程序 (APP)"
       subapp: "子应用程序 (子APP)"

@@ -9,4 +9,4 @@
 //export type DialectID = keyof I18N;
 //export type I18NToken = keyof I18N['eng_us']['tokens'];
 
-export type {I18NToken, KnownDialectID} from "../generated/i18n"
+export type {I18NToken, KnownDialectID} from "../generated/i18n";

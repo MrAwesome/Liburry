@@ -339,7 +339,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         const entryContainers = entries.map((entry) => {
             const dbConfig = this.appConfig.dbConfigHandler.getConfig(entry.getDBIdentifier());
             // TODO: log an error if dbConfig is null here?
-            const displayableFields = dbConfig?.getDisplayableFields() ?? new Set();
+            const displayableFields = dbConfig?.getDisplayableFieldIDs() ?? new Set();
             return <AgnosticEntryContainer
                 debug={options.debug}
                 entry={entry}
@@ -398,6 +398,12 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         const mainAreaContents = this.getMainDisplayAreaContents(mainMode);
 
+        // TODO: memoize
+        const allEnabledDBs = this.appConfig.dbConfigHandler.getAllEnabledDBConfigs();
+        const allSearchableKnownDialectsForThisSearch = Array.from(new Set(allEnabledDBs.map((dbConf) => dbConf.getKnownDialectIDsForSearchableFields()).flat()));
+        const searchPhrases = allSearchableKnownDialectsForThisSearch.map((dialectID) => this.i18nHandler.tokForDialect("search", dialectID));
+        const searchBarPlaceholderText = searchPhrases.join(" / ");
+
         // TODO: fix styling on searchbar (border-radius, better border-ish color)
         // TODO: get rid of react-burger-menu, use modal
         // TODO: consider having searchOptionsOpen be a hash option
@@ -433,7 +439,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 goHome={this.goHome}
                 toggleVisibleMenu={this.toggleVisibleMenu}
                 getProgressBars={this.props.getProgressBars}
-                i18nHandler={this.i18nHandler}
+                placeholderText={searchBarPlaceholderText}
             />
             <div className="liburry-main-area" >
                 {mainAreaContents}

@@ -148,7 +148,7 @@ class RegexSearchableDict {
     }
 
     checkEntry(r: RegExp, entry: RawDBRow) {
-        const searchableFields = this.dbConfig.getSearchableFields();
+        const searchableFields = this.dbConfig.getSearchableFieldIDs();
         return searchableFields.some((fieldName) => {
             if (fieldName in entry) {
                 return r.test(entry[fieldName]);

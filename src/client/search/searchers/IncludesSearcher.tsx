@@ -155,7 +155,7 @@ class IncludesSearchableDict {
     }
 
     checkEntry(q: string, entry: RawDBRow) {
-        const searchableFields = this.dbConfig.getSearchableFields();
+        const searchableFields = this.dbConfig.getSearchableFieldIDs();
         return searchableFields.some((fieldName) => {
             let f = fieldName;
             if (this.opts.lowercase) {

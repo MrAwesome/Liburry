@@ -158,7 +158,6 @@ class DBConfigHandler {
     }
 
     getAllEnabledDBConfigs(): DBConfig[] {
-        // NOTE: the bypass here is for testing, and will certainly disappear.
         return this.getAllEnabledDBs()
             .map((dbID) => this.dbIDsToDBConfigs.get(dbID))
             .filter(nullGuard);

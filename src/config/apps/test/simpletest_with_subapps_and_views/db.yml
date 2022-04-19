@@ -78,7 +78,9 @@ dbConfigs:
       company:
         type:
           dictionary: vocab
+        dialect: "eng_us"
 
       slogan:
         type:
           dictionary: definition
+        dialect: "mand_tw"

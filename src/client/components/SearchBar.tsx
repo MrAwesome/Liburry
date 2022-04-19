@@ -1,5 +1,4 @@
 import * as React from "react";
-import I18NHandler from "../../common/i18n/I18NHandler";
 import {BurgerMenu} from "../menu/BurgerMenu";
 import {PageID} from "../configHandler/zodConfigTypes";
 import {VisibleMenu} from "../ChhaTaigi";
@@ -19,7 +18,7 @@ interface SearchBarProps {
     goHome: () => void,
     toggleVisibleMenu: (targetMenu: VisibleMenu) => void,
     getProgressBars?: (parentElem: React.RefObject<HTMLElement>) => JSX.Element,
-    i18nHandler?: I18NHandler,
+    placeholderText: string,
 }
 
 interface SearchBarState {
@@ -83,7 +82,7 @@ export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarStat
                     <form onSubmit={this.onSubmit} autoComplete="off" >
                         <input
                             autoFocus
-                            placeholder={this.props.i18nHandler?.tok("search") ?? "Search..."}
+                            placeholder={this.props.placeholderText}
                             type="text"
                             autoComplete="off"
                             onChange={this.onChange}

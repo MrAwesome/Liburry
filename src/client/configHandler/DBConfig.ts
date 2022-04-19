@@ -1,3 +1,5 @@
+import {KnownDialectID} from "../../common/generatedTypes";
+import {knownDialectIDsSet} from "../../generated/i18n";
 import {FieldID, RawFieldMetadata, RawDBConfig, ViewID, DBIdentifier} from "../configHandler/zodConfigTypes";
 
 export interface DBLoadInfo {
@@ -5,10 +7,12 @@ export interface DBLoadInfo {
     localLunr?: string;
 }
 
+// A helper class for handling dataset metadata. Should be initialized separately for different views.
 export default class DBConfig {
     // Since this is often used for initialization, not checking for presence, it returns an array instead of a set.
-    private searchableFields: [FieldID, ...FieldID[]];
-    private displayableFields: Set<FieldID>;
+    private searchableFieldIDs: [FieldID, ...FieldID[]];
+    private displayableFieldIDs: Set<FieldID>;
+    private savedSearchableKnownDialects?: KnownDialectID[];
 
     constructor(
         private dbIdentifier: DBIdentifier,
@@ -25,11 +29,11 @@ export default class DBConfig {
                 console.error(`View "${view}" is not one of "${r.views}"! Falling back to the first view: ${fallbackView}.`);
                 view = fallbackView;
             }
-            this.displayableFields = new Set(r.views[view].displayableFields);
-            this.searchableFields = r.views[view].searchableFields;
+            this.displayableFieldIDs = new Set(r.views[view].displayableFields);
+            this.searchableFieldIDs = r.views[view].searchableFields;
         } else {
-            this.displayableFields = new Set(r.displayableFields);
-            this.searchableFields = r.searchableFields;
+            this.displayableFieldIDs = new Set(r.displayableFields);
+            this.searchableFieldIDs = r.searchableFields;
         }
     }
 
@@ -45,13 +49,55 @@ export default class DBConfig {
         return this.r.primaryKey;
     }
 
-    getDisplayableFields(): Set<FieldID> {
-        return this.displayableFields;
+    getDisplayableFieldIDs(): Set<FieldID> {
+        return this.displayableFieldIDs;
     }
 
     // Since this is often used for initialization, not checking for presence, it returns an array instead of a set.
-    getSearchableFields(): [FieldID, ...FieldID[]] {
-        return this.searchableFields;
+    getSearchableFieldIDs(): [FieldID, ...FieldID[]] {
+        return this.searchableFieldIDs;
+    }
+
+    private getRawDialectIDsForSearchableFields(): string[] {
+        const searchableFields = this.getSearchableFieldIDs().map((fieldID) => this.r.fields[fieldID]!);
+        const seenRawDialects: Set<string> = new Set();
+        searchableFields.forEach((field) => {
+            const dialectIDOrIDs = field.dialect;
+            if (dialectIDOrIDs === undefined) return;
+
+            let dialectIDs;
+            if (Array.isArray(dialectIDOrIDs)) {
+                dialectIDs = dialectIDOrIDs;
+            } else {
+                dialectIDs = [dialectIDOrIDs];
+            }
+            dialectIDs.forEach((dialectID) => {
+                if (!seenRawDialects.has(dialectID)) {
+                    seenRawDialects.add(dialectID)
+                }
+            });
+        });
+        return Array.from(seenRawDialects);
+    }
+
+    getKnownDialectIDsForSearchableFields(): KnownDialectID[] {
+        // Use memoization of the results for this DBConfig instance only
+        if (this.savedSearchableKnownDialects !== undefined) {
+            return this.savedSearchableKnownDialects;
+        }
+
+        const seenRawDialects = this.getRawDialectIDsForSearchableFields();
+
+        // If a dialect has entries in our lang configs, it counts as "known"
+        const seenKnownDialects: KnownDialectID[] = []
+        seenRawDialects.forEach((rawDialect) => {
+            if (knownDialectIDsSet.has(rawDialect as KnownDialectID)) {
+                seenKnownDialects.push(rawDialect as KnownDialectID);
+            }
+        });
+
+        this.savedSearchableKnownDialects = seenKnownDialects;
+        return seenKnownDialects;
     }
 
     getDBIdentifier() {

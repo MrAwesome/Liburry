@@ -86,7 +86,7 @@ export class FuzzySortPreparer implements SearcherPreparer {
 
     convertCSVToFuzzySearchableDict(text: string): FuzzySearchableDict {
         const dbIdentifier = this.dbConfig.getDBIdentifier();
-        const searchableFields = this.dbConfig.getSearchableFields();
+        const searchableFields = this.dbConfig.getSearchableFieldIDs();
         this.console.timeEnd("fetch-" + dbIdentifier);
 
         this.console.time("csvConvertPrePrepped-" + dbIdentifier);
@@ -124,7 +124,7 @@ class FuzzySearchableDict {
     ): OngoingSearch | SearchFailure {
         const dbIdentifier = this.dbConfig.getDBIdentifier();
 
-        const fuzzyOpts = getFuzzyOpts(this.dbConfig.getSearchableFields());
+        const fuzzyOpts = getFuzzyOpts(this.dbConfig.getSearchableFieldIDs());
         const cancelableSearchPromise = fuzzysort.goAsync(
             query,
             this.searchableEntries,
