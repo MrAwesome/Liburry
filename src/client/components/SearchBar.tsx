@@ -24,7 +24,7 @@ interface SearchBarProps {
 interface SearchBarState {
 }
 
-export class SearchBar extends React.PureComponent<SearchBarProps, SearchBarState> {
+export class SearchBar extends React.Component<SearchBarProps, SearchBarState> {
     textInput: React.RefObject<HTMLInputElement> = React.createRef();
 
     constructor(props: any) {

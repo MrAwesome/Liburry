@@ -442,7 +442,7 @@ export async function genWriteFinalConfig(jsonString: string) {
 }
 
 const DEFINITIONS_DEFAULT_LANG = "eng_us";
-const I18N_TYPEDEF_FILENAME = "i18n.d.ts";
+const I18N_TYPEDEF_FILENAME = "i18n.ts";
 export function getTypeScriptHelperDefinitionsFromConfig(rfc: ReturnedFinalConfig): {filename: string, contents: string, after: () => Promise<void>}[] {
     const defaultLangConfig = rfc.default.configs.langConfig.config;
     //const dialectNames = Object.keys(defaultLangConfig.dialects);
