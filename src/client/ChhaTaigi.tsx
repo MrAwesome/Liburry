@@ -11,7 +11,7 @@ import {AllDBLoadStats, AnnotatedPerDictResults} from "./types/dbTypes";
 import {CombinedPageElement} from "./pages/Page";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {SearchBar} from "./components/SearchBar";
-import {getProtecc, runningInJest} from "./utils";
+import {getProtecc, getRecordEntries, runningInJest} from "./utils";
 import AppConfig from "./configHandler/AppConfig";
 import SearchOptionsArea from "./searchOptions/SearchOptionsArea";
 import I18NHandler from "../common/i18n/I18NHandler";
@@ -371,6 +371,27 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         }
     }
 
+    getSearchBarPlaceholderText(): string {
+        // TODO: memoize based on the combination of app+subapp+dialect. Make this a component?
+        const allEnabledDBs = this.appConfig.dbConfigHandler.getAllEnabledDBConfigs();
+        const knownDialectsForDBs = allEnabledDBs.map((dbConf) => dbConf.getKnownDialectIDsForSearchableFields()).flat();
+        const frequencies: Partial<Record<KnownDialectID, number>> = {};
+        knownDialectsForDBs.forEach((dialectID) => {
+            const pastFreq = frequencies[dialectID];
+            frequencies[dialectID] = pastFreq !== undefined ? pastFreq + 1 : 1;
+        });
+        const sortedFreq = getRecordEntries(frequencies).sort(function(a, b) {
+            return b[1] - a[1];
+        });
+        const allSearchableKnownDialectsForThisSearch = sortedFreq.map((x) => x[0] as KnownDialectID);
+        if (allSearchableKnownDialectsForThisSearch.length > 0) {
+            const searchPhrases = allSearchableKnownDialectsForThisSearch.map((dialectID) => this.i18nHandler.tokForDialect("search", dialectID));
+            return searchPhrases.join(" / ");
+        } else {
+            return this.i18nHandler.tok("search");
+        }
+    }
+
     loadPage(pageID: PageID) {
         this.genUpdateQs({mainMode: MainDisplayAreaMode.PAGE, pageID}, {modifyHistInPlace: true});
     }
@@ -398,11 +419,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         const mainAreaContents = this.getMainDisplayAreaContents(mainMode);
 
-        // TODO: memoize
-        const allEnabledDBs = this.appConfig.dbConfigHandler.getAllEnabledDBConfigs();
-        const allSearchableKnownDialectsForThisSearch = Array.from(new Set(allEnabledDBs.map((dbConf) => dbConf.getKnownDialectIDsForSearchableFields()).flat()));
-        const searchPhrases = allSearchableKnownDialectsForThisSearch.map((dialectID) => this.i18nHandler.tokForDialect("search", dialectID));
-        const searchBarPlaceholderText = searchPhrases.join(" / ");
+        const searchBarPlaceholderText = this.getSearchBarPlaceholderText();
 
         // TODO: fix styling on searchbar (border-radius, better border-ish color)
         // TODO: get rid of react-burger-menu, use modal

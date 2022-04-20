@@ -27,7 +27,7 @@ function dialectToReactSelectOption(dialectID: KnownDialectID, dialect: RawDiale
     return {label: dialect.displayName, value: dialectID};
 }
 
-export default class DialectSwitcher extends React.Component<SOAProps, Record<string, never>> {
+export default class DialectSwitcher extends React.PureComponent<SOAProps, Record<string, never>> {
     onDialectSwitchINTERNAL: SelectProps<ReactSelectOption>['onChange'] = (option, _) => {
         this.props.onDialectSwitch((option as ReactSelectOption).value);
     }

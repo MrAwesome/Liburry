@@ -1,6 +1,7 @@
 import {KnownDialectID} from "../../common/generatedTypes";
 import {knownDialectIDsSet} from "../../generated/i18n";
 import {FieldID, RawFieldMetadata, RawDBConfig, ViewID, DBIdentifier} from "../configHandler/zodConfigTypes";
+import {nullGuard} from "../utils";
 
 export interface DBLoadInfo {
     localCSV?: string;
@@ -59,27 +60,33 @@ export default class DBConfig {
     }
 
     private getRawDialectIDsForSearchableFields(): string[] {
-        const searchableFields = this.getSearchableFieldIDs().map((fieldID) => this.r.fields[fieldID]!);
-        const seenRawDialects: Set<string> = new Set();
-        searchableFields.forEach((field) => {
-            const dialectIDOrIDs = field.dialect;
-            if (dialectIDOrIDs === undefined) return;
-
-            let dialectIDs;
-            if (Array.isArray(dialectIDOrIDs)) {
-                dialectIDs = dialectIDOrIDs;
-            } else {
-                dialectIDs = [dialectIDOrIDs];
-            }
-            dialectIDs.forEach((dialectID) => {
-                if (!seenRawDialects.has(dialectID)) {
-                    seenRawDialects.add(dialectID)
-                }
-            });
-        });
-        return Array.from(seenRawDialects);
+        return this.getSearchableFieldIDs()
+            .map((fieldID) => this.r.fields[fieldID]!.dialect)
+            .filter(nullGuard)
+            .flat();
+//      const seenRawDialects: Set<string> = new Set();
+//        searchableFields.forEach((field) => {
+//            const dialectIDOrIDs = field.dialect;
+//            if (dialectIDOrIDs === undefined) return;
+//
+//            let dialectIDs;
+//            if (Array.isArray(dialectIDOrIDs)) {
+//                dialectIDs = dialectIDOrIDs;
+//            } else {
+//                dialectIDs = [dialectIDOrIDs];
+//            }
+//            dialectIDs.forEach((dialectID) => {
+//                if (!seenRawDialects.has(dialectID)) {
+//                    seenRawDialects.add(dialectID)
+//                }
+//            });
+//        });
+//      return Array.from(seenRawDialects);
     }
 
+//    getKnownDialectIDsForSearchableFieldsWithDuplicates(): KnownDialectID[] {
+//    }
+//
     getKnownDialectIDsForSearchableFields(): KnownDialectID[] {
         // Use memoization of the results for this DBConfig instance only
         if (this.savedSearchableKnownDialects !== undefined) {

@@ -17,7 +17,7 @@ type SOAProps = {
     i18nHandler: I18NHandler;
 };
 
-export default class SearchOptionsArea extends React.Component<SOAProps, Record<string, never>> {
+export default class SearchOptionsArea extends React.PureComponent<SOAProps, Record<string, never>> {
     appSelector: React.RefObject<AppSelector> = React.createRef();
 
     render() {
