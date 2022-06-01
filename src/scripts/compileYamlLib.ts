@@ -8,7 +8,6 @@ import {rawLangConfigSchema} from '../client/configHandler/zodLangConfigTypes';
 import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from "../client/constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
 import {getRecordEntries, runningInJest} from '../client/utils';
-import DBConfig from "../client/configHandler/DBConfig";
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
@@ -315,10 +314,8 @@ export function getFilesToCache(finalObj: ReturnedFinalConfig): string[] {
 
         const {dbConfigs} = allAppConfigs.configs.dbConfig.config;
 
-        for (const [dbIdentifier, rawDBConfig] of getRecordEntries(dbConfigs)) {
-            const dbConfig = new DBConfig(dbIdentifier, rawDBConfig);
-
-            const loadInfo = dbConfig.getDBLoadInfo();
+        for (const [_dbIdentifier, rawDBConfig] of getRecordEntries(dbConfigs)) {
+            const loadInfo = rawDBConfig.loadInfo;
             for (const key in loadInfo) {
                 const validKey = key as keyof typeof loadInfo;
                 if (key.startsWith("local")) {

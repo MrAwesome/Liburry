@@ -1,8 +1,10 @@
 import type {CancelablePromise} from "./types/general";
 
+// Used for satisfying the type checker that something has been used - usually
+// if we need to import something but don't need to use it directly.
 export function noop(_: any) {}
 
-// Wow.
+// Replace the very odd behavior of javascript's default modulo function.
 export function mod(n: number, m: number) {
     return ((n % m) + m) % m;
 }
@@ -21,14 +23,14 @@ export function runningInProduction() {
     return process.env.NODE_ENV === "production";
 }
 
-export function getProtecc() {
+export function setTimeoutButNotInProdOrTests() {
     return (runningInJest() || runningInProduction())
             ? (f: () => void) => f()
             : setTimeout;
 }
 
 export function nullGuard<T>(obj: T | undefined | null): obj is T {
-    return !!obj;
+    return obj !== undefined && obj !== null;
 }
 
 export function makeCancelable<T>(promise: Promise<T>): CancelablePromise<T> {

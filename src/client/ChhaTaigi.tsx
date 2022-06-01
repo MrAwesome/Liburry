@@ -11,7 +11,7 @@ import {AllDBLoadStats, AnnotatedPerDictResults} from "./types/dbTypes";
 import {CombinedPageElement} from "./pages/Page";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {SearchBar} from "./components/SearchBar";
-import {getProtecc, getRecordEntries, runningInJest} from "./utils";
+import {setTimeoutButNotInProdOrTests, getRecordEntries, runningInJest} from "./utils";
 import AppConfig from "./configHandler/AppConfig";
 import SearchOptionsArea from "./searchOptions/SearchOptionsArea";
 import I18NHandler from "../common/i18n/I18NHandler";
@@ -23,6 +23,7 @@ import "./ChhaTaigi.css";
 import DialectSwitcher from "./dialects/DialectSwitcher";
 import {KnownDialectID} from "../common/generatedTypes";
 
+// TODO: make clicking on search bar close dialogue windows
 // TODOs are here: https://docs.google.com/spreadsheets/d/1lvbgLRRxGiNIf2by_mMW0aJrP1uhYTsz4_I4vmrB_Ss/edit?usp=sharing
 //
 // Posts:
@@ -33,9 +34,6 @@ import {KnownDialectID} from "../common/generatedTypes";
 // [] aiong, podcasters, chhoetaigi folks, etc
 //
 // https://twblg.dict.edu.tw/holodict_new/mobile/result_detail.jsp?n_no=11235&curpage=1&sample=%E9%A4%85&radiobutton=1&querytarget=1&limit=50&pagenum=1&rowcount=25
-
-type Timer = ReturnType<typeof setTimeout>;
-const TYPING_TIMEOUT_MS = 1000;
 
 export interface ChhaTaigiProps {
     rfc: ReturnedFinalConfig,
@@ -62,6 +60,9 @@ export enum VisibleMenu {
     SearchOptions,
     DialectSwitcher,
 }
+
+type Timer = ReturnType<typeof setTimeout>;
+const TYPING_TIMEOUT_MS = 1000;
 
 export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     private currentMountAttempt = 0;
@@ -198,7 +199,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         const savedMountAttempt = this.currentMountAttempt;
 
         // Waiting breaks MountUnmount tests, so don't setTimeout in tests
-        const protecc = getProtecc();
+        const protecc = setTimeoutButNotInProdOrTests();
         const msToWaitInDevMode = 10;
 
         // Wait for check that this is actually the final mount attempt
