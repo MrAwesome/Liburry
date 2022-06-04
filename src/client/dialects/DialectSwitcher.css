@@ -1,0 +1,9 @@
+.dialect-switcher-div {
+    width: 28px;
+    height: 28px;
+}
+
+.dialect-switcher {
+    width: inherit;
+    height: inherit;
+}

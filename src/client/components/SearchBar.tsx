@@ -6,9 +6,10 @@ import {isMobileDevice} from "../utils";
 
 import type AppConfig from "../configHandler/AppConfig";
 
-import {ReactComponent as DialectSwitchButtonTwoBubbles} from "../../icons/langswitchTwoBubbles.svg";
 import {ReactComponent as SearchClickableMagGlass} from "../../icons/searchClickableMagGlass.svg";
 import "./SearchBar.css";
+import {KnownDialectID} from "../../generated/i18n";
+import I18NHandler from "../../common/i18n/I18NHandler";
 
 interface SearchBarProps {
     appConfig: AppConfig,
@@ -19,6 +20,9 @@ interface SearchBarProps {
     toggleVisibleMenu: (targetMenu: VisibleMenu) => void,
     getProgressBars?: (parentElem: React.RefObject<HTMLElement>) => JSX.Element,
     placeholderText: string,
+    currentDialectID: KnownDialectID,
+    i18nHandler: I18NHandler;
+    onDialectSwitch: (dialectID: KnownDialectID) => void,
 }
 
 interface SearchBarState {
@@ -90,19 +94,14 @@ export class SearchBar extends React.Component<SearchBarProps, SearchBarState> {
                         />
                     </form>
                 </div>
-                {
-                <div className="dialect-switcher-div"
-                        onClick={() => this.props.toggleVisibleMenu(VisibleMenu.DialectSwitcher)} >
-                    <button className="dialect-switcher-button">
-                        Change Language
-                    </button>
-                    <DialectSwitchButtonTwoBubbles className="dialect-switcher" />
-                </div>
-                }
                 <BurgerMenu
                     appConfig={this.props.appConfig}
                     loadPage={this.props.loadPage}
                     goHome={this.props.goHome}
+                    toggleVisibleMenu={this.props.toggleVisibleMenu}
+                    i18nHandler={this.props.i18nHandler}
+                    currentDialectID={this.props.currentDialectID}
+                    onDialectSwitch={this.props.onDialectSwitch}
                 />
             </div>
             <div className="search-area-buffer" />

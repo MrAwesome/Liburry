@@ -46,13 +46,7 @@
     right: auto;
 }
 
-.dialect-switcher-div {
-    top: 6px;
-    left: auto;
-    right: 41px;
-}
-
-.clickable-mag-glass-div, .dialect-switcher-div {
+.clickable-mag-glass-div {
     animation: .8s cubic-bezier(.18,.89,.32,1.28) 1.3s 1 littleBlip;
     position: absolute;
 
@@ -65,15 +59,15 @@
     cursor: pointer;
 }
 
-.clickable-mag-glass-div:hover, .dialect-switcher-div:hover {
+.clickable-mag-glass-div:hover {
     transform: scale(1.05);
 }
 
-.clickable-mag-glass-div:active, .dialect-switcher-div:active {
+.clickable-mag-glass-div:active {
     transform: scale(1.00);
 }
 
-.clickable-mag-glass-button, .dialect-switcher-button {
+.clickable-mag-glass-button {
     font-size: 0px;
     width: 100%;
     height: 100%;
@@ -81,7 +75,7 @@
     border: 0px;
 }
 
-.clickable-mag-glass, .dialect-switcher {
+.clickable-mag-glass {
     position: absolute;
     width: inherit;
     height: inherit;

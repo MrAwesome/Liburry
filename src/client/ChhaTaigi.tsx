@@ -20,7 +20,6 @@ import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
 
 import "./ChhaTaigi.css";
-import DialectSwitcher from "./dialects/DialectSwitcher";
 import {KnownDialectID} from "../common/generatedTypes";
 
 // TODO: make clicking on search bar close dialogue windows
@@ -381,9 +380,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             const pastFreq = frequencies[dialectID];
             frequencies[dialectID] = pastFreq !== undefined ? pastFreq + 1 : 1;
         });
-        const sortedFreq = getRecordEntries(frequencies).sort(function(a, b) {
-            return b[1] - a[1];
-        });
+        const sortedFreq = getRecordEntries(frequencies).sort((a, b) => b[1] - a[1]);
         const allSearchableKnownDialectsForThisSearch = sortedFreq.map((x) => x[0] as KnownDialectID);
         if (allSearchableKnownDialectsForThisSearch.length > 0) {
             const searchPhrases = allSearchableKnownDialectsForThisSearch.map((dialectID) => this.i18nHandler.tokForDialect("search", dialectID));
@@ -437,17 +434,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 i18nHandler={this.i18nHandler}
             />
 
-            <DialectSwitcher
-                rfc={this.props.rfc}
-                appConfig={this.appConfig}
-                dialectSwitcherVisible={visibleMenu === VisibleMenu.DialectSwitcher}
-                searchBarRef={searchBarRef}
-                closeSearchOptionsArea={this.closeVisibleMenu}
-                i18nHandler={this.i18nHandler}
-                currentDialectID={options.dialectID}
-                onDialectSwitch={this.handleDialectChange}
-            />
-
             <SearchBar
                 appConfig={this.appConfig}
                 ref={this.searchBarRef}
@@ -458,6 +444,10 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 toggleVisibleMenu={this.toggleVisibleMenu}
                 getProgressBars={this.props.getProgressBars}
                 placeholderText={searchBarPlaceholderText}
+
+                i18nHandler={this.i18nHandler}
+                currentDialectID={options.dialectID}
+                onDialectSwitch={this.handleDialectChange}
             />
             <div className="liburry-main-area" >
                 {mainAreaContents}

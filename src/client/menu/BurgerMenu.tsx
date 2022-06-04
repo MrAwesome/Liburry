@@ -6,11 +6,19 @@ import "./burger.css";
 
 import {ReactComponent as SettingsIcon} from "../../icons/settings.svg";
 import {ReactComponent as SettingsCloseIcon} from "../../icons/settingsClose.svg";
+import {VisibleMenu} from "../ChhaTaigi";
+import DialectSwitcher from "../dialects/DialectSwitcher";
+import {KnownDialectID} from "../../generated/i18n";
+import I18NHandler from "../../common/i18n/I18NHandler";
 
 interface BMenuProps {
     appConfig: AppConfig,
     loadPage: (pageID: PageID) => void,
     goHome: () => void,
+    toggleVisibleMenu: (targetMenu: VisibleMenu) => void,
+    currentDialectID: KnownDialectID,
+    i18nHandler: I18NHandler;
+    onDialectSwitch: (dialectID: KnownDialectID) => void,
 }
 
 interface BMenuState {
@@ -78,10 +86,12 @@ export class BurgerMenu extends React.Component<BMenuProps, BMenuState> {
     // TODO: keep state of current location to point at it
 
     render() {
-        const pageHandler = this.props.appConfig.pageHandler;
+        const {appConfig} = this.props;
+        const pageHandler = appConfig.pageHandler;
         const pageIDs = pageHandler.getPageIDs();
         const pageLinks = pageIDs.map(this.makePageIDButton);
 
+        // TODO: only show dialect menu if more than one language is detected
         return (
             <Menu
                 right
@@ -93,8 +103,13 @@ export class BurgerMenu extends React.Component<BMenuProps, BMenuState> {
                 {this.makeHomeButton()}
                 {pageLinks}
                 {this.makeSettingsButton()}
+                <DialectSwitcher
+                    appConfig={appConfig}
+                    i18nHandler={this.props.i18nHandler}
+                    currentDialectID={this.props.currentDialectID}
+                    onDialectSwitch={this.props.onDialectSwitch}
+                />
             </Menu>
-            //<button onClick={this.showSettings} className="menu-item">Settings</button>
         );
     }
 }
