@@ -20,9 +20,9 @@ export abstract class Searcher {
 
 export enum SearcherType {
     FUZZYSORT = "FUZZYSORT",
-    DISABLED_LUNR = "DISABLED_LUNR",
     INCLUDES = "INCLUDES",
     REGEX = "REGEX",
+    DISABLED_LUNR = "DISABLED_LUNR",
 }
 
 // TODO: store this information further away from this module, closer to where searchers are defined

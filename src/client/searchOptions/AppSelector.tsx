@@ -1,12 +1,13 @@
 import * as React from "react";
 import Select from "react-select";
-import type {Props as SelectProps} from "react-select";
 import {AppID, AppTopLevelConfiguration, ReturnedFinalConfig, SubAppID} from "../configHandler/zodConfigTypes";
 import {getRecordEntries} from "../utils";
 import I18NHandler from "../../common/i18n/I18NHandler";
 
+import type {Props as SelectProps} from "react-select";
+import type {ReactSelectOption} from "../types/ReactSelectHelpers";
+
 import "./AppSelector.css";
-import {ReactSelectOption} from "../types/ReactSelectHelpers";
 
 type ASProps = {
     rfc: ReturnedFinalConfig,

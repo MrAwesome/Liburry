@@ -432,6 +432,9 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 searchBarRef={searchBarRef}
                 closeSearchOptionsArea={this.closeVisibleMenu}
                 i18nHandler={this.i18nHandler}
+
+                currentSearcherType={options.searcherType}
+                handleSearcherTypeChange={async (searcherType) => {await this.genUpdateQs({searcherType}); this.genRestartSearchController()}}
             />
 
             <SearchBar

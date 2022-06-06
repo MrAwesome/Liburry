@@ -37,6 +37,7 @@ dialects:
       select: "Select "
       app: "App"
       subapp: "SubApp"
+      searcher_type: "Searcher Type"
       #    pages:
       #      contact: "Contact AAAAAAAAAAAH"
       #      help: "Help  AAAAAAAAAAAH"
