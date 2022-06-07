@@ -7,6 +7,7 @@ import {isMobileDevice} from "../utils";
 import type AppConfig from "../configHandler/AppConfig";
 
 import {ReactComponent as SearchClickableMagGlass} from "../../icons/searchClickableMagGlass.svg";
+import {ReactComponent as SearchClickableClearSearch} from "../../icons/x.svg";
 import "./SearchBar.css";
 import {KnownDialectID} from "../../generated/i18n";
 import I18NHandler from "../../common/i18n/I18NHandler";
@@ -14,6 +15,7 @@ import I18NHandler from "../../common/i18n/I18NHandler";
 interface SearchBarProps {
     appConfig: AppConfig,
     searchQuery(query: string, opts?: {isFromUserTyping: boolean}): Promise<void>,
+    clearQuery: () => void,
     getNewestQuery(): string,
     loadPage: (pageID: PageID) => void,
     goHome: () => void,
@@ -71,6 +73,16 @@ export class SearchBar extends React.Component<SearchBarProps, SearchBarState> {
     //placeholder={this.props.i18nHandler.getTokenForAllEnabledLangs("search", {delimiter: " / "})}
     // XXX TODO: i18n button text for accessibility?
     render() {
+
+        const clearX = this.textInput.current?.value
+            ? <div className="clickable-x-div" onClick={this.props.clearQuery}>
+                        <button className="clickable-x-button">
+                            Clear Input
+                        </button>
+                        <SearchClickableClearSearch className="clickable-x" />
+                    </div>
+            : null;
+
         return <>
             <div className="search-bar-container">
                 <div className="search-bar">
@@ -93,6 +105,7 @@ export class SearchBar extends React.Component<SearchBarProps, SearchBarState> {
                             ref={this.textInput}
                         />
                     </form>
+                    {clearX}
                 </div>
                 <BurgerMenu
                     appConfig={this.props.appConfig}

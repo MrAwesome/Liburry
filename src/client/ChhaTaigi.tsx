@@ -442,6 +442,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 appConfig={this.appConfig}
                 ref={this.searchBarRef}
                 searchQuery={this.searchQuery}
+                clearQuery={() => {this.searchQuery(""); this.updateSearchBar("");}}
                 getNewestQuery={this.getNewestQuery}
                 loadPage={this.loadPage}
                 goHome={this.goHome}
