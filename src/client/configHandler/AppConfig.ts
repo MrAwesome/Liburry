@@ -7,6 +7,7 @@ import {getRecordValues, nullGuard, runningInJest} from "../utils";
 import {FontConfig} from "./zodFontConfigTypes";
 import DialectHandler from "./DialectHandler";
 import {KnownDialectID} from "../../common/generatedTypes";
+import I18NHandler from "../../common/i18n/I18NHandler";
 
 export default class AppConfig {
     private constructor(
@@ -15,9 +16,11 @@ export default class AppConfig {
         //private interfaceLangs: string[],
         //rawAllDBConfigs: RawAllDBConfig,
         private rfc: ReturnedFinalConfig,
+        public i18nHandler: I18NHandler,
         public pageHandler: PageHandler,
         public dbConfigHandler: DBConfigHandler,
         public dialectHandler: DialectHandler,
+
         public dialectID: KnownDialectID,
         //private langConfigs: RawLangConfig[],
         public appID: AppID,
@@ -30,16 +33,17 @@ export default class AppConfig {
     // TODO: unit test this transition
     static from(
         rfc: ReturnedFinalConfig,
-        overrides: {
+        options: {
+            dialectID: KnownDialectID,
             appID?: AppID,
             subAppID?: SubAppID,
-            dialectID?: KnownDialectID,
         }
     ) {
-        let {dialectID,subAppID,appID} = overrides;
+        let {dialectID,subAppID,appID} = options;
         appID = appID ?? getInitialApp(rfc);
 
-        const pageHandler = PageHandler.fromFinalConfig(rfc, appID);
+        const i18nHandler = new I18NHandler(rfc, dialectID);
+        const pageHandler = PageHandler.fromFinalConfig(rfc, i18nHandler, appID);
         const rawAppConfig = rfc.appConfigs[appID]!;
         const allConfigs = rawAppConfig.configs;
         const defaultConfigs = rfc.default.configs;
@@ -67,7 +71,7 @@ export default class AppConfig {
         dialectID = dialectID ?? dialectHandler.getDefaultDialectID();
 
         // XXX TODO: add dialect loading from bar
-        return new AppConfig(rfc, pageHandler, dbConfigHandler, dialectHandler, dialectID, appID, subAppID);
+        return new AppConfig(rfc, i18nHandler, pageHandler, dbConfigHandler, dialectHandler, dialectID, appID, subAppID);
     }
 
     private getRawAppConfig() {

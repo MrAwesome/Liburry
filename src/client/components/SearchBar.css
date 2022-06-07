@@ -44,16 +44,19 @@
     top: 6px;
     left: 8px;
     right: auto;
+
+    animation: .8s cubic-bezier(.18,.89,.32,1.28) 1.3s 1 littleBlip;
 }
 
 .clickable-x-div {
     top: 6px;
     right: 38px;
     left: auto;
+    animation: fade 2s linear;
+    transition: opacity .1s;
 }
 
 .clickable-mag-glass-div {
-    animation: .8s cubic-bezier(.18,.89,.32,1.28) 1.3s 1 littleBlip;
 }
 
 .clickable-mag-glass-div, .clickable-x-div {

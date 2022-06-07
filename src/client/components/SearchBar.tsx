@@ -74,14 +74,17 @@ export class SearchBar extends React.Component<SearchBarProps, SearchBarState> {
     // XXX TODO: i18n button text for accessibility?
     render() {
 
-        const clearX = this.textInput.current?.value
-            ? <div className="clickable-x-div" onClick={this.props.clearQuery}>
-                        <button className="clickable-x-button">
-                            Clear Input
-                        </button>
-                        <SearchClickableClearSearch className="clickable-x" />
-                    </div>
-            : null;
+        const clearXHidden = !this.textInput.current?.value;
+        const clearX = <div className="clickable-x-div"
+            style={{
+                opacity: clearXHidden ? 0 : 1
+            }}
+            onClick={this.props.clearQuery}>
+            <button className="clickable-x-button">
+                Clear Input
+            </button>
+            <SearchClickableClearSearch className="clickable-x" />
+        </div>
 
         return <>
             <div className="search-bar-container">
@@ -89,7 +92,7 @@ export class SearchBar extends React.Component<SearchBarProps, SearchBarState> {
                     {this.props.getProgressBars?.(this.textInput)}
 
                     <div className="clickable-mag-glass-div"
-                            onClick={() => this.props.toggleVisibleMenu(VisibleMenu.SearchOptions)} >
+                        onClick={() => this.props.toggleVisibleMenu(VisibleMenu.SearchOptions)} >
                         <button className="clickable-mag-glass-button">
                             Search Options
                         </button>

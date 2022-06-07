@@ -10,6 +10,7 @@ import {fromKipUnicodeToKipNormalized, fromPojUnicodeToPojNormalized} from './la
 
 import lunr from 'lunr';
 import AppConfig from '../client/configHandler/AppConfig';
+import OptionsChangeableByUser from '../client/ChhaTaigiOptions';
 require("lunr-languages/lunr.stemmer.support")(lunr);
 require("lunr-languages/lunr.zh")(lunr);
 require("lunr-languages/lunr.multi")(lunr);
@@ -88,7 +89,8 @@ function writeFile(dbConfig: DBConfig, entries: RawDBRow[]) {
 const configHandler = new CompiledJSONFinalConfigHandler();
 const configPromises = [configHandler.genLoadFinalConfigLocalUNSAFE()];
 Promise.all(configPromises).then(([finalConfig]) => {
-    const appConfig = AppConfig.from(finalConfig, {appID: "taigi.us"});
+    const options = new OptionsChangeableByUser();
+    const appConfig = AppConfig.from(finalConfig, {...options, appID: "taigi.us"});
     const dbConfigs = appConfig.dbConfigHandler.getAllDBConfigs();
 
     dbConfigs.forEach((dbConfig) => {

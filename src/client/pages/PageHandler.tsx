@@ -10,6 +10,7 @@ const LICENSEINFO_PAGEID: PageID = "licenses";
 export default class PageHandler {
     constructor(
         private pages: Map<PageID, Map<AppID, LoadedPage>>,
+        private i18nHandler: I18NHandler,
     ) {
         this.getPageIDs = this.getPageIDs.bind(this);
         this.getPagesForPageID = this.getPagesForPageID.bind(this);
@@ -18,10 +19,12 @@ export default class PageHandler {
     // TODO: unit test
     static fromFinalConfig(
         finalConfig: ReturnedFinalConfig,
+        i18nHandler: I18NHandler,
         selectedAppID: AppID,
     ) {
-        // NOTE: default is second, so that page-specific info comes first
+        const {tok} = i18nHandler;
 
+        // NOTE: default is second, so that page-specific info comes first
         const thisApp = finalConfig.appConfigs[selectedAppID];
         if (thisApp === undefined) {
             throw new Error(`App not found: ${selectedAppID}`);
@@ -60,7 +63,7 @@ export default class PageHandler {
                 const dbLicenseInfoMarkdown = getRecordEntries(dbConfigs).map(([dbID, dbConfig]) => {
                     // TODO: get displayname per lang here? or when actually displayed? confusing...
                     const {source,license} = dbConfig;
-                    return `## ${dbID}\n\nSource: <${source}>\n\nLicense: *${license}*`
+                    return `## ${dbID}\n\n${tok("data_source")}: <${source}>\n\n${tok("license")}: *${license}*`
                 }).join("\n");
 
                 const licensePage: MarkdownPage = {
@@ -77,7 +80,7 @@ export default class PageHandler {
 
         });
 
-        return new PageHandler(pageMaps);
+        return new PageHandler(pageMaps, i18nHandler);
     }
 
     getPageIDs() {
@@ -96,10 +99,10 @@ export default class PageHandler {
         }
     }
 
-    getLinkTitle(pageID: PageID, i18nHandler: I18NHandler) {
+    getLinkTitle(pageID: PageID) {
         // TODO: Better way of doing this?
         //
-        const {tok, isTok} = i18nHandler;
+        const {tok, isTok} = this.i18nHandler;
 
         const maybeI18NToken = "pages/"+pageID;
         if (isTok(maybeI18NToken)) {

@@ -51,7 +51,7 @@ test('render single entry via override', async () => {
 
     const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
 
-    const appConfig = AppConfig.from(rfc, {appID});
+    const appConfig = AppConfig.from(rfc, {...options, appID});
     const annotatedResRaw = annotateRawResults(perDictRes, appConfig);
     const annotatedRes = new AnnotatedPerDictResults(annotatedResRaw);
 
@@ -89,7 +89,7 @@ test('do not render unknown fields', async () => {
 
     const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
 
-    const appConfig = AppConfig.from(rfc, {appID});
+    const appConfig = AppConfig.from(rfc, {...options, appID});
 
     const perDictRes = getExampleTaigiRes();
     const annotatedResRaw = annotateRawResults(perDictRes, appConfig);

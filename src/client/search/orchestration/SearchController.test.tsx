@@ -1,5 +1,6 @@
 import {getExampleTaigiRes} from "../../../common/testUtils";
 import {genLoadFinalConfigWILLTHROW} from "../../../scripts/compileYamlLib";
+import OptionsChangeableByUser from "../../ChhaTaigiOptions";
 import AppConfig from "../../configHandler/AppConfig";
 import {annotateRawResults, PerDictResultsRaw} from "../../types/dbTypes";
 import {SearcherType, SearchFailure} from "../searchers/Searcher";
@@ -23,8 +24,9 @@ describe('searchcontroller', () => {
     let getNewestQuery: jest.Mock;
 
     beforeEach(async () => {
+        const options = new OptionsChangeableByUser();
         const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
-        const appConfig = AppConfig.from(rfc, {appID});
+        const appConfig = AppConfig.from(rfc, {...options, appID});
         results = annotateRawResults(perDictRes, appConfig);
         // = new AnnotatedPerDictResults(annotatedResRaw);
 

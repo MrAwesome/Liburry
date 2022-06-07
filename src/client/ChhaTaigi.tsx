@@ -14,7 +14,6 @@ import {SearchBar} from "./components/SearchBar";
 import {setTimeoutButNotInProdOrTests, getRecordEntries, runningInJest} from "./utils";
 import AppConfig from "./configHandler/AppConfig";
 import SearchOptionsArea from "./searchOptions/SearchOptionsArea";
-import I18NHandler from "../common/i18n/I18NHandler";
 
 import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
@@ -77,15 +76,13 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     typingTimerIDs: ReturnType<typeof setTimeout>[] = []; // Object to satisfy Node typing
     searchController: SearchController;
 
-    // TODO: propagate changes to the handler to State?
-    i18nHandler: I18NHandler;
-
     constructor(props: ChhaTaigiProps) {
         super(props);
 
         this.qs = this.props.qs ?? new QueryStringHandler();
         const options = this.props.mockOptions ?? this.qs.parse();
 
+        // TODO: propagate changes to the config to State?
         this.appConfig = AppConfig.from(this.props.rfc, options);
 
         this.state = {
@@ -102,7 +99,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.searchBarRef = React.createRef();
         this.searchOptionsAreaRef = React.createRef();
         this.queryStringHandlerRef = React.createRef();
-        this.i18nHandler = new I18NHandler(this.props.rfc, this.state.options.dialectID);
 
         // Bind functions
         this.closeVisibleMenu = this.closeVisibleMenu.bind(this);
@@ -291,7 +287,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         // NOTE: dialect changes currently do not have any effect on searches.
         //this.genRestartSearchController();
 
-        this.i18nHandler.changeDialect(dialectID);
+        this.appConfig.i18nHandler.changeDialect(dialectID);
         this.genUpdateQs({dialectID});
     }
 
@@ -384,10 +380,10 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         const sortedFreq = getRecordEntries(frequencies).sort((a, b) => b[1] - a[1]);
         const allSearchableKnownDialectsForThisSearch = sortedFreq.map((x) => x[0] as KnownDialectID);
         if (allSearchableKnownDialectsForThisSearch.length > 0) {
-            const searchPhrases = allSearchableKnownDialectsForThisSearch.map((dialectID) => this.i18nHandler.tokForDialect("search", dialectID));
+            const searchPhrases = allSearchableKnownDialectsForThisSearch.map((dialectID) => this.appConfig.i18nHandler.tokForDialect("search", dialectID));
             return searchPhrases.join(" / ");
         } else {
-            return this.i18nHandler.tok("search");
+            return this.appConfig.i18nHandler.tok("search");
         }
     }
 
@@ -432,7 +428,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 searchOptionsVisible={visibleMenu === VisibleMenu.SearchOptions}
                 searchBarRef={searchBarRef}
                 closeSearchOptionsArea={this.closeVisibleMenu}
-                i18nHandler={this.i18nHandler}
+                i18nHandler={this.appConfig.i18nHandler}
 
                 currentSearcherType={options.searcherType}
                 handleSearcherTypeChange={async (searcherType) => {await this.genUpdateQs({searcherType}); this.genRestartSearchController()}}
@@ -450,7 +446,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 getProgressBars={this.props.getProgressBars}
                 placeholderText={searchBarPlaceholderText}
 
-                i18nHandler={this.i18nHandler}
+                i18nHandler={this.appConfig.i18nHandler}
                 currentDialectID={options.dialectID}
                 onDialectSwitch={this.handleDialectChange}
             />
