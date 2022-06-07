@@ -53,11 +53,12 @@ export class BurgerMenu extends React.Component<BMenuProps, BMenuState> {
     }
 
     makeHomeButton() {
+        const {tok} = this.props.i18nHandler;
         // TODO: instead of button, it should be a link - but one that just modifies the querystring
         return <button onClick={() => {
             this.closeMenu();
             this.props.goHome();
-        }} className="menu-item">Home</button>;
+        }} className="menu-item">{tok("pages/home")}</button>;
     }
 
     handleStateChange(state: BurgerState) {
@@ -70,6 +71,7 @@ export class BurgerMenu extends React.Component<BMenuProps, BMenuState> {
 
     makePageIDButton(pageID: string) {
         const pageHandler = this.props.appConfig.pageHandler;
+        const i18nHandler = this.props.i18nHandler;
         return <button
             className="menu-item"
             onClick={(event: React.MouseEvent) => {
@@ -78,7 +80,7 @@ export class BurgerMenu extends React.Component<BMenuProps, BMenuState> {
                 this.props.loadPage(pageID);
             }}
             key={"menu-item-" + pageID} >
-            {pageHandler.getLinkTitle(pageID)}
+            {pageHandler.getLinkTitle(pageID, i18nHandler)}
         </button>;
     }
 

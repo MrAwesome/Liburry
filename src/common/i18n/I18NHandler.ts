@@ -4,6 +4,7 @@ import {ReturnedFinalConfig} from "../../client/configHandler/zodConfigTypes";
 import {RawDialect} from "../../client/configHandler/zodLangConfigTypes";
 import {runningInJest} from "../../client/utils";
 import type {I18NToken, KnownDialectID} from "../../common/generatedTypes";
+import {i18nTokenIDsSet} from "../../generated/i18n";
 
 interface DialectChain {
     chosenDialect: RawDialect,
@@ -39,6 +40,10 @@ export default class I18NHandler {
     tok(tokenIdentifier: I18NToken): string {
         const {dialectID} = this;
         return this.getTokenFromCache_or_FromChainAndPopulateCache(tokenIdentifier, dialectID);
+    }
+
+    isTok(maybeToken: string): maybeToken is I18NToken {
+        return i18nTokenIDsSet.has(maybeToken as I18NToken);
     }
 
     // Get the specified token for a specific dialect

@@ -23,6 +23,7 @@ import "./ChhaTaigi.css";
 import {KnownDialectID} from "../common/generatedTypes";
 
 // TODO: make clicking on search bar close dialogue windows
+// TODO: plug in X button
 // TODOs are here: https://docs.google.com/spreadsheets/d/1lvbgLRRxGiNIf2by_mMW0aJrP1uhYTsz4_I4vmrB_Ss/edit?usp=sharing
 //
 // Posts:

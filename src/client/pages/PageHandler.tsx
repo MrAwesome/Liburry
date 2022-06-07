@@ -1,3 +1,4 @@
+import I18NHandler from "../../common/i18n/I18NHandler";
 import {AppID, LoadedPage, MarkdownPage, PageID, ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
 import {getRecordEntries} from "../utils";
 
@@ -95,8 +96,15 @@ export default class PageHandler {
         }
     }
 
-    getLinkTitle(pageID: PageID) {
+    getLinkTitle(pageID: PageID, i18nHandler: I18NHandler) {
         // TODO: Better way of doing this?
+        //
+        const {tok, isTok} = i18nHandler;
+
+        const maybeI18NToken = "pages/"+pageID;
+        if (isTok(maybeI18NToken)) {
+            return tok(maybeI18NToken);
+        }
         return pageID;
     }
 }

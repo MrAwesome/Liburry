@@ -38,6 +38,12 @@ dialects:
       app: "App"
       subapp: "SubApp"
       searcher_type: "Searcher Type"
+
+      pages/about: "About"
+      pages/licenses: "Licenses"
+      pages/help: "Help"
+      pages/home: "Home"
+      pages/contact: "Contact"
       #    pages:
       #      contact: "Contact AAAAAAAAAAAH"
       #      help: "Help  AAAAAAAAAAAH"
@@ -59,7 +65,16 @@ dialects:
       select: "選"
       app: "應用程序 (APP)"
       subapp: "子應用程序 (子APP)"
+      searcher_type: "搜索者類型"
 
+      pages/about: "關於"
+      pages/licenses: "許可證"
+      pages/help: "幫助"
+      pages/home: "主頁"
+      pages/contact: "聯繫方式"
+
+
+  # XXX TODO: check these!
   mand_cn:
     displayName: "简体中文"
     otherDisplayNames:
@@ -72,6 +87,13 @@ dialects:
       select: "选"
       app: "应用程序 (APP)"
       subapp: "子应用程序 (子APP)"
+      searcher_type: "搜索者类型"
+
+      pages/about: "关于"
+      pages/licenses: "许可证"
+      pages/help: "帮助"
+      pages/home: "主页"
+      pages/contact: "联系方式"
 
   # TODO: move to another place, or replicate with real langs
   #testlang1:
