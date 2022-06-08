@@ -6,6 +6,7 @@ dbConfigs:
   angry:
     displayNames:
       eng_us: Angry!
+      mand_tw: 生氣的
 
     loadInfo:
       localCSV: /db/test/angry.csv
@@ -39,6 +40,7 @@ dbConfigs:
   happy:
     displayNames:
       eng_us: Happy!
+      mand_tw: 快樂的
 
     loadInfo:
       localCSV: /db/test/happy.csv

@@ -81,7 +81,7 @@ enabledDBs:
 dbConfigs:
   ChhoeTaigi_EmbreeTaiengSutian:
     displayNames:
-      eng_us: Embree
+      eng_us: "ChhoeTaigi: EmbreeTaiengSutian"
 
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_EmbreeTaiengSutian.csv
@@ -213,7 +213,7 @@ dbConfigs:
 
   ChhoeTaigi_iTaigiHoataiTuichiautian:
     displayNames:
-      eng_us: iTaigi
+      eng_us: "ChhoeTaigi: iTaigiHoataiTuichiautian"
 
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_iTaigiHoataiTuichiautian.csv
@@ -316,7 +316,7 @@ dbConfigs:
 
   ChhoeTaigi_KamJitian:
     displayNames:
-      eng_us: KamJitian
+      eng_us: "ChhoeTaigi: KamJitian"
 
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_KamJitian.csv
@@ -453,7 +453,7 @@ dbConfigs:
 
   ChhoeTaigi_KauiokpooTaigiSutian:
     displayNames:
-      eng_us: Kauiokpoo
+      eng_us: "ChhoeTaigi: KauiokpooTaigiSutian"
 
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_KauiokpooTaigiSutian.csv
@@ -637,7 +637,7 @@ dbConfigs:
 
   ChhoeTaigi_MaryknollTaiengSutian:
     displayNames:
-      eng_us: Maryknoll
+      eng_us: "ChhoeTaigi: MaryknollTaiengSutian"
 
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_MaryknollTaiengSutian.csv
@@ -733,7 +733,7 @@ dbConfigs:
 
   ChhoeTaigi_TaihoaSoanntengTuichiautian:
     displayNames:
-      eng_us: TaihoaSoannteng
+      eng_us: "ChhoeTaigi: TaihoaSoanntengTuichiautian"
 
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_TaihoaSoanntengTuichiautian.csv
@@ -854,7 +854,7 @@ dbConfigs:
 
   ChhoeTaigi_TaijitToaSutian:
     displayNames:
-      eng_us: TaijitToaSutian
+      eng_us: "ChhoeTaigi: TaijitToaSutian"
 
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_TaijitToaSutian.csv
@@ -1025,7 +1025,7 @@ dbConfigs:
 
   ChhoeTaigi_TaioanPehoeKichhooGiku:
     displayNames:
-      eng_us: Giku
+      eng_us: "ChhoeTaigi: TaioanPehoeKichhooGiku"
 
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_TaioanPehoeKichhooGiku.csv
@@ -1209,7 +1209,7 @@ dbConfigs:
 
   ChhoeTaigi_TaioanSitbutMialui:
     displayNames:
-      eng_us: Mialui
+      eng_us: "ChhoeTaigi: TaioanSitbutMialui"
 
     loadInfo:
       localCSV: /db/languages/ChhoeTaigiDatabase/ChhoeTaigi_TaioanSitbutMialui.csv

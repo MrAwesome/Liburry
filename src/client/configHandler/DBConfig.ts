@@ -117,6 +117,18 @@ export default class DBConfig {
         return this.r.fields[colName]!;
     }
 
+    getDisplayName(dialectID: KnownDialectID): string | undefined {
+        return this.r.displayNames[dialectID];
+    }
+
+    getSourceURL() {
+        return this.r.source;
+    }
+
+    getLicenseString() {
+        return this.r.license;
+    }
+
     //
     // TODO: dynamically determine these by checking isTitleType (for now just "vocab") on all fields then getting the lang of those fields
     //titleLangs: Language[],

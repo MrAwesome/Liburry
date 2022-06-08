@@ -72,10 +72,11 @@ dialects:
       license: "執照"
 
       pages/about: "關於"
-      pages/licenses: "許可證"
-      pages/help: "幫助"
+      pages/licenses: "授權條款"
+      pages/help: "支援"
       pages/home: "主頁"
-      pages/contact: "聯繫方式"
+      pages/contact: "聯絡我們"
+      pages/privacy_policy: "隱私中心"
 
 
   # XXX TODO: check these!
@@ -91,15 +92,6 @@ dialects:
       select: "选"
       app: "应用程序 (APP)"
       subapp: "子应用程序 (子APP)"
-      searcher_type: "搜索者类型"
-      data_source: "起源"
-      license: "执照"
-
-      pages/about: "关于"
-      pages/licenses: "许可证"
-      pages/help: "帮助"
-      pages/home: "主页"
-      pages/contact: "联系方式"
 
   # TODO: move to another place, or replicate with real langs
   #testlang1:

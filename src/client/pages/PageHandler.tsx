@@ -1,4 +1,5 @@
 import I18NHandler from "../../common/i18n/I18NHandler";
+import {DBConfigHandler} from "../configHandler/AppConfig";
 import {AppID, LoadedPage, MarkdownPage, PageID, ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
 import {getRecordEntries} from "../utils";
 
@@ -20,9 +21,12 @@ export default class PageHandler {
     static fromFinalConfig(
         finalConfig: ReturnedFinalConfig,
         i18nHandler: I18NHandler,
+        dbConfigHandler: DBConfigHandler,
         selectedAppID: AppID,
     ) {
-        const {tok} = i18nHandler;
+        const {tok, getKnownDialectIDChainAsList} = i18nHandler;
+
+        const knownDialectIDs = getKnownDialectIDChainAsList();
 
         // NOTE: default is second, so that page-specific info comes first
         const thisApp = finalConfig.appConfigs[selectedAppID];
@@ -59,11 +63,24 @@ export default class PageHandler {
                 // Allow power users to override licenseinfo page by creating a page with this name
                 pageMaps.get(LICENSEINFO_PAGEID)?.get(appID) === undefined
             ) {
-                const {dbConfigs} = app.configs.dbConfig.config;
-                const dbLicenseInfoMarkdown = getRecordEntries(dbConfigs).map(([dbID, dbConfig]) => {
-                    // TODO: get displayname per lang here? or when actually displayed? confusing...
-                    const {source,license} = dbConfig;
-                    return `## ${dbID}\n\n${tok("data_source")}: <${source}>\n\n${tok("license")}: *${license}*`
+                // NOTE: we regenerate the full appconfig on lang changes, so this will be regenerated if the dialect changes.
+                const dbLicenseInfoMarkdown = dbConfigHandler.getAllEnabledDBConfigs().map((dbConfig) => {
+                    const dbID = dbConfig.getDBIdentifier();
+
+                    let disp: string | undefined = undefined;
+                    for (const dialectID of knownDialectIDs) {
+                        disp = dbConfig.getDisplayName(dialectID);
+                        if (disp !== undefined) {
+                            break;
+                        }
+                    }
+                    if (disp === undefined) {
+                        disp = dbID;
+                    }
+
+                    const source = dbConfig.getSourceURL();
+                    const license = dbConfig.getLicenseString();
+                    return `## ${disp}\n\n${tok("data_source")}: <${source}>\n\n${tok("license")}: *${license}*`
                 }).join("\n");
 
                 const licensePage: MarkdownPage = {
@@ -104,7 +121,7 @@ export default class PageHandler {
         //
         const {tok, isTok} = this.i18nHandler;
 
-        const maybeI18NToken = "pages/"+pageID;
+        const maybeI18NToken = "pages/" + pageID;
         if (isTok(maybeI18NToken)) {
             return tok(maybeI18NToken);
         }

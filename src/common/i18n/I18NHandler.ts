@@ -6,12 +6,18 @@ import {runningInJest} from "../../client/utils";
 import type {I18NToken, KnownDialectID} from "../../common/generatedTypes";
 import {i18nTokenIDsSet} from "../../generated/i18n";
 
-interface DialectChain {
-    chosenDialect: RawDialect,
-    fallbackDialects: RawDialect[],
-    defaultDialect: RawDialect
+
+interface KnownDialectIDChain {
+    chosenDialectID: KnownDialectID,
+    fallbackDialectIDs: KnownDialectID[],
+    defaultDialectID: KnownDialectID,
 }
 
+interface RawDialectConfigChain {
+    chosenDialect: RawDialect,
+    fallbackDialects: RawDialect[],
+    defaultDialect: RawDialect,
+}
 
 // Given a token ID load the translation corresponding to that token for
 // the selected dialect. See src/common/i18n/I18NHandler.test.ts for examples.
@@ -27,6 +33,8 @@ export default class I18NHandler {
         this.tok = this.tok.bind(this);
         this.changeDialect = this.changeDialect.bind(this);
         this.tokForDialect = this.tokForDialect.bind(this);
+        this.getKnownDialectIDChain = this.getKnownDialectIDChain.bind(this);
+        this.getKnownDialectIDChainAsList = this.getKnownDialectIDChainAsList.bind(this);
         this.getTokenFromCache_or_FromChainAndPopulateCache =
             this.getTokenFromCache_or_FromChainAndPopulateCache.bind(this);
     }
@@ -49,6 +57,16 @@ export default class I18NHandler {
     // Get the specified token for a specific dialect
     tokForDialect(tokenIdentifier: I18NToken, dialectID: KnownDialectID): string {
         return this.getTokenFromCache_or_FromChainAndPopulateCache(tokenIdentifier, dialectID);
+    }
+
+    getKnownDialectIDChain(): KnownDialectIDChain {
+        const {rfc, dialectID} = this;
+        return getKnownDialectChain(rfc, dialectID);
+    }
+
+    getKnownDialectIDChainAsList(): KnownDialectID[] {
+        const {chosenDialectID, fallbackDialectIDs, defaultDialectID} = this.getKnownDialectIDChain();
+        return [chosenDialectID, ...fallbackDialectIDs, defaultDialectID];
     }
 
     private getTokenFromCache_or_FromChainAndPopulateCache(
@@ -75,22 +93,31 @@ export default class I18NHandler {
     }
 }
 
-function getDialectConfigAndFallbacks(rfc: ReturnedFinalConfig, dialectID: KnownDialectID): DialectChain {
+function getKnownDialectChain(rfc: ReturnedFinalConfig, dialectID: KnownDialectID): KnownDialectIDChain {
     const {dialects, defaultDialectID} = rfc.default.configs.langConfig.config;
 
-    // TODO: XXX: error checking / type assurances, keyof etc
-    const chosenDialect = dialects[dialectID]!;
+    const chosenDialectID = dialectID;
+    // TODO: XXX: ensure in zod that these really are knowndialectids
+    const fallbackDialectIDs = (dialects[dialectID]!.fallbacks ?? []) as KnownDialectID[];
+    return {chosenDialectID, fallbackDialectIDs, defaultDialectID: defaultDialectID as KnownDialectID};
+}
+
+
+function getDialectConfigAndFallbacks(rfc: ReturnedFinalConfig, dialectID: KnownDialectID): RawDialectConfigChain {
+    const {dialects} = rfc.default.configs.langConfig.config;
+    const {chosenDialectID, fallbackDialectIDs, defaultDialectID} = getKnownDialectChain(rfc, dialectID);
+
+
+    const chosenDialect = dialects[chosenDialectID]!;
     const defaultDialect = dialects[defaultDialectID]!;
 
-    const fallbackDialects = (chosenDialect.fallbacks ?? [])
-        // TODO: XXX: error checking / type assurances
-        .map((diname) => dialects[diname]!);
+    const fallbackDialects = fallbackDialectIDs.map((diname) => dialects[diname]!);
     return {chosenDialect, fallbackDialects, defaultDialect};
 }
 
 function getTokenForDialectChain(
     tokenIdentifier: I18NToken,
-    dialectChain: DialectChain,
+    dialectChain: RawDialectConfigChain,
 ): string {
     const {chosenDialect, fallbackDialects, defaultDialect} = dialectChain;
     const dialects = [chosenDialect, ...fallbackDialects, defaultDialect];

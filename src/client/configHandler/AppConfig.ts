@@ -43,7 +43,6 @@ export default class AppConfig {
         appID = appID ?? getInitialApp(rfc);
 
         const i18nHandler = new I18NHandler(rfc, dialectID);
-        const pageHandler = PageHandler.fromFinalConfig(rfc, i18nHandler, appID);
         const rawAppConfig = rfc.appConfigs[appID]!;
         const allConfigs = rawAppConfig.configs;
         const defaultConfigs = rfc.default.configs;
@@ -66,6 +65,7 @@ export default class AppConfig {
         }
 
         const dbConfigHandler = new DBConfigHandler(allConfigs.dbConfig.config, subAppID);
+        const pageHandler = PageHandler.fromFinalConfig(rfc, i18nHandler, dbConfigHandler, appID);
 
         const dialectHandler = new DialectHandler(defaultConfigs.langConfig.config);
         dialectID = dialectID ?? dialectHandler.getDefaultDialectID();
@@ -97,7 +97,7 @@ export default class AppConfig {
     //       if so, make regex fields there be refined into actual regex on parse (and/or just parse directly into an AppConfig, etc)
 }
 
-class DBConfigHandler {
+export class DBConfigHandler {
     private dbIDsToDBConfigs: Map<DBIdentifier, DBConfig>;
 
     private dbList: RawDBList;
