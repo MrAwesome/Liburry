@@ -8,6 +8,7 @@ import DBConfig from "../../configHandler/DBConfig";
 import {SEARCH_RESULTS_LIMIT} from "./constants";
 import {IncludesPreparer} from "./IncludesSearcher";
 import {RegexPreparer, RegexSearcherOpts} from "./RegexSearcher";
+import {ExactPreparer} from "./ExactSearcher";
 
 export abstract class SearcherPreparer {
     abstract prepare(): Promise<Searcher>;
@@ -21,6 +22,7 @@ export abstract class Searcher {
 export enum SearcherType {
     FUZZYSORT = "FUZZYSORT",
     INCLUDES = "INCLUDES",
+    EXACT = "EXACT",
     REGEX = "REGEX",
     DISABLED_LUNR = "DISABLED_LUNR",
 }
@@ -36,6 +38,8 @@ export function getMaxScore(searcherType: SearcherType): number {
             // TODO: some normalized value for this
             //return 25;
         case SearcherType.INCLUDES:
+            return SEARCH_RESULTS_LIMIT + 1;
+        case SearcherType.EXACT:
             return SEARCH_RESULTS_LIMIT + 1;
         case SearcherType.REGEX:
             return SEARCH_RESULTS_LIMIT + 1;
@@ -57,6 +61,8 @@ export function getSearcherPreparer(
             //return new LunrPreparer(dbConfig, sendLoadStateUpdate, debug);
         case SearcherType.INCLUDES:
             return new IncludesPreparer(dbConfig, sendLoadStateUpdate, debug, {});
+        case SearcherType.EXACT:
+            return new ExactPreparer(dbConfig, sendLoadStateUpdate, debug, {});
         case SearcherType.REGEX:
             return new RegexPreparer(dbConfig, sendLoadStateUpdate, debug, new RegexSearcherOpts());
     }

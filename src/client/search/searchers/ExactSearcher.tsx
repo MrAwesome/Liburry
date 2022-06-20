@@ -12,15 +12,15 @@ import {loadPublicFileAsPlainText} from "../../../common/utils";
 export const LOWERCASE_KEY_SUFFIX = "_zzlc"
 const NUM_TO_PROCESS_BEFORE_CANCEL_CHECK = 5000;
 
-interface IncludesSearcherOpts {
+interface ExactSearcherOpts {
     caseSensitive?: boolean,
 }
 
-export class IncludesSearcher implements Searcher {
-    searcherType = SearcherType.INCLUDES;
+export class ExactSearcher implements Searcher {
+    searcherType = SearcherType.EXACT;
 
     constructor(
-        private includesDict: IncludesSearchableDict,
+        private includesDict: ExactSearchableDict,
     ) {}
 
     search(query: string): OngoingSearch | SearchFailure {
@@ -29,15 +29,15 @@ export class IncludesSearcher implements Searcher {
 
 }
 
-export class IncludesPreparer implements SearcherPreparer {
+export class ExactPreparer implements SearcherPreparer {
     console: StubConsole;
-    opts: IncludesSearcherOpts;
+    opts: ExactSearcherOpts;
 
     constructor(
         private dbConfig: DBConfig,
         private sendLoadStateUpdate: (stateDelta: Partial<SingleDBLoadStatus>) => void,
         private debug: boolean,
-        opts?: IncludesSearcherOpts,
+        opts?: ExactSearcherOpts,
     ) {
         this.console = getDebugConsole(debug);
         this.prepare = this.prepare.bind(this);
@@ -49,15 +49,15 @@ export class IncludesPreparer implements SearcherPreparer {
         return this
             .fetchAndPrepare()
             .then((includesDict) => {
-                return new IncludesSearcher(includesDict);
+                return new ExactSearcher(includesDict);
             });
     }
 
-    async fetchAndPrepare(): Promise<IncludesSearchableDict> {
+    async fetchAndPrepare(): Promise<ExactSearchableDict> {
         const dbIdentifier = this.dbConfig.getDBIdentifier();
         const {localCSV} = this.dbConfig.getDBLoadInfo();
         if (localCSV === undefined) {
-            const errMsg = `Includes search requires a local CSV to be defined! (${dbIdentifier})`;
+            const errMsg = `Exact search requires a local CSV to be defined! (${dbIdentifier})`;
             throw new Error(errMsg);
         }
         this.console.time("total-" + dbIdentifier);
@@ -68,11 +68,11 @@ export class IncludesPreparer implements SearcherPreparer {
             async () => this.sendLoadStateUpdate({isDownloaded: true})
         );
         this.sendLoadStateUpdate({isParsed: true});
-        const includesSearchableDict = this.convertCSVToIncludesSearchableDict(text);
+        const includesSearchableDict = this.convertCSVToExactSearchableDict(text);
         return includesSearchableDict;
     }
 
-    convertCSVToIncludesSearchableDict(text: string): IncludesSearchableDict {
+    convertCSVToExactSearchableDict(text: string): ExactSearchableDict {
         const dbIdentifier = this.dbConfig.getDBIdentifier();
         this.console.timeEnd("fetch-" + dbIdentifier);
 
@@ -96,12 +96,12 @@ export class IncludesPreparer implements SearcherPreparer {
 
         const primaryKey = this.dbConfig.getPrimaryKey();
 
-        return new IncludesSearchableDict(this.dbConfig, entries, this.debug, primaryKey, this.opts);
+        return new ExactSearchableDict(this.dbConfig, entries, this.debug, primaryKey, this.opts);
     }
 
 }
 
-class IncludesSearchableDict {
+class ExactSearchableDict {
     console: StubConsole;
 
     constructor(
@@ -109,7 +109,7 @@ class IncludesSearchableDict {
         private entries: Array<RawDBRow>,
         private debug: boolean,
         private primaryKey: string,
-        private opts: IncludesSearcherOpts,
+        private opts: ExactSearcherOpts,
     ) {
         this.console = getDebugConsole(debug);
         this.search = this.search.bind(this);
@@ -163,7 +163,7 @@ class IncludesSearchableDict {
             }
 
             if (f in entry) {
-                return entry[f].includes(q);
+                return entry[f] === q;
             } else {
                 this.console.warn(`Unknown key "${f}":`, entry);
                 return false;
@@ -183,7 +183,7 @@ class IncludesSearchableDict {
                     this.dbConfig.getDBIdentifier(),
                     row,
                     {
-                        searcherType: SearcherType.INCLUDES,
+                        searcherType: SearcherType.EXACT,
                         score: index,
                     },
                     this.primaryKey,
