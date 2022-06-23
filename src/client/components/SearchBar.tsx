@@ -77,7 +77,8 @@ export class SearchBar extends React.Component<SearchBarProps, SearchBarState> {
         const clearXHidden = !this.textInput.current?.value;
         const clearX = <div className="clickable-x-div"
             style={{
-                opacity: clearXHidden ? 0 : 1
+                opacity: clearXHidden ? 0 : 1,
+                visibility: clearXHidden ? "hidden" : "visible"
             }}
             onClick={this.props.clearQuery}>
             <button className="clickable-x-button">
