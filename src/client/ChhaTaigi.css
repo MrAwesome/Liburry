@@ -67,3 +67,11 @@ mark {
     opacity: 1;
     transition: opacity 0.3s ease 0s;
 }
+
+.liburry-default-display-area {
+    padding: 20px 5% 0% 5%;
+}
+
+.liburry-default-display-area-app-selector {
+    padding-top: 20px;
+}

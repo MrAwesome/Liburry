@@ -234,9 +234,22 @@ describe.each(appSelectorDataProvider)('check for app selectors for apps', (data
         );
         ReactModal.setAppElement(container);
 
+
         // Check that we are *not* showing the modal by default
         const searchOptionsModal = screen.queryByLabelText("Search Options");
         expect(searchOptionsModal).toBeNull();
+
+        await waitFor(async () => {
+            // Check for the default display of the app selectors
+            desiredTextElements.forEach((desiredText) => {
+                expect(screen.getAllByText(desiredText).length).toBe(1);
+            });
+
+            // Check that we aren't displaying the elements we don't want
+            undesiredTextElements.forEach((undesiredText) => {
+                expect(screen.queryByText(undesiredText)).toBeNull();
+            });
+        });
 
         // Click the button which should launch the modal
         const searchOptionsButton = screen.getByText("Search Options");
@@ -248,7 +261,7 @@ describe.each(appSelectorDataProvider)('check for app selectors for apps', (data
 
             // Check for the elements we do want displayed
             desiredTextElements.forEach((desiredText) => {
-                screen.getByText(desiredText);
+                expect(screen.getAllByText(desiredText).length).toBe(2);
             });
 
             // Check that we aren't displaying the elements we don't want

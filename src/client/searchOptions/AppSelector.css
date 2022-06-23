@@ -1,3 +1,7 @@
 .app-selector {
     margin-bottom: 2px;
 }
+
+.app-selector-appname, .app-selector-subappname {
+    font-weight: bold;
+}

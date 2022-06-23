@@ -20,6 +20,7 @@ import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler
 
 import "./ChhaTaigi.css";
 import {KnownDialectID} from "../common/generatedTypes";
+import AppSelector from "./searchOptions/AppSelector";
 
 // TODO: make clicking on search bar close dialogue windows
 // TODO: plug in X button
@@ -107,6 +108,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.genRestartSearchController = this.genRestartSearchController.bind(this);
         this.genUpdateQs = this.genUpdateQs.bind(this);
         this.getCurrentMountAttempt = this.getCurrentMountAttempt.bind(this);
+        this.getDefaultDisplayArea = this.getDefaultDisplayArea.bind(this);
         this.getEntryComponents = this.getEntryComponents.bind(this);
         this.getMainDisplayAreaContents = this.getMainDisplayAreaContents.bind(this);
         this.getNewestQuery = this.getNewestQuery.bind(this);
@@ -357,6 +359,23 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         }
     }
 
+    getDefaultDisplayArea() {
+        const {appID, subAppID} = this.appConfig;
+        const {tok} = this.appConfig.i18nHandler;
+        return <div className="liburry-default-display-area">
+            {tok("welcome_message")}
+            <div className="liburry-default-display-area-app-selector"></div>
+            <AppSelector 
+                rfc={this.props.rfc}
+                currentAppID={appID}
+                currentSubAppID={subAppID}
+                handleAppChange={this.handleAppChange}
+                handleSubAppChange={this.handleSubAppChange}
+                i18nHandler={this.appConfig.i18nHandler}
+            />
+        </div>
+    }
+
     getMainDisplayAreaContents(mode: MainDisplayAreaMode): JSX.Element {
         switch (mode) {
             case MainDisplayAreaMode.PAGE:
@@ -364,7 +383,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             case MainDisplayAreaMode.SEARCH:
                 return this.getEntryComponents();
             case MainDisplayAreaMode.DEFAULT:
-                return <></>;
+                return this.getDefaultDisplayArea();
         }
     }
 

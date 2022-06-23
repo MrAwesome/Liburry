@@ -61,9 +61,9 @@ export default class AppSelector extends React.PureComponent<ASProps, ASState> {
 
         const obj = <div className="app-selector"
         >
-            {appSelector !== null ? <span>{tok("select")}{tok("app")}:</span> : null}
+            {appSelector !== null ? <span className="app-selector-appname">{tok("select")}{tok("app")}:</span> : null}
             {appSelector}
-            {subAppSelector !== null ? <span>{tok("select")}{tok("subapp")}:</span> : null}
+            {subAppSelector !== null ? <span className="app-selector-subappname">{tok("select")}{tok("subapp")}:</span> : null}
             {subAppSelector}
         </div>;
         return obj;

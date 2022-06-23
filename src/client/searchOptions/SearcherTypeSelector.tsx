@@ -22,7 +22,7 @@ export default class SearcherTypeSelector extends React.PureComponent<STSProps, 
     }
 
     handleSearcherTypeChangeINTERNAL(option: ReactSelectOption | readonly ReactSelectOption[] | null, _: any) {
-    //handleSearcherTypeChangeINTERNAL: SelectProps<ReactSelectOption>['onChange'] = (option, _) => {
+        //handleSearcherTypeChangeINTERNAL: SelectProps<ReactSelectOption>['onChange'] = (option, _) => {
         this.props.handleSearcherTypeChange((option as ReactSelectOption).value as SearcherType);
     }
 
@@ -34,23 +34,23 @@ export default class SearcherTypeSelector extends React.PureComponent<STSProps, 
 
         const selected = objWithDisplayNameToReactSelectOption(searcherTypeToObjWithDisplayName(currentSearcherType));
 
-        const obj = <div className="app-selector"
-        >
-            <span>{tok("select")}{tok("searcher_type")}:</span>
+        // TODO: clean up these CSS names.
+        const obj = <div className="app-selector">
+            <span className="app-selector-appname">{tok("select")}{tok("searcher_type")}:</span>
 
             <Select
-                    styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
-                    menuPortalTarget={document.body}
-                    menuPosition="fixed"
-                    menuPlacement="bottom"
-                    defaultValue={allSearcherTypes[0]}
-                    value={selected}
-                    options={allSearcherTypes}
-                    isSearchable={true}
-                    isClearable={false}
-                    isDisabled={false}
-                    onChange={this.handleSearcherTypeChangeINTERNAL}
-                />
+                styles={{menuPortal: (base) => ({...base, zIndex: 9999})}}
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
+                menuPlacement="bottom"
+                defaultValue={allSearcherTypes[0]}
+                value={selected}
+                options={allSearcherTypes}
+                isSearchable={true}
+                isClearable={false}
+                isDisabled={false}
+                onChange={this.handleSearcherTypeChangeINTERNAL}
+            />
 
         </div>;
         return obj;

@@ -41,6 +41,12 @@ dialects:
       data_source: "Source"
       license: "License"
 
+      welcome_message: "Welcome to Liburry! Type in the bar above to search, and click the question mark to the right for help and information."
+
+      # TODO: use
+      searchers/REGEX: "Regular Expression Search"
+      searchers/EXACT: "Exact Search"
+
       pages/about: "About"
       pages/licenses: "Licenses"
       pages/help: "Help"

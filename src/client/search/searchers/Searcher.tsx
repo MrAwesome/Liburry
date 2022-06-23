@@ -10,6 +10,8 @@ import {IncludesPreparer} from "./IncludesSearcher";
 import {RegexPreparer, RegexSearcherOpts} from "./RegexSearcher";
 import {ExactPreparer} from "./ExactSearcher";
 
+// TODO: generic options for all searchers (particularly case sensitivity) that can be either implemented or not
+//       should be taken by the prepare function
 export abstract class SearcherPreparer {
     abstract prepare(): Promise<Searcher>;
 }
