@@ -6,7 +6,8 @@ import {isMobileDevice} from "../utils";
 
 import type AppConfig from "../configHandler/AppConfig";
 
-import {ReactComponent as SearchClickableMagGlass} from "../../icons/searchClickableMagGlass.svg";
+import {ReactComponent as EmptyMagGlass} from "../../icons/magGlassEmpty.svg";
+import {ReactComponent as SettingsSliders} from "../../icons/settingsSliders.svg";
 import {ReactComponent as SearchClickableClearSearch} from "../../icons/x.svg";
 import "./SearchBar.css";
 import {KnownDialectID} from "../../generated/i18n";
@@ -67,12 +68,10 @@ export class SearchBar extends React.Component<SearchBarProps, SearchBarState> {
         }
     }
 
-    //<svg aria-hidden="true" className="mag-glass" ><path d="M18 16.5l-5.14-5.18h-.35a7 7 0 10-1.19 1.19v.35L16.5 18l1.5-1.5zM12 7A5 5 0 112 7a5 5 0 0110 0z"></path></svg>
-
-    // XXX TODO: use this instead
-    //placeholder={this.props.i18nHandler.getTokenForAllEnabledLangs("search", {delimiter: " / "})}
-    // XXX TODO: i18n button text for accessibility?
     render() {
+        const emptyMagGlass = <div className="empty-mag-glass-div" >
+            <EmptyMagGlass className="empty-mag-glass" />
+        </div>
 
         const clearXHidden = !this.textInput.current?.value;
         const clearX = <div className="clickable-x-div"
@@ -87,18 +86,19 @@ export class SearchBar extends React.Component<SearchBarProps, SearchBarState> {
             <SearchClickableClearSearch className="clickable-x" />
         </div>
 
+        const settingsSliders = <div className="clickable-settings-sliders-div"
+            onClick={() => this.props.toggleVisibleMenu(VisibleMenu.SearchOptions)} >
+            <button className="clickable-settings-sliders-button">
+                Search Options
+            </button>
+            <SettingsSliders className="clickable-settings-sliders" />
+        </div>
+
         return <>
             <div className="search-bar-container">
                 <div className="search-bar">
                     {this.props.getProgressBars?.(this.textInput)}
-
-                    <div className="clickable-mag-glass-div"
-                        onClick={() => this.props.toggleVisibleMenu(VisibleMenu.SearchOptions)} >
-                        <button className="clickable-mag-glass-button">
-                            Search Options
-                        </button>
-                        <SearchClickableMagGlass className="clickable-mag-glass" />
-                    </div>
+                    {emptyMagGlass}
                     <form onSubmit={this.onSubmit} autoComplete="off" >
                         <input
                             autoFocus
@@ -110,6 +110,7 @@ export class SearchBar extends React.Component<SearchBarProps, SearchBarState> {
                         />
                     </form>
                     {clearX}
+                    {settingsSliders}
                 </div>
                 <BurgerMenu
                     appConfig={this.props.appConfig}

@@ -40,6 +40,27 @@
     100% { transform: scale(1); }
 }
 
+/* each element div gets its own positioning */
+.empty-mag-glass-div {
+    position: absolute;
+    z-index: 101;
+
+    top: 6px;
+    left: 8px;
+    right: auto;
+
+    width: 28px;
+    height: 28px;
+}
+
+.empty-mag-glass {
+    position: absolute;
+    width: inherit;
+    height: inherit;
+    top: 0px;
+    left: 0px;
+}
+
 .clickable-mag-glass-div {
     top: 6px;
     left: 8px;
@@ -56,10 +77,15 @@
     transition: opacity .1s;
 }
 
-.clickable-mag-glass-div {
+.clickable-settings-sliders-div {
+    top: 6px;
+    right: 38px;
+    left: auto;
+
 }
 
-.clickable-mag-glass-div, .clickable-x-div {
+/* then shares sizing/behavior */
+.clickable-mag-glass-div, .clickable-settings-sliders-div, .clickable-x-div {
     position: absolute;
 
     z-index: 101;
@@ -71,15 +97,15 @@
     cursor: pointer;
 }
 
-.clickable-mag-glass-div:hover, .clickable-x-div:hover {
+.clickable-mag-glass-div:hover, .clickable-settings-sliders-div:hover, .clickable-x-div:hover {
     transform: scale(1.05);
 }
 
-.clickable-mag-glass-div:active, .clickable-x-div:active {
+.clickable-mag-glass-div:active, .clickable-settings-sliders-div:active .clickable-x-div:active {
     transform: scale(1.00);
 }
 
-.clickable-mag-glass-button, .clickable-x-button {
+.clickable-mag-glass-button, .clickable-settings-sliders-button, .clickable-x-button {
     font-size: 0px;
     width: 100%;
     height: 100%;
@@ -87,7 +113,7 @@
     border: 0px;
 }
 
-.clickable-mag-glass, .clickable-x {
+.clickable-mag-glass, .clickable-settings-sliders, .clickable-x {
     position: absolute;
     width: inherit;
     height: inherit;
