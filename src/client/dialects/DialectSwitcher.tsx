@@ -53,10 +53,6 @@ export default class DialectSwitcher extends React.PureComponent<SOAProps, Recor
         const selectedDialectOption = dialectToReactSelectOption(currentDialectID, dialectHandler.getDialect(currentDialectID));
 
         return <Select
-            styles={{menuPortal: (base) => ({...base, zIndex: 9999})}}
-            menuPortalTarget={document.body}
-            menuPosition="fixed"
-            menuPlacement="bottom"
             value={selectedDialectOption}
             options={dialectOptions}
             defaultValue={defaultDialectOption}

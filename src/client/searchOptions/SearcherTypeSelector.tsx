@@ -39,10 +39,6 @@ export default class SearcherTypeSelector extends React.PureComponent<STSProps, 
             <span className="app-selector-appname">{tok("select")}{tok("searcher_type")}:</span>
 
             <Select
-                styles={{menuPortal: (base) => ({...base, zIndex: 9999})}}
-                menuPortalTarget={document.body}
-                menuPosition="fixed"
-                menuPlacement="bottom"
                 defaultValue={allSearcherTypes[0]}
                 value={selected}
                 options={allSearcherTypes}
