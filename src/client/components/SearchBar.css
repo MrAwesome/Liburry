@@ -19,13 +19,17 @@
     border-radius: 3px;
 
     box-sizing: border-box;
-    padding-left: 37px;
+    padding-left: 38px;
     padding-bottom: 2px;
     padding-top: 2px;
 
     font-size: 20px;
     color: #333333;
     transition: all .3s ease;
+}
+
+.search-bar input::placeholder {
+    color: #8885b7;
 }
 
 .search-bar input:focus {
@@ -71,7 +75,7 @@
 
 .clickable-x-div {
     top: 6px;
-    right: 38px;
+    right: 68px;
     left: auto;
     animation: fade 2s linear;
     transition: opacity .1s;

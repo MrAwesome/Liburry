@@ -1,0 +1,7 @@
+.ReactModal__Content--after-open {
+    inset: 0px !important;
+    top: 40px !important;
+    left: 40px !important;
+    right: 40px !important;
+    padding-bottom: 40px !important;
+}

@@ -8,6 +8,7 @@ import type {Props as SelectProps} from "react-select";
 import type {ReactSelectOption} from "../types/ReactSelectHelpers";
 
 import "./AppSelector.css";
+import "../styles/reactModal.css"
 
 type ASProps = {
     rfc: ReturnedFinalConfig,
