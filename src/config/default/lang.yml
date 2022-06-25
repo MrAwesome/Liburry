@@ -8,10 +8,6 @@ dialects:
       hok_tw_kip: "Tâi-uân-uē (Pe̍h-Uē-Jī)"
     tokens:
       search: "Chhâ..."
-#    parentGroups:
-#      - taiwanese
-#    tags:
-#      representation: poj
 
   hok_tw_kip:
     displayName: "Tâi-uân-uē (Kàu-Io̍k-Pōo)"
@@ -20,13 +16,7 @@ dialects:
       hok_tw_poj: "Tâi-uân-uē (Kàu-Io̍k-Pō͘)"
     tokens:
       search: "Tshâ..."
-#   parentGroups:
-#     - taiwanese
-#    tags:
-#      representation: kip
 
-# TODO: define a default.yml for lang
-# TODO: see if typescript allows for extensions
   eng_us:
     displayName: "English (US)"
     otherDisplayNames:
@@ -98,31 +88,3 @@ dialects:
       select: "选"
       app: "应用程序 (APP)"
       subapp: "子应用程序 (子APP)"
-
-  # TODO: move to another place, or replicate with real langs
-  #testlang1:
-  #  disabled: true
-  #  displayName: "Test Language, ignore"
-  #  tokens:
-  #    app: "App in Lang 1"
-  #  fallbacks:
-  #    - testlang2
-  #    - testlang3
-
-  #testlang2:
-  #  disabled: true
-  #  displayName: "Test Language, ignore"
-  #  tokens:
-  #    app: "App in Lang 2"
-  #    search: "Search in Lang 2"
-  #  fallbacks:
-  #    - testlang3
-
-  #testlang3:
-  #  disabled: true
-  #  displayName: "Test Language, ignore"
-  #  tokens:
-  #    app: "App in Lang 3"
-  #    subapp: "Subapp in Lang 3"
-  #  fallbacks:
-  #    - testlang1
