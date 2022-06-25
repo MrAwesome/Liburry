@@ -19,12 +19,12 @@
     border-radius: 3px;
 
     box-sizing: border-box;
-    padding-left: 38px;
+    padding-left: 36px;
     padding-bottom: 2px;
     padding-top: 2px;
 
     font-size: 20px;
-    color: #333333;
+    color: #3c3749;
     transition: all .3s ease;
 }
 
@@ -46,15 +46,16 @@
 
 /* each element div gets its own positioning */
 .empty-mag-glass-div {
+    opacity: 70%;
     position: absolute;
     z-index: 101;
 
-    top: 6px;
+    top: 7px;
     left: 8px;
     right: auto;
 
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
 }
 
 .empty-mag-glass {

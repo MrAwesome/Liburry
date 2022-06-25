@@ -14,13 +14,13 @@ import {SearchBar} from "./components/SearchBar";
 import {setTimeoutButNotInProdOrTests, getRecordEntries, runningInJest} from "./utils";
 import AppConfig from "./configHandler/AppConfig";
 import SearchOptionsArea from "./searchOptions/SearchOptionsArea";
+import {KnownDialectID} from "../common/generatedTypes";
+import AppSelector from "./searchOptions/AppSelector";
 
 import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
 
 import "./ChhaTaigi.css";
-import {KnownDialectID} from "../common/generatedTypes";
-import AppSelector from "./searchOptions/AppSelector";
 
 // TODO: make clicking on search bar close dialogue windows
 // TODO: plug in X button
@@ -365,7 +365,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         return <div className="liburry-default-display-area">
             {tok("welcome_message")}
             <div className="liburry-default-display-area-app-selector"></div>
-            <AppSelector 
+            <AppSelector
                 rfc={this.props.rfc}
                 currentAppID={appID}
                 currentSubAppID={subAppID}
