@@ -14,6 +14,7 @@ If you have bug reports or feature requests/ideas, please file an issue here: <$
     * LinkedIn: <https://www.linkedin.com/in/glenn-hope-01369622/>
 
 * **Charis Chen (陳心婷)**: Research Assistant
+    * GitHub: <https://github.com/Simteng>
     * LinkedIn: <https://www.linkedin.com/in/charis-chen-592392229/>
 
 * **Lemuel Reid**: Intern, Software Engineering
