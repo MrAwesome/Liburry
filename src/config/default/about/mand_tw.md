@@ -1,11 +1,11 @@
-# About Liburry
+# 關於 Liburry
 
-## The App
+## 應用程式(The App)
 
-This website is a "Progressive Web App", also known as a PWA. Now that you've loaded the site once, any apps you've used in the site will work offline! You can even click "Install" or "Add To Desktop" to install the website as if it was an app on your phone or computer.
+這個網站是漸進式網路應用程式(Progressive Web App，簡稱PWA)。也就是說，由於你已經載入過此網站，往後皆可以離線使用！甚至，你也可以透過「安裝」或「加到主畫面」，讓此網站成為你手機或電腦的一個應用程式。
 
-## The Code
+## 程式碼(The Code)
 
-This website is powered by a code framework named "Liburry", which can be used for generating simple, privacy-first, client-side-only search apps which are available offline in the browser.
+這個網站由「Liburry」這個框架驅動。「Liburry」框架可以用來生成簡單、注重隱私、限於用戶端、並能在瀏覽器中離線使用的搜尋應用程式。
 
-Liburry is entirely free, entirely open source, and is built on open source technology. The code can be viewed here: <${REPO_LINK}>
+Liburry 完全免費、自由、開源，也建立在開源技術之上。所有的程式碼皆可在此瀏覽： <${REPO_LINK}>
