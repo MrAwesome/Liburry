@@ -492,6 +492,7 @@ export type KnownConfigTypes = LoadedConfig["configType"];
 const mdPageSchema = strictObject({
     pageType: z.literal("markdown"),
     pageID: token("PAGE_ID"),
+    appID: token("APP_ID"),
     mdText: anyString(),
     dialect: token("DIALECT_ID"),
 });
@@ -500,6 +501,7 @@ export type MarkdownPage = z.infer<typeof mdPageSchema>;
 const htmlPageSchema = strictObject({
     pageType: z.literal("HTML_UNUSED"),
     pageID: token("PAGE_ID"),
+    appID: token("APP_ID"),
     htmlText: anyString(),
     dialect: token("DIALECT_ID"),
 });
@@ -521,7 +523,7 @@ const loadedKnownFileSchema = z.union([
 ]);
 export type LoadedKnownFile = z.infer<typeof loadedKnownFileSchema>;
 
-const allPagesSchema = realRecord(token("PAGE_ID"), loadedPageSchema);
+const allPagesSchema = z.array(loadedPageSchema);
 
 const defaultAllConfigSchema = rawDefaultLoadedAllConfigSchema;
 const appAllConfigSchema = rawAppLoadedAllConfigSchema.superRefine((appAllConfigs, ctx) => {

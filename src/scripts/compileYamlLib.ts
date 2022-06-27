@@ -63,14 +63,14 @@ type LoadedFilePlusMeta = {
     meta: LKFMeta,
 };
 
-export async function* walkFileTree(dir: string, subdirs: Array<string>): AsyncIterable<LoadedFilePlusMeta | null> {
+export async function* walkFileTree(appID: "default" | AppID, dir: string, subdirs: Array<string>): AsyncIterable<LoadedFilePlusMeta | null> {
     for await (const d of await opendir(dir)) {
         const entry = path.join(dir, d.name);
         if (d.isDirectory()) {
-            yield* walkFileTree(entry, [...subdirs, d.name]);
+            yield* walkFileTree(appID, entry, [...subdirs, d.name]);
         }
         else if (d.isFile()) {
-            yield handleFile(entry, d.name, subdirs);
+            yield handleFile(appID, entry, d.name, subdirs);
         }
     }
 }
@@ -95,7 +95,7 @@ export async function* genAppDirs(dir: string, subdirs: Array<string>, opts?: {t
     }
 }
 
-async function handleFile(path: string, filename: string, subdirs: Array<string>): Promise<LoadedFilePlusMeta | null> {
+async function handleFile(appID: "default" | AppID, path: string, filename: string, subdirs: Array<string>): Promise<LoadedFilePlusMeta | null> {
     if (path.endsWith('.yml')) {
         const yamlText = (await readFile(path)).toString();
         const id = filename.replace(/.yml$/, "")
@@ -136,6 +136,7 @@ async function handleFile(path: string, filename: string, subdirs: Array<string>
             page: {
                 dialect,
                 pageID: subdirs[0],
+                appID,
                 pageType: "markdown",
                 mdText,
             }
@@ -176,14 +177,14 @@ export async function rawParseAppYaml(localPrefix: string, appID: "default" | Ap
 
     const output: any = {
         appID,
-        pages: {},
+        pages: [],
         configs: {},
     };
 
     // TODO: XXX: move this into its own function (and then parse as app separately?)
     if (appID === "default") {
         const buildDir = path.join(CONFIG_DIR, "default", "build.yml");
-        const lkfPlusMeta = await handleFile(buildDir, "build.yml", []);
+        const lkfPlusMeta = await handleFile(appID, buildDir, "build.yml", []);
 
         if (lkfPlusMeta?.type === "config") {
             output.build = lkfPlusMeta.conf;
@@ -196,12 +197,12 @@ export async function rawParseAppYaml(localPrefix: string, appID: "default" | Ap
     // TODO: ensure CONFIG_DIR + localPrefix + appID is a valid path
     const appDir = path.join(CONFIG_DIR, localPrefix, appID);
 
-    for await (const obj of walkFileTree(appDir, [])) {
+    for await (const obj of walkFileTree(appID, appDir, [])) {
         if (obj === null) {
             continue;
         }
         if (obj.type === "page") {
-            output.pages[obj.page.pageID] = obj.page;
+            output.pages.push(obj.page);
         } else if (obj.type === "config") {
             output.configs[obj.conf.configType] = obj.conf;
         }

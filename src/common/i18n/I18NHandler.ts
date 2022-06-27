@@ -64,6 +64,7 @@ export default class I18NHandler {
         return getKnownDialectChain(rfc, dialectID);
     }
 
+    // NOTE: right now, this will return ["eng_us", "eng_us"] for english.
     getKnownDialectIDChainAsList(): KnownDialectID[] {
         const {chosenDialectID, fallbackDialectIDs, defaultDialectID} = this.getKnownDialectIDChain();
         return [chosenDialectID, ...fallbackDialectIDs, defaultDialectID];

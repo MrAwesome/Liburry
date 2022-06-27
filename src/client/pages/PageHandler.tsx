@@ -1,7 +1,8 @@
 import I18NHandler from "../../common/i18n/I18NHandler";
+import {KnownDialectID} from "../../generated/i18n";
 import {DBConfigHandler} from "../configHandler/AppConfig";
 import {AppID, LoadedPage, MarkdownPage, PageID, ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
-import {getRecordEntries} from "../utils";
+//import {getRecordValues} from "../utils";
 
 // TODO: method for sorting the combinedpages by some score (how does this work when combinedpages are defined separately? should they be defined all together?)
 
@@ -9,12 +10,16 @@ import {getRecordEntries} from "../utils";
 const LICENSEINFO_PAGEID: PageID = "licenses";
 
 export default class PageHandler {
+    knownPageIDs: Set<PageID>;
+
     constructor(
-        private pages: Map<PageID, Map<AppID, LoadedPage>>,
+        private pages: LoadedPage[],
         private i18nHandler: I18NHandler,
     ) {
         this.getPageIDs = this.getPageIDs.bind(this);
         this.getPagesForPageID = this.getPagesForPageID.bind(this);
+
+        this.knownPageIDs = new Set(pages.map((p) => p.pageID));
     }
 
     // TODO: unit test
@@ -39,29 +44,20 @@ export default class PageHandler {
             finalConfig.default,
         ];
 
-        const pageMaps: Map<PageID, Map<AppID, LoadedPage>> = new Map();
+        let loadedPages: LoadedPage[] = [];
 
         // TODO: here: generate generated-pages
 
         apps.forEach((app) => {
             const {appID} = app;
 
-            const pageConfig = app.pages;
-            getRecordEntries(pageConfig).forEach(([pageID, loadedPage]) => {
-                const thisPage = pageMaps.get(pageID);
-                if (thisPage === undefined) {
-                    const newThisPage: Map<AppID, LoadedPage> = new Map();
-                    newThisPage.set(appID, loadedPage);
-                    pageMaps.set(pageID, newThisPage);
-                } else {
-                    thisPage.set(appID, loadedPage);
-                }
-            });
+            const pagesForDialects = app.pages.filter((p) => knownDialectIDs.includes(p.dialect as KnownDialectID));
+            loadedPages = loadedPages.concat(pagesForDialects);
 
             if (
-                "dbConfig" in app.configs &&
+                "dbConfig" in app.configs
                 // Allow power users to override licenseinfo page by creating a page with this name
-                pageMaps.get(LICENSEINFO_PAGEID)?.get(appID) === undefined
+                //app.pages["licenses"] === undefined
             ) {
                 // NOTE: we regenerate the full appconfig on lang changes, so this will be regenerated if the dialect changes.
                 const dbLicenseInfoMarkdown = dbConfigHandler.getAllEnabledDBConfigs().map((dbConfig) => {
@@ -86,32 +82,34 @@ export default class PageHandler {
                 const licensePage: MarkdownPage = {
                     pageID: LICENSEINFO_PAGEID,
                     pageType: "markdown",
+                    appID,
                     mdText: dbLicenseInfoMarkdown,
-                    dialect: "any", // XXX
+                    dialect: "eng_us", // XXX
                 }
 
-                const thisAppPage = new Map();
-                thisAppPage.set(appID, licensePage);
-                pageMaps.set(LICENSEINFO_PAGEID, thisAppPage)
+                loadedPages.push(licensePage);
             }
 
         });
 
-        return new PageHandler(pageMaps, i18nHandler);
+        return new PageHandler(loadedPages, i18nHandler);
     }
 
-    getPageIDs() {
-        return Array.from(this.pages.keys());
+    getPageIDs(): PageID[] {
+        return Array.from(this.knownPageIDs);
     }
 
     getPagesForPageID(pageID: PageID): Map<AppID, LoadedPage> {
-        const targetPages = this.pages.get(pageID);
-        if (targetPages === undefined) {
+        // NOTE: inefficiency here, can be cached or the data structure can be rethought.
+        const pagesForPageID = this.pages.filter((p) => p.pageID === pageID);
+
+        if (pagesForPageID.length === 0) {
             console.info(this.pages);
             console.info({pageID});
             throw new Error(`Page not found: ${pageID}`);
         }
         else {
+            const targetPages = new Map(pagesForPageID.map((p) => [p.appID, p]));
             return targetPages;
         }
     }
