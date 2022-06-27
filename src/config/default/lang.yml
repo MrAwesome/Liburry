@@ -56,35 +56,34 @@ dialects:
       pages/privacy_policy: "隱私中心"
 
 
-  # XXX TODO: check
-  mand_cn:
-    displayName: "简体中文"
-    otherDisplayNames:
-      eng_us: "Chinese - Mandarin (Simplified)"
-    fallbacks:
-      - mand_tw
-
-    tokens:
-      search: "搜寻..."
-      select: "选"
-      app: "应用程序 (APP)"
-      subapp: "子应用程序 (子APP)"
-
-  # XXX TODO: check
-  hok_tw_poj:
-    displayName: "Tâi-oân-ōe (Pe̍h-Oē-Jī)"
-    otherDisplayNames:
-      eng_us: "Taiwanese (POJ)"
-      hok_tw_kip: "Tâi-uân-uē (Pe̍h-Uē-Jī)"
-    tokens:
-      search: "Chhâ..."
-
-  # XXX TODO: check
-  hok_tw_kip:
-    displayName: "Tâi-uân-uē (Kàu-Io̍k-Pōo)"
-    otherDisplayNames:
-      eng_us: "Taiwanese (KIP)"
-      hok_tw_poj: "Tâi-uân-uē (Kàu-Io̍k-Pō͘)"
-    tokens:
-      search: "Tshâ..."
-
+#  # XXX TODO: check
+#  mand_cn:
+#    displayName: "简体中文"
+#    otherDisplayNames:
+#      eng_us: "Chinese - Mandarin (Simplified)"
+#    fallbacks:
+#      - mand_tw
+#
+#    tokens:
+#      search: "搜寻..."
+#      select: "选"
+#      app: "应用程序 (APP)"
+#      subapp: "子应用程序 (子APP)"
+#
+#  # XXX TODO: check
+#  hok_tw_poj:
+#    displayName: "Tâi-oân-ōe (Pe̍h-Oē-Jī)"
+#    otherDisplayNames:
+#      eng_us: "Taiwanese (POJ)"
+#      hok_tw_kip: "Tâi-uân-uē (Pe̍h-Uē-Jī)"
+#    tokens:
+#      search: "Chhâ..."
+#
+#  # XXX TODO: check
+#  hok_tw_kip:
+#    displayName: "Tâi-uân-uē (Kàu-Io̍k-Pōo)"
+#    otherDisplayNames:
+#      eng_us: "Taiwanese (KIP)"
+#      hok_tw_poj: "Tâi-uân-uē (Kàu-Io̍k-Pō͘)"
+#    tokens:
+#      search: "Tshâ..."
