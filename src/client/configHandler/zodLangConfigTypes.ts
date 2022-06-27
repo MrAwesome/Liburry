@@ -17,6 +17,8 @@ export const rawDialectSchema = strictObject({
 });
 export type RawDialect = z.infer<typeof rawDialectSchema>;
 
+// TODO: validate that fallback langs are real langs
+
 export const rawLangConfigSchema = strictObject({
     // TODO: check that this is a valid dialect
     defaultDialectID: token("DIALECT_ID"),

@@ -56,19 +56,28 @@ dialects:
       pages/privacy_policy: "隱私中心"
 
 
-#  # XXX TODO: check
-#  mand_cn:
-#    displayName: "简体中文"
-#    otherDisplayNames:
-#      eng_us: "Chinese - Mandarin (Simplified)"
-#    fallbacks:
-#      - mand_tw
-#
-#    tokens:
-#      search: "搜寻..."
-#      select: "选"
-#      app: "应用程序 (APP)"
-#      subapp: "子应用程序 (子APP)"
+  # XXX TODO: check
+  mand_cn:
+    displayName: "简体中文"
+    otherDisplayNames:
+      eng_us: "Chinese - Mandarin (Simplified)"
+    fallbacks:
+      - mand_tw
+
+    tokens:
+      search: "搜索..."
+      select: "选"
+      app: "应用程序 (APP)"
+      subapp: "子应用程序 (子APP)"
+      searcher_type: "搜索者类型"
+      data_source: "起源"
+      license: "执照"
+
+      pages/about: "关于"
+      pages/licenses: "授权条款"
+      pages/help: "支援"
+      pages/home: "主页"
+
 #
 #  # XXX TODO: check
 #  hok_tw_poj:
