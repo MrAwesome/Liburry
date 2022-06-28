@@ -59,7 +59,6 @@ export default class PageHandler {
                 for (const p of app.pages) {
                     const {pageID, dialect} = p;
                     if (!found.has(pageID) && dialect === k) {
-                        console.log({p, k});
                         loadedPages.push(p);
                         found.add(pageID);
                     }
