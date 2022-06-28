@@ -33,6 +33,8 @@ export default class PageHandler {
 
         const knownDialectIDs = getKnownDialectIDChainAsList();
 
+        const knownDialectIDsWithPriority: Map<KnownDialectID, number> = new Map(knownDialectIDs.map((k, i) => [k, i]));
+
         // NOTE: default is second, so that page-specific info comes first
         const thisApp = finalConfig.appConfigs[selectedAppID];
         if (thisApp === undefined) {
@@ -51,8 +53,18 @@ export default class PageHandler {
         apps.forEach((app) => {
             const {appID} = app;
 
-            const pagesForDialects = app.pages.filter((p) => knownDialectIDs.includes(p.dialect as KnownDialectID));
-            loadedPages = loadedPages.concat(pagesForDialects);
+            // XXX NOTE: This is quite inefficient, and can be improved significantly.
+            const found: Set<PageID> = new Set();
+            for (const k of knownDialectIDs) {
+                for (const p of app.pages) {
+                    const {pageID, dialect} = p;
+                    if (!found.has(pageID) && dialect === k) {
+                        console.log({p, k});
+                        loadedPages.push(p);
+                        found.add(pageID);
+                    }
+                }
+            }
 
             if (
                 "dbConfig" in app.configs
