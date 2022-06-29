@@ -1282,7 +1282,7 @@ dbConfigs:
       HanLoTaibunPoj:
         type:
           dictionary: definition
-        dialect: tw_hokkien_taibun
+        dialect: tw_hokkien_taibun_hanji
         lengthHint: short
 
       PageNumber:
