@@ -14,6 +14,7 @@ export const rawDialectSchema = strictObject({
     // TODO: check for validity
     fallbacks: z.array(token("DIALECT_ID")).optional(),
     tokens: rawTokenSchema.optional(),
+    requiredFontGroup: token("FONT_GROUP_ID").optional(),
 });
 export type RawDialect = z.infer<typeof rawDialectSchema>;
 

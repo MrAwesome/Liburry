@@ -111,6 +111,9 @@ test('ensure broken config fails zod', async () => {
         "remote_files_https", // not enabled yet
         "defaultsubapp_subapps_both_or_neither", // want to define subapps to check they're wrong
         "build_defaultapp_defined", // not testing builds here
+        "invalid_font_in_font_group",
+        "invalid_font_group_in_dialect_config",
+        "invalid_font_group_in_app_config",
     ];
 
     // NOTE: this currently isn't used, but you can add {"path": ..., "message": ...} objects etc here
@@ -124,6 +127,8 @@ test('ensure broken config fails zod', async () => {
     const expectedInvalidTokens: Set<LiburryTokenTypes> = new Set(
         (Object.keys(tokenMatchers) as (keyof typeof tokenMatchers)[]).filter((key) => (tokenMatchers[key] !== null
             && key !== "BUILD_ID"
+            && key !== "FONT_ID"
+            && key !== "FONT_GROUP_ID"
             && key !== "I18N_TOKEN_ID"
             && key !== "LOCAL_FILENAME"))
         // TODO: kludge to get this test working again, will need to rethink this test's app-specific architecture in a world with builds

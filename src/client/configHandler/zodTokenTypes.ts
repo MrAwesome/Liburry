@@ -19,9 +19,12 @@ export const tokenMatchers = tlist({
     BUILD_ID: [FILENAME_AND_DIRECTORY_SAFE_REGEX, "Build IDs must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
     DIALECT_ID: [BASIC_TOKEN_REGEX, "Dialect IDs must contain only ASCII letters, numbers, and underscores."],
     PAGE_ID: [BASIC_TOKEN_REGEX, "Page IDs must contain only ASCII letters, numbers, and underscores."],
+    FONT_ID: [BASIC_TOKEN_REGEX, "Font IDs must contain only ASCII letters, numbers, and underscores."],
+    FONT_GROUP_ID: [BASIC_TOKEN_REGEX, "Font Group IDs must contain only ASCII letters, numbers, and underscores."],
     FILENAME: [FILENAME_AND_DIRECTORY_SAFE_REGEX, "Filenames must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
     I18N_TOKEN_ID: [BASIC_TOKEN_REGEX_PLUS_SLASH_IN_MIDDLE, "Internationalization Token IDs must contain only ASCII letters, numbers, slashes, and underscores. The first and last characters cannot be slashes."],
     LOCAL_FILENAME: [LOCAL_FILENAME_AND_DIRECTORY_SAFE_REGEX, "Local filenames must begin with a '/' and must contain only ASCII letters, numbers, periods, forward slashes, and underscores."],
+
 
     DB_ID: null,
     SUBAPP_ID: null,

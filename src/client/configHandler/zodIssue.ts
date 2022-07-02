@@ -18,6 +18,9 @@ export const liburryCustomErrorCodes = [
     "defaultsubapp_subapps_both_or_neither",
     "defaultsubapp_defined",
     "build_defaultapp_defined",
+    "invalid_font_in_font_group",
+    "invalid_font_group_in_dialect_config",
+    "invalid_font_group_in_app_config",
 ] as const;
 
 export type LiburryZodCustomTestingCode = (typeof liburryCustomErrorCodes)[number];

@@ -25,21 +25,8 @@ subApps:
 
 # NOTE: font sets per subapp can be implemented, but it's likely that per-app is more than sufficient for most use cases
 # NOTE: font families listed here are applied globally, in the order they are first seen.
-fonts:
-  -
-    type: "custom"
-    family: "Noto Sans TC"
-    localUrl: "/fonts/NotoSansTC-Regular.woff2"
-  -
-    type: "custom"
-    family: "Noto Sans TC"
-    localUrl: "/fonts/NotoSansTC-Bold.woff2"
-    descriptors:
-      weight: "700"
-  -
-    type: "system"
-    family: "sans-serif"
-
+fontGroups:
+  - NotoSansTC
 
 # TODO: implement defaults (in 'default', or just in index.html?
 # TODO: implement default manifest.json

@@ -1,0 +1,40 @@
+# NOTE: https://anyconv.com/otf-to-woff2-converter/ can come in handy.
+
+fonts:
+  NotoSansTC:
+      type: "custom"
+      family: "Noto Sans TC"
+      localUrl: "/fonts/NotoSansTC-Regular.woff2"
+  NotoSansTCBold:
+      type: "custom"
+      family: "Noto Sans TC"
+      localUrl: "/fonts/NotoSansTC-Bold.woff2"
+      descriptors:
+        weight: "700"
+
+  NotoSansSC:
+      type: "custom"
+      family: "Noto Sans SC"
+      localUrl: "/fonts/NotoSansSC-Regular.woff2"
+  NotoSansSCBold:
+      type: "custom"
+      family: "Noto Sans SC"
+      localUrl: "/fonts/NotoSansSC-Bold.woff2"
+      descriptors:
+        weight: "700"
+
+  SystemSansSerif:
+      type: "system"
+      family: "sans-serif"
+
+fontGroups:
+  NotoSansTC:
+    - NotoSansTC
+    - NotoSansTCBold
+
+  NotoSansSC:
+    - NotoSansSC
+    - NotoSansSCBold
+
+  SystemSansSerif:
+    - SystemSansSerif

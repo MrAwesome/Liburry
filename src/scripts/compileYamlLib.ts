@@ -8,6 +8,7 @@ import {rawLangConfigSchema} from '../client/configHandler/zodLangConfigTypes';
 import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from "../client/constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
 import {getRecordEntries, runningInJest} from '../client/utils';
+import {rawFontConfigSchema} from '../client/configHandler/zodFontConfigTypes';
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
@@ -47,7 +48,11 @@ export const YAML_FILENAME_TO_SCHEMA_MAPPING = {
     "menu.yml": {
         type: "menuConfig",
         schema: rawMenuConfigSchema,
-    }
+    },
+    "font.yml": {
+        type: "fontConfig",
+        schema: rawFontConfigSchema,
+    },
 } as const;
 
 interface LKFMeta {

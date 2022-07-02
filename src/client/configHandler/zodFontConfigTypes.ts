@@ -1,6 +1,8 @@
 import {z} from "@mrawesome/zod";
-import {noop} from "../utils";
+import {getRecordEntries, noop} from "../utils";
 import {TypeEquals} from "../utils/typeEquality";
+import {issue} from "./zodIssue";
+import {realRecord, token} from "./zodUtils";
 
 const fontFaceDescriptorsSchemaMatchesUpstream = z.object({
     display: z.string().optional(),
@@ -37,5 +39,32 @@ const systemFontConfigSchema = z.object({
 export type SystemFontConfig = z.infer<typeof systemFontConfigSchema>;
 
 // NOTE: when more config types are added, this can be z.union([blah, blah])
-export const fontConfigSchema = z.union([customFontConfigSchema, systemFontConfigSchema]);
-export type FontConfig = z.infer<typeof fontConfigSchema>;
+export const individualFontConfigSchema = z.union([customFontConfigSchema, systemFontConfigSchema]);
+export type FontConfig = z.infer<typeof individualFontConfigSchema>;
+
+export const fontIDToFontConfigSchema = realRecord(
+    token("FONT_ID"),
+    individualFontConfigSchema,
+);
+
+export const fontGroupConfigSchema = realRecord(
+    token("FONT_GROUP_ID"),
+    z.array(token("FONT_ID")).nonempty(),
+);
+
+// TODO: add names as keys
+// TODO: confirm that names are valid when present in font groups
+
+export const rawFontConfigSchema = z.object({
+    fonts: fontIDToFontConfigSchema,
+    fontGroups: fontGroupConfigSchema,
+}).superRefine((fontFileConfig, ctx) => {
+    const definedFontIDs = new Set(Object.keys(fontFileConfig.fonts));
+    getRecordEntries(fontFileConfig.fontGroups).forEach(([fontGroupID, fontGroupArray]) => {
+        fontGroupArray.forEach((font) => {
+            if (!definedFontIDs.has(font)) {
+                issue(ctx, "invalid_font_in_font_group", `Invalid font ID "${font}" in font group "${fontGroupID}"`);
+            }
+        });
+    });
+});

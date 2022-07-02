@@ -189,6 +189,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
     componentDidMount() {
         const {options} = this.state;
+        const {appID, dialectID} = this.appConfig;
         this.console.time("mountToAllDB");
 
         // TODO: does this need to happen here? can we just start a search?
@@ -206,11 +207,11 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             if (this.currentMountAttempt === savedMountAttempt) {
                 this.searchController?.startWorkersAndListener(options.searcherType);
                 this.subscribeHash();
-                if (!runningInJest()) {
-                    const {getFontLoader} = await import("./fonts/FontLoader");
-                    const fontLoader = getFontLoader(this.appConfig);
-                    fontLoader.load();
-                }
+//                    const {getFontLoader} = await import("./fonts/FontLoader");
+//
+//                    const fontConfigs = this.appConfig.getAllFontConfigs();
+//                    const fontLoader = getFontLoader(fontConfigs);
+                this.appConfig.fontLoader.load(appID, dialectID);
                 this.qs.anchor();
             } else {
                 console.warn("Detected double-mount, not starting workers...");
@@ -274,6 +275,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         const {subAppID} = this.appConfig;
         this.genRestartSearchController();
         this.genUpdateQs({appID, subAppID});
+        this.appConfig.fontLoader.load(appID, dialectID);
     }
 
     handleSubAppChange(subAppID: SubAppID) {
@@ -281,6 +283,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.appConfig = AppConfig.from(this.props.rfc, {appID, subAppID, dialectID});
         this.genRestartSearchController();
         this.genUpdateQs({subAppID});
+        this.appConfig.fontLoader.load(appID, dialectID);
     }
 
     handleDialectChange(dialectID: KnownDialectID) {
@@ -291,6 +294,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         this.appConfig.i18nHandler.changeDialect(dialectID);
         this.genUpdateQs({dialectID});
+        this.appConfig.fontLoader.load(appID, dialectID);
     }
 
     updateSearchBar(query: string) {

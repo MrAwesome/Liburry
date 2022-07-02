@@ -3,11 +3,11 @@
 import type {RawDBList, RawEnabledDBs, ReturnedFinalConfig, SubAppID, RawDBConfigMapping, AppID, ViewID, RawSubAppConfig, AppIDListOrAll, DBIdentifier} from "../configHandler/zodConfigTypes";
 import PageHandler from "../pages/PageHandler";
 import DBConfig from "../configHandler/DBConfig";
-import {getRecordValues, nullGuard, runningInJest} from "../utils";
-import {FontConfig} from "./zodFontConfigTypes";
+import {nullGuard, runningInJest} from "../utils";
 import DialectHandler from "./DialectHandler";
 import {KnownDialectID} from "../../common/generatedTypes";
 import I18NHandler from "../../common/i18n/I18NHandler";
+import FontLoader from "../fonts/FontLoader";
 
 export default class AppConfig {
     private constructor(
@@ -20,6 +20,7 @@ export default class AppConfig {
         public pageHandler: PageHandler,
         public dbConfigHandler: DBConfigHandler,
         public dialectHandler: DialectHandler,
+        public fontLoader: FontLoader,
 
         public dialectID: KnownDialectID,
         //private langConfigs: RawLangConfig[],
@@ -39,6 +40,8 @@ export default class AppConfig {
             subAppID?: SubAppID,
         }
     ) {
+        const inJest = runningInJest();
+
         let {dialectID,subAppID,appID} = options;
         appID = appID ?? getInitialApp(rfc);
 
@@ -54,7 +57,7 @@ export default class AppConfig {
         } else {
             if (subApps !== undefined) {
                 if (!(subAppID in subApps)) {
-                    if (!runningInJest()) {
+                    if (!inJest) {
                         const subAppList = Object.keys(subApps).join(", ");
                         console.error(`A subapp override was given ("${subAppID}"), but it was not found in the subapps for this app: (app: "${appID}", subapps: (${subAppList}))`);
                         console.error(`Using default subapp: "${defaultSubApp}"`);
@@ -70,8 +73,13 @@ export default class AppConfig {
         const dialectHandler = new DialectHandler(defaultConfigs.langConfig.config);
         dialectID = dialectID ?? dialectHandler.getDefaultDialectID();
 
+        const fontLoader = new FontLoader(rfc);
         // XXX TODO: add dialect loading from bar
-        return new AppConfig(rfc, i18nHandler, pageHandler, dbConfigHandler, dialectHandler, dialectID, appID, subAppID);
+        const appConfig = new AppConfig(rfc, i18nHandler, pageHandler, dbConfigHandler, dialectHandler, fontLoader, dialectID, appID, subAppID);
+
+
+        return appConfig;
+
     }
 
     private getRawAppConfig() {
@@ -83,14 +91,6 @@ export default class AppConfig {
             return this.getRawAppConfig().configs.appConfig.config.subApps?.[this.subAppID];
         }
         return undefined;
-    }
-
-    // NOTE: Could get fonts from "default" here, if there's ever a reason for that.
-    getAllFontConfigs(): FontConfig[] {
-        return getRecordValues(this.rfc.appConfigs)
-            .map((app) => app.configs.appConfig.config.fonts)
-            .filter(nullGuard).flat();
-
     }
 
     // TODO: decide if RFC should return created objects (and compileyaml should write the raw version out after just verifying)

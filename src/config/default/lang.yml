@@ -36,6 +36,8 @@ dialects:
     displayName: "繁體中文"
     otherDisplayNames:
       eng_us: "Chinese - Mandarin (Traditional)"
+    requiredFontGroup: NotoSansTC
+
     fallbacks:
       - mand_cn
 
@@ -61,6 +63,7 @@ dialects:
     displayName: "简体中文"
     otherDisplayNames:
       eng_us: "Chinese - Mandarin (Simplified)"
+    requiredFontGroup: NotoSansSC
     fallbacks:
       - mand_tw
 
@@ -85,6 +88,7 @@ dialects:
 #    otherDisplayNames:
 #      eng_us: "Taiwanese (POJ)"
 #      hok_tw_kip: "Tâi-uân-uē (Pe̍h-Uē-Jī)"
+#    requiredFontGroup: NotoSansTC
 #    tokens:
 #      search: "Chhâ..."
 #
@@ -94,5 +98,6 @@ dialects:
 #    otherDisplayNames:
 #      eng_us: "Taiwanese (KIP)"
 #      hok_tw_poj: "Tâi-uân-uē (Kàu-Io̍k-Pō͘)"
+#    requiredFontGroup: NotoSansTC
 #    tokens:
 #      search: "Tshâ..."

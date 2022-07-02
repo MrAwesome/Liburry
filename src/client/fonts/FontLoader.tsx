@@ -1,85 +1,71 @@
-import AppConfig from "../configHandler/AppConfig";
-import {CustomFontConfig, FontConfig, SystemFontConfig} from "../configHandler/zodFontConfigTypes";
+import {KnownDialectID} from "../../generated/i18n";
+import {AppID, ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
+import {runningInJest} from "../utils";
+import {FALLBACK_FONT_FAMILY} from "./CustomFontLoaders";
 
 // TODO: determine why searchbar doesn't use noto sans
 // TODO: debug why serviceworker doesn't cache the fonts (log from it?)
 
-type FontFamily = string;
-const FALLBACK_FONT_FAMILY: FontFamily = "sans-serif";
+// TODO: Define these somewhere more appropriate (and/or generate them statically)
+type FontGroupID = string;
+type FontID = string;
 
-export interface FontLoader {
-    // Get fonts from whichever system is configured, and load them into the DOM.
-    load(): Promise<void>;
-    getFontFamilies(): FontFamily[];
+function getFontsForKnownFontGroup(rfc: ReturnedFinalConfig, fontGroupID: FontGroupID) {
+    return rfc.default.configs.fontConfig.config.fontGroups[fontGroupID]!;
 }
 
-export function getFontLoader(appConfig: AppConfig): FontLoader {
-    const fontConfigs = appConfig.getAllFontConfigs();
-    const loaders = fontConfigs.map(getFontLoaderForFontConfig);
-    return new MetaFontLoader(loaders);
+function getFontConfigForKnownFontID(rfc: ReturnedFinalConfig, fontID: FontID) {
+    return rfc.default.configs.fontConfig.config.fonts[fontID]!;
 }
 
-function getFontLoaderForFontConfig(fc: FontConfig): FontLoader {
-    switch (fc.type) {
-        case "custom":
-            return CustomFontLoaderViaFontFace.from(fc);
-        case "system":
-            return SystemFontLoader.from(fc);
-    }
-}
+// TODO:
+// [] take fontnames
+// [] make knownfontnames
+// [] font for app -> font for interface -> fallback font
+// (so can either take list of fontnames directly, or calculate the list from dialect + appname/subappname/etc)
+//
+export default class FontLoader {
+    constructor(
+        private rfc: ReturnedFinalConfig,
+    ) {}
 
-// TODO: make this take fontfamily[]
-class MetaFontLoader implements FontLoader {
-    constructor(private loaders: FontLoader[]) {}
+    async load(
+        currentAppID: AppID,
+        currentDisplayDialect: KnownDialectID
+    ) {
+        const {rfc} = this;
+        const fontGroupsForApp: FontGroupID[] | undefined = rfc.appConfigs[currentAppID]!.configs.appConfig.config.fontGroups;
 
-    async load() {
-        // Load all fonts in all loaders
-        Promise.all(this.loaders.map((l) => l.load()));
+        const fontIDsForApp: FontID[] = fontGroupsForApp === undefined ? [] :
+            fontGroupsForApp.flatMap((fontGroup) => getFontsForKnownFontGroup(rfc, fontGroup));
 
-        // Add fonts to the DOM. For now, we just add to body, but the configs can take target classes later?
-        const uniqueFontFamilies = new Set(this.getFontFamilies());
-        uniqueFontFamilies.add(FALLBACK_FONT_FAMILY);
-        const newFontFamilyStr = Array.from(uniqueFontFamilies).join(", ");
-        document.body.style.fontFamily = newFontFamilyStr;
-    }
+        const fontGroupForDisplayDialect = rfc.default.configs.langConfig.config.dialects[currentDisplayDialect]!.requiredFontGroup;
 
-    getFontFamilies() {
-        return this.loaders.map((l) => l.getFontFamilies()).flat();
-    }
-}
+        const fontIDsForDisplayDialect: FontID[] = fontGroupForDisplayDialect === undefined ? [] :
+            getFontsForKnownFontGroup(rfc, fontGroupForDisplayDialect);
 
-class CustomFontLoaderViaFontFace implements FontLoader {
-    constructor(private fontFace: FontFace) {}
+        const fontIDs = [...fontIDsForApp, ...fontIDsForDisplayDialect];
 
-    static from(cfc: CustomFontConfig): CustomFontLoaderViaFontFace {
-        const {family, localUrl, descriptors} = cfc;
-        const fontFace = new FontFace(family, `url(${localUrl})`, descriptors);
-        return new CustomFontLoaderViaFontFace(fontFace);
-    }
+        if (!runningInJest()) {
+            // NOTE: this import must be dynamic, since FontFace isn't present at all in Jest.
+            const {getFontLoaderForFontConfig} = await import("./CustomFontLoaders");
 
-    async load(): Promise<void> {
-        this.fontFace.load().then(async (loadedFace) => {
-            document.fonts.add(loadedFace);
-        });
-    }
+            const loaders = fontIDs.map((fontID) => {
+                const fontConfig = getFontConfigForKnownFontID(rfc, fontID);
+                return getFontLoaderForFontConfig(fontConfig);
+            });
+            // Load all fonts in all loaders
+            Promise.all(loaders.map((l) => l.load()));
 
-    getFontFamilies() {
-        return [this.fontFace.family];
-    }
-}
+            // Add fonts to the DOM. For now, we just add to body, but the configs can take target classes later?
+            const fontFamilies = loaders.map((l) => l.getFontFamilies()).flat();
+            const uniqueFontFamilies = new Set(fontFamilies);
 
-class SystemFontLoader implements FontLoader {
-    constructor(private family: FontFamily) {}
+            // TODO: don't load except on a main font load?
+            uniqueFontFamilies.add(FALLBACK_FONT_FAMILY);
+            const newFontFamilyStr = Array.from(uniqueFontFamilies).join(", ");
 
-    static from(cfc: SystemFontConfig): SystemFontLoader {
-        const {family} = cfc;
-        return new SystemFontLoader(family);
-    }
-
-    // There's no need to load system fonts, we'll just add them to the DOM upstream.
-    async load(): Promise<void> {}
-
-    getFontFamilies() {
-        return [this.family];
+            document.body.style.fontFamily = newFontFamilyStr;
+        }
     }
 }

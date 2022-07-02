@@ -7,7 +7,7 @@
 // The types here are those which go through some sort of serialization - to/from YAML or JSON in particular.
 import {z} from "@mrawesome/zod";
 import {getRecordEntries, noop, reflectRecord, runningInJest} from "../utils";
-import {fontConfigSchema} from "./zodFontConfigTypes";
+import {rawFontConfigSchema} from "./zodFontConfigTypes";
 import {compileExpression as filtrexCompile} from "filtrex";
 import {anyString, realRecord, token, strictObject, tokenArray} from "./zodUtils";
 import {rawLangConfigSchema} from "./zodLangConfigTypes";
@@ -84,7 +84,8 @@ export const rawAppConfigSchema = strictObject({
     displayName: anyString().describe("The display name of the app, as it will be shown to users."),
     defaultSubApp: token("SUBAPP_ID").optional(),
     subApps: subAppsSchema,
-    fonts: z.array(fontConfigSchema).optional(),
+
+    fontGroups: z.array(token("FONT_GROUP_ID")).optional(),
 })
     .superRefine((appConfig, ctx) => {
         // NOTE: should path be added here
@@ -464,6 +465,11 @@ const menuConfigSchema = strictObject({
     config: rawMenuConfigSchema,
 });
 
+const fontConfigSchema = strictObject({
+    configType: z.literal("fontConfig"),
+    config: rawFontConfigSchema,
+});
+
 const defaultBuildConfigSchema = strictObject({
     configType: z.literal("defaultBuildConfig"),
     config: rawDefaultBuildConfigSchema,
@@ -477,13 +483,29 @@ const rawAppLoadedAllConfigSchema = strictObject({
 });
 
 // "default" has different requirements for which configs must be present.
-const rawDefaultLoadedAllConfigSchema = strictObject({
+const rawDefaultLoadedAllConfigSchemaForMerge = strictObject({
     langConfig: langConfigSchema,
     menuConfig: menuConfigSchema,
     defaultBuildConfig: defaultBuildConfigSchema,
+    fontConfig: fontConfigSchema,
 });
 
-const loadedAllConfigSchema = rawDefaultLoadedAllConfigSchema.merge(rawAppLoadedAllConfigSchema).required();
+const rawDefaultLoadedAllConfigSchema = rawDefaultLoadedAllConfigSchemaForMerge.superRefine((defaultConfig, ctx) => {
+    const {langConfig, fontConfig} = defaultConfig;
+
+    const knownFontGroups = new Set(Object.keys(fontConfig.config.fontGroups));
+
+    getRecordEntries(langConfig.config.dialects).forEach(([dialectID, dialectConfig]) => {
+        const {requiredFontGroup} = dialectConfig;
+        if (requiredFontGroup !== undefined) {
+            if (!knownFontGroups.has(requiredFontGroup)) {
+                issue(ctx, "invalid_font_group_in_dialect_config", `Unknown font group "${requiredFontGroup}" in config for dialect "${dialectID}"`);
+            }
+        }
+    });
+});
+
+const loadedAllConfigSchema = rawDefaultLoadedAllConfigSchemaForMerge.merge(rawAppLoadedAllConfigSchema).required();
 type LoadedAllConfig = z.infer<typeof loadedAllConfigSchema>;
 
 export type LoadedConfig = LoadedAllConfig[keyof LoadedAllConfig];
@@ -590,10 +612,23 @@ export const returnedFinalConfigSchema = strictObject({
         initialAppOverride: token("APP_ID").optional(),
         appIDsOverride: appIDListOrAllSchema.optional(),
     }).optional(),
+}).superRefine((rfc, ctx) => {
+    const {fontConfig} = rfc.default.configs;
+    const {appConfigs} = rfc;
+
+    const knownFontGroups = new Set(Object.keys(fontConfig.config.fontGroups));
+
+    getRecordEntries(appConfigs).forEach(([appID, appConfig]) => {
+        const requiredFontGroups = appConfig.configs.appConfig.config.fontGroups;
+        if (requiredFontGroups !== undefined) {
+            requiredFontGroups.forEach((requiredFontGroup) => {
+                if (!knownFontGroups.has(requiredFontGroup)) {
+                    issue(ctx, "invalid_font_group_in_app_config", `Unknown font group "${requiredFontGroup}" in config for app "${appID}"`);
+                }
+            });
+        }
+    });
 });
 
 // TODO: make a wrapper class to make operations on this easier once it's loaded
 export type ReturnedFinalConfig = z.infer<typeof returnedFinalConfigSchema>;
-
-const intermediateConfig = returnedFinalConfigSchema.deepPartial();
-export type IntermediateConfig = z.infer<typeof intermediateConfig>;
