@@ -1,11 +1,11 @@
-# 联络我们
+# 联系我们
 
 ## 社群讨论区
-* 矩阵：<https://matrix.to/#/#liburry:matrix.org>
-* 网格：<https://grid.im/Liburry/community>
+* Matrix：<https://matrix.to/#/#liburry:matrix.org>
+* Gitter：<https://grid.im/Liburry/community>
 
 ## 错误回报／功能请求
-如果你要回报任何问题、提出功能请求、分享修改建议，请透过此连结发送issue： <${REPO_LINK}>
+如果你要回报任何问题、提出功能请求、分享修改建议，请透过此链接发送issue： <${REPO_LINK}>
 
 ## 贡献者
 
@@ -17,7 +17,7 @@
 * GitHub：<https://github.com/Simteng>
 * 领英：<https://www.linkedin.com/in/charis-chen-592392229/>
 
-* **Lemuel Reid**：实习生、软体工程师
+* **Lemuel Reid**：实习生、软件工程师
 * GitHub：<https://github.com/lemywinx>
 * 领英：<https://www.linkedin.com/in/lemuel-reid-39b455a1/>
 
