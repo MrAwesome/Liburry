@@ -23,7 +23,6 @@ import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler
 import "./ChhaTaigi.css";
 
 // TODO: make clicking on search bar close dialogue windows
-// TODO: plug in X button
 // TODOs are here: https://docs.google.com/spreadsheets/d/1lvbgLRRxGiNIf2by_mMW0aJrP1uhYTsz4_I4vmrB_Ss/edit?usp=sharing
 //
 // Posts:

@@ -1,5 +1,4 @@
 import I18NHandler from "../../common/i18n/I18NHandler";
-import {KnownDialectID} from "../../generated/i18n";
 import {DBConfigHandler} from "../configHandler/AppConfig";
 import {AppID, LoadedPage, MarkdownPage, PageID, ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
 //import {getRecordValues} from "../utils";
