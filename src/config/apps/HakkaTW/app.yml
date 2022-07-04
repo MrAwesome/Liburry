@@ -1,5 +1,5 @@
 # TODO: localize
-displayName: "Hakka Dictionary"
+displayName: "客家詞典"
 # TODO: determine best default language
 defaultSubApp: raoping_subapp
 subApps:
@@ -15,3 +15,6 @@ subApps:
     displayName: "詔安 (Zhaoan)"
   southern_sixian_subapp:
     displayName: "南四 (SouthernSixian)"
+
+fontGroups:
+  - NotoSansTC
