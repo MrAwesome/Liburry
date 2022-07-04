@@ -1,4 +1,4 @@
-import {KnownDialectID} from "../../generated/i18n";
+import {KnownDialectID, KnownFontGroupID, KnownFontID} from "../../generated/i18n";
 import {AppID, ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
 import {runningInJest} from "../utils";
 
@@ -8,14 +8,12 @@ export const FALLBACK_FONT_FAMILY = "sans-serif";
 // TODO: debug why serviceworker doesn't cache the fonts (log from it?)
 
 // TODO: Define these somewhere more appropriate (and/or generate them statically)
-type FontGroupID = string;
-type FontID = string;
 
-function getFontsForKnownFontGroup(rfc: ReturnedFinalConfig, fontGroupID: FontGroupID) {
+function getFontsForKnownFontGroup(rfc: ReturnedFinalConfig, fontGroupID: KnownFontGroupID) {
     return rfc.default.configs.fontConfig.config.fontGroups[fontGroupID]!;
 }
 
-function getFontConfigForKnownFontID(rfc: ReturnedFinalConfig, fontID: FontID) {
+function getFontConfigForKnownFontID(rfc: ReturnedFinalConfig, fontID: KnownFontID) {
     return rfc.default.configs.fontConfig.config.fonts[fontID]!;
 }
 
@@ -35,15 +33,15 @@ export default class FontLoader {
         currentDisplayDialect: KnownDialectID
     ) {
         const {rfc} = this;
-        const fontGroupsForApp: FontGroupID[] | undefined = rfc.appConfigs[currentAppID]!.configs.appConfig.config.fontGroups;
+        const fontGroupsForApp = rfc.appConfigs[currentAppID]!.configs.appConfig.config.fontGroups as KnownFontGroupID[] | undefined;
 
-        const fontIDsForApp: FontID[] = fontGroupsForApp === undefined ? [] :
-            fontGroupsForApp.flatMap((fontGroup) => getFontsForKnownFontGroup(rfc, fontGroup));
+        const fontIDsForApp = fontGroupsForApp === undefined ? [] :
+            fontGroupsForApp.flatMap((fontGroup) => getFontsForKnownFontGroup(rfc, fontGroup)) as KnownFontID[];
 
-        const fontGroupForDisplayDialect = rfc.default.configs.langConfig.config.dialects[currentDisplayDialect]!.requiredFontGroup;
+        const fontGroupForDisplayDialect = rfc.default.configs.langConfig.config.dialects[currentDisplayDialect]!.requiredFontGroup as KnownFontGroupID | undefined;
 
-        const fontIDsForDisplayDialect: FontID[] = fontGroupForDisplayDialect === undefined ? [] :
-            getFontsForKnownFontGroup(rfc, fontGroupForDisplayDialect);
+        const fontIDsForDisplayDialect = fontGroupForDisplayDialect === undefined ? [] :
+            getFontsForKnownFontGroup(rfc, fontGroupForDisplayDialect) as KnownFontID[];
 
         const fontIDs = [...fontIDsForApp, ...fontIDsForDisplayDialect];
 
