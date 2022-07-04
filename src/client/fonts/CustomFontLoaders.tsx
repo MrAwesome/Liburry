@@ -1,7 +1,6 @@
 import {CustomFontConfig, FontConfig, SystemFontConfig} from "../configHandler/zodFontConfigTypes";
 
 export type FontFamily = string;
-export const FALLBACK_FONT_FAMILY: FontFamily = "sans-serif";
 
 export function getFontLoaderForFontConfig(fc: FontConfig): IFontLoader {
     switch (fc.type) {

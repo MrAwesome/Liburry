@@ -1,7 +1,8 @@
 import {KnownDialectID} from "../../generated/i18n";
 import {AppID, ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
 import {runningInJest} from "../utils";
-import {FALLBACK_FONT_FAMILY} from "./CustomFontLoaders";
+
+export const FALLBACK_FONT_FAMILY = "sans-serif";
 
 // TODO: determine why searchbar doesn't use noto sans
 // TODO: debug why serviceworker doesn't cache the fonts (log from it?)
