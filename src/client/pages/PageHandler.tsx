@@ -33,8 +33,6 @@ export default class PageHandler {
 
         const knownDialectIDs = getKnownDialectIDChainAsList();
 
-        const knownDialectIDsWithPriority: Map<KnownDialectID, number> = new Map(knownDialectIDs.map((k, i) => [k, i]));
-
         // NOTE: default is second, so that page-specific info comes first
         const thisApp = finalConfig.appConfigs[selectedAppID];
         if (thisApp === undefined) {
