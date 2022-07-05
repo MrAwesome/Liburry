@@ -496,11 +496,13 @@ const rawDefaultLoadedAllConfigSchema = rawDefaultLoadedAllConfigSchemaForMerge.
     const knownFontGroups = new Set(Object.keys(fontConfig.config.fontGroups));
 
     getRecordEntries(langConfig.config.dialects).forEach(([dialectID, dialectConfig]) => {
-        const {requiredFontGroup} = dialectConfig;
-        if (requiredFontGroup !== undefined) {
-            if (!knownFontGroups.has(requiredFontGroup)) {
-                issue(ctx, "invalid_font_group_in_dialect_config", `Unknown font group "${requiredFontGroup}" in config for dialect "${dialectID}"`);
-            }
+        const {requiredFontGroups} = dialectConfig;
+        if (requiredFontGroups !== undefined) {
+            requiredFontGroups.forEach((requiredFontGroup) => {
+                if (!knownFontGroups.has(requiredFontGroup)) {
+                    issue(ctx, "invalid_font_group_in_dialect_config", `Unknown font group "${requiredFontGroup}" in config for dialect "${dialectID}"`);
+                }
+            });
         }
     });
 });
