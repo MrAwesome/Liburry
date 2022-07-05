@@ -1,19 +1,33 @@
+import {removeDuplicatesFromList} from "../../common/utils";
 import {KnownDialectID, KnownFontGroupID, KnownFontID} from "../../generated/i18n";
 import {AppID, ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
 import {runningInJest} from "../utils";
 
-export const FALLBACK_FONT_FAMILY = "sans-serif";
+export type FontFamily = string;
+export const FALLBACK_FONT_FAMILY: FontFamily = "sans-serif";
 
 // TODO: determine why searchbar doesn't use noto sans
 // TODO: debug why serviceworker doesn't cache the fonts (log from it?)
 // TODO: add unit/integration tests (difficult, with FontFace being undefined in Jest)
 
-function getFontsForKnownFontGroup(rfc: ReturnedFinalConfig, fontGroupID: KnownFontGroupID) {
+function getFontIDsForKnownFontGroup(rfc: ReturnedFinalConfig, fontGroupID: KnownFontGroupID) {
     return rfc.default.configs.fontConfig.config.fontGroups[fontGroupID]!;
 }
 
 function getFontConfigForKnownFontID(rfc: ReturnedFinalConfig, fontID: KnownFontID) {
     return rfc.default.configs.fontConfig.config.fonts[fontID]!;
+}
+
+export function getFontFamiliesForDisplayDialect(rfc: ReturnedFinalConfig, knownDialectID: KnownDialectID): FontFamily[] | undefined {
+    const langConfig = rfc.default.configs.langConfig.config;
+    const {requiredFontGroups} = langConfig.dialects[knownDialectID]!;
+
+    if (requiredFontGroups === undefined) {return undefined;}
+
+    const fontIDs = requiredFontGroups.flatMap((fontGroup) => getFontIDsForKnownFontGroup(rfc, fontGroup as KnownFontGroupID));
+    const fontConfigs = fontIDs.map((fontID) => getFontConfigForKnownFontID(rfc, fontID as KnownFontID));
+
+    return removeDuplicatesFromList(fontConfigs.map((fc) => fc.family));
 }
 
 export default class FontLoader {
@@ -29,12 +43,12 @@ export default class FontLoader {
         const fontGroupsForApp = rfc.appConfigs[currentAppID]!.configs.appConfig.config.fontGroups as KnownFontGroupID[] | undefined;
 
         const fontIDsForApp = fontGroupsForApp === undefined ? [] :
-            fontGroupsForApp.flatMap((fontGroup) => getFontsForKnownFontGroup(rfc, fontGroup)) as KnownFontID[];
+            fontGroupsForApp.flatMap((fontGroup) => getFontIDsForKnownFontGroup(rfc, fontGroup)) as KnownFontID[];
 
         const fontGroupsForDisplayDialect = rfc.default.configs.langConfig.config.dialects[currentDisplayDialect]!.requiredFontGroups as KnownFontGroupID[] | undefined;
 
         const fontIDsForDisplayDialect = fontGroupsForDisplayDialect === undefined ? [] :
-            fontGroupsForDisplayDialect.flatMap((fontGroup) => getFontsForKnownFontGroup(rfc, fontGroup)) as KnownFontID[];
+            fontGroupsForDisplayDialect.flatMap((fontGroup) => getFontIDsForKnownFontGroup(rfc, fontGroup)) as KnownFontID[];
 
         if (!runningInJest()) {
             // NOTE: this import must be dynamic, since FontFace isn't present at all in Jest.

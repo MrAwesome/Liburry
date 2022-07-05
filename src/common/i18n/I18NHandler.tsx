@@ -2,10 +2,10 @@
 //  import default first, validate it, then do the full finalconfig.
 import {ReturnedFinalConfig} from "../../client/configHandler/zodConfigTypes";
 import {RawDialect} from "../../client/configHandler/zodLangConfigTypes";
+import {FontFamily, getFontFamiliesForDisplayDialect} from "../../client/fonts/FontLoader";
 import {runningInJest} from "../../client/utils";
 import type {I18NToken, KnownDialectID} from "../../common/generatedTypes";
 import {i18nTokenIDsSet} from "../../generated/i18n";
-
 
 interface KnownDialectIDChain {
     chosenDialectID: KnownDialectID,
@@ -28,16 +28,23 @@ interface RawDialectConfigChain {
 // the selected dialect. See src/common/i18n/I18NHandler.test.ts for examples.
 //
 // NOTE: lookups here could be sped up by caching (dialect+token = string) if necessary.
+interface DialectCacheEntry {
+    fontFamilies: FontFamily[] | undefined,
+    tokens: Map<I18NToken, string>,
+}
+
 export default class I18NHandler {
-    private dialectCaches: Map<KnownDialectID, Map<I18NToken, string>> = new Map();
+    private dialectCaches: Map<KnownDialectID, DialectCacheEntry> = new Map();
 
     constructor(
         private rfc: ReturnedFinalConfig,
         private dialectID: KnownDialectID
     ) {
-        this.tok = this.tok.bind(this);
         this.changeDialect = this.changeDialect.bind(this);
+        this.tok = this.tok.bind(this);
+        this.tok_RAWSTRING = this.tok_RAWSTRING.bind(this);
         this.tokForDialect = this.tokForDialect.bind(this);
+        this.tokForDialect_RAWSTRING = this.tokForDialect_RAWSTRING.bind(this);
         this.getKnownDialectIDChain = this.getKnownDialectIDChain.bind(this);
         this.getKnownDialectIDChainAsList = this.getKnownDialectIDChainAsList.bind(this);
         this.getTokenFromCache_or_FromChainAndPopulateCache =
@@ -49,19 +56,28 @@ export default class I18NHandler {
         //this.dialectChain = getDialectConfigAndFallbacks(this.rfc, dialectID)
     }
 
-    // Get the specified token for the current dialect
-    tok(tokenIdentifier: I18NToken): string {
-        const {dialectID} = this;
-        return this.getTokenFromCache_or_FromChainAndPopulateCache(tokenIdentifier, dialectID);
-    }
-
     isTok(maybeToken: string): maybeToken is I18NToken {
         return i18nTokenIDsSet.has(maybeToken as I18NToken);
     }
 
+    // Get the specified token for the current dialect
+    tok(tokenIdentifier: I18NToken): JSX.Element {
+        const {dialectID} = this;
+        return styled(this.getTokenFromCache_or_FromChainAndPopulateCache(tokenIdentifier, dialectID));
+    }
+
+    tok_RAWSTRING(tokenIdentifier: I18NToken): string {
+        const {dialectID} = this;
+        return this.getTokenFromCache_or_FromChainAndPopulateCache(tokenIdentifier, dialectID).token;
+    }
+
     // Get the specified token for a specific dialect
-    tokForDialect(tokenIdentifier: I18NToken, dialectID: KnownDialectID): string {
-        return this.getTokenFromCache_or_FromChainAndPopulateCache(tokenIdentifier, dialectID);
+    tokForDialect(tokenIdentifier: I18NToken, dialectID: KnownDialectID): JSX.Element {
+        return styled(this.getTokenFromCache_or_FromChainAndPopulateCache(tokenIdentifier, dialectID));
+    }
+
+    tokForDialect_RAWSTRING(tokenIdentifier: I18NToken, dialectID: KnownDialectID): string {
+        return this.getTokenFromCache_or_FromChainAndPopulateCache(tokenIdentifier, dialectID).token;
     }
 
     getKnownDialectIDChain(): KnownDialectIDChain {
@@ -78,25 +94,52 @@ export default class I18NHandler {
     private getTokenFromCache_or_FromChainAndPopulateCache(
         tokenIdentifier: I18NToken,
         dialectID: KnownDialectID
-    ): string {
+    ): TokenAndFam {
         const {dialectCaches} = this;
         let dialectCache = dialectCaches.get(dialectID);
         if (dialectCache === undefined) {
-            dialectCache = new Map();
+            const fontFamilies = getFontFamiliesForDisplayDialect(this.rfc, dialectID);
+            dialectCache = {
+                fontFamilies,
+                tokens: new Map(),
+            }
             dialectCaches.set(dialectID, dialectCache);
         }
 
-        const cacheTok = dialectCache.get(tokenIdentifier);
+        const cacheTok = dialectCache.tokens.get(tokenIdentifier);
+        let token: string;
         if (cacheTok !== undefined) {
-            return cacheTok;
+            token = cacheTok;
+        } else {
+            const dialectChain = getDialectConfigAndFallbacks(this.rfc, dialectID)
+            const calculatedTok = getTokenForDialectChain(tokenIdentifier, dialectChain);
+            dialectCache.tokens.set(tokenIdentifier, calculatedTok);
+
+            token = calculatedTok;
         }
 
-        const dialectChain = getDialectConfigAndFallbacks(this.rfc, dialectID)
-        const returnedTok = getTokenForDialectChain(tokenIdentifier, dialectChain);
-        dialectCache.set(tokenIdentifier, returnedTok);
+        const {fontFamilies} = dialectCache;
 
-        return returnedTok;
+        return {token, fontFamilies};
     }
+}
+
+interface TokenAndFam {
+    token: string,
+    fontFamilies: FontFamily[] | undefined,
+}
+
+
+function styled(tokenAndFam: TokenAndFam): JSX.Element {
+    const {token, fontFamilies} = tokenAndFam;
+    return <span
+        className="i18n-token"
+        style={{
+            fontFamily: fontFamilies?.join(", ")
+        }}
+    >
+        {token}
+    </span>
 }
 
 function getKnownDialectChain(rfc: ReturnedFinalConfig, dialectID: KnownDialectID): KnownDialectIDChain {

@@ -28,7 +28,7 @@ export default class PageHandler {
         dbConfigHandler: DBConfigHandler,
         selectedAppID: AppID,
     ) {
-        const {tok, getKnownDialectIDChainAsList} = i18nHandler;
+        const {tok_RAWSTRING, getKnownDialectIDChainAsList} = i18nHandler;
 
         const knownDialectIDs = getKnownDialectIDChainAsList();
 
@@ -84,7 +84,7 @@ export default class PageHandler {
 
                     const source = dbConfig.getSourceURL();
                     const license = dbConfig.getLicenseString();
-                    return `## ${disp}\n\n${tok("data_source")}: <${source}>\n\n${tok("license")}: *${license}*`
+                    return `## ${disp}\n\n${tok_RAWSTRING("data_source")}: <${source}>\n\n${tok_RAWSTRING("license")}: *${license}*`
                 }).join("\n");
 
                 const licensePage: MarkdownPage = {

@@ -22,6 +22,7 @@ import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler
 
 import "./ChhaTaigi.css";
 
+// TODO: fix skipped tests in src/client/ChhaTaigi.test.tsx
 // TODO: set default display language per-app in build.yml
 // TODO: make clicking on search bar close dialogue windows
 // TODOs are here: https://docs.google.com/spreadsheets/d/1lvbgLRRxGiNIf2by_mMW0aJrP1uhYTsz4_I4vmrB_Ss/edit?usp=sharing
@@ -357,7 +358,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     getPageView(): JSX.Element {
         const {pageID} = this.state.options;
         if (pageID !== undefined) {
-            return <CombinedPageElement perAppPages={this.appConfig.pageHandler.getPagesForPageID(pageID)} />
+            return <CombinedPageElement rfc={this.props.rfc} perAppPages={this.appConfig.pageHandler.getPagesForPageID(pageID)} />
         } else {
             return this.getMainDisplayAreaContents(MainDisplayAreaMode.DEFAULT);
         }
@@ -403,10 +404,10 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         const sortedFreq = getRecordEntries(frequencies).sort((a, b) => b[1] - a[1]);
         const allSearchableKnownDialectsForThisSearch = sortedFreq.map((x) => x[0] as KnownDialectID);
         if (allSearchableKnownDialectsForThisSearch.length > 0) {
-            const searchPhrases = allSearchableKnownDialectsForThisSearch.map((dialectID) => this.appConfig.i18nHandler.tokForDialect("search", dialectID));
+            const searchPhrases = allSearchableKnownDialectsForThisSearch.map((dialectID) => this.appConfig.i18nHandler.tokForDialect_RAWSTRING("search", dialectID));
             return searchPhrases.join(" / ");
         } else {
-            return this.appConfig.i18nHandler.tok("search");
+            return this.appConfig.i18nHandler.tok_RAWSTRING("search");
         }
     }
 

@@ -1,11 +1,14 @@
 import * as React from "react";
 import ReactMarkdown from 'react-markdown';
-import {AppID, LoadedPage} from "../configHandler/zodConfigTypes";
+import {KnownDialectID} from "../../generated/i18n";
+import {AppID, LoadedPage, ReturnedFinalConfig} from "../configHandler/zodConfigTypes";
 import * as constants from "../constants";
+import {getFontFamiliesForDisplayDialect} from "../fonts/FontLoader";
 
 import "./pages.css";
 
 interface CPageProps {
+    rfc: ReturnedFinalConfig,
     perAppPages: Map<AppID, LoadedPage>;
 }
 
@@ -16,7 +19,12 @@ export class CombinedPageElement extends React.PureComponent<CPageProps, any> {
     render() {
         const pages: JSX.Element[] = [];
         this.props.perAppPages.forEach((page, appID) => {
-            pages.push(<div className="individual-page" key={`page-${appID}`}> {getHtmlForLoadedPage(page)} </div>);
+            const fontFamilies = getFontFamiliesForDisplayDialect(this.props.rfc, page.dialect as KnownDialectID);
+            pages.push(<div 
+                className="individual-page" 
+                key={`page-${appID}`}
+                style={{fontFamily: fontFamilies?.join(", ")}}
+            > {getHtmlForLoadedPage(page)} </div>);
         });
 
         return <div className="combined-page"> {pages} </div>;

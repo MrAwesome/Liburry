@@ -1,6 +1,5 @@
 import {CustomFontConfig, FontConfig, SystemFontConfig} from "../configHandler/zodFontConfigTypes";
-
-export type FontFamily = string;
+import {FontFamily} from "./FontLoader";
 
 export function getFontLoaderForFontConfig(fc: FontConfig): IFontLoader {
     switch (fc.type) {

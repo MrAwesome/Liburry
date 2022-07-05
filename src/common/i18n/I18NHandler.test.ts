@@ -10,12 +10,12 @@ test("basic handler loading / switching", async () => {
 
     const rfc = await genLoadFinalConfigWILLTHROW();
     const h = new I18NHandler(rfc, "eng_us");
-    expect(h.tok("app")).toBe(engApp);
-    expect(h.tokForDialect("app", "mand_tw")).toBe(mandApp);
+    expect(h.tok_RAWSTRING("app")).toBe(engApp);
+    expect(h.tokForDialect_RAWSTRING("app", "mand_tw")).toBe(mandApp);
 
     h.changeDialect("mand_tw");
-    expect(h.tok("app")).toBe(mandApp);
-    expect(h.tokForDialect("app", "eng_us")).toBe(engApp);
+    expect(h.tok_RAWSTRING("app")).toBe(mandApp);
+    expect(h.tokForDialect_RAWSTRING("app", "eng_us")).toBe(engApp);
 });
 
 //test("handler unknown token", async () => {

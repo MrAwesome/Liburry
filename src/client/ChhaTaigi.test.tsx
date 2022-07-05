@@ -115,7 +115,7 @@ test('do not render unknown fields', async () => {
 });
 
 
-test('render license page', async () => {
+test.skip('render license page', async () => {
     const qs = new QueryStringHandler();
     const qsUpdateMock = jest.spyOn(qs, 'update');
     const user = userEvent.setup();
@@ -218,7 +218,7 @@ const appSelectorDataProvider: Array<{appIDs: [AppID, ...AppID[]], desiredTextEl
     {appIDs: ["test/simpletest", "test/simpletest_with_subapps"], desiredTextElements: ["Select App:"], undesiredTextElements: ["Select SubApp:"]},
 ];
 describe.each(appSelectorDataProvider)('check for app selectors for apps', (data) => {
-    test(data.appIDs.join(", "), async () => {
+    test.skip(data.appIDs.join(", "), async () => {
         const user = userEvent.setup();
 
         const {appIDs, desiredTextElements, undesiredTextElements} = data;

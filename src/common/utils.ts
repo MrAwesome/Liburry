@@ -21,3 +21,6 @@ export async function loadPublicFileAsPlainText(
     }
 }
 
+export function removeDuplicatesFromList<T>(l: T[]): T[] {
+    return Array.from(new Set(l));
+}
