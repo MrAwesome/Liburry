@@ -115,7 +115,7 @@ test('do not render unknown fields', async () => {
 });
 
 
-test.skip('render license page', async () => {
+test('render license page', async () => {
     const qs = new QueryStringHandler();
     const qsUpdateMock = jest.spyOn(qs, 'update');
     const user = userEvent.setup();
@@ -148,10 +148,11 @@ test.skip('render license page', async () => {
     await user.click(menuBtn);
 
     await waitFor(async () => {
-        const licensesAfter = screen.getByText(licensesLinkText);
-        expect(licensesAfter.tabIndex).toBe(0);
+        // eslint-disable-next-line testing-library/no-node-access
+        const licensesAfter = screen.getByText(licensesLinkText).parentElement;
+        expect(licensesAfter?.tabIndex).toBe(0);
 
-        await user.click(licensesAfter);
+        await user.click(licensesAfter!);
     });
 
     await waitFor(async () => {
@@ -218,6 +219,7 @@ const appSelectorDataProvider: Array<{appIDs: [AppID, ...AppID[]], desiredTextEl
     {appIDs: ["test/simpletest", "test/simpletest_with_subapps"], desiredTextElements: ["Select App:"], undesiredTextElements: ["Select SubApp:"]},
 ];
 describe.each(appSelectorDataProvider)('check for app selectors for apps', (data) => {
+    // NOTE: broken, as the text blobs are now broken up with span elements
     test.skip(data.appIDs.join(", "), async () => {
         const user = userEvent.setup();
 
