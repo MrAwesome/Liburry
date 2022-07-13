@@ -15,7 +15,7 @@ import {setTimeoutButNotInProdOrTests, getRecordEntries, runningInJest} from "./
 import AppConfig from "./configHandler/AppConfig";
 import SearchOptionsArea from "./searchOptions/SearchOptionsArea";
 import {KnownDialectID} from "../common/generatedTypes";
-//import AppSelector from "./searchOptions/AppSelector";
+import AppSelector from "./searchOptions/AppSelector";
 
 import type {SearchContext} from "./search/orchestration/SearchValidityManager";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
@@ -365,19 +365,20 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
     }
 
     getDefaultDisplayArea() {
-//        const {appID, subAppID} = this.appConfig;
+        const {appID, subAppID} = this.appConfig;
         const {tok} = this.appConfig.i18nHandler;
-//        const appSelector = <AppSelector
-//                rfc={this.props.rfc}
-//                currentAppID={appID}
-//                currentSubAppID={subAppID}
-//                handleAppChange={this.handleAppChange}
-//                handleSubAppChange={this.handleSubAppChange}
-//                i18nHandler={this.appConfig.i18nHandler}
-//            />
+        const appSelector = <AppSelector
+                rfc={this.props.rfc}
+                currentAppID={appID}
+                currentSubAppID={subAppID}
+                handleAppChange={this.handleAppChange}
+                handleSubAppChange={this.handleSubAppChange}
+                i18nHandler={this.appConfig.i18nHandler}
+            />
         return <div className="liburry-default-display-area">
             {tok("welcome_message")}
             <div className="liburry-default-display-area-app-selector"></div>
+            {appSelector}
         </div>
     }
 
