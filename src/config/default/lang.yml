@@ -51,6 +51,8 @@ dialects:
       data_source: "起源"
       license: "執照"
 
+      welcome_message: "歡迎來到Liburry！你可以在上方搜尋欄直接搜尋，或點擊右方問號了解資訊與功能。"
+
       pages/about: "關於"
       pages/licenses: "授權條款"
       pages/help: "支援"
@@ -78,6 +80,8 @@ dialects:
       searcher_type: "搜索者类型"
       data_source: "起源"
       license: "执照"
+
+      welcome_message: "欢迎来到Liburry！你可以在上方搜索栏直接搜索，或点击右方问号了解更多信息与功能。"
 
       pages/about: "关于"
       pages/licenses: "授权条款"
