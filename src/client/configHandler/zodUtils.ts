@@ -7,8 +7,8 @@ export function realRecord<V extends z.ZodTypeAny, VK extends z.ZodString, S ext
 ):
     // Explicitly define the return type, to avoid splitting:
     // It returns a Record where:
-    //  each string key passes either a boolean check, or another zod parser
-    //  each value of type V passes valZodValidator
+    //  * each string key passes either a boolean check, or another zod parser
+    //  * each value of type V passes valZodValidator
     z.ZodEffects<z.ZodRecord<z.ZodString, z.ZodOptional<V>>,
         Record<string, V["_output"] | undefined>, Record<string, V["_input"] | undefined>> {
 

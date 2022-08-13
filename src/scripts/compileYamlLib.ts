@@ -395,7 +395,7 @@ export async function genIndexHTMLEnvVarPairs(
     const themeColor = buildConfig?.indexHtml?.themeColor ?? defaultBuildConfig.indexHtml.themeColor;
 
     // NOTE: if the build has a displayName, use that for og:title before falling back to the default buildconfig
-    // //TODO: UNIT TEST
+    // TODO: UNIT TEST
     const title = buildConfig?.indexHtml?.og?.title ??
         buildConfig?.displayName ??
         defaultBuildConfig.indexHtml.og.title;

@@ -64,29 +64,8 @@ export default class DBConfig {
             .map((fieldID) => this.r.fields[fieldID]!.dialect)
             .filter(nullGuard)
             .flat();
-//      const seenRawDialects: Set<string> = new Set();
-//        searchableFields.forEach((field) => {
-//            const dialectIDOrIDs = field.dialect;
-//            if (dialectIDOrIDs === undefined) return;
-//
-//            let dialectIDs;
-//            if (Array.isArray(dialectIDOrIDs)) {
-//                dialectIDs = dialectIDOrIDs;
-//            } else {
-//                dialectIDs = [dialectIDOrIDs];
-//            }
-//            dialectIDs.forEach((dialectID) => {
-//                if (!seenRawDialects.has(dialectID)) {
-//                    seenRawDialects.add(dialectID)
-//                }
-//            });
-//        });
-//      return Array.from(seenRawDialects);
     }
 
-//    getKnownDialectIDsForSearchableFieldsWithDuplicates(): KnownDialectID[] {
-//    }
-//
     getKnownDialectIDsForSearchableFields(): KnownDialectID[] {
         // Use memoization of the results for this DBConfig instance only
         if (this.savedSearchableKnownDialects !== undefined) {

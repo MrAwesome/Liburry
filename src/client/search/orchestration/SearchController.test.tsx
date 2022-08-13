@@ -28,7 +28,6 @@ describe('searchcontroller', () => {
         const rfc = await genLoadFinalConfigWILLTHROW({appIDsOverride: [appID]});
         const appConfig = AppConfig.from(rfc, {...options, appID});
         results = annotateRawResults(perDictRes, appConfig);
-        // = new AnnotatedPerDictResults(annotatedResRaw);
 
         genUpdateDisplayForSearchEvent = jest.fn();
         genUpdateDisplayForDBLoadEvent = jest.fn();

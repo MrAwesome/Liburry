@@ -223,7 +223,7 @@ const fieldsSchema = realRecord(token("FIELD_ID"), rawFieldMetadata)
 
 type FieldsMapping = z.infer<typeof fieldsSchema>;
 
-// TODO: description
+// TODO: description of what a filtrex filter is and how to use it (with link/example)
 const fieldFilterSchema = strictObject({filtrex: anyString()});
 type FieldFilter = z.infer<typeof fieldFilterSchema>;
 
