@@ -344,7 +344,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 debug={options.debug}
                 entry={entry}
                 displayableFields={displayableFields}
-                //blacklistDialectsRegex={this.appConfig.getDialectBlacklistRegex()}
                 key={entry.getDisplayKey()} />
         });
 
@@ -439,7 +438,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         // TODO: fix styling on searchbar (border-radius, better border-ish color)
         // TODO: get rid of react-burger-menu, use modal
-        // TODO: consider having searchOptionsOpen be a hash option
         return <div className="ChhaTaigi">
             <SearchOptionsArea
                 rfc={this.props.rfc}

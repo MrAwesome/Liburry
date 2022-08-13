@@ -11,8 +11,8 @@ test.skip('finalconfig check', async () => {
     const configHandler = new CompiledJSONFinalConfigHandler({localMode: true});
     const finalConfig = await configHandler.genLoadFinalConfig();
     if ((finalConfig as MuhError).muhErrType !== undefined) {
-        console.error("Failed to load final config.");
-        throw (finalConfig as MuhError);
+        console.error(finalConfig as MuhError);
+        throw new Error("Failed to load finalconfig!");
     }
     const rfc = finalConfig as ReturnedFinalConfig;
     expect(rfc).toHaveProperty("appConfigs");
