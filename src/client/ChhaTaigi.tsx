@@ -208,10 +208,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
             if (this.currentMountAttempt === savedMountAttempt) {
                 this.searchController?.startWorkersAndListener(options.searcherType);
                 this.subscribeHash();
-//                    const {getFontLoader} = await import("./fonts/FontLoader");
-//
-//                    const fontConfigs = this.appConfig.getAllFontConfigs();
-//                    const fontLoader = getFontLoader(fontConfigs);
                 this.appConfig.fontLoader.load(appID, dialectID);
                 this.qs.anchor();
             } else {
