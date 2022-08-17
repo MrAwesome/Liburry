@@ -4,12 +4,6 @@ import {nodeReadFileFromDir} from "../utils";
 import type ConfigHandler from "./ConfigHandler";
 import {ReturnedFinalConfig, returnedFinalConfigSchema} from "./zodConfigTypes";
 
-// [] ensure app names are unique
-// [] allow slashes in appnames (how to handle this in zod?)
-// [] load default.json
-// [] load appname.json
-// [] handle selecting subapp elsewhere
-
 // TODO: add app name here, in remote/local location, or base location on appname
 const chDefaultOpts = {
     localMode: false,
