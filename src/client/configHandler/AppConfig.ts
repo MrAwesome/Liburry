@@ -1,6 +1,6 @@
 // TODO: move a lot of the glue code into separate modules, and have this be more the top-level type definitions (or move this to an AppConfig module)
 
-import type {RawDBList, RawEnabledDBs, ReturnedFinalConfig, SubAppID, RawDBConfigMapping, AppID, ViewID, RawSubAppConfig, AppIDListOrAll, DBIdentifier} from "../configHandler/zodConfigTypes";
+import {RawDBList, RawEnabledDBs, ReturnedFinalConfig, SubAppID, RawDBConfigMapping, AppID, ViewID, RawSubAppConfig, AppIDListOrAll, DBIdentifier, ALL_APPS_OVERRIDE} from "../configHandler/zodConfigTypes";
 import PageHandler from "../pages/PageHandler";
 import DBConfig from "../configHandler/DBConfig";
 import {nullGuard, runningInJest} from "../utils";
@@ -202,7 +202,7 @@ function getViewID(
 // TODO: unit test, cleanup "all" handling
 function getAppsOrAll(rfc: ReturnedFinalConfig): AppIDListOrAll {
     const {appIDsOverride} = rfc.overrides ?? {};
-    if (appIDsOverride !== undefined && appIDsOverride !== "all") {
+    if (appIDsOverride !== undefined && appIDsOverride !== ALL_APPS_OVERRIDE) {
         return appIDsOverride;
     }
 

@@ -13,17 +13,27 @@ import {anyString, realRecord, token, strictObject, tokenArray} from "./zodUtils
 import {rawLangConfigSchema} from "./zodLangConfigTypes";
 import {issue} from "./zodIssue";
 
-const nonDefaultAppID = token("APP_ID").refine((s) => s !== "default" && s !== "all");
-const nonDefaultBuildID = token("BUILD_ID").refine((s) => s !== "default" && s !== "all");
-const defaultAppID = z.literal("default");
 
-// TODO: use a zod schema for this.
-export type AppID = z.infer<typeof nonDefaultAppID>;
-export type SubAppID = string;
-export type ViewID = string;
-export type FieldID = string;
-export type BuildID = z.infer<typeof nonDefaultBuildID>;
-export type DBIdentifier = string;
+export const DEFAULT_APP_ID = "default" as const;
+const validated_DefaultAppID = z.literal(DEFAULT_APP_ID);
+
+export const ALL_APPS_OVERRIDE = "all" as const;
+
+const validated_NonDefaultAppID = token("APP_ID").refine((s) => s !== DEFAULT_APP_ID && s !== ALL_APPS_OVERRIDE);
+const validated_NonDefaultBuildID = token("BUILD_ID").refine((s) => s !== DEFAULT_APP_ID && s !== ALL_APPS_OVERRIDE);
+
+const validated_SubAppID = token("SUBAPP_ID");
+const validated_FieldID = token("FIELD_ID");
+const validated_ViewID = token("VIEW_ID");
+const validated_DBIdentifier = token("DB_ID");
+
+export type DefaultAppID = z.infer<typeof validated_DefaultAppID>;
+export type AppID = z.infer<typeof validated_NonDefaultAppID>;
+export type BuildID = z.infer<typeof validated_NonDefaultBuildID>;
+export type SubAppID = z.infer<typeof validated_SubAppID>;
+export type ViewID = z.infer<typeof validated_ViewID>;
+export type FieldID = z.infer<typeof validated_FieldID>;
+export type DBIdentifier = z.infer<typeof validated_DBIdentifier>;
 
 ///////  Builds  //////////
 const defaultIndexHtmlConfigSchema = strictObject({
@@ -66,7 +76,7 @@ const indexHtmlConfigSchema = strictObject({
 
 const rawBuildConfigSchema = rawDefaultBuildConfigSchemaForMerge.deepPartial().merge(strictObject({
     indexHtml: indexHtmlConfigSchema.optional(),
-    buildID: nonDefaultBuildID,
+    buildID: validated_NonDefaultBuildID,
 }));
 export type RawBuildConfig = z.infer<typeof rawBuildConfigSchema>;
 
@@ -582,14 +592,14 @@ const appAllConfigSchema = rawAppLoadedAllConfigSchema.superRefine((appAllConfig
 });
 
 export const appTopLevelConfigurationSchema = strictObject({
-    appID: nonDefaultAppID,
+    appID: validated_NonDefaultAppID,
     pages: allPagesSchema,
     configs: appAllConfigSchema,
 });
 export type AppTopLevelConfiguration = z.infer<typeof appTopLevelConfigurationSchema>;
 
 export const defaultTopLevelConfigurationSchema = strictObject({
-    appID: defaultAppID,
+    appID: validated_DefaultAppID,
     pages: allPagesSchema,
     configs: defaultAllConfigSchema,
     build: defaultBuildConfigSchema,

@@ -3,7 +3,7 @@ import path from 'path';
 import md5File from 'md5-file';
 import {parseYaml} from "../client/utils/yaml";
 import {promisify} from 'util';
-import {AppID, AppIDListOrAll, AppTopLevelConfiguration, BuildID, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, RawBuildConfig, RawDefaultBuildConfig, rawDefaultBuildConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../client/configHandler/zodConfigTypes";
+import {ALL_APPS_OVERRIDE, AppID, AppIDListOrAll, AppTopLevelConfiguration, BuildID, DEFAULT_APP_ID, LoadedConfig, LoadedPage, rawAllDBConfigSchema, rawAppConfigSchema, RawBuildConfig, RawDefaultBuildConfig, rawDefaultBuildConfigSchema, rawMenuConfigSchema, ReturnedFinalConfig, returnedFinalConfigSchema} from "../client/configHandler/zodConfigTypes";
 import {rawLangConfigSchema} from '../client/configHandler/zodLangConfigTypes';
 import {FINAL_CONFIG_JSON_FILENAME, FINAL_CONFIG_LOCAL_DIR} from "../client/constants";
 import {PrecacheEntry} from 'workbox-precaching/_types';
@@ -68,7 +68,7 @@ type LoadedFilePlusMeta = {
     meta: LKFMeta,
 };
 
-export async function* walkFileTree(appID: "default" | AppID, dir: string, subdirs: Array<string>): AsyncIterable<LoadedFilePlusMeta | null> {
+export async function* walkFileTree(appID: typeof DEFAULT_APP_ID | AppID, dir: string, subdirs: Array<string>): AsyncIterable<LoadedFilePlusMeta | null> {
     for await (const d of await opendir(dir)) {
         const entry = path.join(dir, d.name);
         if (d.isDirectory()) {
@@ -100,7 +100,7 @@ export async function* genAppDirs(dir: string, subdirs: Array<string>, opts?: {t
     }
 }
 
-async function handleFile(appID: "default" | AppID, path: string, filename: string, subdirs: Array<string>): Promise<LoadedFilePlusMeta | null> {
+async function handleFile(appID: typeof DEFAULT_APP_ID | AppID, path: string, filename: string, subdirs: Array<string>): Promise<LoadedFilePlusMeta | null> {
     if (path.endsWith('.yml')) {
         const yamlText = (await readFile(path)).toString();
         const id = filename.replace(/.yml$/, "")
@@ -175,7 +175,7 @@ export default function checkAndTagYamlConfig(filename: string, yamlBlob: Object
 
 // TODO: flatten out ".config" and just use discriminated unions (will greatly simplify parsing and accessing)
 // TODO: separate out parsing logic for "default", since it's not just apps
-export async function rawParseAppYaml(localPrefix: string, appID: "default" | AppID): Promise<any> {
+export async function rawParseAppYaml(localPrefix: string, appID: typeof DEFAULT_APP_ID | AppID): Promise<any> {
     if (!runningInJest()) {
         console.info(`Building app "${appID}"...`);
     }
@@ -187,8 +187,8 @@ export async function rawParseAppYaml(localPrefix: string, appID: "default" | Ap
     };
 
     // TODO: XXX: move this into its own function (and then parse as app separately?)
-    if (appID === "default") {
-        const buildDir = path.join(CONFIG_DIR, "default", "build.yml");
+    if (appID === DEFAULT_APP_ID) {
+        const buildDir = path.join(CONFIG_DIR, DEFAULT_APP_ID, "build.yml");
         const lkfPlusMeta = await handleFile(appID, buildDir, "build.yml", []);
 
         if (lkfPlusMeta?.type === "config") {
@@ -258,7 +258,7 @@ export async function genLoadFinalConfigSafe(opts?: GLFCOpts): Promise<ReturnTyp
 async function genLoadFinalConfigAttemptINTERNAL(opts: GLFCOpts): Promise<any> {
     const {buildID, appIDsOverride, initialAppOverride} = opts;
 
-    const rawdef = await rawParseAppYaml("", "default");
+    const rawdef = await rawParseAppYaml("", DEFAULT_APP_ID);
 
     const buildConfig: RawBuildConfig = buildID === undefined
         ? undefined :
@@ -269,7 +269,7 @@ async function genLoadFinalConfigAttemptINTERNAL(opts: GLFCOpts): Promise<any> {
         rawdef.build.config.apps;
 
     let appIDs: [AppID, ...AppID[]];
-    if (appIDsOrAll === "all") {
+    if (appIDsOrAll === ALL_APPS_OVERRIDE) {
         !runningInJest() && console.info("[INFO] Allmode requested! Building all apps...");
         const ids = [];
         const appDir = path.join(CONFIG_DIR, "apps/");
