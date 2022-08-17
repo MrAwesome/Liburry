@@ -22,8 +22,6 @@ const mkdir = promisify(fs.mkdir);
 
     // TODO: write out a "build" config that lists all the apps built
     // TODO(urgent): ensure appName actually points to a directory?
-    // [] write out appname as directory in generated
-    // [] write out default config (where should it be?)
     // go back to writing out the entire config, and still just fetch the one big config - it's not bad to fetch all configs for all apps, you just maybe don't have to pre-load every app's dbs (should you preload subapp dbs? how to decide?)
     const buildID = LIBURRY_BUILD;
     const appIDsOverride = LIBURRY_APPS_OVERRIDE;

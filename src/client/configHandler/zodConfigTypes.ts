@@ -90,7 +90,6 @@ const subAppsSchema = realRecord(token("SUBAPP_ID"), rawSubAppConfigSchema).opti
 export type SubAppsMapping = z.infer<typeof subAppsSchema>;
 
 export const rawAppConfigSchema = strictObject({
-    // [] TODO: use in index.html
     displayName: anyString().describe("The display name of the app, as it will be shown to users."),
     defaultSubApp: token("SUBAPP_ID").optional(),
     subApps: subAppsSchema,
@@ -609,7 +608,6 @@ export type DefaultTopLevelConfiguration = z.infer<typeof defaultTopLevelConfigu
 
 const allAppsSchema = z.object({default: z.undefined()})
     .catchall(appTopLevelConfigurationSchema.optional())
-    // [] clear this up?
     .refine(
         (rec) => Object.keys(rec).length > 0,
         "at least one non-default app configuration must be defined"

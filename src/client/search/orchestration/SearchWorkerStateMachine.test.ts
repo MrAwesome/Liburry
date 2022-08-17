@@ -33,7 +33,6 @@ describe.each(searcherTypes)('basic search test', (searcherType) => {
         expect((stmach.mostRecentResultOrFailure as PerDictResultsRaw).results.length).toBe(0);
 
         // [] TODO: make all fetches in searchers both jest-safe *and* still update the progressbar state - have a single function for "fetch/loadfromdisk, update, return text" for plaintext csv dicts
-        // [] TODO: use describes().each() to ensure that this basic test (and others?) passes for all searcher types, or at least all currently-known searcher types
         // [] TODO: write unit tests for individual searcher's search logic (fuzzy searches should match via fuzzy but not regex, etc)
     });
 });

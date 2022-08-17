@@ -19,11 +19,6 @@ interface RawDialectConfigChain {
     defaultDialect: RawDialect,
 }
 
-// XXX: TODO:
-// [] run the fontloader on instantiation/change
-// [] have tok return a span with the font manually overriden to be the desired style
-// [] change the pagehandler to also set the font to the desired font (have this export a font function, which can pull directly from the rfc font config)
-
 // Given a token ID load the translation corresponding to that token for
 // the selected dialect. See src/common/i18n/I18NHandler.test.ts for examples.
 //
