@@ -27,7 +27,7 @@ const SEARCHER = "searcher";
 const PLAYGROUND = "playground";
 const APP = "app";
 const SUBAPP = "subapp";
-const SEARCH_RESULTS_DISPLAY_MODE = "dm";
+const SEARCH_RESULTS_DISPLAY_MODE = "srdm";
 
 const FIELDTYPE_TO_FIELDKEY_MAPPING = {
     savedQuery: QUERY,
