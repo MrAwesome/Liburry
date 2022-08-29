@@ -1,7 +1,7 @@
 import * as React from "react";
 import ReactModal from "react-modal";
 import I18NHandler from "../../common/i18n/I18NHandler";
-import {SearchBar} from "../components/SearchBar";
+import SearchBar from "../components/SearchBar";
 import AppConfig from "../configHandler/AppConfig";
 import {AppID, ReturnedFinalConfig, SubAppID} from "../configHandler/zodConfigTypes";
 import {SearcherType} from "../search/searchers/Searcher";

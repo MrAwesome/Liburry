@@ -162,7 +162,6 @@ export default function checkAndTagYamlConfig(filename: string, yamlBlob: Object
 
         const parsed = yamlBlob as ReturnType<typeof m.schema.parse>;
 
-        // TODO: remove as
         return {
             configType: m.type,
             config: parsed,
@@ -228,7 +227,6 @@ export async function rawParseBuildYaml(localPrefix: string, buildID: BuildID): 
         console.info(`Building build ${buildID}...`);
     }
 
-    // TODO: ensure is a valid path
     const fileName = `${buildID}/build.yml`;
     const buildPath = path.join(CONFIG_DIR, localPrefix, fileName);
 
@@ -388,14 +386,10 @@ export async function genIndexHTMLEnvVarPairs(
     defaultBuildConfig: RawDefaultBuildConfig,
     buildConfig?: RawBuildConfig,
 ): Promise<IndexHtmlEnvVarPairs> {
-    // TODO: recursively overwrite defaultconfig with buildconfig
-    // TODO: read in configs
-
     const displayName = buildConfig?.displayName ?? defaultBuildConfig.displayName;
     const themeColor = buildConfig?.indexHtml?.themeColor ?? defaultBuildConfig.indexHtml.themeColor;
 
     // NOTE: if the build has a displayName, use that for og:title before falling back to the default buildconfig
-    // TODO: UNIT TEST
     const title = buildConfig?.indexHtml?.og?.title ??
         buildConfig?.displayName ??
         defaultBuildConfig.indexHtml.og.title;

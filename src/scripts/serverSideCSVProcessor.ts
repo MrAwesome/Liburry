@@ -1,4 +1,4 @@
-// TODO: determine if lunr indexes should be generated
+// TODO: determine if lunr indices should be generated
 // TODO: this code should all live in a separate repo with the yml config, and "upstreamCSV" should be stored nearby
 import fs from 'fs';
 import papaparse from "papaparse";

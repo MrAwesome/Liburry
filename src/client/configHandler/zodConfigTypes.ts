@@ -142,7 +142,6 @@ export const fakeMTGDisplayTypeSchema = z.union([
 ]);
 
 // TODO(high): split these into used and unused fields (for ease of knowing what's worth bothering to tag)
-// TODO: .map z.literal, if that's possible while retaining types
 // TODO: better name for definition/explanation (simple_definition/long_definition?)
 export const rawDictionaryFieldDisplayTypeSchema = z.union([
     z.literal("base_phrase"),
@@ -223,7 +222,6 @@ export type RawMenuConfig = z.infer<typeof rawMenuConfigSchema>;
 
 const fieldsSchema = realRecord(token("FIELD_ID"), rawFieldMetadata)
     // Reflect the name of each field as a "fieldName" so that it's accessible to us in filters.
-    //
     .transform((fields) => reflectRecord("fieldName", fields))
     .refine(
         (fields) => Object.keys(fields).length > 0,
@@ -264,9 +262,6 @@ function filterFields(filterOrFieldNames: FieldFilter | [string, ...string[]], f
     }
 }
 
-// TODO: "DynamicallyGeneratedPage" -> from code or here, to a page stored on pagehandler or something. needs to respect the user's given lang
-// for *any* page, using ${TOK_NAME} will load TOK_NAME through the language-aware token-loading system (user-selected lang -> eng_us -> first_defined)
-// at zod-time, do a check that all referenced tokens are actually present in the system
 const rawDBConfigSchemaIncomplete = strictObject({
     displayNames: realRecord(token("DIALECT_ID"), anyString())
         .describe("Mapping of DialectID to the DB's name in that language."),
@@ -285,7 +280,6 @@ const rawDBConfigSchemaIncomplete = strictObject({
     //2) A mapping of ViewID to lists of searchable fields or filtrex filters.`
     //),
 
-    // TODO: searchableFields and displayableFields should be a list of field names. if "filter" is given, replace it with the corresponding list of field names
     fields: fieldsSchema,
 });
 const rawDBConfigSchema = z.union([
@@ -357,8 +351,8 @@ export type RawDBList = z.infer<typeof dbListSchema>;
 const enabledDBsListSchema = tokenArray("DB_ID")
     .describe("List of DBIDs which are currently enabled for this app and all of its subapps. If not present, it's assumed that all DBs will be enabled.");
 
-const enabledDBsBySubAppSchema = realRecord(token("SUBAPP_ID"), enabledDBsByView);
 // TODO: describe
+const enabledDBsBySubAppSchema = realRecord(token("SUBAPP_ID"), enabledDBsByView);
 
 export type RawEnabledDBsBySubApp = z.infer<typeof enabledDBsBySubAppSchema>;
 

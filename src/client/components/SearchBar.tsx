@@ -31,7 +31,7 @@ interface SearchBarProps {
 interface SearchBarState {
 }
 
-export class SearchBar extends React.Component<SearchBarProps, SearchBarState> {
+export default class SearchBar extends React.Component<SearchBarProps, SearchBarState> {
     textInput: React.RefObject<HTMLInputElement> = React.createRef();
 
     constructor(props: any) {

@@ -2,6 +2,7 @@ import qs from "qs";
 import {KnownDialectID} from "../generated/i18n";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import {PageID} from "./configHandler/zodConfigTypes";
+import {SearchResultsDisplayMode} from "./resultsDisplay/ResultsDisplay";
 import {SearcherType} from "./search/searchers/Searcher";
 import {MainDisplayAreaMode} from "./types/displayTypes";
 import {getRecordEntries, noop} from "./utils";
@@ -26,10 +27,12 @@ const SEARCHER = "searcher";
 const PLAYGROUND = "playground";
 const APP = "app";
 const SUBAPP = "subapp";
+const SEARCH_RESULTS_DISPLAY_MODE = "dm";
 
 const FIELDTYPE_TO_FIELDKEY_MAPPING = {
     savedQuery: QUERY,
     mainMode: MODE,
+    searchResultsDisplayMode: SEARCH_RESULTS_DISPLAY_MODE,
     pageID: PAGE,
     debug: DEBUG,
     searcherType: SEARCHER,
@@ -41,6 +44,8 @@ const FIELDTYPE_TO_FIELDKEY_MAPPING = {
 
 export type QueryStringFieldType = keyof typeof FIELDTYPE_TO_FIELDKEY_MAPPING;
 
+// If you see a type error here, it means that the keys of 
+// OptionsChangeableByUser and FIELDTYPE_TO_FIELDKEY_MAPPING no longer match.
 const _optsSame: TypeEquals<keyof OptionsChangeableByUser, QueryStringFieldType> = true;
 noop(_optsSame);
 
@@ -140,6 +145,7 @@ export default class QueryStringParser {
         const appID = parsed[APP];
         const subAppID = parsed[SUBAPP];
         const dialect = parsed[DIALECT];
+        const srdm = parsed[SEARCH_RESULTS_DISPLAY_MODE];
 
         if (typeof query === "string") {
             options.savedQuery = query;
@@ -164,6 +170,13 @@ export default class QueryStringParser {
             const searcherUpper = searcher.toUpperCase();
             if (searcherUpper in SearcherType) {
                 options.searcherType = SearcherType[searcherUpper as keyof typeof SearcherType];
+            }
+        }
+
+        if (typeof srdm === "string") {
+            const srdmUpper = srdm.toUpperCase();
+            if (srdmUpper in SearchResultsDisplayMode) {
+                options.searchResultsDisplayMode = SearchResultsDisplayMode[srdmUpper as keyof typeof SearchResultsDisplayMode];
             }
         }
 

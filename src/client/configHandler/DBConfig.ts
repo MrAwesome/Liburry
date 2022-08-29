@@ -90,9 +90,8 @@ export default class DBConfig {
         return this.dbIdentifier;
     }
 
-    // TODO: return a less-raw view into column metadata
     getColumnMetadata(colName: string): RawFieldMetadata {
-        // XXX: TODO: better error handling
+        // NOTE: this assumes that column names are known/valid
         return this.r.fields[colName]!;
     }
 
@@ -107,10 +106,4 @@ export default class DBConfig {
     getLicenseString() {
         return this.r.license;
     }
-
-    //
-    // TODO: dynamically determine these by checking isTitleType (for now just "vocab") on all fields then getting the lang of those fields
-    //titleLangs: Language[],
-    //dataLangs: Language[],
-
 }

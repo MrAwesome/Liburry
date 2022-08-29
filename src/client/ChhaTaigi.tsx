@@ -1,6 +1,5 @@
 import * as React from "react";
 
-import AgnosticEntryContainer from "./entry_containers/AgnosticEntryContainer";
 import OptionsChangeableByUser from "./ChhaTaigiOptions";
 import QueryStringHandler, {QSUpdateOpts} from "./QueryStringHandler";
 import SearchController from "./search/orchestration/SearchController";
@@ -10,14 +9,16 @@ import getDebugConsole, {StubConsole} from "./getDebugConsole";
 import {AllDBLoadStats, AnnotatedPerDictResults} from "./types/dbTypes";
 import {CombinedPageElement} from "./pages/Page";
 import {MainDisplayAreaMode} from "./types/displayTypes";
-import {SearchBar} from "./components/SearchBar";
+import SearchBar from "./components/SearchBar";
 import {setTimeoutButNotInProdOrTests, getRecordEntries, runningInJest} from "./utils";
 import AppConfig from "./configHandler/AppConfig";
 import SearchOptionsArea from "./searchOptions/SearchOptionsArea";
 import {KnownDialectID} from "../common/generatedTypes";
 import AppSelector from "./searchOptions/AppSelector";
+import ResultsDisplay from "./resultsDisplay/ResultsDisplay";
 
 import type {SearchContext} from "./search/orchestration/SearchValidityManager";
+import type {SearcherType} from "./search/searchers/Searcher";
 import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler/zodConfigTypes";
 
 import "./ChhaTaigi.css";
@@ -336,18 +337,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         const {resultsHolder, options} = this.state;
         const entries = resultsHolder.getAllResults();
 
-        const entryContainers = entries.map((entry) => {
-            const dbConfig = this.appConfig.dbConfigHandler.getConfig(entry.getDBIdentifier());
-            // TODO: log an error if dbConfig is null here?
-            const displayableFields = dbConfig?.getDisplayableFieldIDs() ?? new Set();
-            return <AgnosticEntryContainer
-                debug={options.debug}
-                entry={entry}
-                displayableFields={displayableFields}
-                key={entry.getDisplayKey()} />
-        });
-
-        return <>{entryContainers}</>;
+        return <ResultsDisplay entries={entries} options={options} appConfig={this.appConfig} />
     }
 
     getPageView(): JSX.Element {
@@ -427,6 +417,12 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.setState({visibleMenu: null})
     }
 
+
+    async handleSearcherTypeChange(searcherType: SearcherType) {
+        await this.genUpdateQs({searcherType});
+        this.genRestartSearchController();
+    }
+
     render() {
         const {options, visibleMenu} = this.state;
         const {mainMode} = options;
@@ -436,8 +432,6 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
 
         const searchBarPlaceholderText = this.getSearchBarPlaceholderText();
 
-        // TODO: fix styling on searchbar (border-radius, better border-ish color)
-        // TODO: get rid of react-burger-menu, use modal
         return <div className="ChhaTaigi">
             <SearchOptionsArea
                 rfc={this.props.rfc}
@@ -450,7 +444,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
                 i18nHandler={this.appConfig.i18nHandler}
 
                 currentSearcherType={options.searcherType}
-                handleSearcherTypeChange={async (searcherType) => {await this.genUpdateQs({searcherType}); this.genRestartSearchController()}}
+                handleSearcherTypeChange={this.handleSearcherTypeChange}
             />
 
             <SearchBar
