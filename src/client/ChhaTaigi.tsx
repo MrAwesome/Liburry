@@ -119,6 +119,7 @@ export class ChhaTaigi extends React.Component<ChhaTaigiProps, ChhaTaigiState> {
         this.handleAppChange = this.handleAppChange.bind(this);
         this.handleDialectChange = this.handleDialectChange.bind(this);
         this.handleSubAppChange = this.handleSubAppChange.bind(this);
+        this.handleSearcherTypeChange = this.handleSearcherTypeChange.bind(this);
         this.hashChange = this.hashChange.bind(this);
         this.loadPage = this.loadPage.bind(this);
         this.overrideResultsForTests = this.overrideResultsForTests.bind(this);
