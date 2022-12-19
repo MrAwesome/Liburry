@@ -24,6 +24,7 @@ import type {AppID, PageID, ReturnedFinalConfig, SubAppID} from "./configHandler
 import "./ChhaTaigi.css";
 
 // TODO: fix skipped tests in src/client/ChhaTaigi.test.tsx
+// TODO: use fzf as a searcher: https://github.com/ajitid/fzf-for-js
 // TODO: set default display language per-app in build.yml
 // TODO: make clicking on search bar close dialogue windows
 // TODOs are here: https://docs.google.com/spreadsheets/d/1lvbgLRRxGiNIf2by_mMW0aJrP1uhYTsz4_I4vmrB_Ss/edit?usp=sharing
